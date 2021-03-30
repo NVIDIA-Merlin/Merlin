@@ -49,10 +49,12 @@ You can run the examples by [installing NVTabular](https://github.com/NVIDIA/NVT
 - Merlin-Training contains NVTabular with HugeCTR
 - Merlin-Inference contains NVTabular with TensorFlow and Triton Inference support
 
+There are example docker-compose files in [Scaling to large Datasets with Criteo](https://github.com/NVIDIA-Merlin/Merlin/tree/main/examples/scaling-criteo)
+
+
 ### Start Examples with Docker Container
 
-You can pull the container by running the following command. Containers are available on [NGC](https://ngc.nvidia.com/catalog/containers/). In [Scaling to large Datasets with Criteo](https://github.com/NVIDIA-Merlin/Merlin/tree/main/examples/scaling-criteo), there are example docker-compose files.
-
+You can pull the container by running the following command.
 ```
 docker run --runtime=nvidia --rm -it -p 8888:8888 -p 8797:8787 -p 8796:8786 --ipc=host --cap-add SYS_PTRACE <docker container> /bin/bash
 ```
