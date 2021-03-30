@@ -1,0 +1,74 @@
+#FROM nvcr.io/nvidia/pytorch:20.12-py3
+#FROM gitlab-master.nvidia.com:5005/dl/dgx/pytorch:21.02-py3-devel
+FROM nvcr.io/nvidia/cuda:11.0.3-devel-ubuntu20.04
+ARG CONDA_ENV=rapids
+ARG RAP_CHAN=rapidsai
+ARG RAPIDS_VER=0.18
+ENV DEBIAN_FRONTEND="noninteractive"
+ARG RELEASE=false
+ARG NVTAB_VER=v0.4.0
+ARG HUGECTR_VER=v3.0
+
+ARG CC=8
+ARG CXX=8
+RUN apt update -y --fix-missing && \
+    apt upgrade -y && \
+    apt install -y --no-install-recommends \
+      git \
+      gcc-${CC} \
+      g++-${CXX} \
+      libboost-all-dev 
+
+# Install conda
+ADD https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh /miniconda.sh
+RUN sh /miniconda.sh -b -p /opt/conda && /opt/conda/bin/conda update -n base conda
+ENV PATH=${PATH}:/opt/conda/bin
+# Enables "source activate conda"
+SHELL ["/bin/bash", "-c"]
+
+RUN conda create --name ${CONDA_ENV} 
+RUN source activate ${CONDA_ENV}; conda install -c ${RAP_CHAN} -c nvidia -c numba -c conda-forge cudf=${RAPIDS_VER} dask-cudf=${RAPIDS_VER} dask-cuda=${RAPIDS_VER} nvtx pandas=1.1.5 
+RUN source activate ${CONDA_ENV}; conda install -c conda-forge cmake
+RUN source activate ${CONDA_ENV}; git clone -b main https://github.com/NVIDIA/NVTabular.git /nvtabular/; cd /nvtabular/; pip install -e .;
+RUN source activate ${CONDA_ENV}; pip install pynvml pytest graphviz sklearn scipy matplotlib
+RUN source activate ${CONDA_ENV}; conda install -c rapidsai asvdb
+RUN source activate ${CONDA_ENV}; pip install nvidia-pyindex; pip install tritonclient[all] grpcio-channelz
+RUN echo $(find / -iname libcuda)
+ENV CPATH=$CPATH:/opt/conda/include \
+    LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/conda/lib \
+    LIBRARY_PATH=$LIBRARY_PATH:/opt/conda/lib \
+    PATH=$PATH:/opt/conda/bin:/usr/lib/x86_64-linux-gnu/ \
+    CONDA_PREFIX=/opt/conda \
+    NCCL_LAUNCH_MODE=PARALLEL
+
+RUN source activate ${CONDA_ENV}; conda install -c conda-forge ucx libhwloc=2.4.0 openmpi=4.1.0 openmpi-mpicc=4.1.0 mpi4py=3.0.3 
+
+# this will help with install that requires libcuda.so 
+RUN ln -s /usr/local/cuda/lib64/stubs/libcuda.so /usr/local/cuda/lib64/stubs/libcuda.so.1
+RUN mkdir -p /var/tmp && cd /var/tmp && git clone https://github.com/NVIDIA/HugeCTR.git HugeCTR && cd - && \
+      cd /var/tmp/HugeCTR && if [[ "$RELEASE" == "true" ]]; then git fetch --all --tags && git checkout tags/${HUGECTR_VER}; else git checkout master; fi && \
+      git submodule update --init --recursive
+
+RUN source activate ${CONDA_ENV}; cd /var/tmp/HugeCTR && \ 
+      mkdir build && cd build && \
+      LD_LIBRARY_PATH=/usr/local/cuda/lib64/stubs/:$LD_LIBRARY_PATH && \
+      export PATH=$PATH:/usr/local/cuda-11.0/compat/ && \
+      cmake -DCMAKE_CXX_COMPILER=/usr/bin/g++ -DCMAKE_C_COMPILER=/usr/bin/gcc -DCMAKE_BUILD_TYPE=Release -DSM="60;61;70;75;80" \
+            -DVAL_MODE=OFF -DENABLE_MULTINODES=ON -DNCCL_A2A=ON .. && \
+      make -j$(nproc) && make install && \
+      chmod +x /usr/local/hugectr/bin/* && \
+      chmod +x /usr/local/hugectr/lib/* && \
+      rm -rf /var/tmp/HugeCTR;
+
+# remove fake lib
+RUN rm /usr/local/cuda/lib64/stubs/libcuda.so.1
+
+RUN source activate ${CONDA_ENV}; apt update; apt install -y graphviz ;
+RUN source activate ${CONDA_ENV}; conda env config vars set LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/hugectr/lib PATH=$PATH:/usr/local/hugectr/bin PYTHONPATH=$PYTHONPATH:/usr/local/hugectr/lib
+RUN source activate ${CONDA_ENV}; conda clean --all -y
+RUN echo $(du -h --max-depth=1 /)
+
+HEALTHCHECK NONE
+ENTRYPOINT []
+CMD ["/bin/bash"]
+
