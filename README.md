@@ -26,7 +26,9 @@ The exampels are based on different datasets to provide a wide range of real-wor
 
 NVIDIA Merlin is a collection of open source libraries: [NVTabular](https://github.com/NVIDIA/NVTabular), [HugeCTR](https://github.com/NVIDIA/HugeCTR) and [Triton Inference Server](https://github.com/triton-inference-server/server)
 
-<img src='https://developer.nvidia.com/sites/default/files/akamai/merlin/recommender-systems-dev-web-850.svg' width="50%">
+<p align="center">
+<img src='https://developer.nvidia.com/sites/default/files/akamai/merlin/recommender-systems-dev-web-850.svg' width="65%">
+</p>
 
-
+**[NVTabular](https://github.com/NVIDIA/NVTabular):**
 
