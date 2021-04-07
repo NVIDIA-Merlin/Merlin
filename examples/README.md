@@ -25,14 +25,7 @@ The MovieLens25M is a popular dataset for recommender systems and is used in aca
 - Using **NVTabular dataloader** with TensorFlow Keras model
 - Using **NVTabular dataloader** with PyTorch
 
-### 2. [Advanced Ops with Outbrain](https://github.com/NVIDIA-Merlin/Merlin/tree/main/examples/advanced-ops-outbrain)
-
-[Outbrain dataset](https://www.kaggle.com/c/outbrain-click-prediction) is based on a Kaggle Competition in which Kagglers were challenged to predict on which ads and other forms of sponsored content its global users would click. We will teach to **use more of the available NVTabular operators**:
-- Getting familiar with a wide range of NVTabular operators
-- Writing a custom operator
-- Training Wide&Deep model with NVTabular dataloader in TensorFlow
-
-### 3. [Scaling to large Datasets with Criteo](https://github.com/NVIDIA-Merlin/Merlin/tree/main/examples/scaling-criteo)
+### 2. [Scaling to large Datasets with Criteo](https://github.com/NVIDIA-Merlin/Merlin/tree/main/examples/scaling-criteo)
 
 [Criteo](https://ailab.criteo.com/download-criteo-1tb-click-logs-dataset/) provides the largest publicly available dataset for recommender systems, having a size of 1TB uncompressed click logs of 4 billion examples. We will teach to **scale NVTabular**:
 - Using **multiple GPUs and multiple nodes** with NVTabular for ETL
