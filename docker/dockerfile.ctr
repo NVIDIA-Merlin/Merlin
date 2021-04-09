@@ -1,7 +1,7 @@
 #FROM nvcr.io/nvidia/pytorch:20.12-py3
 #FROM gitlab-master.nvidia.com:5005/dl/dgx/pytorch:21.02-py3-devel
 FROM nvcr.io/nvidia/cuda:11.0.3-devel-ubuntu20.04
-ARG CONDA_ENV=rapids
+ARG CONDA_ENV=merlin
 ARG RAP_CHAN=rapidsai
 ARG RAPIDS_VER=0.18
 ENV DEBIAN_FRONTEND="noninteractive"
@@ -14,10 +14,14 @@ ARG CXX=8
 RUN apt update -y --fix-missing && \
     apt upgrade -y && \
     apt install -y --no-install-recommends \
+      curl \
       git \
       gcc-${CC} \
       g++-${CXX} \
-      libboost-all-dev 
+      libboost-all-dev \
+      unzip \
+      wget \
+      zip 
 
 # Install conda
 ADD https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh /miniconda.sh
@@ -25,6 +29,8 @@ RUN sh /miniconda.sh -b -p /opt/conda && /opt/conda/bin/conda update -n base con
 ENV PATH=${PATH}:/opt/conda/bin
 # Enables "source activate conda"
 SHELL ["/bin/bash", "-c"]
+
+ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
 
 RUN conda create --name ${CONDA_ENV} 
 RUN source activate ${CONDA_ENV}; conda install -c ${RAP_CHAN} -c nvidia -c numba -c conda-forge cudf=${RAPIDS_VER} dask-cudf=${RAPIDS_VER} dask-cuda=${RAPIDS_VER} nvtx pandas=1.1.5 
@@ -71,4 +77,3 @@ RUN echo $(du -h --max-depth=1 /)
 HEALTHCHECK NONE
 ENTRYPOINT []
 CMD ["/bin/bash"]
-

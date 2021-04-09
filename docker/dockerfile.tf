@@ -1,5 +1,5 @@
 #FROM nvidia/cuda:11.0.3-cudnn8-devel-ubuntu20.04 AS devel
-FROM nvcr.io/nvidia/tensorflow:21.02-tf2-py3
+FROM nvcr.io/nvidia/tensorflow:21.03-tf2-py3
 
 ARG RELEASE=true
 ARG NVTAB_VER=v0.4.0
@@ -8,9 +8,9 @@ ARG SM="60;61;70;75;80"
 
 RUN apt-get update -y && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-        vim gdb git wget tar python3.8-dev \
+        vim gdb git wget unzip tar python3.8-dev \
         zlib1g-dev lsb-release clang-format libboost-all-dev \
-        openssl=1.1.1f-1ubuntu2.2 libssl1.1 \
+        openssl libssl1.1 curl zip\
        	slapd=2.4.49+dfsg-2ubuntu1.7 && \
     rm -rf /var/lib/apt/lists/*
 
@@ -41,17 +41,15 @@ RUN mkdir -p /var/tmp && cd /var/tmp && git clone https://github.com/NVIDIA/Huge
       mkdir -p build && cd build && \
       cmake -DCMAKE_BUILD_TYPE=Release -DSM=$SM -DONLY_EMB_PLUGIN=ON .. && make -j$(nproc) && make install && \
       rm -rf /var/tmp/HugeCTR; 
-RUN   git clone --branch master https://github.com/NVIDIA/HugeCTR.git /hugectr
-
-ENV LD_LIBRARY_PATH=/usr/local/hugectr/lib:$LD_LIBRARY_PATH \
-    LIBRARY_PATH=/usr/local/hugectr/lib:$LIBRARY_PATH \
-    PYTHONPATH=/usr/local/hugectr/lib:$PYTHONPATH
 
 RUN conda config --set auto_activate_base false
 
 SHELL ["/bin/bash", "-c"]
-RUN source deactivate; conda create --name rapids
-ARG CONDA_ENV=rapids
+
+ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
+
+RUN source deactivate; conda create --name merlin
+ARG CONDA_ENV=merlin
 ARG RAPIDS_VER=0.18
 RUN source activate ${CONDA_ENV}; conda install -c rapidsai -c nvidia -c numba -c conda-forge cudf=${RAPIDS_VER} cudatoolkit=11.0 pandas=1.1.5
 RUN source activate ${CONDA_ENV}; conda install -c rapidsai -c nvidia -c numba -c conda-forge dask-cudf=${RAPIDS_VER} dask-cuda=${RAPIDS_VER} cudnn nvtx 
@@ -59,12 +57,15 @@ RUN source activate ${CONDA_ENV}; git clone https://github.com/NVIDIA/NVTabular.
 RUN source activate ${CONDA_ENV}; pip install pynvml pytest graphviz sklearn scipy matplotlib
 RUN source activate ${CONDA_ENV}; pip install nvidia-pyindex; pip install tritonclient[all] grpcio-channelz
 RUN source activate ${CONDA_ENV}; conda install -c rapidsai asvdb
-RUN source activate ${CONDA_ENV}; conda env config vars set PYTHONPATH=$PYTHONPATH:/opt/conda/envs/rapids/lib/python3.8/site-packages:/hugectr/tools/embedding_plugin/python:/opt/conda/lib/python3.8/site-packages
+RUN source activate ${CONDA_ENV}; conda env config vars set PYTHONPATH=$PYTHONPATH:/opt/conda/envs/merlin/lib/python3.8/site-packages:/hugectr/tools/embedding_plugin/python:/opt/conda/lib/python3.8/site-packages:/usr/local/lib/python3.8/dist-packages
 RUN source activate ${CONDA_ENV}; apt update; apt install -y graphviz ;
 RUN source activate ${CONDA_ENV}; conda clean --all -y
 RUN echo $(du -h --max-depth=1 /)
 
+ENV LD_LIBRARY_PATH=/usr/local/hugectr/lib:$LD_LIBRARY_PATH \
+    LIBRARY_PATH=/usr/local/hugectr/lib:$LIBRARY_PATH \
+    PYTHONPATH=/usr/local/hugectr/lib:$PYTHONPATH
+    
 HEALTHCHECK NONE
 ENTRYPOINT []
 CMD ["/bin/bash"]
-

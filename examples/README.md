@@ -1,10 +1,10 @@
 # NVIDIA Merlin Examples
 
-We created a collection of jupyter notebooks based on different datasets to provide end-2-end examples for NVIDIA Merlin. The examples cover how to use NVTabular in combination with TensorFlow, PyTorch and [HugeCTR](https://github.com/NVIDIA/HugeCTR). Each example explains a end-2-end workflow from ETL to Training to Inference.
+We created a collection of jupyter notebooks based on different datasets to provide end-to-end examples for NVIDIA Merlin. The examples cover how to use NVTabular in combination with TensorFlow, PyTorch and [HugeCTR](https://github.com/NVIDIA/HugeCTR). Each example explains an end-to-end workflow from ETL to Training to Inference.
 
 ## Structure
 
-Each example are structured in multiple notebooks:
+Each example is structured in multiple notebooks:
 - 01-Download-Convert.ipynb: Instruction to download the dataset and convert it into the correct format to consume it in the next notebooks
 - 02-ETL-with-NVTabular.ipynb: Execute preprocessing and feature engineering pipeline (ETL) with **NVTabular** on GPU
 - 03a-Training-with-TF.ipynb: Training a model with **TensorFlow** based on the ETL output

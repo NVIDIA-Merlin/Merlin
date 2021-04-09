@@ -1,6 +1,6 @@
 # NVIDIA Merlin Dockerfiles
 
-We built and host dockerfiles for NVIDIA Merlin on [NGC](https://ngc.nvidia.com/catalog/containers/). The containers can be pulled and started out of the box. In this repository, we provide the Dockerfiles used for the builts. Userse can clone and adjust the containers, if necessary.
+We built and host dockerfiles for NVIDIA Merlin on [NGC](https://ngc.nvidia.com/catalog/containers/). The containers can be pulled and started out of the box. In this repository, we provide the Dockerfiles used for the builts. Users can clone and adjust the containers, if necessary.
 
 | Container name             | Dockerfile       | Container location                                                             | Functionality                                         |
 |----------------------------|------------------|--------------------------------------------------------------------------------|-------------------------------------------------------|

@@ -1,7 +1,7 @@
-#FROM nvcr.io/nvidia/pytorch:20.12-py3
+#FROM nvcr.io/nvidia/pytorch:21.03-py3
 #FROM gitlab-master.nvidia.com:5005/dl/dgx/pytorch:21.02-py3-devel
-FROM nvcr.io/nvidia/cuda:11.0.3-runtime-ubuntu20.04
-ARG CONDA_ENV=rapids
+FROM nvcr.io/nvidia/cuda:11.0.3-devel-ubuntu20.04
+ARG CONDA_ENV=merlin
 ARG RAP_CHAN=rapidsai
 ARG RAPIDS_VER=0.18
 ENV DEBIAN_FRONTEND="noninteractive"
@@ -13,8 +13,17 @@ ARG CXX=8
 RUN apt update -y --fix-missing && \
     apt upgrade -y && \
     apt install -y --no-install-recommends \
+      build-essential \
+      cmake \
+      curl \
+      gcc \
+      g++ \
       git \
-      libboost-all-dev 
+      make \
+      libboost-all-dev \
+      unzip \
+      wget \
+      zip
 
 # Install conda
 ADD https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh /miniconda.sh
@@ -23,23 +32,38 @@ ENV PATH=${PATH}:/conda/bin
 # Enables "source activate conda"
 SHELL ["/bin/bash", "-c"]
 
+ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
+
 #RUN conda install -c conda-forge boost=1.74.0
 RUN conda create --name ${CONDA_ENV} 
 #RUN source activate ${CONDA_ENV}; conda install -c conda-forge boost=1.74.0
 #ENV PYTHONPATH=$PYTHONPATH:/opt/conda/lib/python3.8/site-packages/ 
 RUN source activate ${CONDA_ENV}; conda install -c ${RAP_CHAN} -c nvidia -c numba -c conda-forge cudf=${RAPIDS_VER} dask-cudf=${RAPIDS_VER} dask-cuda=${RAPIDS_VER} nvtx pandas=1.1.5 
-RUN source activate ${CONDA_ENV}; pip install --pre torch -f https://download.pytorch.org/whl/nightly/cu110/torch_nightly.html
+RUN source activate ${CONDA_ENV}; conda env config vars set PYTHONPATH=$PYTHONPATH:/opt/conda/lib/python3.8/site-packages/
+#RUN source activate ${CONDA_ENV}; pip install --pre torch -f https://download.pytorch.org/whl/nightly/cu110/torch_nightly.html
+RUN source activate ${CONDA_ENV}; conda install -c pytorch magma-cuda110
+RUN source activate ${CONDA_ENV}; git clone https://gitlab-master.nvidia.com/dl/pytorch/pytorch.git /pytorch; cd /pytorch ; git checkout e163fe00; git submodule sync; 
+ENV TORCH_CUDA_ARCH_LIST="5.2 6.0 6.1 7.0 7.5 8.0 8.6+PTX"
+RUN cd /pytorch && \
+    CUDA_HOME="/usr/local/cuda" \
+    CMAKE_PREFIX_PATH="$(dirname $(which conda))/../" \
+    NCCL_INCLUDE_DIR="/usr/include/" \
+    NCCL_LIB_DIR="/usr/lib/" \
+    USE_SYSTEM_NCCL=1 \
+    USE_OPENCV=1 \
+    pip install --no-cache-dir -v .
+
+RUN source activate ${CONDA_ENV}; CC=/usr/bin/gcc CXX=/usr/bin/g++ HOROVOD_CUDA_HOME=/usr/local/cuda/ HOROVOD_BUILD_CUDA_CC_LIST=60,70,75,80 HOROVOD_GPU_OPERATIONS=NCCL HOROVOD_WITH_PYTORCH=1 HOROVOD_NCCL_LINK=SHARED pip install --no-cache-dir horovod[pytorch]
 RUN source activate ${CONDA_ENV}; git clone https://github.com/NVIDIA/NVTabular.git /nvtabular/; cd /nvtabular/; if [[ "$RELEASE" == "true" ]] ; then git fetch --all --tags && git checkout tags/${NVTAB_VER}; else git checkout main; fi; pip install -e .;
 RUN source activate ${CONDA_ENV}; pip install pynvml pytest spacy graphviz sklearn scipy matplotlib
-RUN source activate ${CONDA_ENV}; pip install --no-deps fastai fastcore fastprogress
+RUN source activate ${CONDA_ENV}; pip install --no-deps fastai==2.1.9 fastcore fastprogress
 RUN source activate ${CONDA_ENV}; conda install -c rapidsai asvdb
 # first path is for tf, second is for pytorch
 RUN source activate ${CONDA_ENV}; apt update; apt install -y graphviz ; 
-RUN source activate ${CONDA_ENV}; conda env config vars set PYTHONPATH=$PYTHONPATH:/opt/conda/lib/python3.8/site-packages/
+#RUN source activate ${CONDA_ENV}; conda env config vars set PYTHONPATH=$PYTHONPATH:/opt/conda/lib/python3.8/site-packages/
 RUN source activate ${CONDA_ENV}; conda clean --all -y
 RUN echo $(du -h --max-depth=1 /)
 
 HEALTHCHECK NONE
 ENTRYPOINT []
 CMD ["/bin/bash"]
-
