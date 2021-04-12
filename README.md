@@ -58,7 +58,7 @@ A collection of [end-to-end examples](./examples/) is available within this repo
 - deploy the models to production.
 
 These examples are based on different datasets and provide a wide range of real-world use cases.
-Each example explains
+
 ### Resources
 
 For more information about NVIDIA Merlin and its components, see the following:
