@@ -1,13 +1,11 @@
-#FROM nvcr.io/nvidia/pytorch:20.12-py3
-#FROM gitlab-master.nvidia.com:5005/dl/dgx/pytorch:21.02-py3-devel
 FROM nvcr.io/nvidia/cuda:11.0.3-devel-ubuntu20.04
 ARG CONDA_ENV=merlin
 ARG RAP_CHAN=rapidsai
-ARG RAPIDS_VER=0.18
+ARG RAPIDS_VER=0.18.0
 ENV DEBIAN_FRONTEND="noninteractive"
 ARG RELEASE=false
-ARG NVTAB_VER=v0.4.0
-ARG HUGECTR_VER=v3.0
+ARG NVTAB_VER=v0.5.0
+ARG HUGECTR_VER=v3.0.1
 
 ARG CC=8
 ARG CXX=8
@@ -33,10 +31,10 @@ SHELL ["/bin/bash", "-c"]
 ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
 
 RUN conda create --name ${CONDA_ENV} 
-RUN source activate ${CONDA_ENV}; conda install -c ${RAP_CHAN} -c nvidia -c numba -c conda-forge cudf=${RAPIDS_VER} dask-cudf=${RAPIDS_VER} dask-cuda=${RAPIDS_VER} nvtx pandas=1.1.5 
+RUN source activate ${CONDA_ENV}; conda install -c ${RAP_CHAN} -c nvidia -c numba -c conda-forge cudf=${RAPIDS_VER} dask=2021.02.0 dask-cudf=${RAPIDS_VER} dask-cuda=${RAPIDS_VER} nvtx pandas=1.1.5 
 RUN source activate ${CONDA_ENV}; conda install -c conda-forge cmake
-RUN source activate ${CONDA_ENV}; git clone -b main https://github.com/NVIDIA/NVTabular.git /nvtabular/; cd /nvtabular/; pip install -e .;
-RUN source activate ${CONDA_ENV}; pip install pynvml pytest graphviz sklearn scipy matplotlib
+RUN source activate ${CONDA_ENV}; git clone https://github.com/NVIDIA/NVTabular.git /nvtabular/; cd /nvtabular/; if [[ "$RELEASE" == "true" ]] ; then git fetch --all --tags && git checkout tags/${NVTAB_VER}; else git checkout main; fi; pip install -e .;
+RUN source activate ${CONDA_ENV}; pip install pynvml pytest graphviz sklearn scipy matplotlib tqdm
 RUN source activate ${CONDA_ENV}; conda install -c rapidsai asvdb
 RUN source activate ${CONDA_ENV}; pip install nvidia-pyindex; pip install tritonclient[all] grpcio-channelz
 RUN echo $(find / -iname libcuda)
@@ -77,3 +75,4 @@ RUN echo $(du -h --max-depth=1 /)
 HEALTHCHECK NONE
 ENTRYPOINT []
 CMD ["/bin/bash"]
+

@@ -1,10 +1,10 @@
 FROM nvcr.io/nvidia/tritonserver:21.03-py3 
 ARG CONDA_ENV=merlin
 ARG RAP_CHAN=rapidsai
-ARG RAPIDS_VER=0.18
-ARG HUGECTR_VER=v3.0
-ARG NVTAB_VER=v0.4.0
-ARG HUGEINF_VER=v3.0
+ARG RAPIDS_VER=0.18.0
+ARG HUGECTR_VER=v3.0.1
+ARG NVTAB_VER=v0.5.0
+ARG HUGEINF_VER=v3.0.1
 ARG RELEASE=false 
 ARG SM="70;75;80"
 
@@ -17,12 +17,13 @@ SHELL ["/bin/bash", "-c"]
 ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
 
 RUN apt remove openssl -y
-RUN apt update; apt install -y slapd=2.4.49+dfsg-2ubuntu1.7 curl zip wget unzip openssl=1.1.1f-1ubuntu2.3 
+RUN apt update; apt install -y slapd=2.4.49+dfsg-2ubuntu1.7 curl zip wget unzip  
 
 RUN conda create --name ${CONDA_ENV}; 
-RUN source activate ${CONDA_ENV}; conda install -c ${RAP_CHAN} -c nvidia -c numba -c conda-forge cudf=${RAPIDS_VER} pandas=1.1.5 python=3.8
+RUN source activate ${CONDA_ENV}; conda install -c ${RAP_CHAN} -c nvidia -c numba -c conda-forge cudf=${RAPIDS_VER} dask=2021.02.0 pandas=1.1.5 python=3.8
 RUN source activate ${CONDA_ENV}; conda install -c ${RAP_CHAN} -c nvidia -c numba -c conda-forge dask-cudf=${RAPIDS_VER} dask-cuda=${RAPIDS_VER} nvtx 
 RUN source activate ${CONDA_ENV}; conda install -c conda-forge cmake
+RUN source activate ${CONDA_ENV}; conda install -c conda-forge gevent
 RUN source activate ${CONDA_ENV}; git clone https://github.com/NVIDIA/NVTabular.git /nvtabular/; cd /nvtabular/; if [[ "$RELEASE" == "true" ]] ; then git fetch --all --tags && git checkout tags/${NVTAB_VER}; else git checkout main; fi; pip install -e .;
 RUN source activate ${CONDA_ENV}; pip install pynvml pytest graphviz scipy sklearn 
 RUN source activate ${CONDA_ENV}; conda install -c rapidsai asvdb
@@ -54,7 +55,7 @@ RUN source activate ${CONDA_ENV}; mkdir -p /var/tmp && cd /var/tmp && git clone 
 
 RUN ln -s /usr/local/hugectr/backends/hugectr /opt/tritonserver/backends/ 
 
-RUN source activate ${CONDA_ENV}; pip install nvidia-pyindex==1.0.6; pip install tritonclient[all] grpcio-channelz
+RUN source activate ${CONDA_ENV}; pip install tqdm nvidia-pyindex==1.0.6; pip install tritonclient[all] grpcio-channelz
 RUN source activate ${CONDA_ENV}; apt update; apt install -y graphviz ; 
 
 RUN source activate ${CONDA_ENV}; conda env config vars set CPATH=/usr/local/hugectr/include:$CPATH LIBRARY_PATH=/usr/local/hugectr/lib:$LIBRARY_PATH LD_LIBRARY_PATH=/opt/tritonserver/backends/hugectr:/usr/local/hugectr/lib/:$LD_LIBRARY_PATH
@@ -64,3 +65,4 @@ RUN echo $(du -h --max-depth=1 /)
 HEALTHCHECK NONE
 ENTRYPOINT []
 CMD ["/bin/bash"]
+
