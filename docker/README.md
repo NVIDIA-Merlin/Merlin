@@ -1,8 +1,10 @@
-# NVIDIA Merlin Docker Containers
+# NVIDIA Merlin Dockerfiles and Containers
 
 All NVIDIA Merlin components are available as open source projects. However, a more convenient way to make use of these components is by using our Merlin NGC containers. We have created Docker containers for NVIDIA Merlin that are hosted on [NGC](https://ngc.nvidia.com/catalog/containers/). 
 
-Containers allow you to package your software application, libraries, dependencies, and runtime compilers in a self-contained environment. These containers can be pulled and launched right out of the box. You can clone and adjust these containers if necessary. Here's a list of Docker containers that we currently offer:
+Containers allow you to package your software application, libraries, dependencies, and runtime compilers in a self-contained environment. These containers can be pulled and launched right out of the box. You can clone and adjust these containers if necessary. 
+
+The table below provides a list of Dockerfiles that can be used to build the corresponding Docker container:
 
 | Container Name             | Dockerfile       | Container Location                                                             | Functionality                                         |
 |----------------------------|------------------|--------------------------------------------------------------------------------|-------------------------------------------------------|
