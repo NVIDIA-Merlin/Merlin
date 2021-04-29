@@ -6,7 +6,7 @@ Containers allow you to package your software application, libraries, dependenci
 
 | Container Name             | Dockerfile       | Container Location                                                             | Functionality                                         |
 |----------------------------|------------------|--------------------------------------------------------------------------------|-------------------------------------------------------|
-| Merlin-training            | dockerfile.ctr   |  https://ngc.nvidia.com/containers/nvstaging:merlin:merlin-training            | NVTabular and HugeCTR                                 |
+| Merlin-training            | dockerfile.ctr   |  https://ngc.nvidia.com/containers/nvidia:merlin:merlin-training            | NVTabular and HugeCTR                                 |
 | Merlin-tensorflow-training | dockerfile.tf    |  https://ngc.nvidia.com/containers/nvstaging:merlin:merlin-tensorflow-training | NVTabular, TensorFlow, and Tensorflow Embedding plugin |
 | Merlin-pytorch-training    | dockerfile.torch |  https://ngc.nvidia.com/containers/nvstaging:merlin:merlin-pytorch-training    | NVTabular and PyTorch                                 |
 | Merlin-inference           | dockerfile.tri   |  https://ngc.nvidia.com/containers/nvstaging:merlin:merlin-inference           | NVTabular, HugeCTR, and Triton Inference               |
