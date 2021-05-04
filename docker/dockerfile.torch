@@ -1,52 +1,145 @@
-FROM nvcr.io/nvidia/cuda:11.0.3-devel-ubuntu20.04
-ARG CONDA_ENV=merlin
-ARG RAP_CHAN=rapidsai
-ARG RAPIDS_VER=0.18.0
-ENV DEBIAN_FRONTEND="noninteractive"
-ARG RELEASE=false
-ARG NVTAB_VER=v0.5.0
+FROM nvcr.io/nvidia/pytorch:21.03-py3
+ENV CUDA_SHORT_VERSION=11.2
 
-ARG CC=8
-ARG CXX=8
+SHELL ["/bin/bash", "-c"]
+ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64:/usr/local/lib:/repos/dist/lib
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+ARG RMM_VER=v0.19.0
+ARG CUDF_VER=v0.19.1
+ARG NVTAB_VER=v0.5.1
+ARG RELEASE=false 
+
+ENV CUDA_HOME=/usr/local/cuda
+ENV CUDA_PATH=$CUDA_HOME
+ENV CUDA_CUDA_LIBRARY=${CUDA_HOME}/lib64/stubs
+ENV PATH=${CUDA_HOME}/lib64/:${PATH}:${CUDA_HOME}/bin
+
+# Build env variables for rmm
+ENV INSTALL_PREFIX=/usr
+
+
 RUN apt update -y --fix-missing && \
     apt upgrade -y && \
-    apt install -y --no-install-recommends \
-        build-essential \
-        cmake \
-        curl \
-        gcc-${CC} \
-        g++-${CXX} \
-        git \
-        make \
-        libboost-all-dev \
-        unzip \
-        wget \
-        zip && \
-        rm -rf /var/lib/apt/lists/*
+      apt install -y --no-install-recommends software-properties-common && \
+      add-apt-repository -y ppa:deadsnakes/ppa && \
+      apt update -y --fix-missing
 
-# Install conda
-ADD https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh /miniconda.sh
-RUN sh /miniconda.sh -b -p /conda && /conda/bin/conda update -n base conda
-ENV PATH=${PATH}:/conda/bin
-# Enables "source activate conda"
+RUN apt install -y --no-install-recommends \
+      git \
+      libboost-all-dev \
+      python3.8-dev \
+      build-essential \
+      autoconf \
+      bison \
+      flex \
+      libboost-filesystem-dev \
+      libboost-system-dev \
+      libboost-regex-dev \
+      libjemalloc-dev \
+      wget \
+      libssl-dev \
+      protobuf-compiler && \
+    apt-get autoremove -y && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* && \ 
+    update-alternatives --install /usr/bin/python python /usr/bin/python3.8 1 && \
+    wget https://bootstrap.pypa.io/get-pip.py && \
+    python get-pip.py && pip install pip==21.0.1
+
+# Install cmake
+RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null && \
+    apt-add-repository 'deb https://apt.kitware.com/ubuntu/ focal main' && \
+    apt-get update && \
+    apt-get install -y cmake
+
+# Install arrow from source
+ENV ARROW_HOME=/usr/local
+RUN git clone --branch apache-arrow-1.0.1 --recurse-submodules https://github.com/apache/arrow.git build-env && \
+    pushd build-env && \
+      export PARQUET_TEST_DATA="${PWD}/cpp/submodules/parquet-testing/data" && \
+      export ARROW_TEST_DATA="${PWD}/testing/data" && \
+      pip install -r python/requirements-build.txt && \
+      mkdir cpp/release && \
+      pushd cpp/release && \
+        cmake -DCMAKE_INSTALL_PREFIX=${ARROW_HOME} \
+              -DCMAKE_INSTALL_LIBDIR=lib \
+              -DCMAKE_LIBRARY_PATH=${CUDA_CUDA_LIBRARY} \
+              -DARROW_FLIGHT=ON \
+              -DARROW_GANDIVA=OFF \
+              -DARROW_ORC=ON \
+              -DARROW_WITH_BZ2=ON \
+              -DARROW_WITH_ZLIB=ON \
+              -DARROW_WITH_ZSTD=ON \
+              -DARROW_WITH_LZ4=ON \
+              -DARROW_WITH_SNAPPY=ON \
+              -DARROW_WITH_BROTLI=ON \
+              -DARROW_PARQUET=ON \
+              -DARROW_PYTHON=ON \
+              -DARROW_PLASMA=ON \
+              -DARROW_BUILD_TESTS=ON \
+              -DARROW_CUDA=ON \
+              -DARROW_DATASET=ON \
+              .. && \
+        make -j$(nproc) && \
+        make install && \
+      popd && \
+      pushd python && \
+        export PYARROW_WITH_PARQUET=ON && \
+        export PYARROW_WITH_CUDA=ON && \
+        export PYARROW_WITH_ORC=ON && \
+        export PYARROW_WITH_DATASET=ON && \
+        python setup.py build_ext --build-type=release bdist_wheel && \
+        pip install dist/*.whl && \
+      popd && \
+    popd && \
+    rm -rf build-env
+
+
+# Install rmm from source
+RUN git clone https://github.com/rapidsai/rmm.git build-env && cd build-env/ && \
+    if [ "$RELEASE" == "true" ] && [ ${RMM_VER} != 0 ] ; then git fetch --all --tags && git checkout tags/${RMM_VER}; else git checkout main; fi; cd ..; \
+    pushd build-env && \
+    ./build.sh librmm && \
+    pip install python/. && \
+    popd && \
+    rm -rf build-env
+
+# Build env for CUDF build
+RUN git clone https://github.com/rapidsai/cudf.git build-env && cd build-env/ && \
+    if [ "$RELEASE" == "true" ] && [ ${CUDF_VER} != 0 ] ; then git fetch --all --tags && git checkout tags/${CUDF_VER}; else git checkout main; fi; \
+    git submodule update --init --recursive && cd ..; \
+    pushd build-env && \
+      export CUDF_HOME=${PWD} && \
+      export CUDF_ROOT=${PWD}/cpp/build/ && \
+      export CMAKE_LIBRARY_PATH=${CUDA_CUDA_LIBRARY} && \
+      ./build.sh libcudf cudf dask_cudf && \
+      protoc -I=python/cudf/cudf/utils/metadata --python_out=/opt/conda/lib/python3.8/site-packages/cudf/utils/metadata python/cudf/cudf/utils/metadata/orc_column_statistics.proto && \
+    popd && \
+    rm -rf build-env
+
 SHELL ["/bin/bash", "-c"]
 
-RUN conda create --name ${CONDA_ENV} 
-RUN source activate ${CONDA_ENV}; conda install -c ${RAP_CHAN} -c nvidia -c numba -c conda-forge cudf=${RAPIDS_VER} dask=2021.02.0 dask-cudf=${RAPIDS_VER} dask-cuda=${RAPIDS_VER} nvtx pandas=1.1.5 
-RUN source activate ${CONDA_ENV}; conda install -c pytorch magma-cuda110
-RUN source activate ${CONDA_ENV}; pip install torch 
-RUN source activate ${CONDA_ENV}; conda install numpy ninja pyyaml mkl mkl-include setuptools cmake cffi typing_extensions future six requests dataclasses
-RUN source activate ${CONDA_ENV}; CC=/usr/bin/gcc CXX=/usr/bin/g++ HOROVOD_CUDA_HOME=/usr/local/cuda/ HOROVOD_BUILD_CUDA_CC_LIST=60,70,75,80 HOROVOD_GPU_OPERATIONS=NCCL HOROVOD_WITH_PYTORCH=1 HOROVOD_NCCL_LINK=SHARED pip install --no-cache-dir horovod[pytorch]
-RUN source activate ${CONDA_ENV}; git clone https://github.com/NVIDIA/NVTabular.git /nvtabular/; cd /nvtabular/; if [[ "$RELEASE" == "true" ]] ; then git fetch --all --tags && git checkout tags/${NVTAB_VER}; else git checkout main; fi; pip install -e .;
-RUN source activate ${CONDA_ENV}; pip install pynvml pytest spacy graphviz sklearn scipy matplotlib
-RUN source activate ${CONDA_ENV}; pip install --no-deps fastai==2.1.9 fastcore fastprogress
-RUN source activate ${CONDA_ENV}; conda install -c rapidsai asvdb
-# first path is for tf, second is for pytorch
-RUN source activate ${CONDA_ENV}; apt update; apt install -y graphviz ; 
-RUN source activate ${CONDA_ENV}; conda clean --all -y
+RUN git clone https://github.com/NVIDIA/NVTabular.git /nvtabular/ && \
+    cd /nvtabular/; if [ "$RELEASE" == "true" ] && [ ${NVTAB_VER} != 0 ] ; then git fetch --all --tags && git checkout tags/${NVTAB_VER}; else git checkout main; fi; \
+    pip install -e .;
+
+RUN pip install pynvml pytest graphviz sklearn scipy matplotlib dask dask-cuda
+RUN pip install nvidia-pyindex; pip install tritonclient[all] grpcio-channelz
+RUN apt update; apt install -y graphviz ;
+
+RUN git clone https://github.com/rapidsai/asvdb.git /repos/asvdb && cd /repos/asvdb && python setup.py install
+RUN pip uninstall numpy numba -y; pip install numpy numba
+ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
+# install vanilla pytorch because of cuda illegal memory access error, must be done before install horovod
+RUN pip install torch==1.8.1
+RUN CC=/usr/bin/gcc CXX=/usr/bin/g++ HOROVOD_CUDA_HOME=/usr/local/cuda/ HOROVOD_BUILD_CUDA_CC_LIST=60,70,75,80 HOROVOD_GPU_OPERATIONS=NCCL HOROVOD_WITH_PYTORCH=1 HOROVOD_NCCL_LINK=SHARED pip install --no-cache-dir horovod[pytorch]
+RUN pip install --no-deps fastai fastcore fastprogress
+RUN pip install nvtx pandas==1.1.5 mpi4py==3.0.3 cupy-cuda112 cachetools typing_extensions fastavro
+RUN rm -rf /repos
 RUN echo $(du -h --max-depth=1 /)
 
 HEALTHCHECK NONE
 ENTRYPOINT []
 CMD ["/bin/bash"]
-
