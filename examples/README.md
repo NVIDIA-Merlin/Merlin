@@ -57,28 +57,18 @@ To run the example notebooks using Docker containers, do the following:
    root@2efa5b50b909:
    ```
    
-2. Activate the ```rapids``` conda environment by running the following command:
-   ```
-   root@2efa5b50b909: source activate rapids
-   ```
-
-   You should receive the following response, which indicates that the environment has been activated:
-   ```
-   (rapids)root@2efa5b50b909:
-   ```
-
-3. Install jupyter-lab with `conda` or `pip` by running the following command:
+2. Install jupyter-lab with `conda` or `pip` by running the following command:
    ```
    pip install jupyterlab
    ```
    
    For more information, see [Installation Guide](https://jupyterlab.readthedocs.io/en/stable/getting_started/installation.html).
 
-4. Start the jupyter-lab server by running the following command:
+3. Start the jupyter-lab server by running the following command:
    ```
    jupyter-lab --allow-root --ip='0.0.0.0' --NotebookApp.token='<password>'
    ```
 
-5. Open any browser to access the jupyter-lab server using <MachineIP>:8888.
+4. Open any browser to access the jupyter-lab server using <MachineIP>:8888.
 
-6. Once in the server, navigate to the ```/nvtabular/``` directory and try out the example notebooks.
+5. Once in the server, navigate to the ```/nvtabular/``` directory and try out the example notebooks.

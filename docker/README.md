@@ -9,6 +9,6 @@ The table below provides a list of Dockerfiles that can be used to build the cor
 | Container Name             | Dockerfile       | Container Location                                                             | Functionality                                         |
 |----------------------------|------------------|--------------------------------------------------------------------------------|-------------------------------------------------------|
 | Merlin-training            | dockerfile.ctr   |  https://ngc.nvidia.com/containers/nvidia:merlin:merlin-training            | NVTabular and HugeCTR                                 |
-| Merlin-tensorflow-training | dockerfile.tf    |  https://ngc.nvidia.com/containers/nvstaging:merlin:merlin-tensorflow-training | NVTabular, TensorFlow, and Tensorflow Embedding plugin |
-| Merlin-pytorch-training    | dockerfile.torch |  https://ngc.nvidia.com/containers/nvstaging:merlin:merlin-pytorch-training    | NVTabular and PyTorch                                 |
-| Merlin-inference           | dockerfile.tri   |  https://ngc.nvidia.com/containers/nvstaging:merlin:merlin-inference           | NVTabular, HugeCTR, and Triton Inference               |
+| Merlin-tensorflow-training | dockerfile.tf    |  https://ngc.nvidia.com/containers/nvidia:merlin:merlin-tensorflow-training | NVTabular, TensorFlow, and Tensorflow Embedding plugin |
+| Merlin-pytorch-training    | dockerfile.torch |  https://ngc.nvidia.com/containers/nvidia:merlin:merlin-pytorch-training    | NVTabular and PyTorch                                 |
+| Merlin-inference           | dockerfile.tri   |  https://ngc.nvidia.com/containers/nvidia:merlin:merlin-inference           | NVTabular, HugeCTR, and Triton Inference               |
