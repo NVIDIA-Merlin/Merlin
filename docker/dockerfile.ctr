@@ -1,13 +1,14 @@
-ARG CUDA_VERSION=11.2.2
+ARG CUDA_VERSION=11.4.1
 ARG CUDNN_VERSION=8
-FROM nvidia/cuda:${CUDA_VERSION}-cudnn${CUDNN_VERSION}-devel
-ENV CUDA_SHORT_VERSION=11.2
+ARG IMAGE=base_image
+FROM ${IMAGE}
+ENV CUDA_SHORT_VERSION=11.4
 
 ARG RELEASE=false
-ARG RMM_VER=v0.19.0
-ARG CUDF_VER=v0.19.1
-ARG NVTAB_VER=v0.5.1
-ARG HUGECTR_VER=v3.0.1
+ARG RMM_VER=v21.06
+ARG CUDF_VER=v21.06
+ARG NVTAB_VER=v0.6
+ARG HUGECTR_VER=v3.1
 SHELL ["/bin/bash", "-c"]
 
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64:/usr/local/lib:/repos/dist/lib
@@ -46,7 +47,12 @@ RUN apt install -y --no-install-recommends \
       unzip \
       wget \
       libssl-dev \
+      libtbb-dev \
       protobuf-compiler \
+      hwloc \
+      check \
+      libsubunit0 \
+      libsubunit-dev \
       zip && \
     apt-get autoremove -y && \
     apt-get clean && \
@@ -60,6 +66,7 @@ RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/nul
     apt-add-repository 'deb https://apt.kitware.com/ubuntu/ focal main' && \
     apt-get update && \
     apt-get install -y cmake
+
 
 # Install arrow from source
 ENV ARROW_HOME=/usr/local
@@ -106,29 +113,36 @@ RUN git clone --branch apache-arrow-1.0.1 --recurse-submodules https://github.co
 
 # Install rmm from source
 RUN git clone https://github.com/rapidsai/rmm.git build-env && cd build-env/ && \
-    if [ "$RELEASE" == "true" ] && [ ${RMM_VER} != 0 ] ; then git fetch --all --tags && git checkout tags/${RMM_VER}; else git checkout main; fi; cd ..; \
+    if [ "$RELEASE" == "true" ] && [ ${RMM_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${RMM_VER}; else git checkout branch-21.06; fi; \
+    sed -i '/11.2/ a "11.4": "11.x",' python/setup.py && \
+    cd ..; \
     pushd build-env && \
     ./build.sh librmm && \
     pip install python/. && \
     popd && \
     rm -rf build-env
 
+ADD cudf_21-06.patch /cudf_21-06.patch
+
+
 # Build env for CUDF build
 RUN git clone https://github.com/rapidsai/cudf.git build-env && cd build-env/ && \  
-    if [ "$RELEASE" == "true" ] && [ ${CUDF_VER} != 0 ] ; then git fetch --all --tags && git checkout tags/${CUDF_VER}; else git checkout main; fi; \
-    git submodule update --init --recursive && cd ..; \
+    if [ "$RELEASE" == "true" ] && [ ${CUDF_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${CUDF_VER}; else git checkout main; fi; \
+    git submodule update --init --recursive && \
+    git apply /cudf_21-06.patch  && \
+    cd .. && \
     pushd build-env && \
       export CUDF_HOME=${PWD} && \
       export CUDF_ROOT=${PWD}/cpp/build/ && \
       export CMAKE_LIBRARY_PATH=${CUDA_CUDA_LIBRARY} && \
-      ./build.sh libcudf cudf dask_cudf && \
+      ./build.sh libcudf cudf dask_cudf tests && \
       protoc -I=python/cudf/cudf/utils/metadata --python_out=/usr/local/lib/python3.8/dist-packages/cudf/utils/metadata python/cudf/cudf/utils/metadata/orc_column_statistics.proto && \
     popd && \
     rm -rf build-env
 
 # Install multiple packages
-RUN pip install dask==2021.04.0 dask-cuda nvtx pandas==1.1.5 mpi4py==3.0.3 cupy-cuda112 cachetools typing_extensions fastavro
-RUN pip install distributed==2021.04.0 
+RUN pip install dask==2021.04.1 dask-cuda nvtx pandas==1.1.5 mpi4py==3.0.3 cupy-cuda113 cachetools typing_extensions fastavro
+RUN pip install distributed==2021.4
 RUN pip install pynvml pytest graphviz sklearn scipy matplotlib tqdm pydot nvidia-pyindex
 RUN pip install tritonclient[all] grpcio-channelz
 ENV PATH=$PATH:/usr/lib/x86_64-linux-gnu/ \
@@ -137,7 +151,7 @@ ENV PATH=$PATH:/usr/lib/x86_64-linux-gnu/ \
 RUN git clone https://github.com/rapidsai/asvdb.git /repos/asvdb && cd /repos/asvdb && python setup.py install
 # Install NVTabular
 RUN git clone https://github.com/NVIDIA/NVTabular.git /nvtabular/ && \
-    cd /nvtabular/; if [ "$RELEASE" == "true" ] && [ ${NVTAB_VER} != 0 ] ; then git fetch --all --tags && git checkout tags/${NVTAB_VER}; else git checkout main; fi; \
+    cd /nvtabular/; if [ "$RELEASE" == "true" ] && [ ${NVTAB_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${NVTAB_VER}; else git checkout main; fi; \
     pip install -e .;
 
 # this will help with install that requires libcuda.so
@@ -156,7 +170,7 @@ RUN ln -s /usr/lib/libcudf.so /usr/lib/libcudf_io.so
 
 # Install hugectr
 RUN mkdir -p /var/tmp && cd /var/tmp && git clone https://github.com/NVIDIA/HugeCTR.git HugeCTR && cd - && \
-      cd /var/tmp/HugeCTR && if [ "$RELEASE" == "true" ] && [ ${HUGECTR_VER} != 0 ]; then git fetch --all --tags && git checkout tags/${HUGECTR_VER}; else git checkout master; fi && \
+      cd /var/tmp/HugeCTR && if [ "$RELEASE" == "true" ] && [ ${HUGECTR_VER} != "vnightly" ]; then git fetch --all --tags && git checkout tags/${HUGECTR_VER}; else git checkout master; fi && \
       git submodule update --init --recursive
 RUN cd /var/tmp/HugeCTR && \
       mkdir build && cd build && \
@@ -164,7 +178,7 @@ RUN cd /var/tmp/HugeCTR && \
       export PATH=$PATH:/usr/local/cuda-${CUDA_SHORT_VERSION}/compat/ && \
       cmake -DCMAKE_CXX_COMPILER=/usr/bin/g++ -DCMAKE_C_COMPILER=/usr/bin/gcc -DCMAKE_BUILD_TYPE=Release -DSM="60;61;70;75;80" \
             -DVAL_MODE=OFF -DENABLE_MULTINODES=ON -DNCCL_A2A=ON .. && \
-      make -j$(nproc) && make install && \
+      make VERBOSE=1 -j$(nproc) && make install && \
       chmod +x /usr/local/hugectr/bin/* && \
       chmod +x /usr/local/hugectr/lib/* && \
       rm -rf /var/tmp/HugeCTR;
