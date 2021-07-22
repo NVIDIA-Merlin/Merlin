@@ -1,14 +1,15 @@
-FROM nvcr.io/nvidia/pytorch:21.03-py3
-ENV CUDA_SHORT_VERSION=11.2
+ARG IAMGE=base_image
+FROM ${IMAGE}
+ENV CUDA_SHORT_VERSION=11.4
 
 SHELL ["/bin/bash", "-c"]
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64:/usr/local/lib:/repos/dist/lib
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-ARG RMM_VER=v0.19.0
-ARG CUDF_VER=v0.19.1
-ARG NVTAB_VER=v0.5.1
+ARG RMM_VER=v0.21.06
+ARG CUDF_VER=v0.21.06
+ARG NVTAB_VER=v0.6
 ARG RELEASE=false 
 
 ENV CUDA_HOME=/usr/local/cuda
@@ -96,47 +97,60 @@ RUN git clone --branch apache-arrow-1.0.1 --recurse-submodules https://github.co
     popd && \
     rm -rf build-env
 
-
 # Install rmm from source
 RUN git clone https://github.com/rapidsai/rmm.git build-env && cd build-env/ && \
-    if [ "$RELEASE" == "true" ] && [ ${RMM_VER} != 0 ] ; then git fetch --all --tags && git checkout tags/${RMM_VER}; else git checkout main; fi; cd ..; \
+    if [ "$RELEASE" == "true" ] && [ ${RMM_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${RMM_VER}; else git checkout main; fi; \
+    sed -i '/11.2/ a "11.4": "11.x",' python/setup.py && \
+    cd ..; \
     pushd build-env && \
     ./build.sh librmm && \
     pip install python/. && \
     popd && \
     rm -rf build-env
 
+ADD cudf_21-06.patch /cudf_21-06.patch
+
+
 # Build env for CUDF build
 RUN git clone https://github.com/rapidsai/cudf.git build-env && cd build-env/ && \
-    if [ "$RELEASE" == "true" ] && [ ${CUDF_VER} != 0 ] ; then git fetch --all --tags && git checkout tags/${CUDF_VER}; else git checkout main; fi; \
-    git submodule update --init --recursive && cd ..; \
+    if [ "$RELEASE" == "true" ] && [ ${CUDF_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${CUDF_VER}; else git checkout main; fi; \
+    git submodule update --init --recursive && \
+    git apply /cudf_21-06.patch  && \
+    cd .. && \
     pushd build-env && \
       export CUDF_HOME=${PWD} && \
       export CUDF_ROOT=${PWD}/cpp/build/ && \
       export CMAKE_LIBRARY_PATH=${CUDA_CUDA_LIBRARY} && \
-      ./build.sh libcudf cudf dask_cudf && \
+      ./build.sh libcudf cudf dask_cudf tests && \
       protoc -I=python/cudf/cudf/utils/metadata --python_out=/opt/conda/lib/python3.8/site-packages/cudf/utils/metadata python/cudf/cudf/utils/metadata/orc_column_statistics.proto && \
     popd && \
     rm -rf build-env
 
 SHELL ["/bin/bash", "-c"]
 
-RUN git clone https://github.com/NVIDIA/NVTabular.git /nvtabular/ && \
-    cd /nvtabular/; if [ "$RELEASE" == "true" ] && [ ${NVTAB_VER} != 0 ] ; then git fetch --all --tags && git checkout tags/${NVTAB_VER}; else git checkout main; fi; \
-    pip install -e .;
+RUN pip install numpy==1.20.3
 
-RUN pip install pynvml pytest graphviz sklearn scipy matplotlib dask dask-cuda
+RUN git clone https://github.com/NVIDIA/NVTabular.git /nvtabular/ && \
+    cd /nvtabular/; if [ "$RELEASE" == "true" ] && [ ${NVTAB_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${NVTAB_VER}; else git checkout main; fi; \
+    python setup.py install --user;
+
+RUN pip install --ignore-installed pynvml pytest graphviz sklearn scipy matplotlib dask-cuda
 RUN pip install nvidia-pyindex; pip install tritonclient[all] grpcio-channelz
 RUN apt update; apt install -y graphviz ;
 
+# install ucx from source
+RUN apt update; apt install -y libtool
+RUN git clone https://github.com/openucx/ucx.git /repos/ucx;cd /repos/ucx; ./autogen.sh; mkdir build; cd build; ../contrib/configure-release --prefix=/usr; make; make install
+
 RUN git clone https://github.com/rapidsai/asvdb.git /repos/asvdb && cd /repos/asvdb && python setup.py install
-RUN pip uninstall numpy numba -y; pip install numpy numba
+#RUN pip uninstall numpy numba -y; pip install numpy numba
 ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
 # install vanilla pytorch because of cuda illegal memory access error, must be done before install horovod
-RUN pip install torch==1.8.1
+#RUN pip install torch==1.8.1 
+RUN pip install fastai
 RUN CC=/usr/bin/gcc CXX=/usr/bin/g++ HOROVOD_CUDA_HOME=/usr/local/cuda/ HOROVOD_BUILD_CUDA_CC_LIST=60,70,75,80 HOROVOD_GPU_OPERATIONS=NCCL HOROVOD_WITH_PYTORCH=1 HOROVOD_NCCL_LINK=SHARED pip install --no-cache-dir horovod[pytorch]
-RUN pip install --no-deps fastai fastcore fastprogress
-RUN pip install nvtx pandas==1.1.5 mpi4py==3.0.3 cupy-cuda112 cachetools typing_extensions fastavro
+RUN pip install nvtx pandas==1.1.5 mpi4py==3.0.3 cupy-cuda113 cachetools typing_extensions fastavro
+RUN pip install dask==2021.04.1 distributed==2021.4 dask-cuda
 RUN rm -rf /repos
 RUN echo $(du -h --max-depth=1 /)
 

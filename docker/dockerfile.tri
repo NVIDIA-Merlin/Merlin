@@ -1,9 +1,11 @@
-ARG TRITON_VERSION=21.03
-FROM nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-py3
-ARG RMM_VER=v0.19.0
-ARG CUDF_VER=v0.19.1
-ARG HUGECTR_VER=v3.0.1
-ARG NVTAB_VER=v0.5.1
+ARG TRITON_VERSION=21.07
+ARG IMAGE=base_image
+FROM ${IMAGE}
+ARG RMM_VER=v21.06
+ARG CUDF_VER=v21.06
+ARG HUGECTR_VER=v3.1
+ARG NVTAB_VER=v0.6
+
 ARG HUGEINF_VER=0
 ARG RELEASE=false 
 ARG SM="60;61;70;75;80"
@@ -44,6 +46,7 @@ RUN apt install -y --no-install-recommends \
       libjemalloc-dev \
       wget \
       libssl-dev \
+      hwloc \
       protobuf-compiler && \
     apt-get autoremove -y && \
     apt-get clean && \
@@ -51,6 +54,8 @@ RUN apt install -y --no-install-recommends \
     update-alternatives --install /usr/bin/python python /usr/bin/python3.8 1 && \
     wget https://bootstrap.pypa.io/get-pip.py && \
     python get-pip.py && pip install pip==21.0.1
+
+RUN pip uninstall protobuf -y; pip install protobuf
 
 # Install cmake
 RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null && \
@@ -100,66 +105,75 @@ RUN git clone --branch apache-arrow-1.0.1 --recurse-submodules https://github.co
     popd && \
     rm -rf build-env
 
-
 # Install rmm from source
 RUN git clone https://github.com/rapidsai/rmm.git build-env && cd build-env/ && \
-    if [ "$RELEASE" == "true" ] && [ ${RMM_VER} != 0 ] ; then git fetch --all --tags && git checkout tags/${RMM_VER}; else git checkout main; fi; cd ..; \
+    if [ "$RELEASE" == "true" ] && [ ${RMM_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${RMM_VER}; else git checkout main; fi; \
+    sed -i '/11.2/ a "11.4": "11.x",' python/setup.py && \
+    cd ..; \
     pushd build-env && \
     ./build.sh librmm && \
     pip install python/. && \
     popd && \
     rm -rf build-env
 
+ADD cudf_21-06.patch /cudf_21-06.patch
+
+
 # Build env for CUDF build
-RUN git clone https://github.com/rapidsai/cudf.git build-env && cd build-env/ && \  
-    if [ "$RELEASE" == "true" ] && [ ${CUDF_VER} != 0 ] ; then git fetch --all --tags && git checkout tags/${CUDF_VER}; else git checkout main; fi; \
-    git submodule update --init --recursive && cd ..; \
+RUN git clone https://github.com/rapidsai/cudf.git build-env && cd build-env/ && \
+    if [ "$RELEASE" == "true" ] && [ ${CUDF_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${CUDF_VER}; else git checkout main; fi; \
+    git submodule update --init --recursive && \
+    git apply /cudf_21-06.patch  && \
+    cd .. && \
     pushd build-env && \
       export CUDF_HOME=${PWD} && \
       export CUDF_ROOT=${PWD}/cpp/build/ && \
       export CMAKE_LIBRARY_PATH=${CUDA_CUDA_LIBRARY} && \
-      ./build.sh libcudf cudf dask_cudf && \
+      ./build.sh libcudf cudf dask_cudf tests && \
       protoc -I=python/cudf/cudf/utils/metadata --python_out=/usr/local/lib/python3.8/dist-packages/cudf/utils/metadata python/cudf/cudf/utils/metadata/orc_column_statistics.proto && \
     popd && \
     rm -rf build-env
-
-
 
 ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
 
 SHELL ["/bin/bash", "-c"]
 
-RUN pip install cupy-cuda112 cachetools fastavro typing_extensions nvtx pandas==1.1.5
+RUN pip install cupy-cuda113 cachetools fastavro typing_extensions nvtx pandas==1.1.5
 
 # Install NVTabular
 RUN git clone https://github.com/NVIDIA/NVTabular.git /nvtabular/ && \
-    cd /nvtabular/; if [ "$RELEASE" == "true" ] && [ ${NVTAB_VER} != 0 ] ; then git fetch --all --tags && git checkout tags/${NVTAB_VER}; else git checkout main; fi; \
+    cd /nvtabular/; if [ "$RELEASE" == "true" ] && [ ${NVTAB_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${NVTAB_VER}; else git checkout main; fi; \
     pip install -e .;
 
 
-RUN pip install pynvml pytest graphviz sklearn scipy matplotlib dask dask-cuda
+RUN pip install pynvml pytest graphviz sklearn scipy matplotlib dask==2021.04.1 dask-cuda distributed==2021.04
 RUN pip install nvidia-pyindex; pip install tritonclient[all] grpcio-channelz
 #RUN conda install -c rapidsai asvdb
 
 RUN apt update; apt install -y graphviz ;
 RUN echo $(du -h --max-depth=1 /)
 
+RUN pip install botocore==1.21.2
 RUN git clone https://github.com/rapidsai/asvdb.git /repos/asvdb && cd /repos/asvdb && python setup.py install
 
 RUN pip uninstall numpy -y; pip install numpy
+
+# install ucx from source
+RUN apt update; apt install -y libtool
+RUN git clone https://github.com/openucx/ucx.git /repos/ucx;cd /repos/ucx; ./autogen.sh; mkdir build; cd build; ../contrib/configure-release --prefix=/usr; make; make install
 
 ARG TRITON_VERSION
 
 RUN apt update -y && apt install rapidjson-dev -y
 RUN git clone https://github.com/NVIDIA/HugeCTR.git /repos/HugeCTR && \
-      cd /repos/HugeCTR && if [ "$RELEASE" == "true" ] && [ ${HUGECTR_VER} != 0 ]; then git fetch --all --tags && git checkout tags/${HUGECTR_VER}; else git checkout master; fi && \
+      cd /repos/HugeCTR && if [ "$RELEASE" == "true" ] && [ ${HUGECTR_VER} != "vnightly" ]; then git fetch --all --tags && git checkout tags/${HUGECTR_VER}; else git checkout master; fi && \
       git submodule update --init --recursive && \
       mkdir -p build && cd build &&\
       cmake -DCMAKE_BUILD_TYPE=Release -DSM=$SM -DENABLE_INFERENCE=ON .. && make -j$(nproc) && make install && \
       export CPATH=/usr/local/hugectr/include:$CPATH && \
       export LIBRARY_PATH=/usr/local/hugectr/lib:$LIBRARY_PATH && \
       git clone https://github.com/triton-inference-server/hugectr_backend /repos/hugectr_inference_backend && \
-      cd /repos/hugectr_inference_backend && if [ "$RELEASE" == "true" ] && [ ${HUGEINF_VER} != 0 ] ; then git fetch --all --tags && git checkout tags/${HUGEINF_VER}; else git checkout main; fi && \
+      cd /repos/hugectr_inference_backend && if [ "$RELEASE" == "true" ] && [ ${HUGEINF_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${HUGEINF_VER}; else git checkout main; fi && \
       mkdir -p build && cd build && \
       cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr/local/hugectr .. \
             -D TRITON_COMMON_REPO_TAG="r$TRITON_VERSION"    \
@@ -171,7 +185,7 @@ ENV LD_LIBRARY_PATH=/usr/local/hugectr/lib:$LD_LIBRARY_PATH \
     LIBRARY_PATH=/usr/local/hugectr/lib:$LIBRARY_PATH \
     PYTHONPATH=/usr/local/hugectr/lib:$PYTHONPATH
 
-RUN ln -s /usr/local/hugectr/backends/hugectr /opt/tritonserver/backends/
+#RUN ln -s /usr/local/hugectr/backends/hugectr /opt/tritonserver/backends/
 
 RUN echo $(du -h --max-depth=1 /)
 

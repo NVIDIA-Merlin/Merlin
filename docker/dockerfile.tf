@@ -1,6 +1,6 @@
-FROM nvcr.io/nvidia/tensorflow:21.03-tf2-py3
-
-ENV CUDA_SHORT_VERSION=11.2
+ARG IMAGE=base_image
+FROM ${IMAGE}
+ENV CUDA_SHORT_VERSION=11.4
 
 SHELL ["/bin/bash", "-c"]
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64:/usr/local/lib:/repos/dist/lib
@@ -8,10 +8,10 @@ ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/cuda/extra
 ENV DEBIAN_FRONTEND=noninteractive
 
 ARG RELEASE=false
-ARG RMM_VER=v0.19.0
-ARG CUDF_VER=v0.19.1
-ARG NVTAB_VER=v0.5.1
-ARG HUGECTR_VER=v3.0.1
+ARG RMM_VER=v21.06
+ARG CUDF_VER=v21.06
+ARG NVTAB_VER=v0.6
+ARG HUGECTR_VER=v3.1
 ARG SM="60;61;70;75;80"
 
 ENV CUDA_HOME=/usr/local/cuda
@@ -101,26 +101,32 @@ RUN git clone --branch apache-arrow-1.0.1 --recurse-submodules https://github.co
 
 # Install rmm from source
 RUN git clone https://github.com/rapidsai/rmm.git build-env && cd build-env/ && \
-    if [ "$RELEASE" == "true" ] && [ ${RMM_VER} != 0 ] ; then git fetch --all --tags && git checkout tags/${RMM_VER}; else git checkout main; fi; cd ..; \
+    if [ "$RELEASE" == "true" ] && [ ${RMM_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${RMM_VER}; else git checkout main; fi; \
+    sed -i '/11.2/ a "11.4": "11.x",' python/setup.py && \
+    cd ..; \
     pushd build-env && \
     ./build.sh librmm && \
     pip install python/. && \
     popd && \
     rm -rf build-env
 
+ADD cudf_21-06.patch /cudf_21-06.patch
+
+
 # Build env for CUDF build
 RUN git clone https://github.com/rapidsai/cudf.git build-env && cd build-env/ && \
-    if [ "$RELEASE" == "true" ] && [ ${CUDF_VER} != 0 ] ; then git fetch --all --tags && git checkout tags/${CUDF_VER}; else git checkout main; fi; \
-    git submodule update --init --recursive && cd ..; \
+    if [ "$RELEASE" == "true" ] && [ ${CUDF_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${CUDF_VER}; else git checkout main; fi; \
+    git submodule update --init --recursive && \
+    git apply /cudf_21-06.patch  && \
+    cd .. && \
     pushd build-env && \
       export CUDF_HOME=${PWD} && \
       export CUDF_ROOT=${PWD}/cpp/build/ && \
       export CMAKE_LIBRARY_PATH=${CUDA_CUDA_LIBRARY} && \
-      ./build.sh libcudf cudf dask_cudf && \
+      ./build.sh libcudf cudf dask_cudf tests && \
       protoc -I=python/cudf/cudf/utils/metadata --python_out=/usr/local/lib/python3.8/dist-packages/cudf/utils/metadata python/cudf/cudf/utils/metadata/orc_column_statistics.proto && \
     popd && \
     rm -rf build-env
-
 
 RUN apt-get update -y && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
@@ -136,18 +142,28 @@ ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
 RUN pip install pandas sklearn ortools nvtx-plugins pydot && \
     pip cache purge
 
+# install ucx from source
+RUN apt update; apt install -y libtool
+RUN git clone https://github.com/openucx/ucx.git /repos/ucx;cd /repos/ucx; ./autogen.sh; mkdir build; cd build; ../contrib/configure-release --prefix=/usr; make; make install
+
+RUN pip uninstall tensorflow -y; pip install tensorflow-gpu==2.4.2
+
+RUN mkdir -p /usr/local/nvidia/lib64 && \
+    ln -s /usr/local/cuda/lib64/libcusolver.so /usr/local/nvidia/lib64/libcusolver.so.10
+
 RUN git clone https://github.com/NVIDIA/HugeCTR.git build-env && \
     pushd build-env && \
-      if [ "$RELEASE" == "true" ] && [$HUGECTR_VER != 0] ; then git fetch --all --tags && git checkout tags/${HUGECTR_VER}; else git checkout master; fi && \
+      if [ "$RELEASE" == "true" ] && [ $HUGECTR_VER != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${HUGECTR_VER}; else git checkout master; fi && \
       git submodule update --init --recursive && \
-      mkdir build && \
-      pushd build && \
-        cmake -DCMAKE_BUILD_TYPE=Release -DSM=$SM -DONLY_EMB_PLUGIN=ON .. && \
+      mkdir -p sparse_operation_kit/build && \
+      pushd sparse_operation_kit/build && \
+        cmake -DCMAKE_BUILD_TYPE=Release -DSM=$SM .. && \
         make -j$(nproc) && \
         make install && \
       popd && \
     popd && \
     rm -rf build-env && \
+    rm -rf sparse_operation_kit/build && \
     rm -rf /var/tmp/HugeCTR
 
 
@@ -155,13 +171,13 @@ SHELL ["/bin/bash", "-c"]
 
 # Install NVTabular
 RUN git clone https://github.com/NVIDIA/NVTabular.git /nvtabular/ && \
-    cd /nvtabular/; if [ "$RELEASE" == "true" ] && [ ${NVTAB_VER} != 0 ] ; then git fetch --all --tags && git checkout tags/${NVTAB_VER}; else git checkout main; fi; \
+    cd /nvtabular/; if [ "$RELEASE" == "true" ] && [ ${NVTAB_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${NVTAB_VER}; else git checkout main; fi; \
     pip install -e .;
 
 
-RUN pip install pynvml pytest graphviz sklearn scipy matplotlib dask dask-cuda
+RUN pip install pynvml pytest graphviz sklearn scipy matplotlib 
 RUN pip install nvidia-pyindex; pip install tritonclient[all] grpcio-channelz
-RUN pip install dask==2021.04.0 nvtx pandas==1.1.5 mpi4py==3.0.3 cupy-cuda112 cachetools typing_extensions fastavro
+RUN pip install nvtx pandas==1.1.5 mpi4py==3.0.3 cupy-cuda113 cachetools typing_extensions fastavro
 
 RUN apt-get update; apt-get install -y graphviz
 
@@ -176,6 +192,7 @@ RUN git clone https://github.com/rapidsai/asvdb.git build-env && \
     rm -rf build-env
 
 RUN pip uninstall numpy -y; pip install numpy
+RUN pip install dask==2021.04.1 distributed==2021.4 dask-cuda
 RUN echo $(du -h --max-depth=1 /)
 
 HEALTHCHECK NONE
