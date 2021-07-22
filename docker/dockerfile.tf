@@ -172,7 +172,7 @@ SHELL ["/bin/bash", "-c"]
 # Install NVTabular
 RUN git clone https://github.com/NVIDIA/NVTabular.git /nvtabular/ && \
     cd /nvtabular/; if [ "$RELEASE" == "true" ] && [ ${NVTAB_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${NVTAB_VER}; else git checkout main; fi; \
-    pip install -e .;
+    python setup.py install --user;
 
 
 RUN pip install pynvml pytest graphviz sklearn scipy matplotlib 

@@ -152,7 +152,7 @@ RUN git clone https://github.com/rapidsai/asvdb.git /repos/asvdb && cd /repos/as
 # Install NVTabular
 RUN git clone https://github.com/NVIDIA/NVTabular.git /nvtabular/ && \
     cd /nvtabular/; if [ "$RELEASE" == "true" ] && [ ${NVTAB_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${NVTAB_VER}; else git checkout main; fi; \
-    pip install -e .;
+    python setup.py install --user;
 
 # this will help with install that requires libcuda.so
 ENV CUDF_HOME=/usr/include

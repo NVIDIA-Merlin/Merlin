@@ -1,4 +1,4 @@
-ARG IAMGE=base_image
+ARG IMAGE=base_image
 FROM ${IMAGE}
 ENV CUDA_SHORT_VERSION=11.4
 
@@ -146,7 +146,7 @@ RUN git clone https://github.com/rapidsai/asvdb.git /repos/asvdb && cd /repos/as
 #RUN pip uninstall numpy numba -y; pip install numpy numba
 ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
 # install vanilla pytorch because of cuda illegal memory access error, must be done before install horovod
-#RUN pip install torch==1.8.1 
+# downgrades torch to 1.9.0 
 RUN pip install fastai
 RUN CC=/usr/bin/gcc CXX=/usr/bin/g++ HOROVOD_CUDA_HOME=/usr/local/cuda/ HOROVOD_BUILD_CUDA_CC_LIST=60,70,75,80 HOROVOD_GPU_OPERATIONS=NCCL HOROVOD_WITH_PYTORCH=1 HOROVOD_NCCL_LINK=SHARED pip install --no-cache-dir horovod[pytorch]
 RUN pip install nvtx pandas==1.1.5 mpi4py==3.0.3 cupy-cuda113 cachetools typing_extensions fastavro
