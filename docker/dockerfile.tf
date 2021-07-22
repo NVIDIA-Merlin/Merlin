@@ -123,7 +123,7 @@ RUN git clone https://github.com/rapidsai/cudf.git build-env && cd build-env/ &&
       export CUDF_HOME=${PWD} && \
       export CUDF_ROOT=${PWD}/cpp/build/ && \
       export CMAKE_LIBRARY_PATH=${CUDA_CUDA_LIBRARY} && \
-      ./build.sh libcudf cudf dask_cudf tests && \
+      ./build.sh libcudf cudf dask_cudf && \
       protoc -I=python/cudf/cudf/utils/metadata --python_out=/usr/local/lib/python3.8/dist-packages/cudf/utils/metadata python/cudf/cudf/utils/metadata/orc_column_statistics.proto && \
     popd && \
     rm -rf build-env
@@ -172,7 +172,7 @@ SHELL ["/bin/bash", "-c"]
 # Install NVTabular
 RUN git clone https://github.com/NVIDIA/NVTabular.git /nvtabular/ && \
     cd /nvtabular/; if [ "$RELEASE" == "true" ] && [ ${NVTAB_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${NVTAB_VER}; else git checkout main; fi; \
-    pip install -e .;
+    python setup.py install --user;
 
 
 RUN pip install pynvml pytest graphviz sklearn scipy matplotlib 
