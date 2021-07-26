@@ -123,7 +123,7 @@ RUN git clone https://github.com/rapidsai/cudf.git build-env && cd build-env/ &&
       export CUDF_HOME=${PWD} && \
       export CUDF_ROOT=${PWD}/cpp/build/ && \
       export CMAKE_LIBRARY_PATH=${CUDA_CUDA_LIBRARY} && \
-      ./build.sh libcudf cudf dask_cudf tests && \
+      ./build.sh libcudf cudf dask_cudf && \
       protoc -I=python/cudf/cudf/utils/metadata --python_out=/usr/local/lib/python3.8/dist-packages/cudf/utils/metadata python/cudf/cudf/utils/metadata/orc_column_statistics.proto && \
     popd && \
     rm -rf build-env
@@ -166,18 +166,18 @@ RUN git clone https://github.com/NVIDIA/HugeCTR.git build-env && \
     rm -rf sparse_operation_kit/build && \
     rm -rf /var/tmp/HugeCTR
 
-
+RUN pip install pybind11
 SHELL ["/bin/bash", "-c"]
 
 # Install NVTabular
 RUN git clone https://github.com/NVIDIA/NVTabular.git /nvtabular/ && \
     cd /nvtabular/; if [ "$RELEASE" == "true" ] && [ ${NVTAB_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${NVTAB_VER}; else git checkout main; fi; \
-    python setup.py install --user;
+    python setup.py develop --user;
 
 
 RUN pip install pynvml pytest graphviz sklearn scipy matplotlib 
 RUN pip install nvidia-pyindex; pip install tritonclient[all] grpcio-channelz
-RUN pip install nvtx pandas==1.1.5 mpi4py==3.0.3 cupy-cuda113 cachetools typing_extensions fastavro
+RUN pip install nvtx mpi4py==3.0.3 cupy-cuda113 cachetools typing_extensions fastavro
 
 RUN apt-get update; apt-get install -y graphviz
 
@@ -192,7 +192,9 @@ RUN git clone https://github.com/rapidsai/asvdb.git build-env && \
     rm -rf build-env
 
 RUN pip uninstall numpy -y; pip install numpy
-RUN pip install dask==2021.04.1 distributed==2021.4 dask-cuda
+RUN pip install dask==2021.04.1 distributed==2021.04.1 dask-cuda
+RUN pip install dask[dataframe]==2021.04.1
+RUN pip uninstall pandas -y; pip install pandas==1.1.5
 RUN echo $(du -h --max-depth=1 /)
 
 HEALTHCHECK NONE

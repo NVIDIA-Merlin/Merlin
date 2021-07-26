@@ -129,7 +129,7 @@ RUN git clone https://github.com/rapidsai/cudf.git build-env && cd build-env/ &&
       export CUDF_HOME=${PWD} && \
       export CUDF_ROOT=${PWD}/cpp/build/ && \
       export CMAKE_LIBRARY_PATH=${CUDA_CUDA_LIBRARY} && \
-      ./build.sh libcudf cudf dask_cudf tests && \
+      ./build.sh libcudf cudf dask_cudf && \
       protoc -I=python/cudf/cudf/utils/metadata --python_out=/usr/local/lib/python3.8/dist-packages/cudf/utils/metadata python/cudf/cudf/utils/metadata/orc_column_statistics.proto && \
     popd && \
     rm -rf build-env
@@ -139,11 +139,30 @@ ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
 SHELL ["/bin/bash", "-c"]
 
 RUN pip install cupy-cuda113 cachetools fastavro typing_extensions nvtx pandas==1.1.5
+RUN pip install pybind11 
+RUN apt install -y rapidjson-dev
 
 # Install NVTabular
 RUN git clone https://github.com/NVIDIA/NVTabular.git /nvtabular/ && \
     cd /nvtabular/; if [ "$RELEASE" == "true" ] && [ ${NVTAB_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${NVTAB_VER}; else git checkout main; fi; \
-    python setup.py install --user;
+    python setup.py develop --user;
+
+RUN echo $(find / -iname pybind11)
+
+RUN git clone https://github.com/NVIDIA-Merlin/nvtabular_triton_backend.git build-env && \
+    cd build-env && \ 
+    if [ "$RELEASE" == "true" ] && [ ${NVTAB_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${NVTAB_VER}; else git checkout main; fi; \
+    cd .. && \
+    pushd build-env && \
+      mkdir build && \
+      cd build && \
+      cmake -Dpybind11_DIR=/usr/local/lib/python3.8/dist-packages/pybind11/share/cmake/pybind11 .. && \
+      make -j 4 && \
+      mkdir /opt/tritonserver/backends/nvtabular && \
+      cp libtriton_nvtabular.so /opt/tritonserver/backends/nvtabular/ && \
+    popd && \
+    rm -rf build-env
+
 
 
 RUN pip install pynvml pytest graphviz sklearn scipy matplotlib dask==2021.04.1 dask-cuda distributed==2021.04
@@ -153,7 +172,7 @@ RUN pip install nvidia-pyindex; pip install tritonclient[all] grpcio-channelz
 RUN apt update; apt install -y graphviz ;
 RUN echo $(du -h --max-depth=1 /)
 
-RUN pip install botocore==1.21.2
+RUN pip install botocore==1.21.6
 RUN git clone https://github.com/rapidsai/asvdb.git /repos/asvdb && cd /repos/asvdb && python setup.py install
 
 RUN pip uninstall numpy -y; pip install numpy
@@ -185,7 +204,7 @@ ENV LD_LIBRARY_PATH=/usr/local/hugectr/lib:$LD_LIBRARY_PATH \
     LIBRARY_PATH=/usr/local/hugectr/lib:$LIBRARY_PATH \
     PYTHONPATH=/usr/local/hugectr/lib:$PYTHONPATH
 
-#RUN ln -s /usr/local/hugectr/backends/hugectr /opt/tritonserver/backends/
+RUN ln -s /usr/local/hugectr/backends/hugectr /opt/tritonserver/backends/
 
 RUN echo $(du -h --max-depth=1 /)
 
