@@ -121,7 +121,7 @@ RUN git clone https://github.com/rapidsai/cudf.git build-env && cd build-env/ &&
       export CUDF_HOME=${PWD} && \
       export CUDF_ROOT=${PWD}/cpp/build/ && \
       export CMAKE_LIBRARY_PATH=${CUDA_CUDA_LIBRARY} && \
-      ./build.sh libcudf cudf dask_cudf tests && \
+      ./build.sh libcudf cudf dask_cudf && \
       protoc -I=python/cudf/cudf/utils/metadata --python_out=/opt/conda/lib/python3.8/site-packages/cudf/utils/metadata python/cudf/cudf/utils/metadata/orc_column_statistics.proto && \
     popd && \
     rm -rf build-env
@@ -129,6 +129,7 @@ RUN git clone https://github.com/rapidsai/cudf.git build-env && cd build-env/ &&
 SHELL ["/bin/bash", "-c"]
 
 RUN pip install numpy==1.20.3
+RUN pip install pybind11
 
 RUN git clone https://github.com/NVIDIA/NVTabular.git /nvtabular/ && \
     cd /nvtabular/; if [ "$RELEASE" == "true" ] && [ ${NVTAB_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${NVTAB_VER}; else git checkout main; fi; \
@@ -145,7 +146,6 @@ RUN git clone https://github.com/openucx/ucx.git /repos/ucx;cd /repos/ucx; ./aut
 RUN git clone https://github.com/rapidsai/asvdb.git /repos/asvdb && cd /repos/asvdb && python setup.py install
 #RUN pip uninstall numpy numba -y; pip install numpy numba
 ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
-# install vanilla pytorch because of cuda illegal memory access error, must be done before install horovod
 # downgrades torch to 1.9.0
 RUN pip install fastai
 RUN CC=/usr/bin/gcc CXX=/usr/bin/g++ HOROVOD_CUDA_HOME=/usr/local/cuda/ HOROVOD_BUILD_CUDA_CC_LIST=60,70,75,80 HOROVOD_GPU_OPERATIONS=NCCL HOROVOD_WITH_PYTORCH=1 HOROVOD_NCCL_LINK=SHARED pip install --no-cache-dir horovod[pytorch]
