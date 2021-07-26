@@ -7,7 +7,7 @@ ARG HUGECTR_VER=v3.1
 ARG NVTAB_VER=v0.6
 
 ARG HUGEINF_VER=0
-ARG RELEASE=false 
+ARG RELEASE=false
 ARG SM="60;61;70;75;80"
 
 ENV CUDA_SHORT_VERSION=11.2
@@ -50,7 +50,7 @@ RUN apt install -y --no-install-recommends \
       protobuf-compiler && \
     apt-get autoremove -y && \
     apt-get clean && \
-    rm -rf /var/lib/apt/lists/* && \ 
+    rm -rf /var/lib/apt/lists/* && \
     update-alternatives --install /usr/bin/python python /usr/bin/python3.8 1 && \
     wget https://bootstrap.pypa.io/get-pip.py && \
     python get-pip.py && pip install pip==21.0.1
@@ -143,7 +143,7 @@ RUN pip install cupy-cuda113 cachetools fastavro typing_extensions nvtx pandas==
 # Install NVTabular
 RUN git clone https://github.com/NVIDIA/NVTabular.git /nvtabular/ && \
     cd /nvtabular/; if [ "$RELEASE" == "true" ] && [ ${NVTAB_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${NVTAB_VER}; else git checkout main; fi; \
-    python setup.py install --user;
+    python setup.py develop --user;
 
 
 RUN pip install pynvml pytest graphviz sklearn scipy matplotlib dask==2021.04.1 dask-cuda distributed==2021.04
