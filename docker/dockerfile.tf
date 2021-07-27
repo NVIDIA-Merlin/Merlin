@@ -42,7 +42,13 @@ RUN apt install -y --no-install-recommends \
       libjemalloc-dev \
       wget \
       libssl-dev \
-      protobuf-compiler && \
+      protobuf-compiler \ 
+      clang-format \
+      aptitude \
+      numactl \
+      libnuma-dev \
+      libaio-dev \
+      libtool && \
     apt-get autoremove -y && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* 
