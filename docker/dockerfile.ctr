@@ -59,6 +59,7 @@ RUN apt install -y --no-install-recommends \
       numactl \
       libnuma-dev \
       libaio-dev \
+      libibverbs-dev \
       libtool && \
     apt-get autoremove -y && \
     apt-get clean && \
@@ -175,6 +176,8 @@ RUN git clone https://github.com/openucx/ucx.git /repos/ucx;cd /repos/ucx; ./aut
 # link sub modules expected by hugectr cmake
 RUN ln -s /usr/lib/libcudf.so /usr/lib/libcudf_base.so
 RUN ln -s /usr/lib/libcudf.so /usr/lib/libcudf_io.so
+
+RUN ln -s /usr/lib/x86_64-linux-gnu/libibverbs.so.1.11.32.1 /usr/lib/x86_64-linux-gnu/libibverbs.so
 
 # Install hugectr
 RUN mkdir -p /var/tmp && cd /var/tmp && git clone https://github.com/NVIDIA/HugeCTR.git HugeCTR && cd - && \

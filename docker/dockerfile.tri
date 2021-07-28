@@ -53,6 +53,7 @@ RUN apt install -y --no-install-recommends \
       numactl \
       libnuma-dev \
       libaio-dev \
+      libibverbs-dev \
       libtool && \
     apt-get autoremove -y && \
     apt-get clean && \
@@ -187,6 +188,8 @@ RUN apt update; apt install -y libtool
 RUN git clone https://github.com/openucx/ucx.git /repos/ucx;cd /repos/ucx; ./autogen.sh; mkdir build; cd build; ../contrib/configure-release --prefix=/usr; make; make install
 
 ARG TRITON_VERSION
+
+RUN ln -s /usr/lib/x86_64-linux-gnu/libibverbs.so.1.11.32.1 /usr/lib/x86_64-linux-gnu/libibverbs.so
 
 RUN apt update -y && apt install rapidjson-dev -y
 RUN git clone https://github.com/NVIDIA/HugeCTR.git /repos/HugeCTR && \
