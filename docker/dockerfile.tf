@@ -48,6 +48,7 @@ RUN apt install -y --no-install-recommends \
       numactl \
       libnuma-dev \
       libaio-dev \
+      libibverbs-dev \ 
       libtool && \
     apt-get autoremove -y && \
     apt-get clean && \
@@ -156,6 +157,8 @@ RUN pip uninstall tensorflow -y; pip install tensorflow-gpu==2.4.2
 
 RUN mkdir -p /usr/local/nvidia/lib64 && \
     ln -s /usr/local/cuda/lib64/libcusolver.so /usr/local/nvidia/lib64/libcusolver.so.10
+
+RUN ln -s /usr/lib/x86_64-linux-gnu/libibverbs.so.1.11.32.1 /usr/lib/x86_64-linux-gnu/libibverbs.so
 
 RUN git clone https://github.com/NVIDIA/HugeCTR.git build-env && \
     pushd build-env && \
