@@ -1,4 +1,4 @@
-ARG IMAGE=base_image
+ARG IMAGE=nvcr.io/nvidia/tensorflow:21.07-tf2-py3
 FROM ${IMAGE}
 ENV CUDA_SHORT_VERSION=11.4
 
@@ -117,7 +117,7 @@ RUN git clone https://github.com/rapidsai/rmm.git build-env && cd build-env/ && 
     popd && \
     rm -rf build-env
 
-ADD Merlin/docker/cudf_21-06.patch /cudf_21-06.patch
+ADD docker/cudf_21-06.patch /cudf_21-06.patch
 
 
 # Build env for CUDF build
