@@ -1,5 +1,5 @@
 ARG TRITON_VERSION=21.07
-ARG IMAGE=base_image
+ARG IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-py3
 FROM ${IMAGE}
 ARG RMM_VER=v21.06
 ARG CUDF_VER=v21.06
@@ -149,6 +149,10 @@ RUN pip install cupy-cuda113 cachetools fastavro typing_extensions nvtx pandas==
 RUN pip install pybind11 
 RUN apt install -y rapidjson-dev
 
+# need for testing fixtures must be available for nvt testing
+RUN pip install botocore>=1.21.6
+RUN git clone https://github.com/rapidsai/asvdb.git /repos/asvdb && cd /repos/asvdb && python setup.py install
+
 # Install NVTabular
 RUN git clone https://github.com/NVIDIA/NVTabular.git /nvtabular/ && \
     cd /nvtabular/; if [ "$RELEASE" == "true" ] && [ ${NVTAB_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${NVTAB_VER}; else git checkout main; fi; \
@@ -173,7 +177,6 @@ RUN git clone https://github.com/NVIDIA-Merlin/nvtabular_triton_backend.git buil
 
 RUN pip install pynvml pytest graphviz sklearn scipy matplotlib dask==2021.04.1 dask-cuda distributed==2021.04
 RUN pip install nvidia-pyindex; pip install tritonclient[all] grpcio-channelz
-#RUN conda install -c rapidsai asvdb
 
 RUN apt update; apt install -y graphviz ;
 RUN echo $(du -h --max-depth=1 /)
