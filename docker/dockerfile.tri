@@ -6,7 +6,6 @@ ARG CUDF_VER=v21.06
 ARG HUGECTR_VER=v3.1
 ARG NVTAB_VER=v0.6
 
-ARG HUGEINF_VER=0
 ARG RELEASE=false
 ARG SM="60;61;70;75;80"
 
@@ -200,7 +199,7 @@ RUN git clone https://github.com/NVIDIA/HugeCTR.git /repos/HugeCTR && \
       export CPATH=/usr/local/hugectr/include:$CPATH && \
       export LIBRARY_PATH=/usr/local/hugectr/lib:$LIBRARY_PATH && \
       git clone https://github.com/triton-inference-server/hugectr_backend /repos/hugectr_inference_backend && \
-      cd /repos/hugectr_inference_backend && if [ "$RELEASE" == "true" ] && [ ${HUGEINF_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${HUGEINF_VER}; else git checkout main; fi && \
+      cd /repos/hugectr_inference_backend && if [ "$RELEASE" == "true" ] && [ ${HUGECTR_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${HUGECTR_VER}; else git checkout main; fi && \
       mkdir -p build && cd build && \
       cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr/local/hugectr .. \
             -D TRITON_COMMON_REPO_TAG="r$TRITON_VERSION"    \
