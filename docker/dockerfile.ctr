@@ -19,10 +19,9 @@ ENV CUDA_CUDA_LIBRARY=${CUDA_HOME}/lib64/stubs
 ENV PATH=${CUDA_HOME}/lib64/:${PATH}:${CUDA_HOME}/bin
 ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
 
-set(CMAKE_CXX_STANDARD 17)
-
 # Build env variables for rmm
 ENV INSTALL_PREFIX=/usr
+ENV CMAKE_CXX_STANDARD=17
 
 RUN rm -rfv /usr/local/mpi
 
@@ -181,6 +180,13 @@ RUN ln -s /usr/lib/libcudf.so /usr/lib/libcudf_base.so
 RUN ln -s /usr/lib/libcudf.so /usr/lib/libcudf_io.so
 
 RUN ln -s /usr/lib/x86_64-linux-gnu/libibverbs.so.1.11.32.1 /usr/lib/x86_64-linux-gnu/libibverbs.so
+
+RUN rm -rfv /usr/local/mpi && \
+    apt-get update -y && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+        openmpi-bin && \
+    rm -rf /var/lib/apt/lists/*
+
 
 # Install hugectr
 RUN mkdir -p /var/tmp && cd /var/tmp && git clone https://github.com/NVIDIA/HugeCTR.git HugeCTR && cd - && \
