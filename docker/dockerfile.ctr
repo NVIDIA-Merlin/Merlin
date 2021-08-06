@@ -131,8 +131,6 @@ RUN git clone https://github.com/rapidsai/rmm.git build-env && cd build-env/ && 
     popd && \
     rm -rf build-env
 
-ADD Merlin/docker/cudf_21-06.patch /cudf_21-06.patch
-
 
 # Build env for CUDF build
 RUN git clone https://github.com/rapidsai/cudf.git build-env && cd build-env/ && \  
@@ -192,7 +190,8 @@ RUN rm -rfv /usr/local/mpi && \
 RUN mkdir -p /var/tmp && cd /var/tmp && git clone https://github.com/NVIDIA/HugeCTR.git HugeCTR && cd - && \
       cd /var/tmp/HugeCTR && if [ "$RELEASE" == "true" ] && [ ${HUGECTR_VER} != "vnightly" ]; then git fetch --all --tags && git checkout tags/${HUGECTR_VER}; else git checkout master; fi && \
       git submodule update --init --recursive
-RUN cd /var/tmp/HugeCTR && \
+RUN set(CMAKE_CXX_STANDARD 17) && \
+      cd /var/tmp/HugeCTR && \
       mkdir build && cd build && \
       LD_LIBRARY_PATH=/usr/local/cuda/lib64/stubs/:$LD_LIBRARY_PATH && \
       export PATH=$PATH:/usr/local/cuda-${CUDA_SHORT_VERSION}/compat/ && \
