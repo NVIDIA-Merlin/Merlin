@@ -8,10 +8,10 @@ ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/cuda/extra
 ENV DEBIAN_FRONTEND=noninteractive
 
 ARG RELEASE=false
-ARG RMM_VER=v21.06
-ARG CUDF_VER=v21.06
-ARG NVTAB_VER=v0.6
-ARG HUGECTR_VER=v3.1
+ARG RMM_VER=v21.08.00
+ARG CUDF_VER=v21.08.01
+ARG NVTAB_VER=vnightly
+ARG HUGECTR_VER=vnightly
 ARG SM="60;61;70;75;80"
 
 ENV CUDA_HOME=/usr/local/cuda
@@ -65,7 +65,7 @@ RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/nul
 
 # Install arrow from source
 ENV ARROW_HOME=/usr/local
-RUN git clone --branch apache-arrow-1.0.1 --recurse-submodules https://github.com/apache/arrow.git build-env && \
+RUN git clone --branch apache-arrow-4.0.1 --recurse-submodules https://github.com/apache/arrow.git build-env && \
     pushd build-env && \
       export PARQUET_TEST_DATA="${PWD}/cpp/submodules/parquet-testing/data" && \
       export ARROW_TEST_DATA="${PWD}/testing/data" && \
@@ -122,7 +122,6 @@ RUN git clone https://github.com/rapidsai/rmm.git build-env && cd build-env/ && 
 RUN git clone https://github.com/rapidsai/cudf.git build-env && cd build-env/ && \
     if [ "$RELEASE" == "true" ] && [ ${CUDF_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${CUDF_VER}; else git checkout main; fi; \
     git submodule update --init --recursive && \
-    git apply /cudf_21-06.patch  && \
     cd .. && \
     pushd build-env && \
       export CUDF_HOME=${PWD} && \
