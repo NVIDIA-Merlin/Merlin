@@ -12,7 +12,7 @@ NVIDIA Merlin is a scalable and GPU-accelerated solution, making it easy to buil
 
 ### Components of NVIDIA Merlin
 
-NVIDIA Merlin is a collection of open source libraries:
+NVIDIA Merlin consists of the following open source libraries:
 * NVTabular
 * HugeCTR
 * Triton Inference Server
@@ -28,14 +28,14 @@ NVTabular is a feature engineering and preprocessing library for tabular data. N
 - focus on what to do with the data and not how to do it by using abstraction at the operation level.
 
 **[NVTabular DataLoaders](https://github.com/NVIDIA/NVTabular)**<br>
-NVTabular provides seamless integration with common deep learning frameworks, such as TensorFlow, PyTorch, and HugeCTR. When training deep learning recommender system models, dataloading can be a bottleneck. Therefore, we’ve developed custom, highly-optimized dataloaders to accelerate existing TensorFlow and PyTorch training pipelines. The NVTabular dataloaders can lead to a speedup that is 9 times faster than the same training pipeline used with the GPU. With the NVTabular dataloaders, you can:
+NVTabular provides seamless integration with common deep learning frameworks, such as TensorFlow, PyTorch, and HugeCTR. When training deep learning recommender system models, dataloading can be a bottleneck. Therefore, we’ve developed custom, highly-optimized dataloaders to accelerate existing TensorFlow and PyTorch training pipelines. The NVTabular dataloaders can lead to a speedup that is nine times faster than the same training pipeline used with the GPU. With the NVTabular dataloaders, you can:
 - remove bottlenecks from dataloading by processing large chunks of data at a time instead of item by item.
 - process datasets that don’t fit within the GPU or CPU memory by streaming from the disk.
 - prepare batches asynchronously into the GPU to avoid CPU-GPU communication.
 - integrate easily into existing TensorFlow or PyTorch training pipelines by using a similar API.
 
 **[HugeCTR](https://github.com/NVIDIA/HugeCTR)**<br>
-HugeCTR is a GPU-accelerated framework designed to distribute training across multiple GPUs and nodes and estimate click-through rates. HugeCTR contains optimized dataloaders that can be used to prepare batches with GPU-acceleration. In addition, HugeCTR is capable of scaling large deep learning recommendation models. The neural network architectures often contain large embedding tables that represent hundreds of millions of users and items. These embedding tables can easily exceed the CPU and GPU memory. HugeCTR provides strategies for scaling large embedding tables beyond available memory. With HugeCTR, you can:
+HugeCTR is a GPU-accelerated framework designed to estimate click-through rates and distribute training across multiple GPUs and nodes. HugeCTR contains optimized dataloaders that can be used to prepare batches with GPU-acceleration. In addition, HugeCTR is capable of scaling large deep learning recommendation models. The neural network architectures often contain large embedding tables that represent hundreds of millions of users and items. These embedding tables can easily exceed the CPU and GPU memory. HugeCTR provides strategies for scaling large embedding tables beyond available memory. With HugeCTR, you can:
 - scale embedding tables over multiple GPUs or nodes.
 - load a subset of an embedding table into the GPU in a coarse grained, on-demand manner during the training stage.
 
@@ -61,8 +61,10 @@ These examples are based on different datasets and provide a wide range of real-
 
 For more information about NVIDIA Merlin and its components, see the following:
 - [NVTabular GitHub](https://github.com/NVIDIA/NVTabular)
-- [HugeCTR GitHub](https://github.com/NVIDIA/HugeCTR)
-- [NVTabular API Documentation](https://nvidia.github.io/NVTabular/main/Introduction.html)
-- [HugeCTR User Guide](https://github.com/NVIDIA/HugeCTR/blob/master/docs/hugectr_user_guide.md)
-- [HugeCTR Python API](https://github.com/NVIDIA/HugeCTR/blob/master/docs/python_interface.md)
 - [NVTabular Accelerated Training Documentation](https://nvidia.github.io/NVTabular/main/training/index.html)
+- [NVTabular Support Matrix](https://nvidia.github.io/NVTabular/main/resources/support_matrix.html)
+- [NVTabular API Documentation](https://nvidia.github.io/NVTabular/main/Introduction.html)
+- [HugeCTR GitHub](https://github.com/NVIDIA/HugeCTR)
+- [HugeCTR User Guide](https://github.com/NVIDIA/HugeCTR/blob/master/docs/hugectr_user_guide.md)
+- [HugeCTR Support Matrix](https://github.com/NVIDIA/HugeCTR/blob/master/tools/dockerfiles/support_matrix.md)
+- [HugeCTR Python API](https://github.com/NVIDIA/HugeCTR/blob/master/docs/python_interface.md)
