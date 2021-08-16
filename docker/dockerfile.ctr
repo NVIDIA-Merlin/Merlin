@@ -21,7 +21,6 @@ ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
 
 # Build env variables for rmm
 ENV INSTALL_PREFIX=/usr
-ENV CMAKE_CXX_STANDARD=17
 
 RUN rm -rfv /usr/local/mpi
 
@@ -189,8 +188,7 @@ RUN rm -rfv /usr/local/mpi && \
 RUN mkdir -p /var/tmp && cd /var/tmp && git clone https://github.com/NVIDIA/HugeCTR.git HugeCTR && cd - && \
       cd /var/tmp/HugeCTR && if [ "$RELEASE" == "true" ] && [ ${HUGECTR_VER} != "vnightly" ]; then git fetch --all --tags && git checkout tags/${HUGECTR_VER}; else git checkout master; fi && \
       git submodule update --init --recursive
-RUN set(CMAKE_CXX_STANDARD 17) && \
-      cd /var/tmp/HugeCTR && \
+RUN cd /var/tmp/HugeCTR && \
       mkdir build && cd build && \
       LD_LIBRARY_PATH=/usr/local/cuda/lib64/stubs/:$LD_LIBRARY_PATH && \
       export PATH=$PATH:/usr/local/cuda-${CUDA_SHORT_VERSION}/compat/ && \
