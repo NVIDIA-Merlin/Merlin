@@ -1,5 +1,7 @@
+
+# syntax=docker/dockerfile:1
 ARG IMAGE=nvcr.io/nvidia/tensorflow:21.07-tf2-py3
-FROM ${IMAGE}
+FROM ${IMAGE} AS phase1
 ENV CUDA_SHORT_VERSION=11.4
 
 SHELL ["/bin/bash", "-c"]
@@ -24,44 +26,25 @@ ENV INSTALL_PREFIX=/usr
 
 RUN apt update -y --fix-missing && \
     apt upgrade -y && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+        vim gdb git wget unzip tar \ 
+        #python3.8-dev \
+        zlib1g-dev lsb-release clang-format libboost-all-dev \
+        openssl curl zip\
+        libssl-dev \
+        protobuf-compiler \
+        numactl \
+        libnuma-dev \
+        libaio-dev \
+        libibverbs-dev \
+        slapd && \
       apt install -y --no-install-recommends software-properties-common && \
       add-apt-repository -y ppa:deadsnakes/ppa && \
       apt update -y --fix-missing
 
-RUN apt install -y --no-install-recommends \
-      git \
-      libboost-all-dev \
-      python3.8-dev \
-      build-essential \
-      autoconf \
-      bison \
-      flex \
-      libboost-filesystem-dev \
-      libboost-system-dev \
-      libboost-regex-dev \
-      libjemalloc-dev \
-      wget \
-      libssl-dev \
-      protobuf-compiler \ 
-      clang-format \
-      aptitude \
-      numactl \
-      libnuma-dev \
-      libaio-dev \
-      libibverbs-dev \ 
-      libtool && \
-    apt-get autoremove -y && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/* 
-    #update-alternatives --install /usr/bin/python python /usr/bin/python3.8 1 && \
-    #wget https://bootstrap.pypa.io/get-pip.py && \
-    #python get-pip.py
-
 # Install cmake
-RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null && \
-    apt-add-repository 'deb https://apt.kitware.com/ubuntu/ focal main' && \
-    apt-get update && \
-    apt-get install -y cmake
+RUN apt remove --purge cmake -y && wget http://www.cmake.org/files/v3.21/cmake-3.21.1.tar.gz && \
+    tar xf cmake-3.21.1.tar.gz && cd cmake-3.21.1 && ./configure && make && make install
 
 # Install arrow from source
 ENV ARROW_HOME=/usr/local
@@ -106,6 +89,8 @@ RUN git clone --branch apache-arrow-4.0.1 --recurse-submodules https://github.co
     rm -rf build-env
 
 
+FROM phase1 as phase2
+
 # Install rmm from source
 RUN git clone https://github.com/rapidsai/rmm.git build-env && cd build-env/ && \
     if [ "$RELEASE" == "true" ] && [ ${RMM_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${RMM_VER}; else git checkout main; fi; \
@@ -132,6 +117,8 @@ RUN git clone https://github.com/rapidsai/cudf.git build-env && cd build-env/ &&
     popd && \
     rm -rf build-env
 
+FROM phase2 AS phase3
+
 RUN apt-get update -y && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         vim gdb git wget unzip tar python3.8-dev \
@@ -150,12 +137,12 @@ RUN pip install pandas sklearn ortools nvtx-plugins pydot && \
 RUN apt update; apt install -y libtool
 RUN git clone https://github.com/openucx/ucx.git /repos/ucx;cd /repos/ucx; ./autogen.sh; mkdir build; cd build; ../contrib/configure-release --prefix=/usr; make; make install
 
-RUN pip uninstall tensorflow -y; pip install tensorflow-gpu==2.4.2
-
 RUN mkdir -p /usr/local/nvidia/lib64 && \
     ln -s /usr/local/cuda/lib64/libcusolver.so /usr/local/nvidia/lib64/libcusolver.so.10
 
 RUN ln -s /usr/lib/x86_64-linux-gnu/libibverbs.so.1.11.32.1 /usr/lib/x86_64-linux-gnu/libibverbs.so
+
+FROM phase3 AS phase4
 
 RUN git clone https://github.com/NVIDIA/HugeCTR.git build-env && \
     pushd build-env && \
@@ -183,7 +170,7 @@ RUN git clone https://github.com/NVIDIA/NVTabular.git /nvtabular/ && \
 
 RUN pip install pynvml pytest graphviz sklearn scipy matplotlib 
 RUN pip install nvidia-pyindex; pip install tritonclient[all] grpcio-channelz
-RUN pip install nvtx mpi4py==3.0.3 cupy-cuda113 cachetools typing_extensions fastavro
+RUN pip install nvtx mpi4py cupy-cuda114 cachetools typing_extensions fastavro
 
 RUN apt-get update; apt-get install -y graphviz
 
@@ -198,9 +185,7 @@ RUN git clone https://github.com/rapidsai/asvdb.git build-env && \
     rm -rf build-env
 
 RUN pip uninstall numpy -y; pip install numpy
-RUN pip install dask==2021.04.1 distributed==2021.04.1 dask-cuda
-RUN pip install dask[dataframe]==2021.04.1
-RUN pip uninstall pandas -y; pip install pandas==1.1.5
+RUN pip install dask distributed dask-cuda dask[dataframe]
 RUN echo $(du -h --max-depth=1 /)
 
 HEALTHCHECK NONE
