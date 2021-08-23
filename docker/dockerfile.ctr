@@ -1,7 +1,8 @@
+# syntax=docker/dockerfile:1
 ARG CUDA_VERSION=11.4.1
 ARG CUDNN_VERSION=8
 ARG IMAGE=nvcr.io/nvidia/tensorflow:21.07-tf2-py3
-FROM ${IMAGE}
+FROM ${IMAGE} AS phase1
 ENV CUDA_SHORT_VERSION=11.4
 
 ARG RELEASE=false
@@ -26,55 +27,24 @@ RUN rm -rfv /usr/local/mpi
 
 RUN apt update -y --fix-missing && \
     apt upgrade -y && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+        vim gdb git wget unzip tar \ 
+        #python3.8-dev \
+        zlib1g-dev lsb-release clang-format libboost-all-dev \
+        openssl curl zip\
+        libssl-dev \
+        protobuf-compiler \
+        numactl \
+        libnuma-dev \
+        libaio-dev \
+        libibverbs-dev \
+        slapd && \
       apt install -y --no-install-recommends software-properties-common && \
       add-apt-repository -y ppa:deadsnakes/ppa && \
       apt update -y --fix-missing
-RUN apt install -y --no-install-recommends \
-      git \
-      libboost-all-dev \
-      python3.8-dev \
-      build-essential \
-      autoconf \
-      bison \
-      curl \
-      flex \
-      gcc \
-      g++ \
-      git \
-      libboost-filesystem-dev \
-      libboost-system-dev \
-      libboost-regex-dev \
-      libjemalloc-dev \
-      openmpi-bin \
-      unzip \
-      wget \
-      libssl-dev \
-      libtbb-dev \
-      protobuf-compiler \
-      check \
-      libsubunit0 \
-      libsubunit-dev \
-      zip \
-      clang-format \
-      aptitude \
-      numactl \
-      libnuma-dev \
-      libaio-dev \
-      libibverbs-dev \
-      libtool && \
-    apt-get autoremove -y && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/* && \
-    update-alternatives --install /usr/bin/python python /usr/bin/python3.8 1 && \
-    wget https://bootstrap.pypa.io/get-pip.py && \
-    python get-pip.py && pip install pip==21.0.1
 
-# Install cmake
-RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null && \
-    apt-add-repository 'deb https://apt.kitware.com/ubuntu/ focal main' && \
-    apt-get update && \
-    apt-get install -y cmake
-
+RUN apt remove --purge cmake -y && wget http://www.cmake.org/files/v3.21/cmake-3.21.1.tar.gz && \
+    tar xf cmake-3.21.1.tar.gz && cd cmake-3.21.1 && ./configure && make && make install
 
 # Install arrow from source
 ENV ARROW_HOME=/usr/local
@@ -119,6 +89,8 @@ RUN git clone --branch apache-arrow-4.0.1 --recurse-submodules https://github.co
     rm -rf build-env
 
 
+FROM phase1 AS phase2
+
 # Install rmm from source
 RUN git clone https://github.com/rapidsai/rmm.git build-env && cd build-env/ && \
     if [ "$RELEASE" == "true" ] && [ ${RMM_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${RMM_VER}; else git checkout branch-21.06; fi; \
@@ -145,13 +117,13 @@ RUN git clone https://github.com/rapidsai/cudf.git build-env && cd build-env/ &&
     popd && \
     rm -rf build-env
 
+FROM phase2 AS phase3
+
 # Install multiple packages
-RUN pip install dask==2021.04.1 dask-cuda nvtx pandas==1.1.5 mpi4py==3.0.3 cupy-cuda113 cachetools typing_extensions fastavro
-RUN pip install distributed==2021.04.1 dask[dataframe]==2021.04.1
+RUN pip install nvtx pandas mpi4py cupy-cuda114 cachetools typing_extensions fastavro
 RUN pip install pynvml pytest graphviz sklearn scipy matplotlib tqdm pydot nvidia-pyindex
 RUN pip install tritonclient[all] grpcio-channelz
 RUN pip install pybind11
-RUN pip uninstall numpy -y; pip install numpy
 ENV PATH=$PATH:/usr/lib/x86_64-linux-gnu/ \
     NCCL_LAUNCH_MODE=PARALLEL
 
@@ -160,6 +132,9 @@ RUN git clone https://github.com/rapidsai/asvdb.git /repos/asvdb && cd /repos/as
 RUN git clone https://github.com/NVIDIA/NVTabular.git /nvtabular/ && \
     cd /nvtabular/; if [ "$RELEASE" == "true" ] && [ ${NVTAB_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${NVTAB_VER}; else git checkout main; fi; \
     python setup.py develop --user;
+
+RUN pip install dask dask-cuda distributed dask[dataframe]
+RUN pip uninstall numba numpy -y; pip install numba numpy
 
 # this will help with install that requires libcuda.so
 ENV CUDF_HOME=/usr/include
@@ -177,12 +152,7 @@ RUN ln -s /usr/lib/libcudf.so /usr/lib/libcudf_io.so
 
 RUN ln -s /usr/lib/x86_64-linux-gnu/libibverbs.so.1.11.32.1 /usr/lib/x86_64-linux-gnu/libibverbs.so
 
-RUN rm -rfv /usr/local/mpi && \
-    apt-get update -y && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-        openmpi-bin && \
-    rm -rf /var/lib/apt/lists/*
-
+FROM phase3 AS phase4
 
 # Install hugectr
 RUN mkdir -p /var/tmp && cd /var/tmp && git clone https://github.com/NVIDIA/HugeCTR.git HugeCTR && cd - && \
