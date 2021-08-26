@@ -3,7 +3,7 @@ ARG IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-py3
 FROM ${IMAGE}
 ARG RMM_VER=v21.08.00
 ARG CUDF_VER=v21.08.01
-ARG HUGECTR_VER=vnightly
+ARG HUGECTR_VER=v21.9
 ARG NVTAB_VER=vnightly
 
 ARG RELEASE=false
@@ -171,13 +171,13 @@ RUN git clone https://github.com/NVIDIA-Merlin/nvtabular_triton_backend.git buil
 
 
 
-RUN pip install pynvml pytest graphviz sklearn scipy matplotlib dask==2021.04.1 dask-cuda distributed==2021.04
+RUN pip install pynvml pytest graphviz sklearn scipy matplotlib dask dask-cuda distributed
 RUN pip install nvidia-pyindex; pip install tritonclient[all] grpcio-channelz
 
 RUN apt update; apt install -y graphviz ;
 RUN echo $(du -h --max-depth=1 /)
 
-RUN pip uninstall numpy -y; pip install numpy
+RUN pip uninstall numpy numba -y; pip install numpy numba
 
 # install ucx from source
 RUN apt update; apt install -y libtool
@@ -189,7 +189,7 @@ RUN ln -s /usr/lib/x86_64-linux-gnu/libibverbs.so.1.11.32.1 /usr/lib/x86_64-linu
 
 RUN apt update -y && apt install rapidjson-dev -y
 RUN git clone https://github.com/NVIDIA/HugeCTR.git /repos/HugeCTR && \
-      cd /repos/HugeCTR && if [ "$RELEASE" == "true" ] && [ ${HUGECTR_VER} != "vnightly" ]; then git fetch --all --tags && git checkout tags/${HUGECTR_VER}; else git checkout master; fi && \
+      cd /repos/HugeCTR && if [ "$RELEASE" == "true" ] && [ ${HUGECTR_VER} != "vnightly" ]; then git fetch --all --tags && git checkout tags/${HUGECTR_VER}; else git checkout v${HUGECTR_VER}-integration; fi && \
       git submodule update --init --recursive && \
       mkdir -p build && cd build &&\
       cmake -DCMAKE_BUILD_TYPE=Release -DSM=$SM -DENABLE_INFERENCE=ON .. && make -j$(nproc) && make install && \

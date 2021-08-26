@@ -13,7 +13,7 @@ ARG RELEASE=false
 ARG RMM_VER=v21.08.00
 ARG CUDF_VER=v21.08.01
 ARG NVTAB_VER=vnightly
-ARG HUGECTR_VER=vnightly
+ARG HUGECTR_VER=v21.9
 ARG SM="60;61;70;75;80"
 
 ENV CUDA_HOME=/usr/local/cuda
@@ -137,28 +137,6 @@ RUN pip install pandas sklearn ortools nvtx-plugins pydot && \
 RUN apt update; apt install -y libtool
 RUN git clone https://github.com/openucx/ucx.git /repos/ucx;cd /repos/ucx; ./autogen.sh; mkdir build; cd build; ../contrib/configure-release --prefix=/usr; make; make install
 
-RUN mkdir -p /usr/local/nvidia/lib64 && \
-    ln -s /usr/local/cuda/lib64/libcusolver.so /usr/local/nvidia/lib64/libcusolver.so.10
-
-RUN ln -s /usr/lib/x86_64-linux-gnu/libibverbs.so.1.11.32.1 /usr/lib/x86_64-linux-gnu/libibverbs.so
-
-FROM phase3 AS phase4
-
-RUN git clone https://github.com/NVIDIA/HugeCTR.git build-env && \
-    pushd build-env && \
-      if [ "$RELEASE" == "true" ] && [ $HUGECTR_VER != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${HUGECTR_VER}; else git checkout master; fi && \
-      git submodule update --init --recursive && \
-      mkdir -p sparse_operation_kit/build && \
-      pushd sparse_operation_kit/build && \
-        cmake -DCMAKE_BUILD_TYPE=Release -DSM=$SM .. && \
-        make -j$(nproc) && \
-        make install && \
-      popd && \
-    popd && \
-    rm -rf build-env && \
-    rm -rf sparse_operation_kit/build && \
-    rm -rf /var/tmp/HugeCTR
-
 RUN pip install pybind11
 SHELL ["/bin/bash", "-c"]
 
@@ -186,6 +164,34 @@ RUN git clone https://github.com/rapidsai/asvdb.git build-env && \
 
 RUN pip uninstall numpy -y; pip install numpy
 RUN pip install dask distributed dask-cuda dask[dataframe]
+
+FROM phase3 as phase4
+
+RUN mkdir -p /usr/local/nvidia/lib64 && \
+    ln -s /usr/local/cuda/lib64/libcusolver.so /usr/local/nvidia/lib64/libcusolver.so.10
+
+RUN ln -s /usr/lib/x86_64-linux-gnu/libibverbs.so.1.11.32.1 /usr/lib/x86_64-linux-gnu/libibverbs.so
+
+
+RUN git clone https://github.com/NVIDIA/HugeCTR.git build-env && \
+    pushd build-env && \
+      if [ "$RELEASE" == "true" ] && [ $HUGECTR_VER != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${HUGECTR_VER}; else git checkout $HUGECTR_VER-integration; fi && \
+      git submodule update --init --recursive && \
+      mkdir -p sparse_operation_kit/build && \
+      pushd sparse_operation_kit/build && \
+        cmake -DCMAKE_BUILD_TYPE=Release -DSM=$SM .. && \
+        make -j$(nproc) && \
+        make install && \
+      popd && \
+    popd && \
+    rm -rf build-env && \
+    rm -rf sparse_operation_kit/build && \
+    rm -rf /var/tmp/HugeCTR
+
+RUN pip install pybind11
+SHELL ["/bin/bash", "-c"]
+
+
 RUN echo $(du -h --max-depth=1 /)
 
 HEALTHCHECK NONE
