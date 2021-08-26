@@ -9,7 +9,7 @@ ARG RELEASE=false
 ARG RMM_VER=v21.08.00
 ARG CUDF_VER=v21.08.01
 ARG NVTAB_VER=vnightly
-ARG HUGECTR_VER=vnightly
+ARG HUGECTR_VER=v21.9
 SHELL ["/bin/bash", "-c"]
 
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64:/usr/local/lib:/repos/dist/lib
@@ -157,7 +157,7 @@ FROM phase3 AS phase4
 
 # Install hugectr
 RUN mkdir -p /var/tmp && cd /var/tmp && git clone https://github.com/NVIDIA/HugeCTR.git HugeCTR && cd - && \
-      cd /var/tmp/HugeCTR && if [ "$RELEASE" == "true" ] && [ ${HUGECTR_VER} != "vnightly" ]; then git fetch --all --tags && git checkout tags/${HUGECTR_VER}; else git checkout master; fi && \
+      cd /var/tmp/HugeCTR && if [ "$RELEASE" == "true" ] && [ ${HUGECTR_VER} != "vnightly" ]; then git fetch --all --tags && git checkout tags/${HUGECTR_VER}; else git checkout ${HUGECTR_VER}-integration; fi && \
       git submodule update --init --recursive
 RUN cd /var/tmp/HugeCTR && \
       mkdir build && cd build && \
