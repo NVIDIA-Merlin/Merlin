@@ -92,6 +92,10 @@ RUN git clone --branch apache-arrow-4.0.1 --recurse-submodules https://github.co
 
 FROM phase1 AS phase2
 
+ARG RELEASE=false
+ARG RMM_VER=v21.08.00
+ARG CUDF_VER=v21.08.01
+
 # Install rmm from source
 RUN git clone https://github.com/rapidsai/rmm.git build-env && cd build-env/ && \
     if [ "$RELEASE" == "true" ] && [ ${RMM_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${RMM_VER}; else git checkout branch-21.06; fi; \
@@ -120,6 +124,9 @@ RUN git clone https://github.com/rapidsai/cudf.git build-env && cd build-env/ &&
 
 FROM phase2 AS phase3
 
+ARG RELEASE=false
+ARG NVTAB_VER=vnightly
+
 # Install multiple packages
 RUN pip install nvtx pandas mpi4py cupy-cuda114 cachetools typing_extensions fastavro
 RUN pip install pynvml pytest graphviz sklearn scipy matplotlib tqdm pydot nvidia-pyindex
@@ -127,6 +134,9 @@ RUN pip install tritonclient[all] grpcio-channelz
 RUN pip install pybind11
 ENV PATH=$PATH:/usr/lib/x86_64-linux-gnu/ \
     NCCL_LAUNCH_MODE=PARALLEL
+
+ARG RELEASE=false
+ARG NVTAB_VER=vnightly
 
 RUN git clone https://github.com/rapidsai/asvdb.git /repos/asvdb && cd /repos/asvdb && python setup.py install
 # Install NVTabular
@@ -154,6 +164,9 @@ RUN ln -s /usr/lib/libcudf.so /usr/lib/libcudf_io.so
 RUN ln -s /usr/lib/x86_64-linux-gnu/libibverbs.so.1.11.32.1 /usr/lib/x86_64-linux-gnu/libibverbs.so
 
 FROM phase3 AS phase4
+
+ARG RELEASE=false
+ARG HUGECTR_VER=v21.9
 
 # Install hugectr
 RUN mkdir -p /var/tmp && cd /var/tmp && git clone https://github.com/NVIDIA/HugeCTR.git HugeCTR && cd - && \

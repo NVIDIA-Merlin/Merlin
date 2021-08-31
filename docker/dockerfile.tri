@@ -142,7 +142,7 @@ ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
 
 SHELL ["/bin/bash", "-c"]
 
-RUN pip install cupy-cuda113 cachetools fastavro typing_extensions nvtx pandas==1.1.5
+RUN pip install cupy-cuda114 cachetools fastavro typing_extensions nvtx pandas==1.1.5
 RUN pip install pybind11 
 RUN apt install -y rapidjson-dev
 
@@ -155,6 +155,7 @@ RUN git clone https://github.com/NVIDIA/NVTabular.git /nvtabular/ && \
     cd /nvtabular/; if [ "$RELEASE" == "true" ] && [ ${NVTAB_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${NVTAB_VER}; else git checkout main; fi; \
     python setup.py develop --user;
 
+ARG TRITON_VERSION
 
 RUN git clone https://github.com/NVIDIA-Merlin/nvtabular_triton_backend.git build-env && \
     cd build-env && \ 
@@ -163,28 +164,27 @@ RUN git clone https://github.com/NVIDIA-Merlin/nvtabular_triton_backend.git buil
     pushd build-env && \
       mkdir build && \
       cd build && \
-      cmake -Dpybind11_DIR=/usr/local/lib/python3.8/dist-packages/pybind11/share/cmake/pybind11 .. && \
-      make -j 4 && \
+      cmake -Dpybind11_DIR=/usr/local/lib/python3.8/dist-packages/pybind11/share/cmake/pybind11 \
+        -D TRITON_COMMON_REPO_TAG="r$TRITON_VERSION"    \
+        -D TRITON_CORE_REPO_TAG="r$TRITON_VERSION"      \
+        -D TRITON_BACKEND_REPO_TAG="r$TRITON_VERSION" .. \
+      && make -j 4 && \
       mkdir /opt/tritonserver/backends/nvtabular && \
       cp libtriton_nvtabular.so /opt/tritonserver/backends/nvtabular/ && \
     popd && \
-    rm -rf build-env
+    rm -rf build-env 
 
-
-
-RUN pip install pynvml pytest graphviz sklearn scipy matplotlib dask dask-cuda distributed
+RUN pip install pynvml pytest graphviz sklearn scipy matplotlib dask-cuda 
+RUN pip install dask distributed dask[dataframe] --upgrade
 RUN pip install nvidia-pyindex; pip install tritonclient[all] grpcio-channelz
 
 RUN apt update; apt install -y graphviz ;
-RUN echo $(du -h --max-depth=1 /)
 
 RUN pip uninstall numpy numba -y; pip install numpy numba
 
 # install ucx from source
 RUN apt update; apt install -y libtool
 RUN git clone https://github.com/openucx/ucx.git /repos/ucx;cd /repos/ucx; ./autogen.sh; mkdir build; cd build; ../contrib/configure-release --prefix=/usr; make; make install
-
-ARG TRITON_VERSION
 
 RUN ln -s /usr/lib/x86_64-linux-gnu/libibverbs.so.1.11.32.1 /usr/lib/x86_64-linux-gnu/libibverbs.so
 
@@ -210,8 +210,6 @@ ENV LD_LIBRARY_PATH=/usr/local/hugectr/lib:$LD_LIBRARY_PATH \
     PYTHONPATH=/usr/local/hugectr/lib:$PYTHONPATH
 
 RUN ln -s /usr/local/hugectr/backends/hugectr /opt/tritonserver/backends/
-
-RUN echo $(du -h --max-depth=1 /)
 
 RUN rm -rf /repos
 RUN pip install tqdm
