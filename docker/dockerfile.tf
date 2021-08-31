@@ -90,6 +90,7 @@ RUN git clone --branch apache-arrow-4.0.1 --recurse-submodules https://github.co
 
 FROM phase1 as phase2
 
+ARG RELEASE=false
 ARG RMM_VER=v21.08.00
 ARG CUDF_VER=v21.08.01
 
@@ -121,6 +122,7 @@ RUN git clone https://github.com/rapidsai/cudf.git build-env && cd build-env/ &&
 
 FROM phase2 AS phase3
 
+ARG RELEASE=false
 ARG NVTAB_VER=vnightly
 
 RUN apt-get update -y && \
@@ -166,11 +168,11 @@ RUN git clone https://github.com/rapidsai/asvdb.git build-env && \
     popd && \
     rm -rf build-env
 
-RUN pip uninstall numpy -y; pip install numpy
-RUN pip install dask distributed dask-cuda dask[dataframe]
+RUN pip install dask distributed dask-cuda dask[dataframe] --upgrade
 
 FROM phase3 as phase4
 
+ARG RELEASE=false
 ARG HUGECTR_VER=v21.9
 ARG SM="60;61;70;75;80"
 
