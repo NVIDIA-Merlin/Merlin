@@ -90,6 +90,10 @@ RUN git clone --branch apache-arrow-4.0.1 --recurse-submodules https://github.co
 
 FROM phase1 as phase2
 
+ARG RELEASE=false
+ARG RMM_VER=v21.08.00
+ARG CUDF_VER=v21.08.01
+
 # Install rmm from source
 RUN git clone https://github.com/rapidsai/rmm.git build-env && cd build-env/ && \
     if [ "$RELEASE" == "true" ] && [ ${RMM_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${RMM_VER}; else git checkout main; fi; \
@@ -117,6 +121,9 @@ RUN git clone https://github.com/rapidsai/cudf.git build-env && cd build-env/ &&
     rm -rf build-env
 
 FROM phase2 AS phase3
+
+ARG RELEASE=false
+ARG NVTAB_VER=vnightly
 
 RUN apt-get update -y && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
@@ -161,20 +168,22 @@ RUN git clone https://github.com/rapidsai/asvdb.git build-env && \
     popd && \
     rm -rf build-env
 
-RUN pip uninstall numpy -y; pip install numpy
-RUN pip install dask distributed dask-cuda dask[dataframe]
+RUN pip install dask distributed dask-cuda dask[dataframe] --upgrade
 
 FROM phase3 as phase4
+
+ARG RELEASE=false
+ARG HUGECTR_VER=v21.9
+ARG SM="60;61;70;75;80"
 
 RUN mkdir -p /usr/local/nvidia/lib64 && \
     ln -s /usr/local/cuda/lib64/libcusolver.so /usr/local/nvidia/lib64/libcusolver.so.10
 
 RUN ln -s /usr/lib/x86_64-linux-gnu/libibverbs.so.1.11.32.1 /usr/lib/x86_64-linux-gnu/libibverbs.so
 
-
 RUN git clone https://github.com/NVIDIA/HugeCTR.git build-env && \
     pushd build-env && \
-      if [ "$RELEASE" == "true" ] && [ $HUGECTR_VER != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${HUGECTR_VER}; else git checkout $HUGECTR_VER-integration; fi && \
+      if [ "$RELEASE" == "true" ] && [ ${HUGECTR_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${HUGECTR_VER}; else echo ${HUGECTR_VER} && git checkout ${HUGECTR_VER}-integration; fi && \
       git submodule update --init --recursive && \
       mkdir -p sparse_operation_kit/build && \
       pushd sparse_operation_kit/build && \

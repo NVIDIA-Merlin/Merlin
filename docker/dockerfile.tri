@@ -142,7 +142,7 @@ ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
 
 SHELL ["/bin/bash", "-c"]
 
-RUN pip install cupy-cuda113 cachetools fastavro typing_extensions nvtx pandas==1.1.5
+RUN pip install cupy-cuda114 cachetools fastavro typing_extensions nvtx pandas==1.1.5
 RUN pip install pybind11 
 RUN apt install -y rapidjson-dev
 
@@ -172,15 +172,13 @@ RUN git clone https://github.com/NVIDIA-Merlin/nvtabular_triton_backend.git buil
       mkdir /opt/tritonserver/backends/nvtabular && \
       cp libtriton_nvtabular.so /opt/tritonserver/backends/nvtabular/ && \
     popd && \
-    rm -rf build-env
+    rm -rf build-env 
 
-RUN pip install pynvml pytest graphviz sklearn scipy matplotlib dask dask-cuda distributed
+RUN pip install pynvml pytest graphviz sklearn scipy matplotlib dask-cuda 
+RUN pip install dask distributed dask[dataframe] --upgrade
 RUN pip install nvidia-pyindex; pip install tritonclient[all] grpcio-channelz
 
 RUN apt update; apt install -y graphviz ;
-RUN echo $(du -h --max-depth=1 /)
-
-RUN pip uninstall numpy numba -y; pip install numpy numba
 
 # install ucx from source
 RUN apt update; apt install -y libtool
@@ -210,8 +208,6 @@ ENV LD_LIBRARY_PATH=/usr/local/hugectr/lib:$LD_LIBRARY_PATH \
     PYTHONPATH=/usr/local/hugectr/lib:$PYTHONPATH
 
 RUN ln -s /usr/local/hugectr/backends/hugectr /opt/tritonserver/backends/
-
-RUN echo $(du -h --max-depth=1 /)
 
 RUN rm -rf /repos
 RUN pip install tqdm
