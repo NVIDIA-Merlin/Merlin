@@ -197,6 +197,7 @@ RUN git clone https://github.com/NVIDIA/HugeCTR.git build-env && \
     rm -rf /var/tmp/HugeCTR
 
 RUN pip install pybind11
+RUN pip install numba numpy --upgrade
 SHELL ["/bin/bash", "-c"]
 
 RUN echo $(du -h --max-depth=1 /)
