@@ -168,8 +168,7 @@ RUN git clone https://github.com/rapidsai/asvdb.git build-env && \
     popd && \
     rm -rf build-env
 
-RUN pip install dask distributed dask-cuda dask[dataframe] --upgrade
-
+RUN pip install dask==2021.07.1 distributed==2021.07.1 dask[dataframe]==2021.07.1
 FROM phase3 as phase4
 
 ARG RELEASE=false

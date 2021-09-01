@@ -147,7 +147,7 @@ ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
 RUN pip install fastai
 RUN CC=/usr/bin/gcc CXX=/usr/bin/g++ HOROVOD_CUDA_HOME=/usr/local/cuda/ HOROVOD_BUILD_CUDA_CC_LIST=60,70,75,80 HOROVOD_GPU_OPERATIONS=NCCL HOROVOD_WITH_PYTORCH=1 HOROVOD_NCCL_LINK=SHARED pip install --no-cache-dir horovod[pytorch]
 RUN pip install nvtx pandas==1.1.5 mpi4py==3.0.3 cupy-cuda113 cachetools typing_extensions fastavro
-RUN pip install dask==2021.04.1 distributed==2021.4 dask-cuda
+RUN pip install dask==2021.07.1 distributed==2021.07.1 dask[dataframe]==2021.07.1
 RUN rm -rf /repos
 RUN echo $(du -h --max-depth=1 /)
 
