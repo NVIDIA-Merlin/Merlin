@@ -44,6 +44,10 @@ RUN apt update -y --fix-missing && \
       add-apt-repository -y ppa:deadsnakes/ppa && \
       apt update -y --fix-missing
 
+RUN conda install -c conda-forge notebook>=6.4.1
+RUN conda install -c anaconda sqlparse>=0.4.2
+RUN /usr/local/nvm/versions/node/v15.12.0/bin/npm install fast-json-patch@">=3.1.0" tar@">=6.1.9"
+
 RUN apt remove --purge cmake -y && wget http://www.cmake.org/files/v3.21/cmake-3.21.1.tar.gz && \
     tar xf cmake-3.21.1.tar.gz && cd cmake-3.21.1 && ./configure && make && make install
 
