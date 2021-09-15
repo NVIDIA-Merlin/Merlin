@@ -159,6 +159,23 @@ RUN ln -s /usr/lib/libcudf.so /usr/lib/libcudf_io.so
 
 RUN ln -s /usr/lib/x86_64-linux-gnu/libibverbs.so.1.11.32.1 /usr/lib/x86_64-linux-gnu/libibverbs.so
 
+#Hiredis
+RUN mkdir -p /var/tmp && cd /var/tmp && git clone https://github.com/redis/hiredis.git && cd - && \
+cd /var/tmp/hiredis && \
+mkdir build && cd build && \
+cmake .. && \
+make && \
+make install && \
+rm -rf /var/tmp/hiredis
+
+#RocksDB
+RUN mkdir -p /var/tmp && cd /var/tmp && git clone https://github.com/facebook/rocksdb.git && cd - && \
+cd /var/tmp/rocksdb && \
+make -j$(nproc) shared_lib && \
+make install-shared && \
+rm -rf /var/tmp/rocksdb
+ENV CPATH=/usr/local/include:$CPATH
+
 FROM phase3 AS phase4
 
 ARG RELEASE=false
