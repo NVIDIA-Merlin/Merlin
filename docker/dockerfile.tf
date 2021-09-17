@@ -177,7 +177,7 @@ FROM phase3 as phase4
 
 ARG RELEASE=false
 ARG HUGECTR_VER=v21.9
-ARG SM="70;75;80"
+ARG SM="60;61;70;75;80"
 ARG USE_NVTX=OFF
 
 RUN mkdir -p /usr/local/nvidia/lib64 && \
