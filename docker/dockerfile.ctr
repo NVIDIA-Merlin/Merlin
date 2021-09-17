@@ -135,7 +135,7 @@ ARG NVTAB_VER=vnightly
 RUN pip install nvtx pandas mpi4py cupy-cuda114 cachetools typing_extensions fastavro
 RUN pip install pynvml pytest graphviz sklearn scipy matplotlib tqdm pydot nvidia-pyindex
 RUN pip install tritonclient[all] grpcio-channelz
-RUN pip install pybind11
+RUN pip install pybind11 jupyterlab onnx onnxruntime
 ENV PATH=$PATH:/usr/lib/x86_64-linux-gnu/ \
     NCCL_LAUNCH_MODE=PARALLEL
 
@@ -164,20 +164,19 @@ RUN ln -s /usr/lib/libcudf.so /usr/lib/libcudf_io.so
 RUN ln -s /usr/lib/x86_64-linux-gnu/libibverbs.so.1.11.32.1 /usr/lib/x86_64-linux-gnu/libibverbs.so
 
 #Hiredis
-RUN mkdir -p /var/tmp && cd /var/tmp && git clone https://github.com/redis/hiredis.git && cd - && \
-cd /var/tmp/hiredis && \
-mkdir build && cd build && \
-cmake .. && \
-make && \
-make install && \
-rm -rf /var/tmp/hiredis
+RUN mkdir -p /var/tmp && cd /var/tmp && git clone --depth=1 https://github.com/redis/hiredis.git && cd - && \
+    cd /var/tmp/hiredis && \
+    mkdir build && cd build && \
+    cmake .. && \
+    make -j$(nproc) && make install && \
+    rm -rf /var/tmp/hiredis
 
 #RocksDB
-RUN mkdir -p /var/tmp && cd /var/tmp && git clone https://github.com/facebook/rocksdb.git && cd - && \
-cd /var/tmp/rocksdb && \
-make -j$(nproc) shared_lib && \
-make install-shared && \
-rm -rf /var/tmp/rocksdb
+RUN mkdir -p /var/tmp && cd /var/tmp && git clone --depth=1 https://github.com/facebook/rocksdb.git && cd - && \
+    cd /var/tmp/rocksdb && \
+    make -j$(nproc) shared_lib && \
+    make install-shared && \
+    rm -rf /var/tmp/rocksdb
 ENV CPATH=/usr/local/include:$CPATH
 
 FROM phase3 AS phase4
@@ -190,15 +189,17 @@ RUN mkdir -p /var/tmp && cd /var/tmp && git clone https://github.com/NVIDIA/Huge
       cd /var/tmp/HugeCTR && if [ "$RELEASE" == "true" ] && [ ${HUGECTR_VER} != "vnightly" ]; then git fetch --all --tags && git checkout tags/${HUGECTR_VER}; else git checkout ${HUGECTR_VER}-integration; fi && \
       git submodule update --init --recursive
 RUN cd /var/tmp/HugeCTR && \
-      mkdir build && cd build && \
-      LD_LIBRARY_PATH=/usr/local/cuda/lib64/stubs/:$LD_LIBRARY_PATH && \
-      export PATH=$PATH:/usr/local/cuda-${CUDA_SHORT_VERSION}/compat/ && \
-      cmake -DCMAKE_CXX_COMPILER=/usr/bin/g++ -DCMAKE_C_COMPILER=/usr/bin/gcc -DCMAKE_BUILD_TYPE=Release -DSM="60;61;70;75;80" \
-            -DVAL_MODE=OFF -DENABLE_MULTINODES=ON -DNCCL_A2A=ON .. && \
-      make VERBOSE=1 -j$(nproc) && make install && \
-      chmod +x /usr/local/hugectr/bin/* && \
-      chmod +x /usr/local/hugectr/lib/* && \
-      rm -rf /var/tmp/HugeCTR;
+    mkdir build && cd build && \
+    LD_LIBRARY_PATH=/usr/local/cuda/lib64/stubs/:$LD_LIBRARY_PATH && \
+    export PATH=$PATH:/usr/local/cuda-${CUDA_SHORT_VERSION}/compat/ && \
+    cmake -DCMAKE_CXX_COMPILER=/usr/bin/g++ -DCMAKE_C_COMPILER=/usr/bin/gcc -DCMAKE_BUILD_TYPE=Release -DSM="60;61;70;75;80" \
+          -DVAL_MODE=OFF -DENABLE_MULTINODES=ON -DNCCL_A2A=ON .. && \
+    make VERBOSE=1 -j$(nproc) && make install && \
+    chmod +x /usr/local/hugectr/bin/* && \
+    chmod +x /usr/local/hugectr/lib/* && \
+    cd /var/tmp/HugeCTR/onnx_converter && \
+    python3 setup.py install && \
+    rm -rf /var/tmp/HugeCTR
 # remove fake lib
 RUN rm /usr/local/cuda/lib64/stubs/libcuda.so.1
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/hugectr/lib \

@@ -177,7 +177,8 @@ FROM phase3 as phase4
 
 ARG RELEASE=false
 ARG HUGECTR_VER=v21.9
-ARG SM="60;61;70;75;80"
+ARG SM="70;75;80"
+ARG USE_NVTX=OFF
 
 RUN mkdir -p /usr/local/nvidia/lib64 && \
     ln -s /usr/local/cuda/lib64/libcusolver.so /usr/local/nvidia/lib64/libcusolver.so.10
@@ -187,16 +188,10 @@ RUN ln -s /usr/lib/x86_64-linux-gnu/libibverbs.so.1.11.32.1 /usr/lib/x86_64-linu
 RUN git clone https://github.com/NVIDIA/HugeCTR.git build-env && \
     pushd build-env && \
       if [ "$RELEASE" == "true" ] && [ ${HUGECTR_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${HUGECTR_VER}; else echo ${HUGECTR_VER} && git checkout ${HUGECTR_VER}-integration; fi && \
-      git submodule update --init --recursive && \
-      mkdir -p sparse_operation_kit/build && \
-      pushd sparse_operation_kit/build && \
-        cmake -DCMAKE_BUILD_TYPE=Release -DSM=$SM .. && \
-        make -j$(nproc) && \
-        make install && \
-      popd && \
+      cd sparse_operation_kit && \
+      bash ./install.sh --SM=$SM --USE_NVTX=$USE_NVTX && \
     popd && \
     rm -rf build-env && \
-    rm -rf sparse_operation_kit/build && \
     rm -rf /var/tmp/HugeCTR
 
 RUN pip install pybind11
