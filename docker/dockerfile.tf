@@ -41,8 +41,8 @@ RUN apt update -y --fix-missing && \
       add-apt-repository -y ppa:deadsnakes/ppa && \
       apt update -y --fix-missing
 
-RUN conda install -c conda-forge notebook>=6.4.1
-RUN conda install -c anaconda sqlparse>=0.4.2
+RUN pip install 'notebook>=6.4.1' 'sqlparse>=0.4.2'
+RUN ln -s /usr/local/nvm/versions/node/v15.12.0/bin/node /usr/bin/node
 RUN /usr/local/nvm/versions/node/v15.12.0/bin/npm install fast-json-patch@">=3.1.0" tar@">=6.1.9"
 
 # Install cmake
