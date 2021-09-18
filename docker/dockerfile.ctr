@@ -46,7 +46,7 @@ RUN apt update -y --fix-missing && \
 
 RUN pip install 'notebook>=6.4.1' 'sqlparse>=0.4.2'
 RUN ln -s /usr/local/nvm/versions/node/v15.12.0/bin/node /usr/bin/node
-RUN /usr/local/nvm/versions/node/v15.12.0/bin/npm install fast-json-patch@">=3.1.0" tar@">=6.1.9"
+RUN /usr/local/nvm/versions/node/v15.12.0/bin/npm uninstall fast-json-patch tar
 
 RUN apt remove --purge cmake -y && wget http://www.cmake.org/files/v3.21/cmake-3.21.1.tar.gz && \
     tar xf cmake-3.21.1.tar.gz && cd cmake-3.21.1 && ./configure && make && make install

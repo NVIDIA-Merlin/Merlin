@@ -49,10 +49,10 @@ RUN apt install -y --no-install-recommends \
     wget https://bootstrap.pypa.io/get-pip.py && \
     python get-pip.py && pip install pip==21.0.1
 
+RUN conda remove sqlparse
 RUN conda install -c conda-forge notebook>=6.4.1
-RUN conda install -c anaconda sqlparse>=0.4.2
 RUN ln -s /usr/local/nvm/versions/node/v15.12.0/bin/node /usr/bin/node
-RUN /usr/local/nvm/versions/node/v15.12.0/bin/npm install fast-json-patch@">=3.1.0" tar@">=6.1.9"
+RUN /usr/local/nvm/versions/node/v15.12.0/bin/npm uninstall fast-json-patch tar
 
 # Install cmake
 RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null && \
