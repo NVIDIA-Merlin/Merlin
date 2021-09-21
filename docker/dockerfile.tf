@@ -41,7 +41,7 @@ RUN apt update -y --fix-missing && \
       add-apt-repository -y ppa:deadsnakes/ppa && \
       apt update -y --fix-missing
 
-RUN pip install git+git://github.com/gevent/gevent.git#egg=gevent
+RUN pip install git+git://github.com/gevent/gevent.git@21.8.0#egg=gevent
 
 RUN pip install 'notebook>=6.4.1' 'sqlparse>=0.4.2'
 RUN ln -s /usr/local/nvm/versions/node/v15.12.0/bin/node /usr/bin/node
