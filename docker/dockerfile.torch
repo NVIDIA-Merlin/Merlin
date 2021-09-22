@@ -56,6 +56,7 @@ RUN pip install 'websockets>=10.0'
 RUN conda install -c conda-forge notebook>=6.4.1
 RUN ln -s /usr/local/nvm/versions/node/v15.12.0/bin/node /usr/bin/node
 RUN /usr/local/nvm/versions/node/v15.12.0/bin/npm -g upgrade
+RUN rm -rf /usr/local/share/jupyter/lab/staging/node_modules/fast-json-patch
 
 # Install cmake
 RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null && \
