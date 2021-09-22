@@ -52,6 +52,7 @@ RUN apt install -y --no-install-recommends \
 RUN pip install pip install git+git://github.com/gevent/gevent.git@21.8.0#egg=gevent
 
 RUN pip uninstall sqlparse -y
+RUN pip install 'websockets>=10.0'
 RUN conda install -c conda-forge notebook>=6.4.1
 RUN ln -s /usr/local/nvm/versions/node/v15.12.0/bin/node /usr/bin/node
 RUN /usr/local/nvm/versions/node/v15.12.0/bin/npm -g upgrade
@@ -135,9 +136,13 @@ SHELL ["/bin/bash", "-c"]
 RUN pip install numpy==1.20.3
 RUN pip install pybind11
 
+# Install NVTabular
 RUN git clone https://github.com/NVIDIA/NVTabular.git /nvtabular/ && \
     cd /nvtabular/; if [ "$RELEASE" == "true" ] && [ ${NVTAB_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${NVTAB_VER}; else git checkout main; fi; \
     python setup.py develop --user;
+
+# Install Transformers4Rec
+RUN pip install git+git://github.com/NVIDIA-Merlin/Transformers4Rec.git#egg=transformers4rec[pytorch,nvtabular]
 
 RUN pip install --ignore-installed pynvml pytest graphviz sklearn scipy matplotlib dask-cuda
 RUN pip install nvidia-pyindex; pip install tritonclient[all] grpcio-channelz
