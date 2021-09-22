@@ -43,7 +43,7 @@ RUN apt update -y --fix-missing && \
 
 RUN pip install git+git://github.com/gevent/gevent.git@21.8.0#egg=gevent
 
-RUN pip install 'notebook>=6.4.1' 'sqlparse>=0.4.2'
+RUN pip install 'notebook>=6.4.1' 'sqlparse>=0.4.2' 'websockets>=10.0'
 RUN ln -s /usr/local/nvm/versions/node/v15.12.0/bin/node /usr/bin/node
 RUN /usr/local/nvm/versions/node/v15.12.0/bin/npm -g upgrade
 
@@ -157,6 +157,8 @@ RUN git clone https://github.com/NVIDIA/NVTabular.git /nvtabular/ && \
     cd /nvtabular/; if [ "$RELEASE" == "true" ] && [ ${NVTAB_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${NVTAB_VER}; else git checkout main; fi; \
     python setup.py develop --user;
 
+# Install Transformers4Rec
+RUN pip install git+git://github.com/NVIDIA-Merlin/Transformers4Rec.git#egg=transformers4rec[tensorflow,nvtabular]
 
 RUN pip install pynvml pytest graphviz sklearn scipy matplotlib 
 RUN pip install nvidia-pyindex; pip install tritonclient[all] grpcio-channelz
