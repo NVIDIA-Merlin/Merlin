@@ -159,7 +159,7 @@ RUN git clone https://github.com/NVIDIA/NVTabular.git /nvtabular/ && \
     python setup.py develop --user;
 
 # Install Transformers4Rec
-RUN pip install git+git://github.com/NVIDIA-Merlin/Transformers4Rec.git#egg=transformers4rec[tensorflow,nvtabular]
+RUN pip install git+git://github.com/NVIDIA-Merlin/Transformers4Rec.git@0.1.0#egg=transformers4rec[tensorflow,nvtabular]
 
 RUN pip install pynvml pytest graphviz sklearn scipy matplotlib 
 RUN pip install nvidia-pyindex; pip install tritonclient[all] grpcio-channelz
