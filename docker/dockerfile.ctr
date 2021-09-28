@@ -6,10 +6,10 @@ FROM ${IMAGE} AS phase1
 ENV CUDA_SHORT_VERSION=11.4
 
 ARG RELEASE=false
-ARG RMM_VER=v21.08.00
-ARG CUDF_VER=v21.08.01
+ARG RMM_VER=vnightly
+ARG CUDF_VER=vnightly
 ARG NVTAB_VER=vnightly
-ARG HUGECTR_VER=v21.9
+ARG HUGECTR_VER=vnightly
 SHELL ["/bin/bash", "-c"]
 
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64:/usr/local/lib:/repos/dist/lib
@@ -100,8 +100,8 @@ RUN git clone --branch apache-arrow-4.0.1 --recurse-submodules https://github.co
 FROM phase1 AS phase2
 
 ARG RELEASE=false
-ARG RMM_VER=v21.08.00
-ARG CUDF_VER=v21.08.01
+ARG RMM_VER=vnightly
+ARG CUDF_VER=vnightly
 
 # Install rmm from source
 RUN git clone https://github.com/rapidsai/rmm.git build-env && cd build-env/ && \
@@ -185,7 +185,7 @@ ENV CPATH=/usr/local/include:$CPATH
 FROM phase3 AS phase4
 
 ARG RELEASE=false
-ARG HUGECTR_VER=v21.9
+ARG HUGECTR_VER=vnightly
 
 # Install hugectr
 RUN mkdir -p /var/tmp && cd /var/tmp && git clone https://github.com/NVIDIA/HugeCTR.git HugeCTR && cd - && \

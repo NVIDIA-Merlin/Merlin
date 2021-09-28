@@ -9,10 +9,10 @@ ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/cuda/extra
 ENV DEBIAN_FRONTEND=noninteractive
 
 ARG RELEASE=false
-ARG RMM_VER=v21.08.00
-ARG CUDF_VER=v21.08.01
+ARG RMM_VER=vnightly
+ARG CUDF_VER=vnightly
 ARG NVTAB_VER=vnightly
-ARG HUGECTR_VER=v21.9
+ARG HUGECTR_VER=vnightly
 ARG SM="60;61;70;75;80"
 
 ENV CUDA_HOME=/usr/local/cuda
@@ -98,8 +98,8 @@ RUN git clone --branch apache-arrow-4.0.1 --recurse-submodules https://github.co
 FROM phase1 as phase2
 
 ARG RELEASE=false
-ARG RMM_VER=v21.08.00
-ARG CUDF_VER=v21.08.01
+ARG RMM_VER=vnightly
+ARG CUDF_VER=vnightly
 
 # Install rmm from source
 RUN git clone https://github.com/rapidsai/rmm.git build-env && cd build-env/ && \
@@ -181,7 +181,7 @@ RUN pip install dask==2021.07.1 distributed==2021.07.1 dask[dataframe]==2021.07.
 FROM phase3 as phase4
 
 ARG RELEASE=false
-ARG HUGECTR_VER=v21.9
+ARG HUGECTR_VER=vnightly
 ARG SM="60;61;70;75;80"
 ARG USE_NVTX=OFF
 
