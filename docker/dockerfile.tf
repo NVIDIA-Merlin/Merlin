@@ -34,6 +34,7 @@ RUN apt update -y --fix-missing && \
         libssl-dev \
         protobuf-compiler \
         numactl \
+	libspdlog-dev \
         libnuma-dev \
         libaio-dev \
         libibverbs-dev \
