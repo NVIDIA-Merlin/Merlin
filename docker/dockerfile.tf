@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-ARG IMAGE=nvcr.io/nvidia/tensorflow:21.07-tf2-py3
+ARG IMAGE=nvcr.io/nvidia/tensorflow:21.09-tf2-py3
 FROM ${IMAGE} AS phase1
 ENV CUDA_SHORT_VERSION=11.4
 
@@ -12,6 +12,7 @@ ARG RELEASE=false
 ARG RMM_VER=vnightly
 ARG CUDF_VER=vnightly
 ARG NVTAB_VER=vnightly
+ARG TF4REC_VER=vnightly
 ARG HUGECTR_VER=vnightly
 ARG SM="60;61;70;75;80"
 
@@ -131,6 +132,7 @@ FROM phase2 AS phase3
 
 ARG RELEASE=false
 ARG NVTAB_VER=vnightly
+ARG TF4REC_VER=vnightly
 
 RUN apt-get update -y && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
@@ -159,7 +161,9 @@ RUN git clone https://github.com/NVIDIA/NVTabular.git /nvtabular/ && \
     python setup.py develop --user;
 
 # Install Transformers4Rec
-RUN pip install git+git://github.com/NVIDIA-Merlin/Transformers4Rec.git@v0.1.1#egg=transformers4rec[tensorflow,nvtabular]
+RUN git clone https://github.com/NVIDIA-Merlin/Transformers4Rec.git /transformers4rec && \
+    cd /transformers4rec/;  if [ "$RELEASE" == "true" ] && [ ${TF4REC_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${TF4REC_VER}; else git checkout main; fi; \
+    pip install -e .[tensorflow, nvtabular]
 
 RUN pip install pynvml pytest graphviz sklearn scipy matplotlib 
 RUN pip install nvidia-pyindex; pip install tritonclient[all] grpcio-channelz
@@ -192,7 +196,7 @@ RUN ln -s /usr/lib/x86_64-linux-gnu/libibverbs.so.1.11.32.1 /usr/lib/x86_64-linu
 
 RUN git clone https://github.com/NVIDIA/HugeCTR.git build-env && \
     pushd build-env && \
-      if [ "$RELEASE" == "true" ] && [ ${HUGECTR_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${HUGECTR_VER}; else echo ${HUGECTR_VER} && git checkout ${HUGECTR_VER}-integration; fi && \
+      if [ "$RELEASE" == "true" ] && [ ${HUGECTR_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${HUGECTR_VER}; else echo ${HUGECTR_VER} && git checkout master; fi && \
       cd sparse_operation_kit && \
       bash ./install.sh --SM=$SM --USE_NVTX=$USE_NVTX && \
     popd && \

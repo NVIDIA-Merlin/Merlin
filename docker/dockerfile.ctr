@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 ARG CUDA_VERSION=11.4.1
 ARG CUDNN_VERSION=8
-ARG IMAGE=nvcr.io/nvidia/tensorflow:21.07-tf2-py3
+ARG IMAGE=nvcr.io/nvidia/tensorflow:21.09-tf2-py3
 FROM ${IMAGE} AS phase1
 ENV CUDA_SHORT_VERSION=11.4
 
@@ -143,6 +143,7 @@ ENV PATH=$PATH:/usr/lib/x86_64-linux-gnu/ \
     NCCL_LAUNCH_MODE=PARALLEL
 
 RUN git clone https://github.com/rapidsai/asvdb.git /repos/asvdb && cd /repos/asvdb && python setup.py install
+
 # Install NVTabular
 RUN git clone https://github.com/NVIDIA/NVTabular.git /nvtabular/ && \
     cd /nvtabular/; if [ "$RELEASE" == "true" ] && [ ${NVTAB_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${NVTAB_VER}; else git checkout main; fi; \
@@ -189,7 +190,7 @@ ARG HUGECTR_VER=vnightly
 
 # Install hugectr
 RUN mkdir -p /var/tmp && cd /var/tmp && git clone https://github.com/NVIDIA/HugeCTR.git HugeCTR && cd - && \
-      cd /var/tmp/HugeCTR && if [ "$RELEASE" == "true" ] && [ ${HUGECTR_VER} != "vnightly" ]; then git fetch --all --tags && git checkout tags/${HUGECTR_VER}; else git checkout ${HUGECTR_VER}-integration; fi && \
+      cd /var/tmp/HugeCTR && if [ "$RELEASE" == "true" ] && [ ${HUGECTR_VER} != "vnightly" ]; then git fetch --all --tags && git checkout tags/${HUGECTR_VER}; else git checkout master; fi && \
       git submodule update --init --recursive
 RUN cd /var/tmp/HugeCTR && \
     mkdir build && cd build && \
