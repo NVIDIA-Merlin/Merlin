@@ -45,10 +45,10 @@ RUN apt update -y --fix-missing && \
 
 RUN pip install git+git://github.com/gevent/gevent.git@21.8.0#egg=gevent
 
-RUN pip install 'notebook>=6.4.1' 'sqlparse>=0.4.2' 'websockets>=10.0'
-RUN ln -s /usr/local/nvm/versions/node/v15.12.0/bin/node /usr/bin/node
-RUN /usr/local/nvm/versions/node/v15.12.0/bin/npm -g upgrade
-RUN rm -rf /usr/local/share/jupyter/lab/staging/node_modules/fast-json-patch
+#RUN pip install 'notebook>=6.4.1' 'sqlparse>=0.4.2' 'websockets>=10.0'
+#RUN ln -s /usr/local/nvm/versions/node/v15.12.0/bin/node /usr/bin/node
+#RUN /usr/local/nvm/versions/node/v15.12.0/bin/npm -g upgrade
+#RUN rm -rf /usr/local/share/jupyter/lab/staging/node_modules/fast-json-patch
 
 # Install cmake
 RUN apt remove --purge cmake -y && wget http://www.cmake.org/files/v3.21/cmake-3.21.1.tar.gz && \
@@ -78,6 +78,7 @@ RUN git clone --branch apache-arrow-4.0.1 --recurse-submodules https://github.co
               -DARROW_PARQUET=ON \
               -DARROW_PYTHON=ON \
               -DARROW_PLASMA=ON \
+	      -DARROW_S3=ON \
               -DARROW_BUILD_TESTS=ON \
               -DARROW_CUDA=ON \
               -DARROW_DATASET=ON \
