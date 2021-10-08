@@ -78,7 +78,6 @@ RUN git clone --branch apache-arrow-4.0.1 --recurse-submodules https://github.co
               -DARROW_PARQUET=ON \
               -DARROW_PYTHON=ON \
               -DARROW_PLASMA=ON \
-	      -DARROW_S3=ON \
               -DARROW_BUILD_TESTS=ON \
               -DARROW_CUDA=ON \
               -DARROW_DATASET=ON \
@@ -125,7 +124,7 @@ RUN git clone https://github.com/rapidsai/cudf.git build-env && cd build-env/ &&
       export CUDF_HOME=${PWD} && \
       export CUDF_ROOT=${PWD}/cpp/build/ && \
       export CMAKE_LIBRARY_PATH=${CUDA_CUDA_LIBRARY} && \
-      ./build.sh libcudf cudf dask_cudf --allgpuarch && \
+      ./build.sh libcudf cudf dask_cudf --allgpuarch --cmake-args=\\\"-DCUDF_ENABLE_ARROW_S3=OFF\\\" && \
       protoc -I=python/cudf/cudf/utils/metadata --python_out=/usr/local/lib/python3.8/dist-packages/cudf/utils/metadata python/cudf/cudf/utils/metadata/orc_column_statistics.proto && \
     popd && \
     rm -rf build-env
