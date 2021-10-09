@@ -40,7 +40,6 @@ RUN apt install -y --no-install-recommends \
       autoconf \
       bison \
       flex \
-      libspdlog-dev \
       libboost-filesystem-dev \
       libboost-system-dev \
       libboost-regex-dev \
@@ -72,6 +71,14 @@ RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/nul
     apt-add-repository 'deb https://apt.kitware.com/ubuntu/ focal main' && \
     apt-get update && \
     apt-get install -y cmake
+
+# Install spdlog from source
+RUN git clone --branch v1.9.2 https://github.com/gabime/spdlog.git build-env && \
+    pushd build-env && \
+      cd spdlog && mkdir build && cd build && \
+      cmake .. && make -j && make install && \
+    popd && \
+    rm -rf build-env
 
 # Install arrow from source
 ENV ARROW_HOME=/usr/local
@@ -154,7 +161,7 @@ RUN pip install botocore>=1.21.6
 RUN git clone https://github.com/rapidsai/asvdb.git /repos/asvdb && cd /repos/asvdb && python setup.py install
 
 # Install NVTabular
-RUN git clone https://github.com/NVIDIA/NVTabular.git /nvtabular/ && \
+RUN git clone https://github.com/NVIDIA-Merlin/NVTabular.git /nvtabular/ && \
     cd /nvtabular/; if [ "$RELEASE" == "true" ] && [ ${NVTAB_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${NVTAB_VER}; else git checkout main; fi; \
     python setup.py develop --user;
 
@@ -192,7 +199,7 @@ RUN apt update; apt install -y graphviz ;
 RUN apt update; apt install -y libtool
 RUN git clone https://github.com/openucx/ucx.git /repos/ucx;cd /repos/ucx; ./autogen.sh; mkdir build; cd build; ../contrib/configure-release --prefix=/usr; make; make install
 
-RUN ln -s /usr/lib/x86_64-linux-gnu/libibverbs.so.1.11.32.1 /usr/lib/x86_64-linux-gnu/libibverbs.so
+RUN ln -s /usr/lib/x86_64-linux-gnu/libibverbs.so.1 /usr/lib/x86_64-linux-gnu/libibverbs.so
 
 #Hiredis
 RUN mkdir -p /var/tmp && cd /var/tmp && git clone --depth=1 https://github.com/redis/hiredis.git && cd - && \
@@ -211,7 +218,7 @@ RUN mkdir -p /var/tmp && cd /var/tmp && git clone --depth=1 https://github.com/f
 ENV CPATH=/usr/local/include:$CPATH
 
 RUN apt update -y && apt install rapidjson-dev -y
-RUN git clone https://github.com/NVIDIA/HugeCTR.git /repos/HugeCTR && \
+RUN git clone https://github.com/NVIDIA-Merlin/HugeCTR.git /repos/HugeCTR && \
       cd /repos/HugeCTR && if [ "$RELEASE" == "true" ] && [ ${HUGECTR_VER} != "vnightly" ]; then git fetch --all --tags && git checkout tags/${HUGECTR_VER}; else git checkout master; fi && \
       git submodule update --init --recursive && \
       mkdir -p build && cd build &&\

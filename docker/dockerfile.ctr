@@ -146,7 +146,7 @@ ENV PATH=$PATH:/usr/lib/x86_64-linux-gnu/ \
 RUN git clone https://github.com/rapidsai/asvdb.git /repos/asvdb && cd /repos/asvdb && python setup.py install
 
 # Install NVTabular
-RUN git clone https://github.com/NVIDIA/NVTabular.git /nvtabular/ && \
+RUN git clone https://github.com/NVIDIA-Merlin/NVTabular.git /nvtabular/ && \
     cd /nvtabular/; if [ "$RELEASE" == "true" ] && [ ${NVTAB_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${NVTAB_VER}; else git checkout main; fi; \
     python setup.py develop --user;
 
@@ -166,7 +166,7 @@ RUN git clone https://github.com/openucx/ucx.git /repos/ucx;cd /repos/ucx; ./aut
 RUN ln -s /usr/lib/libcudf.so /usr/lib/libcudf_base.so
 RUN ln -s /usr/lib/libcudf.so /usr/lib/libcudf_io.so
 
-RUN ln -s /usr/lib/x86_64-linux-gnu/libibverbs.so.1.11.32.1 /usr/lib/x86_64-linux-gnu/libibverbs.so
+RUN ln -s /usr/lib/x86_64-linux-gnu/libibverbs.so.1 /usr/lib/x86_64-linux-gnu/libibverbs.so
 
 #Hiredis
 RUN mkdir -p /var/tmp && cd /var/tmp && git clone --depth=1 https://github.com/redis/hiredis.git && cd - && \
@@ -190,7 +190,7 @@ ARG RELEASE=false
 ARG HUGECTR_VER=vnightly
 
 # Install hugectr
-RUN mkdir -p /var/tmp && cd /var/tmp && git clone https://github.com/NVIDIA/HugeCTR.git HugeCTR && cd - && \
+RUN mkdir -p /var/tmp && cd /var/tmp && git clone https://github.com/NVIDIA-Merlin/HugeCTR.git HugeCTR && cd - && \
       cd /var/tmp/HugeCTR && if [ "$RELEASE" == "true" ] && [ ${HUGECTR_VER} != "vnightly" ]; then git fetch --all --tags && git checkout tags/${HUGECTR_VER}; else git checkout master; fi && \
       git submodule update --init --recursive
 RUN cd /var/tmp/HugeCTR && \

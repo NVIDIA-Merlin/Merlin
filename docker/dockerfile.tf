@@ -34,7 +34,6 @@ RUN apt update -y --fix-missing && \
         libssl-dev \
         protobuf-compiler \
         numactl \
-	libspdlog-dev \
         libnuma-dev \
         libaio-dev \
         libibverbs-dev \
@@ -53,6 +52,14 @@ RUN pip install git+git://github.com/gevent/gevent.git@21.8.0#egg=gevent
 # Install cmake
 RUN apt remove --purge cmake -y && wget http://www.cmake.org/files/v3.21/cmake-3.21.1.tar.gz && \
     tar xf cmake-3.21.1.tar.gz && cd cmake-3.21.1 && ./configure && make && make install
+
+# Install spdlog from source
+RUN git clone --branch v1.9.2 https://github.com/gabime/spdlog.git build-env && \
+    pushd build-env && \
+      cd spdlog && mkdir build && cd build && \
+      cmake .. && make -j && make install && \
+    popd && \
+    rm -rf build-env
 
 # Install arrow from source
 ENV ARROW_HOME=/usr/local
@@ -157,7 +164,7 @@ RUN pip install pybind11
 SHELL ["/bin/bash", "-c"]
 
 # Install NVTabular
-RUN git clone https://github.com/NVIDIA/NVTabular.git /nvtabular/ && \
+RUN git clone https://github.com/NVIDIA-Merlin/NVTabular.git /nvtabular/ && \
     cd /nvtabular/; if [ "$RELEASE" == "true" ] && [ ${NVTAB_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${NVTAB_VER}; else git checkout main; fi; \
     python setup.py develop --user;
 
@@ -193,9 +200,9 @@ ARG USE_NVTX=OFF
 RUN mkdir -p /usr/local/nvidia/lib64 && \
     ln -s /usr/local/cuda/lib64/libcusolver.so /usr/local/nvidia/lib64/libcusolver.so.10
 
-RUN ln -s /usr/lib/x86_64-linux-gnu/libibverbs.so.1.11.32.1 /usr/lib/x86_64-linux-gnu/libibverbs.so
+RUN ln -s /usr/lib/x86_64-linux-gnu/libibverbs.so.1 /usr/lib/x86_64-linux-gnu/libibverbs.so
 
-RUN git clone https://github.com/NVIDIA/HugeCTR.git build-env && \
+RUN git clone https://github.com/NVIDIA-Merlin/HugeCTR.git build-env && \
     pushd build-env && \
       if [ "$RELEASE" == "true" ] && [ ${HUGECTR_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${HUGECTR_VER}; else echo ${HUGECTR_VER} && git checkout master; fi && \
       cd sparse_operation_kit && \

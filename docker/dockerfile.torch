@@ -35,7 +35,6 @@ RUN apt install -y --no-install-recommends \
       autoconf \
       bison \
       flex \
-      libspdlog-dev \
       libboost-filesystem-dev \
       libboost-system-dev \
       libboost-regex-dev \
@@ -65,6 +64,14 @@ RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/nul
     apt-add-repository 'deb https://apt.kitware.com/ubuntu/ focal main' && \
     apt-get update && \
     apt-get install -y cmake
+
+# Install spdlog from source
+RUN git clone --branch v1.9.2 https://github.com/gabime/spdlog.git build-env && \
+    pushd build-env && \
+      cd spdlog && mkdir build && cd build && \
+      cmake .. && make -j && make install && \
+    popd && \
+    rm -rf build-env
 
 # Install arrow from source
 ENV ARROW_HOME=/usr/local
@@ -139,7 +146,7 @@ RUN pip install numpy==1.20.3
 RUN pip install pybind11
 
 # Install NVTabular
-RUN git clone https://github.com/NVIDIA/NVTabular.git /nvtabular/ && \
+RUN git clone https://github.com/NVIDIA-Merlin/NVTabular.git /nvtabular/ && \
     cd /nvtabular/; if [ "$RELEASE" == "true" ] && [ ${NVTAB_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${NVTAB_VER}; else git checkout main; fi; \
     python setup.py develop --user;
 
