@@ -75,8 +75,7 @@ RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/nul
 # Install spdlog from source
 RUN git clone --branch v1.9.2 https://github.com/gabime/spdlog.git build-env && \
     pushd build-env && \
-      cd spdlog && mkdir build && cd build && \
-      cmake .. && make -j && make install && \
+      mkdir build && cd build && cmake .. && make -j && make install && \
     popd && \
     rm -rf build-env
 
@@ -132,7 +131,6 @@ RUN git clone https://github.com/rapidsai/rmm.git build-env && cd build-env/ && 
     pip install python/. && \
     popd && \
     rm -rf build-env
-
 
 # Build env for CUDF build
 RUN git clone https://github.com/rapidsai/cudf.git build-env && cd build-env/ && \
