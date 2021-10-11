@@ -207,6 +207,9 @@ RUN git clone https://github.com/NVIDIA-Merlin/HugeCTR.git build-env && \
 
 RUN pip install pybind11
 RUN pip install numba numpy --upgrade
+
+RUN rm -rf /usr/local/share/jupyter/lab/staging/node_modules/fast-json-patch
+
 SHELL ["/bin/bash", "-c"]
 
 RUN echo $(du -h --max-depth=1 /)
