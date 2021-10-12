@@ -195,7 +195,7 @@ RUN cd /var/tmp/HugeCTR && \
     export PATH=$PATH:/usr/local/cuda-${CUDA_SHORT_VERSION}/compat/ && \
     cmake -DCMAKE_CXX_COMPILER=/usr/bin/g++ -DCMAKE_C_COMPILER=/usr/bin/gcc -DCMAKE_BUILD_TYPE=Release -DSM="60;61;70;75;80" \
           -DVAL_MODE=OFF -DENABLE_MULTINODES=ON -DNCCL_A2A=ON .. && \
-    make VERBOSE=1 -j$(nproc) && make install && \
+    make -j$(nproc) && make install && \
     chmod +x /usr/local/hugectr/bin/* && \
     chmod +x /usr/local/hugectr/lib/* && \
     cd /var/tmp/HugeCTR/onnx_converter && \
