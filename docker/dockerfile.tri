@@ -219,6 +219,7 @@ RUN apt update -y && apt install rapidjson-dev -y
 RUN git clone https://github.com/NVIDIA-Merlin/HugeCTR.git /repos/HugeCTR && \
       cd /repos/HugeCTR && if [ "$RELEASE" == "true" ] && [ ${HUGECTR_VER} != "vnightly" ]; then git fetch --all --tags && git checkout tags/${HUGECTR_VER}; else git checkout master; fi && \
       git submodule update --init --recursive && \
+      sed -i '20d' tools/CMakeLists.txt && \
       mkdir -p build && cd build &&\
       cmake -DCMAKE_BUILD_TYPE=Release -DSM=$SM -DENABLE_INFERENCE=ON .. && \
       make -j$(nproc) && make install && \
