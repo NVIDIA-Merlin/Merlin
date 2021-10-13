@@ -185,6 +185,7 @@ ARG RELEASE=false
 ARG HUGECTR_VER=vnightly
 
 # Install hugectr
+ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib/:/usr/lib/x86_64-linux-gnu/:/opt/hpcx/ompi/lib/
 RUN mkdir -p /var/tmp && cd /var/tmp && git clone https://github.com/NVIDIA-Merlin/HugeCTR.git HugeCTR && cd - && \
       cd /var/tmp/HugeCTR && if [ "$RELEASE" == "true" ] && [ ${HUGECTR_VER} != "vnightly" ]; then git fetch --all --tags && git checkout tags/${HUGECTR_VER}; else git checkout master; fi && \
       git submodule update --init --recursive

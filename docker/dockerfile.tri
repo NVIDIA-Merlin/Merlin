@@ -14,7 +14,7 @@ ARG SM="60;61;70;75;80"
 ENV CUDA_SHORT_VERSION=11.2
 
 SHELL ["/bin/bash", "-c"]
-ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64:/usr/local/lib:/usr/lib:/repos/dist/lib
+ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64:/usr/local/lib:/repos/dist/lib
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -215,6 +215,7 @@ RUN mkdir -p /var/tmp && cd /var/tmp && git clone --depth=1 https://github.com/f
     rm -rf /var/tmp/rocksdb
 ENV CPATH=/usr/local/include:$CPATH
 
+ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib/:/usr/lib/x86_64-linux-gnu/:/opt/hpcx/ompi/lib/
 RUN apt update -y && apt install rapidjson-dev -y
 RUN git clone https://github.com/NVIDIA-Merlin/HugeCTR.git /repos/HugeCTR && \
       cd /repos/HugeCTR && if [ "$RELEASE" == "true" ] && [ ${HUGECTR_VER} != "vnightly" ]; then git fetch --all --tags && git checkout tags/${HUGECTR_VER}; else git checkout master; fi && \
