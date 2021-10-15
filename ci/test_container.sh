@@ -1,13 +1,12 @@
 #!/bin/bash
 
-hugectr=$1
-tf4rec=$2
+container=$1
 
 # Test NVTabular
 pytest /nvtabular/tests/unit
 
 # Test HugeCTR
-if [ "$hugectr" == "train" ]; then
+if [ "$container" == "merlin-training" ]; then
     layers_test && \
     checker_test && \
     data_reader_test && \
@@ -18,14 +17,14 @@ if [ "$hugectr" == "train" ]; then
     model_oversubscriber_test && \
     parser_test && \
     auc_test
-elif [ "$hugectr" == "embedding" ]; then
+elif [ "$container" == "merlin-tensorflow-training" ]; then
     embedding_test
-elif [ "$hugectr" == "inference" ]; then
+elif [ "$container" == "merlin-inference" ]; then
     inference_test
 fi
 
 # Test Transformers4Rec
-if [ "$tf4rec" == "true" ]; then
+if [ "$container" != "merlin-training" ]; then
     pytest /transformers4rec/tests/unit
 fi
 
