@@ -1,6 +1,6 @@
 ## [NVIDIA Merlin](https://github.com/NVIDIA-Merlin) 
 
-NVIDIA Merlin is an open source library designed to accelerate recommender systems on NVIDIA’s GPUs. It enables data scientists, machine learning engineers, and researchers to build high-performing recommenders at scale. Merlin includes tools to address common ETL, training, and inference challenges. Each stage of the Merlin pipeline is optimized to support hundreds of terabytes of data, which is all accessible through easy-to-use APIs. With Merlin, better predictions and increased click-through rates (CTRs) are within reach. For more information, see [NVIDIA Merlin](https://developer.nvidia.com/nvidia-merlin).
+NVIDIA Merlin is an open source library designed to accelerate recommender systems on NVIDIA’s GPUs. It enables data scientists, machine learning engineers, and researchers to build high-performing recommenders at scale. Merlin includes tools to address common ETL, training, and inference challenges. Each stage of the Merlin pipeline is optimized to support hundreds of terabytes of data, which is all accessible through easy-to-use APIs. For more information, see [NVIDIA Merlin](https://developer.nvidia.com/nvidia-merlin).
 
 ### Benefits
 
