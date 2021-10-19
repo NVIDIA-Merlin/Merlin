@@ -24,8 +24,6 @@ ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
 # Build env variables for rmm
 ENV INSTALL_PREFIX=/usr
 
-RUN pip3 install --no-cache-dir mpi4py
-
 RUN apt update -y --fix-missing && \
     apt upgrade -y && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
@@ -142,8 +140,8 @@ ENV PATH=$PATH:/usr/lib/x86_64-linux-gnu/ \
 RUN git clone https://github.com/rapidsai/asvdb.git /repos/asvdb && cd /repos/asvdb && python setup.py install
 
 # Install NVTabular
-RUN git clone https://github.com/albert17/NVTabular.git /nvtabular/ && \
-    cd /nvtabular/; if [ "$RELEASE" == "true" ] && [ ${NVTAB_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${NVTAB_VER}; else git checkout update-cudf; fi; \
+RUN git clone https://github.com/rjzamora/NVTabular.git /nvtabular/ && \
+    cd /nvtabular/; if [ "$RELEASE" == "true" ] && [ ${NVTAB_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${NVTAB_VER}; else git checkout fix-parquet-list; fi; \
     python setup.py develop --user;
 
 RUN pip install dask==2021.07.1 distributed==2021.07.1 dask[dataframe]==2021.07.1 dask-cuda
@@ -191,6 +189,8 @@ FROM phase3 AS phase4
 ARG RELEASE=false
 ARG HUGECTR_VER=vnightly
 
+RUN pip3 install --no-cache-dir mpi4py ortools sklearn onnx onnxruntime
+
 ENV OMPI_MCA_plm_rsh_agent=sh
 ENV OMPI_MCA_opal_cuda_support=true
 
@@ -207,7 +207,6 @@ RUN mkdir -p /var/tmp && cd /var/tmp && git clone https://github.com/NVIDIA-Merl
       cd /var/tmp/HugeCTR && if [ "$RELEASE" == "true" ] && [ ${HUGECTR_VER} != "vnightly" ]; then git fetch --all --tags && git checkout tags/${HUGECTR_VER}; else git checkout master; fi && \
       git submodule update --init --recursive
 RUN cd /var/tmp/HugeCTR && \
-    sed -i '20d' tools/CMakeLists.txt && \
     mkdir build && cd build && \
     LD_LIBRARY_PATH=/usr/local/cuda/lib64/stubs/:$LD_LIBRARY_PATH && \
     export PATH=$PATH:/usr/local/cuda-${CUDA_SHORT_VERSION}/compat/ && \
