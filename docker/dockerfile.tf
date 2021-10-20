@@ -158,8 +158,8 @@ RUN pip install pybind11
 SHELL ["/bin/bash", "-c"]
 
 # Install NVTabular
-RUN git clone https://github.com/rjzamora/NVTabular.git /nvtabular/ && \
-    cd /nvtabular/; if [ "$RELEASE" == "true" ] && [ ${NVTAB_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${NVTAB_VER}; else git checkout fix-parquet-list; fi; \
+RUN git clone https://github.com/albert17/NVTabular.git /nvtabular/ && \
+    cd /nvtabular/; if [ "$RELEASE" == "true" ] && [ ${NVTAB_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${NVTAB_VER}; else git checkout update-cudf; fi; \
     python setup.py develop --user;
 
 # Install Transformers4Rec
