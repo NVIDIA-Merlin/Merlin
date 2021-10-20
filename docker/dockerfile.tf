@@ -13,7 +13,7 @@ ARG RMM_VER=vnightly
 ARG CUDF_VER=vnightly
 ARG NVTAB_VER=vnightly
 ARG TF4REC_VER=vnightly
-ARG HUGECTR_VER=vnightly
+ARG HUGECTR_VER=master
 ARG SM="60;61;70;75;80"
 
 ENV CUDA_HOME=/usr/local/cuda
@@ -29,7 +29,7 @@ RUN apt update -y --fix-missing && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         vim gdb git wget unzip tar \ 
         #python3.8-dev \
-        zlib1g-dev lsb-release clang-format libboost-all-dev \
+        zlib1g-dev lsb-release clang-format libboost-serialization-dev \
         openssl curl zip\
         libssl-dev \
         protobuf-compiler \
@@ -198,7 +198,7 @@ RUN ln -s /usr/lib/x86_64-linux-gnu/libibverbs.so.1 /usr/lib/x86_64-linux-gnu/li
 
 RUN git clone https://github.com/NVIDIA-Merlin/HugeCTR.git build-env && \
     pushd build-env && \
-      if [ "$RELEASE" == "true" ] && [ ${HUGECTR_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${HUGECTR_VER}; else echo ${HUGECTR_VER} && git checkout master; fi && \
+      if [ "$RELEASE" == "true" ] && [ ${HUGECTR_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${HUGECTR_VER}; else echo ${HUGECTR_VER} && git checkout ${HUGECTR_VER}; fi && \
       cd sparse_operation_kit && \
       bash ./install.sh --SM=$SM --USE_NVTX=$USE_NVTX && \
     popd && \

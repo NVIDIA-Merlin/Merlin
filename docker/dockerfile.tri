@@ -4,7 +4,7 @@ ARG IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-py3
 FROM ${IMAGE}
 ARG RMM_VER=vnightly
 ARG CUDF_VER=vnightly
-ARG HUGECTR_VER=vnightly
+ARG HUGECTR_VER=master
 ARG NVTAB_VER=vnightly
 ARG TF4REC_VER=vnightly
 
@@ -210,7 +210,7 @@ ENV CPATH=/usr/local/include:$CPATH
 # Install HugeCTR
 RUN apt update -y && apt install rapidjson-dev -y
 RUN git clone https://github.com/NVIDIA-Merlin/HugeCTR.git /repos/HugeCTR && \
-      cd /repos/HugeCTR && if [ "$RELEASE" == "true" ] && [ ${HUGECTR_VER} != "vnightly" ]; then git fetch --all --tags && git checkout tags/${HUGECTR_VER}; else git checkout master; fi && \
+      cd /repos/HugeCTR && if [ "$RELEASE" == "true" ] && [ ${HUGECTR_VER} != "vnightly" ]; then git fetch --all --tags && git checkout tags/${HUGECTR_VER}; else git checkout ${HUGECTR_VER}; fi && \
       git submodule update --init --recursive && \
       mkdir -p build && cd build &&\
       cmake -DCMAKE_BUILD_TYPE=Release -DSM=$SM -DENABLE_INFERENCE=ON .. && \
