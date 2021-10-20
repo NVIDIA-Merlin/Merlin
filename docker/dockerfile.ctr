@@ -204,7 +204,7 @@ ENV HCOLL_ENABLE_MCAST=0
 
 # Install hugectr
 RUN mkdir -p /var/tmp && cd /var/tmp && git clone https://github.com/NVIDIA-Merlin/HugeCTR.git HugeCTR && cd - && \
-      cd /var/tmp/HugeCTR && if [ "$RELEASE" == "true" ] && [ ${HUGECTR_VER} != "vnightly" ]; then git fetch --all --tags && git checkout tags/${HUGECTR_VER}; else git checkout master; fi && \
+      cd /var/tmp/HugeCTR && if [ "$RELEASE" == "true" ] && [ ${HUGECTR_VER} != "vnightly" ]; then git fetch --all --tags && git checkout tags/${HUGECTR_VER}; else git checkout ${HUGECTR_VER}; fi && \
       git submodule update --init --recursive
 RUN cd /var/tmp/HugeCTR && \
     mkdir build && cd build && \
