@@ -9,7 +9,7 @@ ARG RELEASE=false
 ARG RMM_VER=vnightly
 ARG CUDF_VER=vnightly
 ARG NVTAB_VER=vnightly
-ARG HUGECTR_VER=vnightly
+ARG HUGECTR_VER=master
 ARG HWLOC_VER=2.4.1
 SHELL ["/bin/bash", "-c"]
 
@@ -211,7 +211,7 @@ RUN cd /var/tmp/HugeCTR && \
     LD_LIBRARY_PATH=/usr/local/cuda/lib64/stubs/:$LD_LIBRARY_PATH && \
     export PATH=$PATH:/usr/local/cuda-${CUDA_SHORT_VERSION}/compat/ && \
     cmake -DCMAKE_CXX_COMPILER=/usr/bin/g++ -DCMAKE_C_COMPILER=/usr/bin/gcc -DCMAKE_BUILD_TYPE=Release -DSM="60;61;70;75;80" \
-          -DVAL_MODE=OFF -DENABLE_MULTINODES=ON -DNCCL_A2A=ON .. && \
+          -DENABLE_MULTINODES=ON .. && \
     make -j$(nproc) && make install && \
     chmod +x /usr/local/hugectr/bin/* && \
     chmod +x /usr/local/hugectr/lib/* && \

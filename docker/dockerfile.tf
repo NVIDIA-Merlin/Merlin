@@ -13,7 +13,7 @@ ARG RMM_VER=vnightly
 ARG CUDF_VER=vnightly
 ARG NVTAB_VER=vnightly
 ARG TF4REC_VER=vnightly
-ARG HUGECTR_VER=vnightly
+ARG HUGECTR_VER=master
 ARG SM="60;61;70;75;80"
 
 ENV CUDA_HOME=/usr/local/cuda
