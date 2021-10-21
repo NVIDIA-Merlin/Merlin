@@ -9,7 +9,7 @@ ARG RELEASE=false
 ARG RMM_VER=vnightly
 ARG CUDF_VER=vnightly
 ARG NVTAB_VER=vnightly
-ARG HUGECTR_VER=master
+ARG HUGECTR_VER=vnightly
 ARG HWLOC_VER=2.4.1
 SHELL ["/bin/bash", "-c"]
 
@@ -140,8 +140,8 @@ ENV PATH=$PATH:/usr/lib/x86_64-linux-gnu/ \
 RUN git clone https://github.com/rapidsai/asvdb.git /repos/asvdb && cd /repos/asvdb && python setup.py install
 
 # Install NVTabular
-RUN git clone https://github.com/albert17/NVTabular.git /nvtabular/ && \
-    cd /nvtabular/; if [ "$RELEASE" == "true" ] && [ ${NVTAB_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${NVTAB_VER}; else git checkout update-cudf; fi; \
+RUN git clone https://github.com/NVIDIA-Merlin/NVTabular.git /nvtabular/ && \
+    cd /nvtabular/; if [ "$RELEASE" == "true" ] && [ ${NVTAB_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${NVTAB_VER}; else git checkout main; fi; \
     python setup.py develop --user;
 
 RUN pip install dask==2021.07.1 distributed==2021.07.1 dask[dataframe]==2021.07.1 dask-cuda
@@ -204,7 +204,7 @@ ENV HCOLL_ENABLE_MCAST=0
 
 # Install hugectr
 RUN mkdir -p /var/tmp && cd /var/tmp && git clone https://github.com/NVIDIA-Merlin/HugeCTR.git HugeCTR && cd - && \
-      cd /var/tmp/HugeCTR && if [ "$RELEASE" == "true" ] && [ ${HUGECTR_VER} != "vnightly" ]; then git fetch --all --tags && git checkout tags/${HUGECTR_VER}; else git checkout ${HUGECTR_VER}; fi && \
+      cd /var/tmp/HugeCTR && if [ "$RELEASE" == "true" ] && [ ${HUGECTR_VER} != "vnightly" ]; then git fetch --all --tags && git checkout tags/${HUGECTR_VER}; else git checkout master; fi && \
       git submodule update --init --recursive
 RUN cd /var/tmp/HugeCTR && \
     mkdir build && cd build && \

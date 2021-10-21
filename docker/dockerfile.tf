@@ -13,7 +13,7 @@ ARG RMM_VER=vnightly
 ARG CUDF_VER=vnightly
 ARG NVTAB_VER=vnightly
 ARG TF4REC_VER=vnightly
-ARG HUGECTR_VER=master
+ARG HUGECTR_VER=vnightly
 ARG SM="60;61;70;75;80"
 
 ENV CUDA_HOME=/usr/local/cuda
@@ -158,8 +158,8 @@ RUN pip install pybind11
 SHELL ["/bin/bash", "-c"]
 
 # Install NVTabular
-RUN git clone https://github.com/albert17/NVTabular.git /nvtabular/ && \
-    cd /nvtabular/; if [ "$RELEASE" == "true" ] && [ ${NVTAB_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${NVTAB_VER}; else git checkout update-cudf; fi; \
+RUN git clone https://github.com/NVIDIA-Merlin/NVTabular.git /nvtabular/ && \
+    cd /nvtabular/; if [ "$RELEASE" == "true" ] && [ ${NVTAB_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${NVTAB_VER}; else git checkout main; fi; \
     python setup.py develop --user;
 
 # Install Transformers4Rec
@@ -198,7 +198,7 @@ RUN ln -s /usr/lib/x86_64-linux-gnu/libibverbs.so.1 /usr/lib/x86_64-linux-gnu/li
 
 RUN git clone https://github.com/NVIDIA-Merlin/HugeCTR.git build-env && \
     pushd build-env && \
-      if [ "$RELEASE" == "true" ] && [ ${HUGECTR_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${HUGECTR_VER}; else echo ${HUGECTR_VER} && git checkout ${HUGECTR_VER}; fi && \
+      if [ "$RELEASE" == "true" ] && [ ${HUGECTR_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${HUGECTR_VER}; else echo ${HUGECTR_VER} && git checkout master; fi && \
       cd sparse_operation_kit && \
       bash ./install.sh --SM=$SM --USE_NVTX=$USE_NVTX && \
     popd && \
