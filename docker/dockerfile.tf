@@ -150,10 +150,6 @@ ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
 RUN pip install pandas sklearn ortools nvtx-plugins pydot && \
     pip cache purge
 
-# install ucx from source
-RUN apt update; apt install -y libtool
-RUN git clone https://github.com/openucx/ucx.git /repos/ucx;cd /repos/ucx; ./autogen.sh; mkdir build; cd build; ../contrib/configure-release --prefix=/usr; make; make install
-
 RUN pip install pybind11
 SHELL ["/bin/bash", "-c"]
 
@@ -169,7 +165,8 @@ RUN git clone https://github.com/NVIDIA-Merlin/Transformers4Rec.git /transformer
 
 RUN pip install pynvml pytest graphviz sklearn scipy matplotlib 
 RUN pip install nvidia-pyindex; pip install tritonclient[all] grpcio-channelz
-RUN pip install nvtx mpi4py cupy-cuda114 cachetools typing_extensions fastavro
+#RUN pip install nvtx mpi4py cupy-cuda114 cachetools typing_extensions fastavro
+RUN pip install nvtx cupy-cuda114 cachetools typing_extensions fastavro
 
 RUN apt-get update; apt-get install -y graphviz
 
@@ -183,7 +180,7 @@ RUN git clone https://github.com/rapidsai/asvdb.git build-env && \
     popd && \
     rm -rf build-env
 
-RUN pip install dask==2021.07.1 distributed==2021.07.1 dask[dataframe]==2021.07.1 dask-cuda
+RUN pip install dask==2021.09.1 distributed==2021.09.1 dask[dataframe]==2021.09.1 dask-cuda
 FROM phase3 as phase4
 
 ARG RELEASE=false
