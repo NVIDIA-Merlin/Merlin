@@ -28,15 +28,11 @@ RUN apt update -y --fix-missing && \
     apt upgrade -y && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         vim gdb git wget unzip tar \ 
-        #python3.8-dev \
         zlib1g-dev lsb-release clang-format libboost-serialization-dev \
         openssl curl zip\
         libssl-dev \
         protobuf-compiler \
-        numactl \
-        libnuma-dev \
         libaio-dev \
-        libibverbs-dev \
         slapd && \
       apt install -y --no-install-recommends software-properties-common && \
       add-apt-repository -y ppa:deadsnakes/ppa && \
@@ -136,16 +132,7 @@ ARG RELEASE=false
 ARG NVTAB_VER=vnightly
 ARG TF4REC_VER=vnightly
 
-RUN apt-get update -y && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-        vim gdb git wget unzip tar python3.8-dev \
-        zlib1g-dev lsb-release clang-format libboost-all-dev \
-        openssl curl zip\
-       	slapd && \
-    rm -rf /var/lib/apt/lists/*
-
 ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
-
 
 RUN pip install pandas sklearn ortools nvtx-plugins pydot && \
     pip cache purge
