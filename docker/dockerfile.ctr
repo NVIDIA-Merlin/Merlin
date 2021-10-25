@@ -1,15 +1,16 @@
 # syntax=docker/dockerfile:1
 ARG CUDA_VERSION=11.4.1
 ARG CUDNN_VERSION=8
-ARG IMAGE=nvcr.io/nvidia/tensorflow:21.07-tf2-py3
+ARG IMAGE=nvcr.io/nvidia/tensorflow:21.09-tf2-py3
 FROM ${IMAGE} AS phase1
 ENV CUDA_SHORT_VERSION=11.4
 
 ARG RELEASE=false
-ARG RMM_VER=v21.08.00
-ARG CUDF_VER=v21.08.01
+ARG RMM_VER=vnightly
+ARG CUDF_VER=vnightly
 ARG NVTAB_VER=vnightly
-ARG HUGECTR_VER=v21.9
+ARG HUGECTR_VER=vnightly
+ARG HWLOC_VER=2.4.1
 SHELL ["/bin/bash", "-c"]
 
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64:/usr/local/lib:/repos/dist/lib
@@ -23,19 +24,19 @@ ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
 # Build env variables for rmm
 ENV INSTALL_PREFIX=/usr
 
-RUN rm -rfv /usr/local/mpi
-
 RUN apt update -y --fix-missing && \
     apt upgrade -y && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         vim gdb git wget unzip tar \ 
         #python3.8-dev \
-        zlib1g-dev lsb-release clang-format libboost-all-dev \
+        zlib1g-dev lsb-release clang-format \
+        libboost-serialization-dev \
         openssl curl zip\
         libssl-dev \
         protobuf-compiler \
         libtbb-dev \
         numactl \
+        libspdlog-dev \
         libnuma-dev \
         libaio-dev \
         libibverbs-dev \
@@ -46,17 +47,12 @@ RUN apt update -y --fix-missing && \
 
 RUN pip install git+git://github.com/gevent/gevent.git@21.8.0#egg=gevent
 
-RUN pip install 'notebook>=6.4.1' 'sqlparse>=0.4.2' 'websockets>=10.0'
-RUN ln -s /usr/local/nvm/versions/node/v15.12.0/bin/node /usr/bin/node
-RUN /usr/local/nvm/versions/node/v15.12.0/bin/npm -g upgrade
-RUN rm -rf /usr/local/share/jupyter/lab/staging/node_modules/fast-json-patch
-
 RUN apt remove --purge cmake -y && wget http://www.cmake.org/files/v3.21/cmake-3.21.1.tar.gz && \
     tar xf cmake-3.21.1.tar.gz && cd cmake-3.21.1 && ./configure && make && make install
 
 # Install arrow from source
 ENV ARROW_HOME=/usr/local
-RUN git clone --branch apache-arrow-4.0.1 --recurse-submodules https://github.com/apache/arrow.git build-env && \
+RUN git clone --branch apache-arrow-5.0.0 --recurse-submodules https://github.com/apache/arrow.git build-env && \
     pushd build-env && \
       export PARQUET_TEST_DATA="${PWD}/cpp/submodules/parquet-testing/data" && \
       export ARROW_TEST_DATA="${PWD}/testing/data" && \
@@ -100,8 +96,8 @@ RUN git clone --branch apache-arrow-4.0.1 --recurse-submodules https://github.co
 FROM phase1 AS phase2
 
 ARG RELEASE=false
-ARG RMM_VER=v21.08.00
-ARG CUDF_VER=v21.08.01
+ARG RMM_VER=vnightly
+ARG CUDF_VER=vnightly
 
 # Install rmm from source
 RUN git clone https://github.com/rapidsai/rmm.git build-env && cd build-env/ && \
@@ -114,17 +110,16 @@ RUN git clone https://github.com/rapidsai/rmm.git build-env && cd build-env/ && 
     popd && \
     rm -rf build-env
 
-
 # Build env for CUDF build
 RUN git clone https://github.com/rapidsai/cudf.git build-env && cd build-env/ && \  
-    if [ "$RELEASE" == "true" ] && [ ${CUDF_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${CUDF_VER}; else git checkout main; fi; \
+    if [ "$RELEASE" == "true" ] && [ ${CUDF_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${CUDF_VER}; else git checkout branch-21.10; fi; \
     git submodule update --init --recursive && \
     cd .. && \
     pushd build-env && \
       export CUDF_HOME=${PWD} && \
       export CUDF_ROOT=${PWD}/cpp/build/ && \
       export CMAKE_LIBRARY_PATH=${CUDA_CUDA_LIBRARY} && \
-      ./build.sh libcudf cudf dask_cudf --allgpuarch && \
+      ./build.sh libcudf cudf dask_cudf --allgpuarch --cmake-args=\"-DCUDF_ENABLE_ARROW_S3=OFF\" && \
       protoc -I=python/cudf/cudf/utils/metadata --python_out=/usr/local/lib/python3.8/dist-packages/cudf/utils/metadata python/cudf/cudf/utils/metadata/orc_column_statistics.proto && \
     popd && \
     rm -rf build-env
@@ -135,7 +130,7 @@ ARG RELEASE=false
 ARG NVTAB_VER=vnightly
 
 # Install multiple packages
-RUN pip install nvtx pandas mpi4py cupy-cuda114 cachetools typing_extensions fastavro
+RUN pip install nvtx pandas cupy-cuda114 cachetools typing_extensions fastavro
 RUN pip install pynvml pytest graphviz sklearn scipy matplotlib tqdm pydot nvidia-pyindex
 RUN pip install tritonclient[all] grpcio-channelz
 RUN pip install pybind11 jupyterlab onnx onnxruntime
@@ -143,12 +138,13 @@ ENV PATH=$PATH:/usr/lib/x86_64-linux-gnu/ \
     NCCL_LAUNCH_MODE=PARALLEL
 
 RUN git clone https://github.com/rapidsai/asvdb.git /repos/asvdb && cd /repos/asvdb && python setup.py install
+
 # Install NVTabular
-RUN git clone https://github.com/NVIDIA/NVTabular.git /nvtabular/ && \
+RUN git clone https://github.com/NVIDIA-Merlin/NVTabular.git /nvtabular/ && \
     cd /nvtabular/; if [ "$RELEASE" == "true" ] && [ ${NVTAB_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${NVTAB_VER}; else git checkout main; fi; \
     python setup.py develop --user;
 
-RUN pip install dask==2021.07.1 distributed==2021.07.1 dask[dataframe]==2021.07.1 dask-cuda
+RUN pip install dask==2021.09.1 distributed==2021.09.1 dask[dataframe]==2021.09.1 dask-cuda
 
 # this will help with install that requires libcuda.so
 ENV CUDF_HOME=/usr/include
@@ -156,15 +152,21 @@ ENV CUDF_ROOT=/usr/include/libcudf
 ENV CONDA_PREFIX=/usr
 RUN ln -s /usr/local/cuda/lib64/stubs/libcuda.so /usr/local/cuda/lib64/stubs/libcuda.so.1
 
-# install ucx from source
-RUN apt update; apt install -y libtool
-RUN git clone https://github.com/openucx/ucx.git /repos/ucx;cd /repos/ucx; ./autogen.sh; mkdir build; cd build; ../contrib/configure-release --prefix=${CONDA_PREFIX}; make; make install
-
 # link sub modules expected by hugectr cmake
 RUN ln -s /usr/lib/libcudf.so /usr/lib/libcudf_base.so
 RUN ln -s /usr/lib/libcudf.so /usr/lib/libcudf_io.so
 
-RUN ln -s /usr/lib/x86_64-linux-gnu/libibverbs.so.1.11.32.1 /usr/lib/x86_64-linux-gnu/libibverbs.so
+RUN ln -s /usr/lib/x86_64-linux-gnu/libibverbs.so.1 /usr/lib/x86_64-linux-gnu/libibverbs.so
+
+# Install CUDA-Aware hwloc from source
+ARG HWLOC_VER=2.4.1
+RUN cd /opt/hpcx/ompi/include/openmpi/opal/mca/hwloc/hwloc201 && rm -rfv hwloc201.h hwloc/include/hwloc.h
+RUN mkdir -p /var/tmp && wget -q -nc --no-check-certificate -P /var/tmp https://download.open-mpi.org/release/hwloc/v2.4/hwloc-${HWLOC_VER}.tar.gz && \
+    mkdir -p /var/tmp && tar -x -f /var/tmp/hwloc-${HWLOC_VER}.tar.gz -C /var/tmp && \
+    cd /var/tmp/hwloc-${HWLOC_VER} && \
+    ./configure CPPFLAGS="-I/usr/local/cuda/include/ -L/usr/local/cuda/lib64/" LDFLAGS="-L/usr/local/cuda/lib64" --enable-cuda && \
+    make -j$(nproc) && make install && \
+    rm -rf /var/tmp/hwloc-${HWLOC_VER} /var/tmp/hwloc-${HWLOC_VER}.tar.gz
 
 #Hiredis
 RUN mkdir -p /var/tmp && cd /var/tmp && git clone --depth=1 https://github.com/redis/hiredis.git && cd - && \
@@ -185,29 +187,46 @@ ENV CPATH=/usr/local/include:$CPATH
 FROM phase3 AS phase4
 
 ARG RELEASE=false
-ARG HUGECTR_VER=v21.9
+ARG HUGECTR_VER=vnightly
+
+RUN pip3 install --no-cache-dir mpi4py ortools sklearn onnx onnxruntime
+
+ENV OMPI_MCA_plm_rsh_agent=sh
+ENV OMPI_MCA_opal_cuda_support=true
+
+ENV NCCL_LAUNCH_MODE=PARALLEL
+ENV NCCL_COLLNET_ENABLE=0
+
+ENV SHARP_COLL_NUM_COLL_GROUP_RESOURCE_ALLOC_THRESHOLD=0
+ENV SHARP_COLL_LOCK_ON_COMM_INIT=1
+ENV SHARP_COLL_LOG_LEVEL=3
+ENV HCOLL_ENABLE_MCAST=0
 
 # Install hugectr
-RUN mkdir -p /var/tmp && cd /var/tmp && git clone https://github.com/NVIDIA/HugeCTR.git HugeCTR && cd - && \
-      cd /var/tmp/HugeCTR && if [ "$RELEASE" == "true" ] && [ ${HUGECTR_VER} != "vnightly" ]; then git fetch --all --tags && git checkout tags/${HUGECTR_VER}; else git checkout ${HUGECTR_VER}-integration; fi && \
+RUN mkdir -p /var/tmp && cd /var/tmp && git clone https://github.com/NVIDIA-Merlin/HugeCTR.git HugeCTR && cd - && \
+      cd /var/tmp/HugeCTR && if [ "$RELEASE" == "true" ] && [ ${HUGECTR_VER} != "vnightly" ]; then git fetch --all --tags && git checkout tags/${HUGECTR_VER}; else git checkout master; fi && \
       git submodule update --init --recursive
 RUN cd /var/tmp/HugeCTR && \
     mkdir build && cd build && \
     LD_LIBRARY_PATH=/usr/local/cuda/lib64/stubs/:$LD_LIBRARY_PATH && \
     export PATH=$PATH:/usr/local/cuda-${CUDA_SHORT_VERSION}/compat/ && \
     cmake -DCMAKE_CXX_COMPILER=/usr/bin/g++ -DCMAKE_C_COMPILER=/usr/bin/gcc -DCMAKE_BUILD_TYPE=Release -DSM="60;61;70;75;80" \
-          -DVAL_MODE=OFF -DENABLE_MULTINODES=ON -DNCCL_A2A=ON .. && \
-    make VERBOSE=1 -j$(nproc) && make install && \
+          -DENABLE_MULTINODES=ON .. && \
+    make -j$(nproc) && make install && \
     chmod +x /usr/local/hugectr/bin/* && \
     chmod +x /usr/local/hugectr/lib/* && \
     cd /var/tmp/HugeCTR/onnx_converter && \
     python3 setup.py install && \
     rm -rf /var/tmp/HugeCTR
+
+ENV PATH=/usr/local/hugectr/bin:$PATH
+ENV LIBRARY_PATH=/usr/local/hugectr/lib:$LIBRARY_PATH
+ENV LD_LIBRARY_PATH=/usr/local/hugectr/lib:$LD_LIBRARY_PATH
+ENV PYTHONPATH=/usr/local/hugectr/lib:$PYTHONPATH
+ENV PYTHONPATH=/hugectr/onnx_converter:$PYTHONPATH
+
 # remove fake lib
 RUN rm /usr/local/cuda/lib64/stubs/libcuda.so.1
-ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/hugectr/lib \
-    PATH=$PATH:/usr/local/hugectr/bin
-ENV PYTHONPATH=$PYTHONPATH:/usr/local/hugectr/lib
 
 RUN rm -rf /repos
 RUN pip install numba numpy --upgrade

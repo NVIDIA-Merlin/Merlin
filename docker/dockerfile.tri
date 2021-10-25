@@ -1,11 +1,12 @@
 # syntax=docker/dockerfile:1
-ARG TRITON_VERSION=21.07
+ARG TRITON_VERSION=21.09
 ARG IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-py3
 FROM ${IMAGE}
-ARG RMM_VER=v21.08.00
-ARG CUDF_VER=v21.08.01
-ARG HUGECTR_VER=v21.9
+ARG RMM_VER=vnightly
+ARG CUDF_VER=vnightly
+ARG HUGECTR_VER=vnightly
 ARG NVTAB_VER=vnightly
+ARG TF4REC_VER=vnightly
 
 ARG RELEASE=false
 ARG SM="60;61;70;75;80"
@@ -13,10 +14,9 @@ ARG SM="60;61;70;75;80"
 ENV CUDA_SHORT_VERSION=11.2
 
 SHELL ["/bin/bash", "-c"]
+
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64:/usr/local/lib:/repos/dist/lib
-
 ENV DEBIAN_FRONTEND=noninteractive
-
 ENV CUDA_HOME=/usr/local/cuda
 ENV CUDA_PATH=$CUDA_HOME
 ENV CUDA_CUDA_LIBRARY=${CUDA_HOME}/lib64/stubs
@@ -24,7 +24,6 @@ ENV PATH=${CUDA_HOME}/lib64/:${PATH}:${CUDA_HOME}/bin
 
 # Build env variables for rmm
 ENV INSTALL_PREFIX=/usr
-
 
 RUN apt update -y --fix-missing && \
     apt upgrade -y && \
@@ -40,9 +39,7 @@ RUN apt install -y --no-install-recommends \
       autoconf \
       bison \
       flex \
-      libboost-filesystem-dev \
-      libboost-system-dev \
-      libboost-regex-dev \
+      libboost-serialization-dev \
       libjemalloc-dev \
       wget \
       libssl-dev \
@@ -72,9 +69,16 @@ RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/nul
     apt-get update && \
     apt-get install -y cmake
 
+# Install spdlog from source
+RUN git clone --branch v1.9.2 https://github.com/gabime/spdlog.git build-env && \
+    pushd build-env && \
+      mkdir build && cd build && cmake .. && make -j && make install && \
+    popd && \
+    rm -rf build-env
+
 # Install arrow from source
 ENV ARROW_HOME=/usr/local
-RUN git clone --branch apache-arrow-4.0.1 --recurse-submodules https://github.com/apache/arrow.git build-env && \
+RUN git clone --branch apache-arrow-5.0.0 --recurse-submodules https://github.com/apache/arrow.git build-env && \
     pushd build-env && \
       export PARQUET_TEST_DATA="${PWD}/cpp/submodules/parquet-testing/data" && \
       export ARROW_TEST_DATA="${PWD}/testing/data" && \
@@ -125,17 +129,16 @@ RUN git clone https://github.com/rapidsai/rmm.git build-env && cd build-env/ && 
     popd && \
     rm -rf build-env
 
-
 # Build env for CUDF build
 RUN git clone https://github.com/rapidsai/cudf.git build-env && cd build-env/ && \
-    if [ "$RELEASE" == "true" ] && [ ${CUDF_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${CUDF_VER}; else git checkout main; fi; \
+    if [ "$RELEASE" == "true" ] && [ ${CUDF_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${CUDF_VER}; else git checkout branch-21.10; fi; \
     git submodule update --init --recursive && \
     cd .. && \
     pushd build-env && \
       export CUDF_HOME=${PWD} && \
       export CUDF_ROOT=${PWD}/cpp/build/ && \
       export CMAKE_LIBRARY_PATH=${CUDA_CUDA_LIBRARY} && \
-      ./build.sh libcudf cudf dask_cudf --allgpuarch && \
+      ./build.sh libcudf cudf dask_cudf --allgpuarch --cmake-args=\"-DCUDF_ENABLE_ARROW_S3=OFF\" && \
       protoc -I=python/cudf/cudf/utils/metadata --python_out=/usr/local/lib/python3.8/dist-packages/cudf/utils/metadata python/cudf/cudf/utils/metadata/orc_column_statistics.proto && \
     popd && \
     rm -rf build-env
@@ -153,12 +156,16 @@ RUN pip install botocore>=1.21.6
 RUN git clone https://github.com/rapidsai/asvdb.git /repos/asvdb && cd /repos/asvdb && python setup.py install
 
 # Install NVTabular
-RUN git clone https://github.com/NVIDIA/NVTabular.git /nvtabular/ && \
+RUN git clone https://github.com/NVIDIA-Merlin/NVTabular.git /nvtabular/ && \
     cd /nvtabular/; if [ "$RELEASE" == "true" ] && [ ${NVTAB_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${NVTAB_VER}; else git checkout main; fi; \
     python setup.py develop --user;
-# Install Transformers4Rec
-RUN pip install git+git://github.com/NVIDIA-Merlin/Transformers4Rec.git@v0.1.1#egg=transformers4rec[pytorch,nvtabular]
 
+# Install Transformers4Rec
+RUN git clone https://github.com/NVIDIA-Merlin/Transformers4Rec.git /transformers4rec && \
+    cd /transformers4rec/;  if [ "$RELEASE" == "true" ] && [ ${TF4REC_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${TF4REC_VER}; else git checkout main; fi; \
+    pip install -e .[tensorflow,pytorch,nvtabular]
+
+# Install NVTabular Triton Backend
 ARG TRITON_VERSION
 
 RUN git clone https://github.com/NVIDIA-Merlin/nvtabular_triton_backend.git build-env && \
@@ -178,17 +185,11 @@ RUN git clone https://github.com/NVIDIA-Merlin/nvtabular_triton_backend.git buil
     popd && \
     rm -rf build-env 
 
+RUN pip install dask==2021.09.1 distributed==2021.09.1 dask[dataframe]==2021.09.1
 RUN pip install pynvml pytest graphviz sklearn scipy matplotlib dask-cuda 
-RUN pip install dask==2021.07.1 distributed==2021.07.1 dask[dataframe]==2021.07.1
 RUN pip install nvidia-pyindex; pip install tritonclient[all] grpcio-channelz
 
 RUN apt update; apt install -y graphviz ;
-
-# install ucx from source
-RUN apt update; apt install -y libtool
-RUN git clone https://github.com/openucx/ucx.git /repos/ucx;cd /repos/ucx; ./autogen.sh; mkdir build; cd build; ../contrib/configure-release --prefix=/usr; make; make install
-
-RUN ln -s /usr/lib/x86_64-linux-gnu/libibverbs.so.1.11.32.1 /usr/lib/x86_64-linux-gnu/libibverbs.so
 
 #Hiredis
 RUN mkdir -p /var/tmp && cd /var/tmp && git clone --depth=1 https://github.com/redis/hiredis.git && cd - && \
@@ -206,9 +207,10 @@ RUN mkdir -p /var/tmp && cd /var/tmp && git clone --depth=1 https://github.com/f
     rm -rf /var/tmp/rocksdb
 ENV CPATH=/usr/local/include:$CPATH
 
+# Install HugeCTR
 RUN apt update -y && apt install rapidjson-dev -y
-RUN git clone https://github.com/NVIDIA/HugeCTR.git /repos/HugeCTR && \
-      cd /repos/HugeCTR && if [ "$RELEASE" == "true" ] && [ ${HUGECTR_VER} != "vnightly" ]; then git fetch --all --tags && git checkout tags/${HUGECTR_VER}; else git checkout ${HUGECTR_VER}-integration; fi && \
+RUN git clone https://github.com/NVIDIA-Merlin/HugeCTR.git /repos/HugeCTR && \
+      cd /repos/HugeCTR && if [ "$RELEASE" == "true" ] && [ ${HUGECTR_VER} != "vnightly" ]; then git fetch --all --tags && git checkout tags/${HUGECTR_VER}; else git checkout master; fi && \
       git submodule update --init --recursive && \
       mkdir -p build && cd build &&\
       cmake -DCMAKE_BUILD_TYPE=Release -DSM=$SM -DENABLE_INFERENCE=ON .. && \
@@ -224,9 +226,10 @@ RUN git clone https://github.com/NVIDIA/HugeCTR.git /repos/HugeCTR && \
             -DTRITON_BACKEND_REPO_TAG="r$TRITON_VERSION" .. && \
       make -j$(nproc) && make install
 
-ENV LD_LIBRARY_PATH=/usr/local/hugectr/lib:$LD_LIBRARY_PATH \
-    LIBRARY_PATH=/usr/local/hugectr/lib:$LIBRARY_PATH \
-    PYTHONPATH=/usr/local/hugectr/lib:$PYTHONPATH
+ENV CPATH=/usr/local/hugectr/include:$CPATH
+ENV LIBRARY_PATH=/usr/local/hugectr/lib:$LIBRARY_PATH
+ENV LD_LIBRARY_PATH=/usr/local/hugectr/lib:$LD_LIBRARY_PATH
+ENV PATH=/usr/local/hugectr/bin:$PATH
 
 RUN ln -s /usr/local/hugectr/backends/hugectr /opt/tritonserver/backends/
 
