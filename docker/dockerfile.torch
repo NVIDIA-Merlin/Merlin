@@ -119,7 +119,7 @@ RUN git clone https://github.com/rapidsai/rmm.git build-env && cd build-env/ && 
 
 # Build env for CUDF build
 RUN git clone https://github.com/rapidsai/cudf.git build-env && cd build-env/ && \
-    if [ "$RELEASE" == "true" ] && [ ${CUDF_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${CUDF_VER}; else git checkout branch-21.10; fi; \
+    if [ "$RELEASE" == "true" ] && [ ${CUDF_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${CUDF_VER}; else git checkout branch-21.08; fi; \
     git submodule update --init --recursive && \
     cd .. && \
     pushd build-env && \
@@ -143,16 +143,12 @@ RUN git clone https://github.com/NVIDIA-Merlin/NVTabular.git /nvtabular/ && \
 
 # Install Transformers4Rec
 RUN git clone https://github.com/NVIDIA-Merlin/Transformers4Rec.git /transformers4rec && \
-    cd /transformers4rec/;  if [ "$RELEASE" == "true" ] && [ ${TF4REC_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${TF4REC_VER}; else git checkout main; fi; \
+    cd /transformers4rec/;  if [ "$RELEASE" == "true" ] && [ ${TF4REC_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${TF4REC_VER}; else git checkout fix-unit-test; fi; \
     pip install -e .[pytorch,nvtabular]
 
 RUN pip install --ignore-installed pynvml pytest graphviz sklearn scipy matplotlib dask-cuda
 RUN pip install nvidia-pyindex; pip install tritonclient[all] grpcio-channelz
 RUN apt update; apt install -y graphviz ;
-
-# install ucx from source
-RUN apt update; apt install -y libtool
-RUN git clone https://github.com/openucx/ucx.git /repos/ucx;cd /repos/ucx; ./autogen.sh; mkdir build; cd build; ../contrib/configure-release --prefix=/usr; make; make install
 
 RUN git clone https://github.com/rapidsai/asvdb.git /repos/asvdb && cd /repos/asvdb && python setup.py install
 #RUN pip uninstall numpy numba -y; pip install numpy numba
