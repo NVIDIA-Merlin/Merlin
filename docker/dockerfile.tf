@@ -147,7 +147,7 @@ RUN git clone https://github.com/NVIDIA-Merlin/NVTabular.git /nvtabular/ && \
 
 # Install Transformers4Rec
 RUN git clone https://github.com/NVIDIA-Merlin/Transformers4Rec.git /transformers4rec && \
-    cd /transformers4rec/;  if [ "$RELEASE" == "true" ] && [ ${TF4REC_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${TF4REC_VER}; else git checkout fix-unit-test; fi; \
+    cd /transformers4rec/;  if [ "$RELEASE" == "true" ] && [ ${TF4REC_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${TF4REC_VER}; else git checkout main; fi; \
     pip install -e .[tensorflow,nvtabular]
 
 RUN pip install pynvml pytest graphviz sklearn scipy matplotlib 
