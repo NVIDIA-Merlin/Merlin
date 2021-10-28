@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-ARG IMAGE=nvcr.io/nvidia/tensorflow:21.09-tf2-py3
+ARG IMAGE=nvcr.io/nvidia/tensorflow:21.10-tf2-py3
 FROM ${IMAGE} AS phase1
 ENV CUDA_SHORT_VERSION=11.4
 
@@ -167,7 +167,7 @@ RUN git clone https://github.com/rapidsai/asvdb.git build-env && \
     popd && \
     rm -rf build-env
 
-RUN pip install dask==2021.08.1 distributed==2021.08.1 dask[dataframe]==2021.08.1 dask-cuda
+RUN pip install dask==2021.07.1 distributed==2021.07.1 dask[dataframe]==2021.07.1 dask-cuda
 FROM phase3 as phase4
 
 ARG RELEASE=false

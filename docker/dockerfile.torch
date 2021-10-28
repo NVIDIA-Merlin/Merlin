@@ -1,4 +1,4 @@
-ARG IMAGE=nvcr.io/nvidia/pytorch:21.09-py3
+ARG IMAGE=nvcr.io/nvidia/pytorch:21.10-py3
 FROM ${IMAGE}
 ENV CUDA_SHORT_VERSION=11.4
 
@@ -157,7 +157,7 @@ ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
 #RUN pip install fastai
 RUN CC=/usr/bin/gcc CXX=/usr/bin/g++ HOROVOD_CUDA_HOME=/usr/local/cuda/ HOROVOD_BUILD_CUDA_CC_LIST=60,70,75,80 HOROVOD_GPU_OPERATIONS=NCCL HOROVOD_WITH_PYTORCH=1 HOROVOD_NCCL_LINK=SHARED pip install --no-cache-dir horovod[pytorch]
 RUN pip install nvtx pandas==1.1.5 mpi4py==3.0.3 cupy-cuda114 cachetools typing_extensions fastavro
-RUN pip install dask==2021.08.1 distributed==2021.08.1 dask[dataframe]==2021.08.1 dask-cuda
+RUN pip install dask==2021.07.1 distributed==2021.07.1 dask[dataframe]==2021.07.1 dask-cuda
 
 # For some reason we still have torchmetrics 0.5.1 here, and need 0.3.2 for transformers4rec.
 # Force 0.3.2 here
