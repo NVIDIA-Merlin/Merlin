@@ -146,7 +146,7 @@ RUN git clone https://github.com/NVIDIA-Merlin/Transformers4Rec.git /transformer
     cd /transformers4rec/;  if [ "$RELEASE" == "true" ] && [ ${TF4REC_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${TF4REC_VER}; else git checkout main; fi; \
     pip install -e .[pytorch,nvtabular]
 
-RUN pip install --ignore-installed pynvml pytest graphviz sklearn scipy matplotlib dask-cuda
+RUN pip install --ignore-installed pynvml pytest graphviz sklearn scipy matplotlib
 RUN pip install nvidia-pyindex; pip install tritonclient[all] grpcio-channelz
 RUN apt update; apt install -y graphviz ;
 
@@ -158,7 +158,7 @@ ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
 #RUN CC=/usr/bin/gcc CXX=/usr/bin/g++ HOROVOD_CUDA_HOME=/usr/local/cuda/ HOROVOD_BUILD_CUDA_CC_LIST=60,70,75,80 HOROVOD_GPU_OPERATIONS=NCCL HOROVOD_WITH_PYTORCH=1 HOROVOD_NCCL_LINK=SHARED pip install --no-cache-dir horovod[pytorch]
 #RUN pip install nvtx pandas==1.1.5 mpi4py==3.0.3 cupy-cuda113 cachetools typing_extensions fastavro
 RUN pip install nvtx pandas==1.1.5 cupy-cuda114 cachetools typing_extensions fastavro
-RUN pip install dask==2021.09.1 distributed==2021.09.1 dask[dataframe]==2021.09.1
+RUN pip install dask==2021.08.1 distributed==2021.08.1 dask[dataframe]==2021.08.1 dask-cuda
 
 # For some reason we still have torchmetrics 0.5.1 here, and need 0.3.2 for transformers4rec.
 # Force 0.3.2 here
