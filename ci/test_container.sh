@@ -25,6 +25,6 @@ fi
 
 # Test Transformers4Rec
 if [ "$container" != "merlin-training" ]; then
-    pytest /transformers4rec/tests/unit
+    pytest /transformers4rec/tests
 fi
 
