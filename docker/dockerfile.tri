@@ -42,6 +42,7 @@ RUN apt install -y --no-install-recommends \
       wget \
       libssl-dev \
       hwloc \
+      zlib1g-dev \
       protobuf-compiler \
       clang-format \
       aptitude \
@@ -54,8 +55,8 @@ RUN apt install -y --no-install-recommends \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
+RUN ln -s /usr/bin/python3 /usr/bin/python
 RUN pip uninstall protobuf -y; pip install protobuf
-
 RUN pip install pip install git+git://github.com/gevent/gevent.git@21.8.0#egg=gevent
 
 # Install cmake
