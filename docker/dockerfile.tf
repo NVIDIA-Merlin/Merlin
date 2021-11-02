@@ -27,9 +27,10 @@ ENV INSTALL_PREFIX=/usr
 RUN apt update -y --fix-missing && \
     apt upgrade -y && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-        vim gdb git wget unzip tar \ 
+        gdb \
+        valgrind \
         zlib1g-dev lsb-release clang-format libboost-serialization-dev \
-        openssl curl zip\
+        openssl \
         libssl-dev \
         protobuf-compiler \
         libaio-dev \
@@ -93,7 +94,6 @@ RUN git clone --branch apache-arrow-4.0.1 --recurse-submodules https://github.co
     popd && \
     rm -rf build-env
 
-
 FROM phase1 as phase2
 
 ARG RELEASE=false
@@ -152,7 +152,6 @@ RUN git clone https://github.com/NVIDIA-Merlin/Transformers4Rec.git /transformer
 
 RUN pip install pynvml pytest graphviz sklearn scipy matplotlib 
 RUN pip install nvidia-pyindex; pip install tritonclient[all] grpcio-channelz
-#RUN pip install nvtx mpi4py cupy-cuda114 cachetools typing_extensions fastavro
 RUN pip install nvtx cupy-cuda114 cachetools typing_extensions fastavro
 
 RUN apt-get update; apt-get install -y graphviz
