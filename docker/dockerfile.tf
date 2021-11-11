@@ -102,7 +102,7 @@ ARG CUDF_VER=vnightly
 
 # Install rmm from source
 RUN git clone https://github.com/rapidsai/rmm.git build-env && cd build-env/ && \
-    if [ "$RELEASE" == "true" ] && [ ${RMM_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${RMM_VER}; else git checkout main; fi; \
+    if [ "$RELEASE" == "true" ] && [ ${RMM_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${RMM_VER}; else git checkout branch-21.08; fi; \
     sed -i '/11.2/ a "11.4": "11.x",' python/setup.py && \
     cd ..; \
     pushd build-env && \

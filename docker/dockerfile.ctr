@@ -98,7 +98,7 @@ ARG CUDF_VER=vnightly
 
 # Install rmm from source
 RUN git clone https://github.com/rapidsai/rmm.git build-env && cd build-env/ && \
-    if [ "$RELEASE" == "true" ] && [ ${RMM_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${RMM_VER}; else git checkout branch-21.06; fi; \
+    if [ "$RELEASE" == "true" ] && [ ${RMM_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${RMM_VER}; else git checkout branch-21.08; fi; \
     sed -i '/11.2/ a "11.4": "11.x",' python/setup.py && \
     cd ..; \
     pushd build-env && \
@@ -130,7 +130,7 @@ ARG NVTAB_VER=vnightly
 RUN pip install nvtx pandas cupy-cuda114 cachetools typing_extensions fastavro
 RUN pip install pynvml pytest graphviz sklearn scipy matplotlib tqdm pydot nvidia-pyindex
 RUN pip install tritonclient[all] grpcio-channelz
-RUN pip install pybind11 jupyterlab onnx onnxruntime
+RUN pip install pybind11 jupyterlab onnx onnxruntime gcsfs
 ENV PATH=$PATH:/usr/lib/x86_64-linux-gnu/ \
     NCCL_LAUNCH_MODE=PARALLEL
 
