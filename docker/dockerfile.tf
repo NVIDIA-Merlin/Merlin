@@ -134,7 +134,7 @@ ARG TF4REC_VER=vnightly
 
 ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
 
-RUN pip install pandas sklearn ortools nvtx-plugins pydot && \
+RUN pip install pandas sklearn ortools pydot && \
     pip cache purge
 
 RUN pip install pybind11
