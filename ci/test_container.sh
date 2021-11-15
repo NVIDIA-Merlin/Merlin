@@ -19,10 +19,10 @@ if [ "$container" == "merlin-training" ]; then
     parser_test && \
     auc_test
 elif [ "$container" == "merlin-inference" ]; then
-    inference_test
+    /usr/local/hugectr/bin/inference_test
 fi
 
 # Test Transformers4Rec
 if [ "$container" != "merlin-training" ]; then
-    pytest /transformers4rec/tests
+    sh -c 'pytest /transformers4rec/tests; ret=$?; [ $ret = 5 ] && exit 0 || exit $ret'
 fi
