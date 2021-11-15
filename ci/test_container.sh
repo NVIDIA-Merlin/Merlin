@@ -18,8 +18,8 @@ if [ "$container" == "merlin-training" ]; then
     model_oversubscriber_test && \
     parser_test && \
     auc_test
-elif [ "$container" == "merlin-tensorflow-training" ]; then
-    embedding_test
+#elif [ "$container" == "merlin-tensorflow-training" ]; then
+#    embedding_test
 elif [ "$container" == "merlin-inference" ]; then
     inference_test
 fi
