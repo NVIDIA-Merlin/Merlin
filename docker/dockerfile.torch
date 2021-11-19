@@ -1,4 +1,4 @@
-ARG IMAGE=nvcr.io/nvidia/pytorch:21.10-py3
+ARG IMAGE=nvcr.io/nvidia/pytorch:21.11-py3
 FROM ${IMAGE}
 ENV CUDA_SHORT_VERSION=11.4
 
@@ -7,8 +7,6 @@ ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/cuda/extra
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-ARG RMM_VER=vnightly
-ARG CUDF_VER=vnightly
 ARG NVTAB_VER=vnightly
 ARG TF4REC_VER=vnightly
 ARG RELEASE=false
@@ -17,9 +15,6 @@ ENV CUDA_HOME=/usr/local/cuda
 ENV CUDA_PATH=$CUDA_HOME
 ENV CUDA_CUDA_LIBRARY=${CUDA_HOME}/lib64/stubs
 ENV PATH=${CUDA_HOME}/lib64/:${PATH}:${CUDA_HOME}/bin
-
-# Build env variables for rmm
-ENV INSTALL_PREFIX=/usr
 
 RUN apt update -y --fix-missing && \
     apt upgrade -y && \
@@ -54,73 +49,6 @@ RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/nul
 RUN git clone --branch v1.9.2 https://github.com/gabime/spdlog.git build-env && \
     pushd build-env && \
       mkdir build && cd build && cmake .. && make -j && make install && \
-    popd && \
-    rm -rf build-env
-
-# Install arrow from source
-ENV ARROW_HOME=/usr/local
-RUN git clone --branch apache-arrow-4.0.1 --recurse-submodules https://github.com/apache/arrow.git build-env && \
-    pushd build-env && \
-      export PARQUET_TEST_DATA="${PWD}/cpp/submodules/parquet-testing/data" && \
-      export ARROW_TEST_DATA="${PWD}/testing/data" && \
-      pip install -r python/requirements-build.txt && \
-      mkdir cpp/release && \
-      pushd cpp/release && \
-        cmake -DCMAKE_INSTALL_PREFIX=${ARROW_HOME} \
-              -DCMAKE_INSTALL_LIBDIR=lib \
-              -DCMAKE_LIBRARY_PATH=${CUDA_CUDA_LIBRARY} \
-              -DARROW_FLIGHT=ON \
-              -DARROW_GANDIVA=OFF \
-              -DARROW_ORC=ON \
-              -DARROW_WITH_BZ2=ON \
-              -DARROW_WITH_ZLIB=ON \
-              -DARROW_WITH_ZSTD=ON \
-              -DARROW_WITH_LZ4=ON \
-              -DARROW_WITH_SNAPPY=ON \
-              -DARROW_WITH_BROTLI=ON \
-              -DARROW_PARQUET=ON \
-              -DARROW_PYTHON=ON \
-              -DARROW_PLASMA=ON \
-              -DARROW_BUILD_TESTS=ON \
-              -DARROW_CUDA=ON \
-              -DARROW_DATASET=ON \
-              .. && \
-        make -j$(nproc) && \
-        make install && \
-      popd && \
-      pushd python && \
-        export PYARROW_WITH_PARQUET=ON && \
-        export PYARROW_WITH_CUDA=ON && \
-        export PYARROW_WITH_ORC=ON && \
-        export PYARROW_WITH_DATASET=ON && \
-        python setup.py build_ext --build-type=release bdist_wheel && \
-        pip install dist/*.whl && \
-      popd && \
-    popd && \
-    rm -rf build-env
-
-# Install rmm from source
-RUN git clone https://github.com/rapidsai/rmm.git build-env && cd build-env/ && \
-    if [ "$RELEASE" == "true" ] && [ ${RMM_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${RMM_VER}; else git checkout branch-21.08; fi; \
-    sed -i '/11.2/ a "11.4": "11.x",' python/setup.py && \
-    cd ..; \
-    pushd build-env && \
-    ./build.sh librmm && \
-    pip install python/. && \
-    popd && \
-    rm -rf build-env
-
-# Build env for CUDF build
-RUN git clone https://github.com/rapidsai/cudf.git build-env && cd build-env/ && \
-    if [ "$RELEASE" == "true" ] && [ ${CUDF_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${CUDF_VER}; else git checkout branch-21.08; fi; \
-    git submodule update --init --recursive && \
-    cd .. && \
-    pushd build-env && \
-      export CUDF_HOME=${PWD} && \
-      export CUDF_ROOT=${PWD}/cpp/build/ && \
-      export CMAKE_LIBRARY_PATH=${CUDA_CUDA_LIBRARY} && \
-      ./build.sh libcudf cudf dask_cudf --allgpuarch && \
-      protoc -I=python/cudf/cudf/utils/metadata --python_out=/opt/conda/lib/python3.8/site-packages/cudf/utils/metadata python/cudf/cudf/utils/metadata/orc_column_statistics.proto && \
     popd && \
     rm -rf build-env
 
