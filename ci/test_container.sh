@@ -19,6 +19,7 @@ if [ "$container" == "merlin-training" ]; then
     parser_test && \
     auc_test
 elif [ "$container" == "merlin-inference" ]; then
+    chmod +x /usr/local/hugectr/bin/inference_test
     /usr/local/hugectr/bin/inference_test
 fi
 
