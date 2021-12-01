@@ -218,7 +218,6 @@ RUN git clone https://github.com/NVIDIA-Merlin/HugeCTR.git /hugectr && \
       chmod +x /usr/local/hugectr/bin/* &&\
       export CPATH=/usr/local/hugectr/include:$CPATH && \
       export LIBRARY_PATH=/usr/local/hugectr/lib:$LIBRARY_PATH && \
-      rm -rf /hugectr/build && \
       git clone https://github.com/triton-inference-server/hugectr_backend /repos/hugectr_inference_backend && \
       cd /repos/hugectr_inference_backend && if [ "$RELEASE" == "true" ] && [ ${HUGECTR_BACKEND_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${HUGECTR_BACKEND_VER}; else git checkout main; fi && \
       mkdir -p build && cd build && \
@@ -226,7 +225,8 @@ RUN git clone https://github.com/NVIDIA-Merlin/HugeCTR.git /hugectr && \
             -DTRITON_COMMON_REPO_TAG="r$TRITON_VERSION" \
             -DTRITON_CORE_REPO_TAG="r$TRITON_VERSION" \
             -DTRITON_BACKEND_REPO_TAG="r$TRITON_VERSION" .. && \
-      make -j$(nproc) && make install
+      make -j$(nproc) && make install && \
+      rm -rf /hugectr/build
 
 ENV CPATH=/usr/local/hugectr/include:$CPATH
 ENV LIBRARY_PATH=/usr/local/hugectr/lib:$LIBRARY_PATH
