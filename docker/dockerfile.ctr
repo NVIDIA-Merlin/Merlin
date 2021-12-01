@@ -219,10 +219,10 @@ RUN rm -rf /usr/lib/x86_64-linux-gnu/libibverbs.so && \
     ln -s /usr/lib/x86_64-linux-gnu/libibverbs.so.1.14.36.0 /usr/lib/x86_64-linux-gnu/libibverbs.so
 
 # Install hugectr
-RUN mkdir -p /var/tmp && cd /var/tmp && git clone https://github.com/NVIDIA-Merlin/HugeCTR.git HugeCTR && cd - && \
+RUN git clone https://github.com/NVIDIA-Merlin/HugeCTR.git /hugectr && cd - && \
       cd /var/tmp/HugeCTR && if [ "$RELEASE" == "true" ] && [ ${HUGECTR_VER} != "vnightly" ]; then git fetch --all --tags && git checkout tags/${HUGECTR_VER}; else git checkout master; fi && \
       git submodule update --init --recursive
-RUN cd /var/tmp/HugeCTR && \
+RUN cd /hugectr && \
     mkdir build && cd build && \
     LD_LIBRARY_PATH=/usr/local/cuda/lib64/stubs/:$LD_LIBRARY_PATH && \
     export PATH=$PATH:/usr/local/cuda-${CUDA_SHORT_VERSION}/compat/ && \
@@ -233,7 +233,7 @@ RUN cd /var/tmp/HugeCTR && \
     chmod +x /usr/local/hugectr/lib/* && \
     cd /var/tmp/HugeCTR/onnx_converter && \
     python3 setup.py install && \
-    rm -rf /var/tmp/HugeCTR
+    rm -rf /hugectr/build
 
 ENV PATH=/usr/local/hugectr/bin:$PATH
 ENV LIBRARY_PATH=/usr/local/hugectr/lib:$LIBRARY_PATH

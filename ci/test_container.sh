@@ -3,10 +3,10 @@ set -e
 
 container=$1
 
-# Test NVTabular
+# Test NVTabular - All containers
 pytest /nvtabular/tests/unit
 
-# Test HugeCTR
+# Test HugeCTR - Training container
 if [ "$container" == "merlin-training" ]; then
     layers_test && \
     checker_test && \
@@ -18,12 +18,16 @@ if [ "$container" == "merlin-training" ]; then
     model_oversubscriber_test && \
     parser_test && \
     auc_test
+# Test Transformers4Rec - Tensorflow container
+elif [ "$container" != "merlin-tensorflow-training" ]; then
+    pytest /transformers4rec/tests/tf
+# Test Transformers4Rec - Pytorch container
+elif [ "$container" != "merlin-pytorch-training" ]; then
+    pytest /transformers4rec/tests/torch
+# Test HugeCTR & Transformers4Rec - Inference container
 elif [ "$container" == "merlin-inference" ]; then
-    chmod +x /usr/local/hugectr/bin/inference_test
-    /usr/local/hugectr/bin/inference_test
-fi
-
-# Test Transformers4Rec
-if [ "$container" != "merlin-training" ]; then
-    sh -c 'pytest /transformers4rec/tests; ret=$?; [ $ret = 5 ] && exit 0 || exit $ret'
+    # HugeCTR
+    inference_test
+    # Transformers4Rec
+    pytest /transformers4rec/tests
 fi
