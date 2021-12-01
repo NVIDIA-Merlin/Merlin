@@ -26,8 +26,8 @@ elif [ "$container" != "merlin-pytorch-training" ]; then
     pytest /transformers4rec/tests/torch
 # Test HugeCTR & Transformers4Rec - Inference container
 elif [ "$container" == "merlin-inference" ]; then
-    # HugeCTR
-    inference_test
+    # HugeCTR - Deactivated until it is self-contained and it runs
+    # inference_test
     # Transformers4Rec
     pytest /transformers4rec/tests
 fi
