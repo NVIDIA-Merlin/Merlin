@@ -19,10 +19,10 @@ if [ "$container" == "merlin-training" ]; then
     parser_test && \
     auc_test
 # Test Transformers4Rec - Tensorflow container
-elif [ "$container" != "merlin-tensorflow-training" ]; then
+elif [ "$container" == "merlin-tensorflow-training" ]; then
     pytest /transformers4rec/tests/tf
 # Test Transformers4Rec - Pytorch container
-elif [ "$container" != "merlin-pytorch-training" ]; then
+elif [ "$container" == "merlin-pytorch-training" ]; then
     pytest /transformers4rec/tests/torch
 # Test HugeCTR & Transformers4Rec - Inference container
 elif [ "$container" == "merlin-inference" ]; then
