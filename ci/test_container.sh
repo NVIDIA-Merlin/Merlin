@@ -3,10 +3,14 @@ set -e
 
 container=$1
 
-# Test NVTabular - All containers
+##############
+# Unit tests #
+##############
+
+## Test NVTabular - All containers
 pytest /nvtabular/tests/unit
 
-# Test HugeCTR - Training container
+## Test HugeCTR - Training container
 if [ "$container" == "merlin-training" ]; then
     # Running oom in blossom
     # layers_test && \
@@ -19,7 +23,7 @@ if [ "$container" == "merlin-training" ]; then
     model_oversubscriber_test && \
     parser_test && \
     auc_test
-# Test Transformers4Rec - Tensorflow container
+## Test Transformers4Rec - Tensorflow container
 elif [ "$container" == "merlin-tensorflow-training" ]; then
     pytest /transformers4rec/tests/tf
 # Test Transformers4Rec - Pytorch container
@@ -32,3 +36,16 @@ elif [ "$container" == "merlin-inference" ]; then
     # Transformers4Rec
     pytest /transformers4rec/tests
 fi
+
+#####################
+# Integration tests #
+#####################
+
+## Test NVTabular 
+# /nvtabular/ci/test_integration.sh $container 0
+
+## Test HugeCTR
+# Waiting to sync integration tests with them
+
+## Test Transformers4Rec
+# Waiting for integration tests to be developed
