@@ -8,7 +8,8 @@ pytest /nvtabular/tests/unit
 
 # Test HugeCTR - Training container
 if [ "$container" == "merlin-training" ]; then
-    layers_test && \
+    # Running oom in blossom
+    # layers_test && \
     checker_test && \
     data_reader_test && \
     device_map_test && \
