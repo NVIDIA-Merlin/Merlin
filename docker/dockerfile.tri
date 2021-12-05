@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-ARG TRITON_VERSION=21.10
+ARG TRITON_VERSION=21.11
 ARG IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-py3
 FROM ${IMAGE}
 ARG RMM_VER=vnightly
@@ -37,7 +37,6 @@ RUN apt install -y --no-install-recommends \
       bison \
       flex \
       libboost-serialization-dev \
-      libjemalloc-dev \
       wget \
       libssl-dev \
       zlib1g-dev \
@@ -129,6 +128,7 @@ RUN git clone https://github.com/rapidsai/cudf.git build-env && cd build-env/ &&
       export CUDF_HOME=${PWD} && \
       export CUDF_ROOT=${PWD}/cpp/build/ && \
       export CMAKE_LIBRARY_PATH=${CUDA_CUDA_LIBRARY} && \
+      export CUDAFLAGS=-Wno-error=unknown-pragmas && \
       ./build.sh libcudf cudf dask_cudf --allgpuarch && \
       protoc -I=python/cudf/cudf/utils/metadata --python_out=/usr/local/lib/python3.8/dist-packages/cudf/utils/metadata python/cudf/cudf/utils/metadata/orc_column_statistics.proto && \
     popd && \
@@ -208,12 +208,13 @@ ENV CPATH=/usr/local/include:$CPATH
 
 # Install HugeCTR
 RUN apt update -y && apt install rapidjson-dev -y
-RUN git clone https://github.com/NVIDIA-Merlin/HugeCTR.git /repos/HugeCTR && \
-      cd /repos/HugeCTR && if [ "$RELEASE" == "true" ] && [ ${HUGECTR_VER} != "vnightly" ]; then git fetch --all --tags && git checkout tags/${HUGECTR_VER}; else git checkout master; fi && \
+RUN git clone https://github.com/NVIDIA-Merlin/HugeCTR.git /hugectr && \
+      cd /hugectr && if [ "$RELEASE" == "true" ] && [ ${HUGECTR_VER} != "vnightly" ]; then git fetch --all --tags && git checkout tags/${HUGECTR_VER}; else git checkout master; fi && \
       git submodule update --init --recursive && \
       mkdir -p build && cd build &&\
       cmake -DCMAKE_BUILD_TYPE=Release -DSM=$SM -DENABLE_INFERENCE=ON .. && \
       make -j$(nproc) && make install && \
+      chmod +x /usr/local/hugectr/bin/* &&\
       export CPATH=/usr/local/hugectr/include:$CPATH && \
       export LIBRARY_PATH=/usr/local/hugectr/lib:$LIBRARY_PATH && \
       git clone https://github.com/triton-inference-server/hugectr_backend /repos/hugectr_inference_backend && \
@@ -223,7 +224,8 @@ RUN git clone https://github.com/NVIDIA-Merlin/HugeCTR.git /repos/HugeCTR && \
             -DTRITON_COMMON_REPO_TAG="r$TRITON_VERSION" \
             -DTRITON_CORE_REPO_TAG="r$TRITON_VERSION" \
             -DTRITON_BACKEND_REPO_TAG="r$TRITON_VERSION" .. && \
-      make -j$(nproc) && make install
+      make -j$(nproc) && make install && \
+      rm -rf /hugectr/build
 
 ENV CPATH=/usr/local/hugectr/include:$CPATH
 ENV LIBRARY_PATH=/usr/local/hugectr/lib:$LIBRARY_PATH
