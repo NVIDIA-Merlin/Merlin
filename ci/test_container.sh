@@ -12,17 +12,15 @@ pytest /nvtabular/tests/unit
 
 ## Test HugeCTR - Training container
 if [ "$container" == "merlin-training" ]; then
-    # Running oom in blossom
-    # layers_test && \
+    # layers_test && \ Running oom in blossom
     checker_test && \
-    data_reader_test && \
+    # data_reader_test && \ Need Multi-GPU
     device_map_test && \
     loss_test && \
     optimizer_test && \
-    regularizers_test && \
-    model_oversubscriber_test && \
-    parser_test && \
-    auc_test
+    regularizers_test # && \
+    # parser_test && \ Needs Multi-GPU
+    # auc_test Needs Multi-GPU
 ## Test Transformers4Rec - Tensorflow container
 elif [ "$container" == "merlin-tensorflow-training" ]; then
     pytest /transformers4rec/tests/tf
@@ -48,4 +46,4 @@ fi
 # Waiting to sync integration tests with them
 
 ## Test Transformers4Rec
-# Waiting for integration tests to be developed
+/transformers4rec/ci/test_integration.sh $container 0
