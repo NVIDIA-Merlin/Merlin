@@ -26,7 +26,7 @@ if [ "$container" == "merlin-training" ]; then
 # elif [ "$container" == "merlin-inference" ]; then
     # HugeCTR - Deactivated until it is self-contained and it runs
     # inference_test
-# fi
+fi
 
 ## Test Transformers4Rec
 /transformers4rec/ci/test_unit.sh $container 0
