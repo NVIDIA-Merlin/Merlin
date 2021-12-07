@@ -37,8 +37,10 @@ if [ "$container" == "merlin-training" ]; then
 #####################
 
 ## Test NVTabular 
-# /nvtabular/ci/test_integration.sh $container 0
-
+### Not shared storage in blossom yet
+#if [ "$container" != "merlin-inference" ]; then
+#    /nvtabular/ci/test_integration.sh $container 0
+#fi
 ## Test HugeCTR
 # Waiting to sync integration tests with them
 
