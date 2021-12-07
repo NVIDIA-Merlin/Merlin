@@ -104,7 +104,7 @@ RUN git clone https://github.com/NVIDIA-Merlin/HugeCTR.git build-env && \
     pushd build-env && \
       if [ "$RELEASE" == "true" ] && [ ${HUGECTR_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${HUGECTR_VER}; else echo ${HUGECTR_VER} && git checkout master; fi && \
       cd sparse_operation_kit && \
-      bash ./install.sh --SM=$SM --USE_NVTX=$USE_NVTX && \
+      python setup.py install && \
     popd && \
     rm -rf build-env && \
     rm -rf /var/tmp/HugeCTR
