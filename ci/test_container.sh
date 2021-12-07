@@ -2,6 +2,7 @@
 set -e
 
 container=$1
+devices=$2
 
 ##############
 # Unit tests #
@@ -29,7 +30,7 @@ if [ "$container" == "merlin-training" ]; then
 fi
 
 ## Test Transformers4Rec
-/transformers4rec/ci/test_unit.sh $container 0
+/transformers4rec/ci/test_unit.sh $container $devices
 
 
 #####################
@@ -39,10 +40,10 @@ fi
 ## Test NVTabular 
 ### Not shared storage in blossom yet
 if [ "$container" != "merlin-inference" ]; then
-    /nvtabular/ci/test_integration.sh $container 0
+    /nvtabular/ci/test_integration.sh $container $devices
 fi
 ## Test HugeCTR
 # Waiting to sync integration tests with them
 
 ## Test Transformers4Rec
-/transformers4rec/ci/test_integration.sh $container 0
+/transformers4rec/ci/test_integration.sh $container $devices
