@@ -30,7 +30,9 @@ if [ "$container" == "merlin-training" ]; then
 fi
 
 ## Test Transformers4Rec
-/transformers4rec/ci/test_unit.sh $container $devices
+if [ "$container" != "merlin-training" ]; then
+    /transformers4rec/ci/test_unit.sh $container $devices
+fi
 
 
 #####################
@@ -46,4 +48,6 @@ fi
 # Waiting to sync integration tests with them
 
 ## Test Transformers4Rec
-/transformers4rec/ci/test_integration.sh $container $devices
+if [ "$container" != "merlin-training" ]; then
+    /transformers4rec/ci/test_integration.sh $container $devices
+fi
