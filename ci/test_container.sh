@@ -2,50 +2,52 @@
 set -e
 
 container=$1
+devices=$2
 
 ##############
 # Unit tests #
 ##############
 
-## Test NVTabular - All containers
+## Test NVTabular
 pytest /nvtabular/tests/unit
 
-## Test HugeCTR - Training container
+## Test HugeCTR
+### Training container
 if [ "$container" == "merlin-training" ]; then
-    # Running oom in blossom
-    # layers_test && \
+    # layers_test && \ Running oom in blossom
     checker_test && \
-    data_reader_test && \
+    # data_reader_test && \ Need Multi-GPU
     device_map_test && \
     loss_test && \
     optimizer_test && \
-    regularizers_test && \
-    model_oversubscriber_test && \
-    parser_test && \
-    auc_test
-## Test Transformers4Rec - Tensorflow container
-elif [ "$container" == "merlin-tensorflow-training" ]; then
-    pytest /transformers4rec/tests/tf
-# Test Transformers4Rec - Pytorch container
-elif [ "$container" == "merlin-pytorch-training" ]; then
-    pytest /transformers4rec/tests/torch
-# Test HugeCTR & Transformers4Rec - Inference container
-elif [ "$container" == "merlin-inference" ]; then
+    regularizers_test # && \
+    # parser_test && \ Needs Multi-GPU
+    # auc_test Needs Multi-GPU
+### Inference container
+# elif [ "$container" == "merlin-inference" ]; then
     # HugeCTR - Deactivated until it is self-contained and it runs
     # inference_test
-    # Transformers4Rec
-    pytest /transformers4rec/tests
 fi
+
+## Test Transformers4Rec
+if [ "$container" != "merlin-training" ]; then
+    /transformers4rec/ci/test_unit.sh $container $devices
+fi
+
 
 #####################
 # Integration tests #
 #####################
 
 ## Test NVTabular 
-# /nvtabular/ci/test_integration.sh $container 0
-
+### Not shared storage in blossom yet
+if [ "$container" != "merlin-inference" ]; then
+    /nvtabular/ci/test_integration.sh $container $devices
+fi
 ## Test HugeCTR
 # Waiting to sync integration tests with them
 
 ## Test Transformers4Rec
-# Waiting for integration tests to be developed
+if [ "$container" != "merlin-training" ]; then
+    /transformers4rec/ci/test_integration.sh $container $devices
+fi
