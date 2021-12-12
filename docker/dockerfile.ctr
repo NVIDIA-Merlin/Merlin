@@ -237,7 +237,7 @@ RUN rm -rf /usr/lib/x86_64-linux-gnu/libibverbs.so && \
     ln -s /usr/lib/x86_64-linux-gnu/libibverbs.so.1.14.36.0 /usr/lib/x86_64-linux-gnu/libibverbs.so
 
 # Install hugectr
-RUN if [ "$INSTALL_HUGECTR" == "true" ]; then if [ "$DEV_MODE" == "true" ]; then gitlab-ci-token:${CI_JOB_TOKEN}@git clone ${_HUGECTR_REPO} /hugectr && cd /hugectr && git fetch --all; if [ "$_HUGECTR_BRANC\
+RUN if [ "$INSTALL_HUGECTR" == "true" ]; then if [ "$DEV_MODE" == "true" ]; then ${_CI_JOB_TOKEN}git clone ${_HUGECTR_REPO} /hugectr && cd /hugectr && git fetch --all; if [ "$_HUGECTR_BRANC\
 H" != "" ]; then git checkout ${HUGECTR_BRANCH}; else git checkout master; fi; else git clone https://github.com/NVIDIA-Merlin/HugeCTR.git /hugectr && cd /hugectr; if [ "$RELEASE" == "true" ] && [ ${HUGECT\
 R_VER} != "vnightly" ]; then git fetch --all --tags && git checkout tags/${HUGECTR_VER}; else git checkout master; fi; fi && \
     git submodule update --init --recursive && \
