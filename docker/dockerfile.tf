@@ -47,6 +47,12 @@ RUN git clone --branch v1.9.2 https://github.com/gabime/spdlog.git build-env && 
     popd && \
     rm -rf build-env
 
+# Build env for PTX build
+RUN git clone https://github.com/rapidsai/ptxcompiler build-env && cd build-env && \
+    git checkout main && \
+    python setup.py install && \
+    rm -rf build-env
+
 FROM phase1 as phase2
 
 ARG RELEASE=false

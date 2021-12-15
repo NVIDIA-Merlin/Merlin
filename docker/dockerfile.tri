@@ -136,6 +136,12 @@ RUN git clone https://github.com/rapidsai/cudf.git build-env && cd build-env/ &&
 
 ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
 
+# Build env for PTX build
+RUN git clone https://github.com/rapidsai/ptxcompiler build-env && cd build-env && \
+    git checkout main && \
+    python setup.py install && \
+    rm -rf build-env
+
 SHELL ["/bin/bash", "-c"]
 
 RUN pip install cupy-cuda114 cachetools fastavro typing_extensions nvtx pandas==1.1.5
