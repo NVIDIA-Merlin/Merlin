@@ -219,7 +219,7 @@ ARG INSTALL_HUGECTR=true
 ARG DEV_MODE=false
 ARG _HUGECTR_BRANCH=master
 ARG _HUGECTR_REPO="https://github.com/NVIDIA-Merlin/HugeCTR.git"
-ARG _CI_JOB_TOCKEN=""
+ARG _CI_JOB_TOKEN=""
 
 RUN pip3 install --no-cache-dir mpi4py ortools sklearn onnx onnxruntime
 
@@ -238,7 +238,7 @@ RUN rm -rf /usr/lib/x86_64-linux-gnu/libibverbs.so && \
     ln -s /usr/lib/x86_64-linux-gnu/libibverbs.so.1.14.36.0 /usr/lib/x86_64-linux-gnu/libibverbs.so
 
 # Install hugectr
-RUN if [ "$INSTALL_HUGECTR" == "true" ]; then if [ "$DEV_MODE" == "true" ]; then echo ${_CI_JOB_TOKEN}${_HUGECTR_REPO} && git clone ${_CI_JOB_TOKEN}${_HUGECTR_REPO} /hugectr && cd /hugectr && git fetch --all; if [ "$_HUGECTR_BRANC\
+RUN if [ "$INSTALL_HUGECTR" == "true" ]; then if [ "$DEV_MODE" == "true" ]; then git clone ${_CI_JOB_TOKEN}${_HUGECTR_REPO} /hugectr && cd /hugectr && git fetch --all; if [ "$_HUGECTR_BRANC\
 H" != "" ]; then git checkout ${HUGECTR_BRANCH}; else git checkout master; fi; else git clone https://github.com/NVIDIA-Merlin/HugeCTR.git /hugectr && cd /hugectr; if [ "$RELEASE" == "true" ] && [ ${HUGECT\
 R_VER} != "vnightly" ]; then git fetch --all --tags && git checkout tags/${HUGECTR_VER}; else git checkout master; fi; fi && \
     git submodule update --init --recursive && \
