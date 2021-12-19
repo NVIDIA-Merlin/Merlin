@@ -238,10 +238,8 @@ RUN if [ "$INSTALL_HUGECTR" == "true" ]; then if [ "$DEV_MODE" == "true" ]; then
       make -j$(nproc) && make install && \
       chmod +x /usr/local/hugectr/bin/* &&\
       export CPATH=/usr/local/hugectr/include:$CPATH && \
-      export LIBRARY_PATH=/usr/local/hugectr/lib:$LIBRARY_PATH; fi;
-
-
-RUN if [ "$INSTALL_HUGECTR_BACKEND" == "true" ]; then if [ "$DEV_MODE" == "true" ]; then git clone ${_CI_JOB_TOKEN}${_HUGECTR_BACKEND_REPO} /repos/hugectr_inference_backend && cd /repos/hugectr_inference_backend  && git fetch --all; if [ "$_HUGECTR_BACKEND_BRANCH" != "" ]; then git checkout ${HUGECTR_BACKEND_BRANCH}; else git checkout main; fi; else git clone https://github.com/triton-inference-server/hugectr_backend /repos/hugectr_inference_backend && \
+      export LIBRARY_PATH=/usr/local/hugectr/lib:$LIBRARY_PATH; \
+    if [ "$INSTALL_HUGECTR_BACKEND" == "true" ]; then if [ "$DEV_MODE" == "true" ]; then git clone ${_CI_JOB_TOKEN}${_HUGECTR_BACKEND_REPO} /repos/hugectr_inference_backend && cd /repos/hugectr_inference_backend  && git fetch --all; if [ "$_HUGECTR_BACKEND_BRANCH" != "" ]; then git checkout ${HUGECTR_BACKEND_BRANCH}; else git checkout main; fi; else git clone https://github.com/triton-inference-server/hugectr_backend /repos/hugectr_inference_backend && \
       cd /repos/hugectr_inference_backend && if [ "$RELEASE" == "true" ] && [ ${HUGECTR_BACKEND_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${HUGECTR_BACKEND_VER}; else git checkout main; fi; fi && \
       mkdir -p build && cd build && \
       cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr/local/hugectr \
@@ -249,7 +247,7 @@ RUN if [ "$INSTALL_HUGECTR_BACKEND" == "true" ]; then if [ "$DEV_MODE" == "true"
             -DTRITON_CORE_REPO_TAG="r$TRITON_VERSION" \
             -DTRITON_BACKEND_REPO_TAG="r$TRITON_VERSION" .. && \
       make -j$(nproc) && make install && \
-      rm -rf /hugectr/build; fi;
+      rm -rf /hugectr/build; fi; fi; 
 
 ENV CPATH=/usr/local/hugectr/include:$CPATH
 ENV LIBRARY_PATH=/usr/local/hugectr/lib:$LIBRARY_PATH
