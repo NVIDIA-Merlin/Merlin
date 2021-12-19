@@ -44,6 +44,30 @@ RUN apt update -y --fix-missing && \
 
 RUN pip install git+git://github.com/gevent/gevent.git@21.8.0#egg=gevent
 
+ARG RELEASE=false
+ARG HUGECTR_VER=vnightly
+ARG INSTALL_HUGECTR=true
+# Arguments "_XXXX" are only valid when $DEV_MOD==ture
+ARG DEV_MODE=false
+ARG _HUGECTR_BRANCH=master
+ARG _HUGECTR_REPO="https://github.com/NVIDIA-Merlin/HugeCTR.git"
+ARG _CI_JOB_TOCKEN=""
+
+RUN pip3 install --no-cache-dir mpi4py ortools sklearn onnx onnxruntime
+
+ENV OMPI_MCA_plm_rsh_agent=sh
+ENV OMPI_MCA_opal_cuda_support=true
+
+ENV NCCL_LAUNCH_MODE=PARALLEL
+ENV NCCL_COLLNET_ENABLE=0
+
+ENV SHARP_COLL_NUM_COLL_GROUP_RESOURCE_ALLOC_THRESHOLD=0
+ENV SHARP_COLL_LOCK_ON_COMM_INIT=1
+ENV SHARP_COLL_LOG_LEVEL=3
+ENV HCOLL_ENABLE_MCAST=0
+
+RUN rm -rf /usr/lib/x86_64-linux-gnu/libibverbs.so && \
+    ln -s /usr/lib/x86_64-linux-gnu/libibverbs.so.1.14.36.0 /usr/lib/x86_64-linux-gnu/libibverbs.so
 
 # Install hugectr
 RUN if [ "$INSTALL_HUGECTR" == "true" ]; then if [ "$DEV_MODE" == "true" ]; then echo ${_CI_JOB_TOKEN}${_HUGECTR_REPO} && git clone ${_CI_JOB_TOKEN}${_HUGECTR_REPO} /hugectr && cd /hugectr && git fetch --all; if [ "$_HUGECTR_BRANC\
