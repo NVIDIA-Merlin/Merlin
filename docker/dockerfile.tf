@@ -98,7 +98,7 @@ ARG INSTALL_HUGECTR=true
 # Arguments "_XXXX" are only valid when $DEV_MOD==ture
 ARG DEV_MODE=false
 ARG _HUGECTR_BRANCH=master
-ARG _HUGECTR_REPO="https://github.com/NVIDIA-Merlin/HugeCTR.git"
+ARG _HUGECTR_REPO="github.com/NVIDIA-Merlin/HugeCTR.git"
 ARG _CI_JOB_TOKEN=""
 
 RUN mkdir -p /usr/local/nvidia/lib64 && \
