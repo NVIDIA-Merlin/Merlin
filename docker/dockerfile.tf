@@ -1,7 +1,6 @@
 # syntax=docker/dockerfile:1
-ARG IMAGE=nvcr.io/nvidia/tensorflow:21.11-tf2-py3
+ARG IMAGE=nvcr.io/nvidia/tensorflow:21.12-tf2-py3
 FROM ${IMAGE} AS phase1
-ENV CUDA_SHORT_VERSION=11.4
 
 SHELL ["/bin/bash", "-c"]
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64:/usr/local/lib:/repos/dist/lib
