@@ -219,18 +219,18 @@ ARG INSTALL_HUGECTR=true
 # Arguments "_XXXX" are only valid when $DEV_MOD==ture
 ARG DEV_MODE=false
 ARG _HUGECTR_BRANCH=master
-ARG _HUGECTR_REPO="https://github.com/NVIDIA-Merlin/HugeCTR.git"
+ARG _HUGECTR_REPO="github.com/NVIDIA-Merlin/HugeCTR.git"
 
 ARG INSTALL_HUGECTR_BACKEND=true
 # Arguments "_XXXX" are only valid when $DEV_MOD==ture
 ARG _HUGECTR_BACKEND_BRANCH=main
-ARG _HUGECTR_BACKEND_REPO="https://github.com/triton-inference-server/hugectr_backend"
+ARG _HUGECTR_BACKEND_REPO="github.com/triton-inference-server/hugectr_backend"
 
 ARG _CI_JOB_TOKEN=""
 
 # Install HugeCTR
 RUN apt update -y && apt install rapidjson-dev -y
-RUN if [ "$INSTALL_HUGECTR" == "true" ]; then if [ "$DEV_MODE" == "true" ]; then git clone ${_CI_JOB_TOKEN}${_HUGECTR_REPO} /hugectr && cd /hugectr && git fetch --all; if [ "$_HUGECTR_BRANCH" != "" ]; then git checkout ${HUGECTR_BRANCH}; else git checkout master; fi; else git clone https://github.com/NVIDIA-Merlin/HugeCTR.git /hugectr && \
+RUN if [ "$INSTALL_HUGECTR" == "true" ]; then if [ "$DEV_MODE" == "true" ]; then git clone https://${_CI_JOB_TOKEN}${_HUGECTR_REPO} /hugectr && cd /hugectr && git fetch --all; if [ "$_HUGECTR_BRANCH" != "" ]; then git checkout ${HUGECTR_BRANCH}; else git checkout master; fi; else git clone https://github.com/NVIDIA-Merlin/HugeCTR.git /hugectr && \
       cd /hugectr && if [ "$RELEASE" == "true" ] && [ ${HUGECTR_VER} != "vnightly" ]; then git fetch --all --tags && git checkout tags/${HUGECTR_VER}; else git checkout master; fi; fi && \
       git submodule update --init --recursive && \
       mkdir -p build && cd build &&\
@@ -239,7 +239,7 @@ RUN if [ "$INSTALL_HUGECTR" == "true" ]; then if [ "$DEV_MODE" == "true" ]; then
       chmod +x /usr/local/hugectr/bin/* &&\
       export CPATH=/usr/local/hugectr/include:$CPATH && \
       export LIBRARY_PATH=/usr/local/hugectr/lib:$LIBRARY_PATH; \
-    if [ "$INSTALL_HUGECTR_BACKEND" == "true" ]; then if [ "$DEV_MODE" == "true" ]; then git clone ${_CI_JOB_TOKEN}${_HUGECTR_BACKEND_REPO} /repos/hugectr_inference_backend && cd /repos/hugectr_inference_backend  && git fetch --all; if [ "$_HUGECTR_BACKEND_BRANCH" != "" ]; then git checkout ${HUGECTR_BACKEND_BRANCH}; else git checkout main; fi; else git clone https://github.com/triton-inference-server/hugectr_backend /repos/hugectr_inference_backend && \
+    if [ "$INSTALL_HUGECTR_BACKEND" == "true" ]; then if [ "$DEV_MODE" == "true" ]; then git clone https://${_CI_JOB_TOKEN}${_HUGECTR_BACKEND_REPO} /repos/hugectr_inference_backend && cd /repos/hugectr_inference_backend  && git fetch --all; if [ "$_HUGECTR_BACKEND_BRANCH" != "" ]; then git checkout ${HUGECTR_BACKEND_BRANCH}; else git checkout main; fi; else git clone https://github.com/triton-inference-server/hugectr_backend /repos/hugectr_inference_backend && \
       cd /repos/hugectr_inference_backend && if [ "$RELEASE" == "true" ] && [ ${HUGECTR_BACKEND_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${HUGECTR_BACKEND_VER}; else git checkout main; fi; fi && \
       mkdir -p build && cd build && \
       cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr/local/hugectr \
