@@ -55,7 +55,7 @@ RUN git clone --branch v1.9.2 https://github.com/gabime/spdlog.git build-env && 
 
 # Install arrow from source
 ENV ARROW_HOME=/usr/local
-RUN git clone --branch apache-arrow-4.0.1 --recurse-submodules https://github.com/apache/arrow.git build-env && \
+RUN git clone --branch apache-arrow-5.0.0 --recurse-submodules https://github.com/apache/arrow.git build-env && \
     pushd build-env && \
       export PARQUET_TEST_DATA="${PWD}/cpp/submodules/parquet-testing/data" && \
       export ARROW_TEST_DATA="${PWD}/testing/data" && \
@@ -104,7 +104,7 @@ ARG CUDF_VER=vnightly
 
 # Install rmm from source
 RUN git clone https://github.com/rapidsai/rmm.git build-env && cd build-env/ && \
-    if [ "$RELEASE" == "true" ] && [ ${RMM_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${RMM_VER}; else git checkout branch-21.08; fi; \
+    if [ "$RELEASE" == "true" ] && [ ${RMM_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${RMM_VER}; else git checkout branch-21.10; fi; \
     sed -i '/11.2/ a "11.4": "11.x",' python/setup.py && \
     cd ..; \
     pushd build-env && \
@@ -115,7 +115,7 @@ RUN git clone https://github.com/rapidsai/rmm.git build-env && cd build-env/ && 
 
 # Build env for CUDF build
 RUN git clone https://github.com/rapidsai/cudf.git build-env && cd build-env/ && \  
-    if [ "$RELEASE" == "true" ] && [ ${CUDF_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${CUDF_VER}; else git checkout branch-21.08; fi; \
+    if [ "$RELEASE" == "true" ] && [ ${CUDF_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${CUDF_VER}; else git checkout branch-21.10; fi; \
     git submodule update --init --recursive && \
     cd .. && \
     pushd build-env && \
@@ -134,7 +134,7 @@ ARG RELEASE=false
 ARG NVTAB_VER=vnightly
 
 # Install multiple packages
-RUN pip install nvtx pandas cupy-cuda114 cachetools typing_extensions fastavro
+RUN pip install nvtx pandas cupy-cuda115 cachetools typing_extensions fastavro
 RUN pip install pynvml pytest graphviz sklearn scipy matplotlib tqdm pydot nvidia-pyindex
 RUN pip install tritonclient[all] grpcio-channelz
 RUN pip install pybind11 jupyterlab onnx onnxruntime gcsfs
