@@ -109,12 +109,12 @@ RUN if [ "RELEASE" == "true" ]; then \
         if [ ${HUGECTR_VER} != "vnightly" ]; then \
             git fetch --all --tags && git checkout tags/${HUGECTR_VER}; \
         else \
-            git checkout ${_HUGECTR_BRANCH} \
+            git checkout ${_HUGECTR_BRANCH}; \
         fi; \
         cd sparse_operation_kit && \
         python setup.py install && \
         popd && \
-        rm -rf build-env;
+        rm -rf build-env; \
     fi
 
 RUN pip install pybind11
