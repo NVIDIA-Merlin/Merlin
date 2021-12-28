@@ -94,9 +94,7 @@ ARG RELEASE=false
 ARG HUGECTR_VER=vnightly
 ARG SM="60;61;70;75;80"
 ARG USE_NVTX=OFF
-ARG INSTALL_HUGECTR=true
-# Arguments "_XXXX" are only valid when $DEV_MOD==ture
-ARG DEV_MODE=false
+# Arguments "_XXXX" are only valid when $RELEASE==ture
 ARG _HUGECTR_BRANCH=master
 ARG _HUGECTR_REPO="github.com/NVIDIA-Merlin/HugeCTR.git"
 ARG _CI_JOB_TOKEN=""
@@ -106,14 +104,18 @@ RUN mkdir -p /usr/local/nvidia/lib64 && \
 
 RUN ln -s /usr/lib/x86_64-linux-gnu/libibverbs.so.1 /usr/lib/x86_64-linux-gnu/libibverbs.so
 
-RUN if [ "$INSTALL_HUGECTR" == "true" ]; then if [ "$DEV_MODE" == "true" ]; then git clone https://${_CI_JOB_TOKEN}${_HUGECTR_REPO} build-env && pushd build-env && git fetch --all; if [ "$_HUGECTR_BRANCH" != "" ]; then git checkout ${HUGECTR_BRANCH}; else git checkout master; fi; else git clone https://github.com/NVIDIA-Merlin/HugeCTR.git build-env && \
-    pushd build-env && \
-      if [ "$RELEASE" == "true" ] && [ ${HUGECTR_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${HUGECTR_VER}; else echo ${HUGECTR_VER} && git checkout master; fi ; fi && \
-      cd sparse_operation_kit && \
-      python setup.py install && \
-    popd && \
-    rm -rf build-env && \
-    rm -rf /var/tmp/HugeCTR; fi;
+RUN if [ "RELEASE" == "true" ]; then \
+        git clone https://${_CI_JOB_TOKEN}${_HUGECTR_REPO} build-env && pushd build-env && git fetch --all; \
+        if [ ${HUGECTR_VER} != "vnightly" ]; then \
+            git fetch --all --tags && git checkout tags/${HUGECTR_VER}; \
+        else \
+            git checkout ${_HUGECTR_BRANCH} \
+        fi; \
+        cd sparse_operation_kit && \
+        python setup.py install && \
+        popd && \
+        rm -rf build-env;
+    fi
 
 RUN pip install pybind11
 RUN pip install numba numpy --upgrade
