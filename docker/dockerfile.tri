@@ -215,12 +215,10 @@ RUN apt-get update -y && \
     
 ENV CPATH=/usr/local/include:$CPATH
 
-# Arguments "_XXXX" are only valid when $RELEASE==ture
+# Arguments "_XXXX" are only valid when $DEV_MODE==false
+ARG DEV_MODE=false
 ARG _HUGECTR_BRANCH=master
 ARG _HUGECTR_REPO="github.com/NVIDIA-Merlin/HugeCTR.git"
-
-ARG INSTALL_HUGECTR_BACKEND=true
-# Arguments "_XXXX" are only valid when $RELEASE==ture
 ARG _HUGECTR_BACKEND_BRANCH=main
 ARG _HUGECTR_BACKEND_REPO="github.com/triton-inference-server/hugectr_backend"
 
@@ -228,9 +226,9 @@ ARG _CI_JOB_TOKEN=""
 
 # Install HugeCTR
 RUN apt update -y && apt install rapidjson-dev -y
-RUN if [ "$RELEASE" == "true" ]; then \
+RUN if [ "$DEV_MODE" == "false" ]; then \
       git clone https://${_CI_JOB_TOKEN}${_HUGECTR_REPO} /hugectr && cd /hugectr && git fetch --all; \
-      if [ ${HUGECTR_VER} != "vnightly" ]; then \
+      if [ "$RELEASE" == "true" ] && [ ${HUGECTR_VER} != "vnightly" ]; then \
         git fetch --all --tags && git checkout tags/${HUGECTR_VER}; \
       else \
         git checkout ${_HUGECTR_BRANCH}; \
@@ -244,7 +242,7 @@ RUN if [ "$RELEASE" == "true" ]; then \
       export LIBRARY_PATH=/usr/local/hugectr/lib:$LIBRARY_PATH; \
     fi
 
-RUN if [ "$INSTALL_HUGECTR_BACKEND" == "true" ]; then \
+RUN if [ "$DEV_MODE" == "false" ]; then \
       git clone https://${_CI_JOB_TOKEN}${_HUGECTR_BACKEND_REPO} /repos/hugectr_inference_backend && cd /repos/hugectr_inference_backend &&  \
       if [ "$RELEASE" == "true" ] && [ "$HUGECTR_BACKEND_VER" != "vnightly" ]; then \
         git fetch --all --tags && git checkout tags/${HUGECTR_BACKEND_VER}; \
