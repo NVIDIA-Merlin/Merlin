@@ -237,10 +237,13 @@ RUN if [ "$DEV_MODE" == "false" ]; then \
       mkdir -p build && cd build &&\
       cmake -DCMAKE_BUILD_TYPE=Release -DSM=$SM -DENABLE_INFERENCE=ON .. && \
       make -j$(nproc) && make install && \
-      chmod +x /usr/local/hugectr/bin/* &&\
-      export CPATH=/usr/local/hugectr/include:$CPATH && \
-      export LIBRARY_PATH=/usr/local/hugectr/lib:$LIBRARY_PATH; \
+      chmod +x /usr/local/hugectr/bin/*; \
     fi
+
+ENV CPATH=/usr/local/hugectr/include:$CPATH
+ENV LIBRARY_PATH=/usr/local/hugectr/lib:$LIBRARY_PATH
+ENV LD_LIBRARY_PATH=/usr/local/hugectr/lib:$LD_LIBRARY_PATH
+ENV PATH=/usr/local/hugectr/bin:$PATH
 
 RUN if [ "$DEV_MODE" == "false" ]; then \
       git clone https://${_CI_JOB_TOKEN}${_HUGECTR_BACKEND_REPO} /repos/hugectr_inference_backend && cd /repos/hugectr_inference_backend &&  \
@@ -257,11 +260,6 @@ RUN if [ "$DEV_MODE" == "false" ]; then \
       make -j$(nproc) && make install && \
       rm -rf /repos/hugectr_inference_backend; \
     fi
-
-ENV CPATH=/usr/local/hugectr/include:$CPATH
-ENV LIBRARY_PATH=/usr/local/hugectr/lib:$LIBRARY_PATH
-ENV LD_LIBRARY_PATH=/usr/local/hugectr/lib:$LD_LIBRARY_PATH
-ENV PATH=/usr/local/hugectr/bin:$PATH
 
 RUN ln -s /usr/local/hugectr/backends/hugectr /opt/tritonserver/backends/
 
