@@ -215,8 +215,8 @@ RUN apt-get update -y && \
     
 ENV CPATH=/usr/local/include:$CPATH
 
-# Arguments "_XXXX" are only valid when $DEV_MODE==false
-ARG DEV_MODE=false
+# Arguments "_XXXX" are only valid when $HCTR_DEV_MODE==false
+ARG HCTR_DEV_MODE=false
 ARG _HUGECTR_BRANCH=master
 ARG _HUGECTR_REPO="github.com/NVIDIA-Merlin/HugeCTR.git"
 ARG _HUGECTR_BACKEND_BRANCH=main
@@ -226,7 +226,7 @@ ARG _CI_JOB_TOKEN=""
 
 # Install HugeCTR
 RUN apt update -y && apt install rapidjson-dev -y
-RUN if [ "$DEV_MODE" == "false" ]; then \
+RUN if [ "$HCTR_DEV_MODE" == "false" ]; then \
       git clone https://${_CI_JOB_TOKEN}${_HUGECTR_REPO} /hugectr && cd /hugectr && git fetch --all; \
       if [ "$RELEASE" == "true" ] && [ ${HUGECTR_VER} != "vnightly" ]; then \
         git fetch --all --tags && git checkout tags/${HUGECTR_VER}; \
@@ -245,7 +245,7 @@ ENV LIBRARY_PATH=/usr/local/hugectr/lib:$LIBRARY_PATH
 ENV LD_LIBRARY_PATH=/usr/local/hugectr/lib:$LD_LIBRARY_PATH
 ENV PATH=/usr/local/hugectr/bin:$PATH
 
-RUN if [ "$DEV_MODE" == "false" ]; then \
+RUN if [ "$HCTR_DEV_MODE" == "false" ]; then \
       git clone https://${_CI_JOB_TOKEN}${_HUGECTR_BACKEND_REPO} /repos/hugectr_inference_backend && cd /repos/hugectr_inference_backend &&  \
       if [ "$RELEASE" == "true" ] && [ "$HUGECTR_BACKEND_VER" != "vnightly" ]; then \
         git fetch --all --tags && git checkout tags/${HUGECTR_BACKEND_VER}; \
