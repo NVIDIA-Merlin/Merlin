@@ -215,8 +215,8 @@ FROM phase3 AS phase4
 ARG RELEASE=false
 ARG HUGECTR_VER=vnightly
 
-# Arguments "_XXXX" are only valid when $DEV_MODE==false
-ARG DEV_MODE=false
+# Arguments "_XXXX" are only valid when $HUGECTR_DEV_MODE==false
+ARG HUGECTR_DEV_MODE=false
 ARG _HUGECTR_BRANCH=master
 ARG _HUGECTR_REPO="github.com/NVIDIA-Merlin/HugeCTR.git"
 ARG _CI_JOB_TOKEN=""
@@ -238,7 +238,7 @@ RUN rm -rf /usr/lib/x86_64-linux-gnu/libibverbs.so && \
     ln -s /usr/lib/x86_64-linux-gnu/libibverbs.so.1.14.36.0 /usr/lib/x86_64-linux-gnu/libibverbs.so
 
 # Install hugectr
-RUN if [ "$DEV_MODE" == "false" ]; then \
+RUN if [ "$HUGECTR_DEV_MODE" == "false" ]; then \
         git clone https://${_CI_JOB_TOKEN}${_HUGECTR_REPO} /hugectr && cd /hugectr; \
         if [ "$RELEASE" == "true" ] && [ "$HUGECTR_VER" != "vnightly" ]; then \
             git fetch --all --tags && git checkout tags/${HUGECTR_VER}; \
