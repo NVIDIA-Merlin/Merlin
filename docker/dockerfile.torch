@@ -43,13 +43,6 @@ RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/nul
     apt-get update && \
     apt-get install -y cmake
 
-# Install spdlog from source
-RUN git clone --branch v1.9.2 https://github.com/gabime/spdlog.git build-env && \
-    pushd build-env && \
-      mkdir build && cd build && cmake .. && make -j && make install && \
-    popd && \
-    rm -rf build-env
-
 SHELL ["/bin/bash", "-c"]
 
 RUN pip install numpy==1.20.3

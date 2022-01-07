@@ -39,13 +39,6 @@ RUN pip install git+git://github.com/gevent/gevent.git@21.8.0#egg=gevent
 RUN apt remove --purge cmake -y && wget http://www.cmake.org/files/v3.21/cmake-3.21.1.tar.gz && \
     tar xf cmake-3.21.1.tar.gz && cd cmake-3.21.1 && ./configure && make && make install
 
-# Install spdlog from source
-RUN git clone --branch v1.9.2 https://github.com/gabime/spdlog.git build-env && \
-    pushd build-env && \
-      mkdir build && cd build && cmake .. && make -j && make install && \
-    popd && \
-    rm -rf build-env
-
 FROM phase1 as phase2
 
 ARG RELEASE=false
