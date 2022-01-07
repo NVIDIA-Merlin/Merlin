@@ -70,6 +70,7 @@ RUN git clone https://github.com/NVIDIA-Merlin/Transformers4Rec.git /transformer
     cd /transformers4rec/;  if [ "$RELEASE" == "true" ] && [ ${TF4REC_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${TF4REC_VER}; else git checkout main; fi; \
     pip install -e .[tensorflow,nvtabular]
 
+RUN pip uninstall cupy-cuda114
 RUN pip install pynvml pytest graphviz sklearn scipy matplotlib 
 RUN pip install nvidia-pyindex; pip install tritonclient[all] grpcio-channelz
 RUN pip install nvtx cupy-cuda115 cachetools typing_extensions fastavro
