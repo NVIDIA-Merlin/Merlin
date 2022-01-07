@@ -7,6 +7,8 @@ SHELL ["/bin/bash", "-c"]
 
 # Args
 ARG RELEASE=false
+ARG RMM_VER=vnightly
+ARG CUDF_VER=vnightly
 ARG NVTAB_VER=vnightly
 ARG HUGECTR_VER=vnightly
 ARG HUGECTR_BACKEND_VER=vnightly
@@ -66,6 +68,17 @@ RUN pip install git+git://github.com/gevent/gevent.git@21.8.0#egg=gevent
 RUN git clone https://github.com/rapidsai/asvdb.git /repos/asvdb && cd /repos/asvdb && python setup.py install
 RUN pip install botocore>=1.21.6
 RUN pip install pyarrow==5.0.0
+
+# Install rmm from source
+RUN git clone https://github.com/rapidsai/rmm.git build-env && cd build-env/ && \
+    if [ "$RELEASE" == "true" ] && [ ${RMM_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${RMM_VER}; else git checkout branch-21.10; fi; \
+    sed -i '/11.2/ a "11.4": "11.x",' python/setup.py && \
+    cd ..; \
+    pushd build-env && \
+    ./build.sh librmm && \
+    pip install python/. && \
+    popd && \
+    rm -rf build-env
 
 # Build env for CUDF build
 RUN git clone https://github.com/rapidsai/cudf.git build-env && cd build-env/ && \
