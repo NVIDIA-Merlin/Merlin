@@ -2,18 +2,17 @@
 ARG TRITON_VERSION=21.12
 ARG IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-py3
 FROM ${IMAGE}
-ARG RMM_VER=vnightly
-ARG CUDF_VER=vnightly
-ARG HUGECTR_VER=vnightly
-ARG HUGECTR_BACKEND_VER=vnightly
-ARG NVTAB_VER=vnightly
-ARG TF4REC_VER=vnightly
-
-ARG RELEASE=false
-ARG SM="60;61;70;75;80"
 
 SHELL ["/bin/bash", "-c"]
 
+# Args
+ARG RELEASE=false
+ARG NVTAB_VER=vnightly
+ARG HUGECTR_VER=vnightly
+ARG HUGECTR_BACKEND_VER=vnightly
+ARG TF4REC_VER=vnightly
+
+# Envs
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64:/usr/local/lib:/repos/dist/lib
 ENV DEBIAN_FRONTEND=noninteractive
 ENV CUDA_HOME=/usr/local/cuda
@@ -21,43 +20,52 @@ ENV CUDA_PATH=$CUDA_HOME
 ENV CUDA_CUDA_LIBRARY=${CUDA_HOME}/lib64/stubs
 ENV PATH=${CUDA_HOME}/lib64/:${PATH}:${CUDA_HOME}/bin
 
-# Build env variables for rmm
-#ENV INSTALL_PREFIX=/usr
-
+# Install packages
+ENV DEBIAN_FRONTEND=noninteractive
 RUN apt update -y --fix-missing && \
     apt upgrade -y && \
-      apt install -y --no-install-recommends software-properties-common && \
-      add-apt-repository -y ppa:deadsnakes/ppa && \
-      apt update -y --fix-missing
-
-RUN apt install -y --no-install-recommends \
-      git \
-      build-essential \
-      autoconf \
-      bison \
-      flex \
-      libboost-serialization-dev \
-      wget \
-      libssl-dev \
-      zlib1g-dev \
-      protobuf-compiler \
-      clang-format \
-      aptitude \
-      libaio-dev \
-      libtool && \
-    apt-get autoremove -y && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
-
-RUN ln -s /usr/bin/python3 /usr/bin/python
-RUN pip uninstall protobuf -y; pip install protobuf
-RUN pip install git+git://github.com/gevent/gevent.git@21.8.0#egg=gevent
+    apt-get install -y --no-install-recommends \
+        git \
+        build-essential \
+        autoconf \
+        bison \
+        flex \
+        libboost-serialization-dev \
+        wget \
+        graphviz \
+        libssl-dev \
+        zlib1g-dev \
+        protobuf-compiler \
+        clang-format \
+        libtbb-dev \
+        aptitude \
+        rapidjson-dev \
+        libaio-dev \
+        libtool && \
+    apt install -y --no-install-recommends software-properties-common && \
+    add-apt-repository -y ppa:deadsnakes/ppa && \
+    apt update -y --fix-missing
 
 # Install cmake
-RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null && \
-    apt-add-repository 'deb https://apt.kitware.com/ubuntu/ focal main' && \
-    apt-get update && \
-    apt-get install -y cmake
+RUN apt remove --purge cmake -y && wget http://www.cmake.org/files/v3.21/cmake-3.21.1.tar.gz && \
+    tar xf cmake-3.21.1.tar.gz && cd cmake-3.21.1 && ./configure && make && make install
+
+# Install multiple packages
+RUN ln -s /usr/bin/python3 /usr/bin/python
+RUN pip cache purge
+RUN RUN pip uninstall cupy-cuda114 -y
+RUN pip uninstall protobuf -y
+RUN pip install protobuf
+RUN pip install nvtx pandas cupy-cuda115 cachetools typing_extensions fastavro
+RUN pip install pynvml pytest graphviz scipy matplotlib tqdm pydot nvidia-pyindex
+RUN pip install tritonclient[all] grpcio-channelz
+RUN pip install pybind11 jupyterlab gcsfs
+RUN pip3 install --no-cache-dir mpi4py ortools sklearn onnx onnxruntime
+RUN pip install dask==2021.09.1 distributed==2021.09.1 dask[dataframe]==2021.09.1 dask-cuda
+RUN pip install git+git://github.com/gevent/gevent.git@21.8.0#egg=gevent
+RUN git clone https://github.com/rapidsai/asvdb.git /repos/asvdb && cd /repos/asvdb && python setup.py install
+RUN pip install botocore>=1.21.6
+RUN pip install pyarrow==5.0.0
 
 # Build env for CUDF build
 RUN git clone https://github.com/rapidsai/cudf.git build-env && cd build-env/ && \
@@ -77,20 +85,8 @@ RUN git clone https://github.com/rapidsai/cudf.git build-env && cd build-env/ &&
     popd && \
     rm -rf build-env
 
-ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
-
-SHELL ["/bin/bash", "-c"]
-
-RUN RUN pip uninstall cupy-cuda114 -y
-RUN pip install cupy-cuda115 cachetools fastavro typing_extensions nvtx pandas==1.1.5
-RUN pip install pybind11 gcsfs 
-RUN apt install -y rapidjson-dev
-
-# need for testing fixtures must be available for nvt testing
-RUN pip install botocore>=1.21.6
-RUN git clone https://github.com/rapidsai/asvdb.git /repos/asvdb && cd /repos/asvdb && python setup.py install
-
 # Install NVTabular
+ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
 RUN git clone https://github.com/NVIDIA-Merlin/NVTabular.git /nvtabular/ && \
     cd /nvtabular/; if [ "$RELEASE" == "true" ] && [ ${NVTAB_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${NVTAB_VER}; else git checkout main; fi; \
     python setup.py develop;
@@ -101,8 +97,6 @@ RUN git clone https://github.com/NVIDIA-Merlin/Transformers4Rec.git /transformer
     pip install -e .[tensorflow,pytorch,nvtabular]
 
 # Install NVTabular Triton Backend
-ARG TRITON_VERSION
-
 RUN git clone https://github.com/NVIDIA-Merlin/nvtabular_triton_backend.git build-env && \
     cd build-env && \ 
     if [ "$RELEASE" == "true" ] && [ ${NVTAB_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${NVTAB_VER}; else git checkout main; fi; \
@@ -114,19 +108,13 @@ RUN git clone https://github.com/NVIDIA-Merlin/nvtabular_triton_backend.git buil
         -D TRITON_COMMON_REPO_TAG="r$TRITON_VERSION"    \
         -D TRITON_CORE_REPO_TAG="r$TRITON_VERSION"      \
         -D TRITON_BACKEND_REPO_TAG="r$TRITON_VERSION" .. \
-      && make -j 4 && \
+      && make -j && \
       mkdir /opt/tritonserver/backends/nvtabular && \
       cp libtriton_nvtabular.so /opt/tritonserver/backends/nvtabular/ && \
     popd && \
     rm -rf build-env 
 
-RUN pip install dask==2021.07.1 distributed==2021.07.1 dask[dataframe]==2021.07.1 dask-cuda
-RUN pip install pynvml pytest graphviz sklearn scipy matplotlib
-RUN pip install nvidia-pyindex; pip install tritonclient[all] grpcio-channelz
-
-RUN apt update; apt install -y graphviz libtbb-dev;
-
-#Hiredis
+# Install Hiredis
 RUN mkdir -p /var/tmp && cd /var/tmp && git clone --depth=1 https://github.com/redis/hiredis.git && cd - && \
     cd /var/tmp/hiredis && \
     mkdir build && cd build && \
@@ -134,7 +122,7 @@ RUN mkdir -p /var/tmp && cd /var/tmp && git clone --depth=1 https://github.com/r
     make -j$(nproc) && make install && \
     rm -rf /var/tmp/hiredis
 
-#redis++
+# Install redis++
 RUN mkdir -p /var/tmp && cd /var/tmp && git clone --depth=1 -b 1.3.2 https://github.com/sewenew/redis-plus-plus.git && cd - && \
     cd /var/tmp/redis-plus-plus && \
     mkdir build && cd build && \
@@ -142,30 +130,28 @@ RUN mkdir -p /var/tmp && cd /var/tmp && git clone --depth=1 -b 1.3.2 https://git
     make -j$(nproc) && make install && \
     rm -rf /var/tmp/redis-plus-plus
 
-#RocksDB
+# Install RocksDB
 RUN mkdir -p /var/tmp && cd /var/tmp && git clone --depth=1 https://github.com/facebook/rocksdb.git && cd - && \
     cd /var/tmp/rocksdb && \
     PORTABLE=1 make -j$(nproc) shared_lib && \
     make install-shared && \
     rm -rf /var/tmp/rocksdb
     
-# Install LibRdKafka from source
+# Install LibRdKafka
 RUN apt-get update -y && \
     DEBIAN_FRONTEND=noninteractive && apt-get install -y --no-install-recommends libssl-dev libsasl2-dev liblz4-dev libzstd-dev && \
     mkdir -p /var/tmp && cd /var/tmp && git clone --depth 1 -b v1.8.2 https://github.com/edenhill/librdkafka.git && cd - && \
     cd /var/tmp/librdkafka && \
     ./configure && make -j$(nproc) && make install && \
     rm -rf /var/tmp/librdkafka
-    
-ENV CPATH=/usr/local/include:$CPATH
 
 # Install HugeCTR
-RUN apt update -y && apt install rapidjson-dev -y
+ENV CPATH=/usr/local/include:$CPATH
 RUN git clone https://github.com/NVIDIA-Merlin/HugeCTR.git /hugectr && \
       cd /hugectr && if [ "$RELEASE" == "true" ] && [ ${HUGECTR_VER} != "vnightly" ]; then git fetch --all --tags && git checkout tags/${HUGECTR_VER}; else git checkout master; fi && \
       git submodule update --init --recursive && \
       mkdir -p build && cd build &&\
-      cmake -DCMAKE_BUILD_TYPE=Release -DSM=$SM -DENABLE_INFERENCE=ON .. && \
+      cmake -DCMAKE_BUILD_TYPE=Release -DSM="60;61;70;75;80" -DENABLE_INFERENCE=ON .. && \
       make -j$(nproc) && make install && \
       chmod +x /usr/local/hugectr/bin/* &&\
       export CPATH=/usr/local/hugectr/include:$CPATH && \
@@ -187,8 +173,8 @@ ENV PATH=/usr/local/hugectr/bin:$PATH
 
 RUN ln -s /usr/local/hugectr/backends/hugectr /opt/tritonserver/backends/
 
+# Clean up
 RUN rm -rf /repos
-RUN pip install tqdm
 RUN pip install numba numpy --upgrade
 RUN echo $(du -h --max-depth=1 /)
 

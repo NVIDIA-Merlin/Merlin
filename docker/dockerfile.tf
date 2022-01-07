@@ -1,59 +1,58 @@
 # syntax=docker/dockerfile:1
 ARG IMAGE=nvcr.io/nvidia/tensorflow:21.12-tf2-py3
-FROM ${IMAGE} AS phase1
+FROM ${IMAGE}
 
 SHELL ["/bin/bash", "-c"]
-ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64:/usr/local/lib:/repos/dist/lib
 
-ENV DEBIAN_FRONTEND=noninteractive
-
+# Args
 ARG RELEASE=false
 ARG NVTAB_VER=vnightly
-ARG TF4REC_VER=vnightly
 ARG HUGECTR_VER=vnightly
-ARG SM="60;61;70;75;80"
+ARG TF4REC_VER=vnightly
 
+# Envs
+ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64:/usr/local/lib:/repos/dist/lib
 ENV CUDA_HOME=/usr/local/cuda
 ENV CUDA_PATH=$CUDA_HOME
 ENV CUDA_CUDA_LIBRARY=${CUDA_HOME}/lib64/stubs
 ENV PATH=${CUDA_HOME}/lib64/:${PATH}:${CUDA_HOME}/bin
 
+# Install packages
+ENV DEBIAN_FRONTEND=noninteractive
 RUN apt update -y --fix-missing && \
     apt upgrade -y && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+    apt-get install -y --no-install-recommends \
         gdb \
         valgrind \
         zlib1g-dev lsb-release clang-format libboost-serialization-dev \
         openssl \
+        graphviz \
         libssl-dev \
         protobuf-compiler \
         libaio-dev \
         slapd && \
-      apt install -y --no-install-recommends software-properties-common && \
-      add-apt-repository -y ppa:deadsnakes/ppa && \
-      apt update -y --fix-missing
-
-RUN pip install git+git://github.com/gevent/gevent.git@21.8.0#egg=gevent
+    apt install -y --no-install-recommends software-properties-common && \
+    add-apt-repository -y ppa:deadsnakes/ppa && \
+    apt update -y --fix-missing
 
 # Install cmake
 RUN apt remove --purge cmake -y && wget http://www.cmake.org/files/v3.21/cmake-3.21.1.tar.gz && \
     tar xf cmake-3.21.1.tar.gz && cd cmake-3.21.1 && ./configure && make && make install
 
-FROM phase1 as phase2
-
-ARG RELEASE=false
-ARG NVTAB_VER=vnightly
-ARG TF4REC_VER=vnightly
-
-ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
-
-RUN pip install pandas sklearn ortools pydot && \
-    pip cache purge
-
-RUN pip install pybind11
-SHELL ["/bin/bash", "-c"]
+# Install multiple packages
+RUN pip cache purge
+RUN RUN pip uninstall cupy-cuda114 -y
+RUN pip install nvtx pandas cupy-cuda115 cachetools typing_extensions fastavro
+RUN pip install pynvml pytest graphviz scipy matplotlib tqdm pydot nvidia-pyindex
+RUN pip install tritonclient[all] grpcio-channelz
+RUN pip install pybind11 jupyterlab gcsfs
+RUN pip3 install --no-cache-dir mpi4py ortools sklearn onnx onnxruntime
+RUN pip install dask==2021.09.1 distributed==2021.09.1 dask[dataframe]==2021.09.1 dask-cuda
+RUN pip install git+git://github.com/gevent/gevent.git@21.8.0#egg=gevent
+RUN git clone https://github.com/rapidsai/asvdb.git /repos/asvdb && cd /repos/asvdb && python setup.py install
 
 # Install NVTabular
+ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
 RUN git clone https://github.com/NVIDIA-Merlin/NVTabular.git /nvtabular/ && \
     cd /nvtabular/; if [ "$RELEASE" == "true" ] && [ ${NVTAB_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${NVTAB_VER}; else git checkout main; fi; \
     python setup.py develop;
@@ -63,30 +62,10 @@ RUN git clone https://github.com/NVIDIA-Merlin/Transformers4Rec.git /transformer
     cd /transformers4rec/;  if [ "$RELEASE" == "true" ] && [ ${TF4REC_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${TF4REC_VER}; else git checkout main; fi; \
     pip install -e .[tensorflow,nvtabular]
 
-RUN pip uninstall cupy-cuda114 -y
-RUN pip install pynvml pytest graphviz sklearn scipy matplotlib 
-RUN pip install nvidia-pyindex; pip install tritonclient[all] grpcio-channelz
-RUN pip install nvtx cupy-cuda115 cachetools typing_extensions fastavro
-
-RUN apt-get update; apt-get install -y graphviz
-
+# Install HugeCTR
 ENV LD_LIBRARY_PATH=/usr/local/hugectr/lib:$LD_LIBRARY_PATH \
     LIBRARY_PATH=/usr/local/hugectr/lib:$LIBRARY_PATH \
     PYTHONPATH=/usr/local/hugectr/lib:$PYTHONPATH
-
-RUN git clone https://github.com/rapidsai/asvdb.git build-env && \
-    pushd build-env && \
-      python setup.py install && \
-    popd && \
-    rm -rf build-env
-
-RUN pip install dask==2021.07.1 distributed==2021.07.1 dask[dataframe]==2021.07.1 dask-cuda
-FROM phase2 as phase3
-
-ARG RELEASE=false
-ARG HUGECTR_VER=vnightly
-ARG SM="60;61;70;75;80"
-ARG USE_NVTX=OFF
 
 RUN mkdir -p /usr/local/nvidia/lib64 && \
     ln -s /usr/local/cuda/lib64/libcusolver.so /usr/local/nvidia/lib64/libcusolver.so.10
@@ -102,12 +81,10 @@ RUN git clone https://github.com/NVIDIA-Merlin/HugeCTR.git build-env && \
     rm -rf build-env && \
     rm -rf /var/tmp/HugeCTR
 
-RUN pip install pybind11
+# Clean up
+RUN rm -rf /repos
 RUN pip install numba numpy --upgrade
-
 RUN rm -rf /usr/local/share/jupyter/lab/staging/node_modules/fast-json-patch
-
-SHELL ["/bin/bash", "-c"]
 
 RUN echo $(du -h --max-depth=1 /)
 
