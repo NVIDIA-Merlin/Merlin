@@ -84,6 +84,7 @@ RUN git clone https://github.com/NVIDIA-Merlin/HugeCTR.git build-env && \
 # Clean up
 RUN rm -rf /repos
 RUN pip install numba numpy --upgrade
+RUN pip install dask==2021.09.1 distributed==2021.09.1 dask[dataframe]==2021.09.1 dask-cuda
 RUN rm -rf /usr/local/share/jupyter/lab/staging/node_modules/fast-json-patch
 
 RUN echo $(du -h --max-depth=1 /)
