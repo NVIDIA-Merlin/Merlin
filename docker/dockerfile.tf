@@ -48,7 +48,7 @@ RUN pip install tritonclient[all] grpcio-channelz
 RUN pip install pybind11 jupyterlab gcsfs
 RUN pip3 install --no-cache-dir mpi4py ortools sklearn onnx onnxruntime
 RUN pip install dask==2021.09.1 distributed==2021.09.1 dask[dataframe]==2021.09.1 dask-cuda
-RUN pip install git+git://github.com/gevent/gevent.git@21.8.0#egg=gevent
+RUN pip install gevent==21.8.0
 RUN git clone https://github.com/rapidsai/asvdb.git /repos/asvdb && cd /repos/asvdb && python setup.py install
 
 # Install NVTabular

@@ -47,7 +47,7 @@ RUN pip install tritonclient[all] grpcio-channelz
 RUN pip install pybind11 jupyterlab gcsfs
 RUN pip3 install --no-cache-dir mpi4py ortools sklearn onnx onnxruntime
 RUN pip install dask==2021.09.1 distributed==2021.09.1 dask[dataframe]==2021.09.1 dask-cuda
-RUN pip install git+git://github.com/gevent/gevent.git@21.8.0#egg=gevent
+RUN pip install gevent==21.8.0
 RUN git clone https://github.com/rapidsai/asvdb.git /repos/asvdb && cd /repos/asvdb && python setup.py install
 RUN pip install --no-deps fastai fastcore fastprogress fastdownload
 RUN CC=/usr/bin/gcc CXX=/usr/bin/g++ HOROVOD_CUDA_HOME=/usr/local/cuda/ HOROVOD_BUILD_CUDA_CC_LIST=60,70,75,80 HOROVOD_GPU_OPERATIONS=NCCL HOROVOD_WITH_PYTORCH=1 HOROVOD_NCCL_LINK=SHARED pip install --no-cache-dir horovod[pytorch]
