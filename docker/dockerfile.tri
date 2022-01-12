@@ -68,6 +68,13 @@ RUN pip install gevent==21.8.0
 RUN git clone https://github.com/rapidsai/asvdb.git /repos/asvdb && cd /repos/asvdb && python setup.py install
 RUN pip install botocore>=1.21.6
 
+# Install spdlog
+RUN git clone --branch v1.9.2 https://github.com/gabime/spdlog.git build-env && \
+    pushd build-env && \
+      mkdir build && cd build && cmake .. && make -j && make install && \
+    popd && \
+    rm -rf build-env
+    
 # Install arrow
 ENV ARROW_HOME=/usr/local
 RUN git clone --branch apache-arrow-5.0.0 --recurse-submodules https://github.com/apache/arrow.git build-env && \
