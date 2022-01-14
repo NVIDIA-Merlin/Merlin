@@ -2,8 +2,6 @@
 ARG IMAGE=nvcr.io/nvidia/tensorflow:21.12-tf2-py3
 FROM ${IMAGE}
 
-SHELL ["/bin/bash", "-c"]
-
 # Args
 ARG RELEASE=false
 ARG NVTAB_VER=vnightly
