@@ -1,62 +1,59 @@
-ARG IMAGE=nvcr.io/nvidia/pytorch:21.11-py3
+ARG IMAGE=nvcr.io/nvidia/pytorch:21.12-py3
 FROM ${IMAGE}
-ENV CUDA_SHORT_VERSION=11.4
 
 SHELL ["/bin/bash", "-c"]
-ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64:/usr/local/lib:/repos/dist/lib
 
-ENV DEBIAN_FRONTEND=noninteractive
-
+# Args
+ARG RELEASE=false
 ARG NVTAB_VER=vnightly
 ARG TF4REC_VER=vnightly
-ARG RELEASE=false
 
+# Envs
+ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64:/usr/local/lib:/repos/dist/lib
 ENV CUDA_HOME=/usr/local/cuda
 ENV CUDA_PATH=$CUDA_HOME
 ENV CUDA_CUDA_LIBRARY=${CUDA_HOME}/lib64/stubs
 ENV PATH=${CUDA_HOME}/lib64/:${PATH}:${CUDA_HOME}/bin
 
+# Install packages
+ENV DEBIAN_FRONTEND=noninteractive
 RUN apt update -y --fix-missing && \
     apt upgrade -y && \
-      apt install -y --no-install-recommends software-properties-common && \
-      add-apt-repository -y ppa:deadsnakes/ppa && \
-      apt update -y --fix-missing
-
-RUN apt install -y --no-install-recommends \
-      git \
-      libboost-serialization-dev \
-      build-essential \
-      autoconf \
-      bison \
-      flex \
-      wget \
-      libssl-dev \
-      protobuf-compiler && \
-    apt-get autoremove -y && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
-
-RUN pip install git+git://github.com/gevent/gevent.git@21.8.0#egg=gevent
+    apt-get install -y --no-install-recommends \
+        git \
+        libboost-serialization-dev \
+        build-essential \
+        autoconf \
+        graphviz \
+        bison \
+        flex \
+        wget \
+        libssl-dev \
+        protobuf-compiler && \
+    apt install -y --no-install-recommends software-properties-common && \
+    add-apt-repository -y ppa:deadsnakes/ppa && \
+    apt update -y --fix-missing
 
 # Install cmake
-RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null && \
-    apt-add-repository 'deb https://apt.kitware.com/ubuntu/ focal main' && \
-    apt-get update && \
-    apt-get install -y cmake
+RUN apt remove --purge cmake -y && wget http://www.cmake.org/files/v3.21/cmake-3.21.1.tar.gz && \
+    tar xf cmake-3.21.1.tar.gz && cd cmake-3.21.1 && ./configure && make && make install
 
-# Install spdlog from source
-RUN git clone --branch v1.9.2 https://github.com/gabime/spdlog.git build-env && \
-    pushd build-env && \
-      mkdir build && cd build && cmake .. && make -j && make install && \
-    popd && \
-    rm -rf build-env
-
-SHELL ["/bin/bash", "-c"]
-
+# Install multiple packages
+RUN pip uninstall cupy-cuda114 -y
 RUN pip install numpy==1.20.3
-RUN pip install pybind11 gcsfs
+RUN pip install nvtx pandas cupy-cuda115 cachetools typing_extensions fastavro
+RUN pip install pynvml pytest graphviz scipy matplotlib tqdm pydot nvidia-pyindex
+RUN pip install tritonclient[all] grpcio-channelz
+RUN pip install pybind11 jupyterlab gcsfs
+RUN pip3 install --no-cache-dir mpi4py ortools sklearn onnx onnxruntime
+RUN pip install dask==2021.09.1 distributed==2021.09.1 dask[dataframe]==2021.09.1 dask-cuda
+RUN pip install gevent==21.8.0
+RUN git clone https://github.com/rapidsai/asvdb.git /repos/asvdb && cd /repos/asvdb && python setup.py install
+RUN pip install --no-deps fastai fastcore fastprogress fastdownload
+RUN CC=/usr/bin/gcc CXX=/usr/bin/g++ HOROVOD_CUDA_HOME=/usr/local/cuda/ HOROVOD_BUILD_CUDA_CC_LIST=60,70,75,80 HOROVOD_GPU_OPERATIONS=NCCL HOROVOD_WITH_PYTORCH=1 HOROVOD_NCCL_LINK=SHARED pip install --no-cache-dir horovod[pytorch]
 
 # Install NVTabular
+ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
 RUN git clone https://github.com/NVIDIA-Merlin/NVTabular.git /nvtabular/ && \
     cd /nvtabular/; if [ "$RELEASE" == "true" ] && [ ${NVTAB_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${NVTAB_VER}; else git checkout main; fi; \
     python setup.py develop;
@@ -65,29 +62,18 @@ RUN git clone https://github.com/NVIDIA-Merlin/NVTabular.git /nvtabular/ && \
 RUN pip install llvmlite --ignore-installed
 RUN git clone https://github.com/NVIDIA-Merlin/Transformers4Rec.git /transformers4rec && \
     cd /transformers4rec/;  if [ "$RELEASE" == "true" ] && [ ${TF4REC_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${TF4REC_VER}; else git checkout main; fi; \
-    pip install -e .[pytorch,nvtabular]
+    pip install -e .[pytorch,nvtabular] && python setup.py develop
 
-RUN pip install --ignore-installed pynvml pytest graphviz sklearn scipy matplotlib
-RUN pip install nvidia-pyindex; pip install tritonclient[all] grpcio-channelz
-RUN apt update; apt install -y graphviz ;
-
-RUN git clone https://github.com/rapidsai/asvdb.git /repos/asvdb && cd /repos/asvdb && python setup.py install
-#RUN pip uninstall numpy numba -y; pip install numpy numba
-ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
-RUN pip install --no-deps fastai fastcore fastprogress fastdownload
-RUN CC=/usr/bin/gcc CXX=/usr/bin/g++ HOROVOD_CUDA_HOME=/usr/local/cuda/ HOROVOD_BUILD_CUDA_CC_LIST=60,70,75,80 HOROVOD_GPU_OPERATIONS=NCCL HOROVOD_WITH_PYTORCH=1 HOROVOD_NCCL_LINK=SHARED pip install --no-cache-dir horovod[pytorch]
-RUN pip install nvtx pandas==1.1.5 mpi4py==3.0.3 cupy-cuda114 cachetools typing_extensions fastavro
-RUN pip install dask==2021.07.1 distributed==2021.07.1 dask[dataframe]==2021.07.1 dask-cuda
-
-# For some reason we still have torchmetrics 0.5.1 here, and need 0.3.2 for transformers4rec.
-# Force 0.3.2 here
+# Force torchmetrics 0.3.2 here
 RUN pip install torchmetrics==0.3.2
 
+# Clean up
+RUN rm -rf /repos
+RUN pip install dask==2021.09.1 distributed==2021.09.1 dask[dataframe]==2021.09.1 dask-cuda
 RUN pip uninstall sqlparse -y
 RUN pip install 'websockets>=10.0'
 RUN rm -rf /opt/conda/share/jupyter/lab/staging/node_modules/fast-json-patch
 
-RUN rm -rf /repos
 RUN echo $(du -h --max-depth=1 /)
 
 HEALTHCHECK NONE
