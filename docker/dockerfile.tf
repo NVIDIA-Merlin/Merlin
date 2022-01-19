@@ -88,5 +88,4 @@ RUN rm -rf /usr/local/share/jupyter/lab/staging/node_modules/fast-json-patch
 RUN echo $(du -h --max-depth=1 /)
 
 HEALTHCHECK NONE
-ENTRYPOINT []
 CMD ["/bin/bash"]
