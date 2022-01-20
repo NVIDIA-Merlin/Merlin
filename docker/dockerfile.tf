@@ -2,8 +2,6 @@
 ARG IMAGE=nvcr.io/nvidia/tensorflow:21.12-tf2-py3
 FROM ${IMAGE}
 
-SHELL ["/bin/bash", "-c"]
-
 # Args
 ARG RELEASE=false
 ARG NVTAB_VER=vnightly
@@ -90,5 +88,4 @@ RUN rm -rf /usr/local/share/jupyter/lab/staging/node_modules/fast-json-patch
 RUN echo $(du -h --max-depth=1 /)
 
 HEALTHCHECK NONE
-ENTRYPOINT []
 CMD ["/bin/bash"]
