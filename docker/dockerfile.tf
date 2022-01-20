@@ -51,11 +51,14 @@ RUN pip install dask==2021.09.1 distributed==2021.09.1 dask[dataframe]==2021.09.
 RUN pip install gevent==21.8.0
 RUN git clone https://github.com/rapidsai/asvdb.git /repos/asvdb && cd /repos/asvdb && python setup.py install
 
+ARG INSTALL_NVT=true
 # Install NVTabular
 ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
-RUN git clone https://github.com/NVIDIA-Merlin/NVTabular.git /nvtabular/ && \
-    cd /nvtabular/; if [ "$RELEASE" == "true" ] && [ ${NVTAB_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${NVTAB_VER}; else git checkout main; fi; \
-    python setup.py develop;
+RUN if [ "$INSTALL_NVT" == "true" ]; then \
+        git clone https://github.com/NVIDIA-Merlin/NVTabular.git /nvtabular/ && \
+        cd /nvtabular/; if [ "$RELEASE" == "true" ] && [ ${NVTAB_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${NVTAB_VER}; else git checkout main; fi; \
+        python setup.py develop; \
+    fi
 
 # Install Transformers4Rec
 RUN git clone https://github.com/NVIDIA-Merlin/Transformers4Rec.git /transformers4rec && \
