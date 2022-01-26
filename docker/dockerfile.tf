@@ -49,11 +49,14 @@ RUN pip install dask==2021.09.1 distributed==2021.09.1 dask[dataframe]==2021.09.
 RUN pip install gevent==21.8.0
 RUN git clone https://github.com/rapidsai/asvdb.git /repos/asvdb && cd /repos/asvdb && python setup.py install
 
+ARG INSTALL_NVT=true
 # Install NVTabular
 ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
-RUN git clone https://github.com/NVIDIA-Merlin/NVTabular.git /nvtabular/ && \
-    cd /nvtabular/; if [ "$RELEASE" == "true" ] && [ ${NVTAB_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${NVTAB_VER}; else git checkout main; fi; \
-    python setup.py develop;
+RUN if [ "$INSTALL_NVT" == "true" ]; then \
+        git clone https://github.com/NVIDIA-Merlin/NVTabular.git /nvtabular/ && \
+        cd /nvtabular/; if [ "$RELEASE" == "true" ] && [ ${NVTAB_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${NVTAB_VER}; else git checkout main; fi; \
+        python setup.py develop; \
+    fi
 
 # Install Transformers4Rec
 RUN git clone https://github.com/NVIDIA-Merlin/Transformers4Rec.git /transformers4rec && \
@@ -65,19 +68,35 @@ ENV LD_LIBRARY_PATH=/usr/local/hugectr/lib:$LD_LIBRARY_PATH \
     LIBRARY_PATH=/usr/local/hugectr/lib:$LIBRARY_PATH \
     PYTHONPATH=/usr/local/hugectr/lib:$PYTHONPATH
 
+RUN git clone https://github.com/rapidsai/asvdb.git build-env && \
+    pushd build-env && \
+      python setup.py install && \
+    popd && \
+    rm -rf build-env
+
+# Arguments "_XXXX" are only valid when $HUGECTR_DEV_MODE==false
+ARG HUGECTR_DEV_MODE=false
+ARG _HUGECTR_BRANCH=master
+ARG _HUGECTR_REPO="github.com/NVIDIA-Merlin/HugeCTR.git"
+ARG _CI_JOB_TOKEN=""
+
 RUN mkdir -p /usr/local/nvidia/lib64 && \
     ln -s /usr/local/cuda/lib64/libcusolver.so /usr/local/nvidia/lib64/libcusolver.so.10
 
 RUN ln -s /usr/lib/x86_64-linux-gnu/libibverbs.so.1 /usr/lib/x86_64-linux-gnu/libibverbs.so
 
-RUN git clone https://github.com/NVIDIA-Merlin/HugeCTR.git build-env && \
-    pushd build-env && \
-      if [ "$RELEASE" == "true" ] && [ ${HUGECTR_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${HUGECTR_VER}; else echo ${HUGECTR_VER} && git checkout master; fi && \
-      cd sparse_operation_kit && \
-      python setup.py install && \
-    popd && \
-    rm -rf build-env && \
-    rm -rf /var/tmp/HugeCTR
+RUN if [ "$HUGECTR_DEV_MODE" == "false" ]; then \
+        git clone https://${_CI_JOB_TOKEN}${_HUGECTR_REPO} build-env && pushd build-env && git fetch --all; \
+        if [ "$RELEASE" == "true" ] && [ ${HUGECTR_VER} != "vnightly" ]; then \
+            git fetch --all --tags && git checkout tags/${HUGECTR_VER}; \
+        else \
+            git checkout ${_HUGECTR_BRANCH}; \
+        fi; \
+        cd sparse_operation_kit && \
+        python setup.py install && \
+        popd && \
+        rm -rf build-env; \
+    fi
 
 # Clean up
 RUN rm -rf /repos

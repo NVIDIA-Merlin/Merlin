@@ -87,7 +87,7 @@ RUN git clone --branch apache-arrow-5.0.0 --recurse-submodules https://github.co
               -DCMAKE_LIBRARY_PATH=${CUDA_CUDA_LIBRARY} \
               -DARROW_FLIGHT=ON \
               -DARROW_GANDIVA=OFF \
-              -DARROW_ORC=ON \
+              -DARROW_ORC=OFF \
               -DARROW_WITH_BZ2=ON \
               -DARROW_WITH_ZLIB=ON \
               -DARROW_WITH_ZSTD=ON \
@@ -107,7 +107,7 @@ RUN git clone --branch apache-arrow-5.0.0 --recurse-submodules https://github.co
       pushd python && \
         export PYARROW_WITH_PARQUET=ON && \
         export PYARROW_WITH_CUDA=ON && \
-        export PYARROW_WITH_ORC=ON && \
+        export PYARROW_WITH_ORC=OFF && \
         export PYARROW_WITH_DATASET=ON && \
         python setup.py build_ext --build-type=release bdist_wheel && \
         pip install dist/*.whl && \
@@ -206,31 +206,68 @@ RUN apt-get update -y && \
     ./configure && make -j$(nproc) && make install && \
     rm -rf /var/tmp/librdkafka
 
+# Install Java
+RUN mkdir -p /var/tmp && cd /var/tmp && wget https://download.java.net/java/GA/jdk16.0.2/d4a915d82b4c4fbb9bde534da945d746/7/GPL/openjdk-16.0.2_linux-x64_bin.tar.gz && \
+    mkdir -p /usr/java && tar -zxvf ./openjdk-16.0.2_linux-x64_bin.tar.gz -C /usr/java &&  \
+    rm -rf ./openjdk-16.0.2_linux-x64_bin.tar.gz
+
+#Intall libhdfs client
+RUN mkdir -p /var/tmp && cd /var/tmp && wget https://archive.apache.org/dist/hadoop/common/hadoop-3.3.1/hadoop-3.3.1.tar.gz && \
+    tar -zxvf ./hadoop-3.3.1.tar.gz && rm -rf hadoop-3.3.1.tar.gz && \
+    cp ./hadoop-3.3.1/lib/native/libhdfs.so.0.0.0 /usr/local/lib/ && cp hadoop-3.3.1/include/hdfs.h /usr/local/include/ && \
+    mv ./hadoop-3.3.1 /usr/local/hadoop && cd /usr/local/lib/ && ln -s libhdfs.so.0.0.0 libhdfs.so 
+
+ENV JAVA_HOME=/usr/java/jdk-16.0.2
+ENV PATH=$JAVA_HOME/bin:$PATH
+ENV LD_LIBRARY_PATH=$JAVA_HOME/lib/server
+ENV HADOOP_HOME=/usr/local/hadoop
+ENV PATH=$PATH:$HADOOP_HOME/bin:$HADOOP_HOME/sbin
+
+# Arguments "_XXXX" are only valid when $HUGECTR_DEV_MODE==false
+ARG HUGECTR_DEV_MODE=false
+ARG _HUGECTR_BRANCH=master
+ARG _HUGECTR_REPO="github.com/NVIDIA-Merlin/HugeCTR.git"
+ARG _HUGECTR_BACKEND_BRANCH=main
+ARG _HUGECTR_BACKEND_REPO="github.com/triton-inference-server/hugectr_backend"
+
+ARG _CI_JOB_TOKEN=""
+
 # Install HugeCTR
-ENV CPATH=/usr/local/include:$CPATH
-RUN git clone https://github.com/NVIDIA-Merlin/HugeCTR.git /hugectr && \
-      cd /hugectr && if [ "$RELEASE" == "true" ] && [ ${HUGECTR_VER} != "vnightly" ]; then git fetch --all --tags && git checkout tags/${HUGECTR_VER}; else git checkout master; fi && \
+RUN apt update -y && apt install rapidjson-dev -y
+RUN if [ "$HUGECTR_DEV_MODE" == "false" ]; then \
+      git clone https://${_CI_JOB_TOKEN}${_HUGECTR_REPO} /hugectr && cd /hugectr && git fetch --all; \
+      if [ "$RELEASE" == "true" ] && [ ${HUGECTR_VER} != "vnightly" ]; then \
+        git fetch --all --tags && git checkout tags/${HUGECTR_VER}; \
+      else \
+        git checkout ${_HUGECTR_BRANCH}; \
+      fi; \
       git submodule update --init --recursive && \
       mkdir -p build && cd build &&\
       cmake -DCMAKE_BUILD_TYPE=Release -DSM="60;61;70;75;80" -DENABLE_INFERENCE=ON .. && \
       make -j$(nproc) && make install && \
-      chmod +x /usr/local/hugectr/bin/* &&\
-      export CPATH=/usr/local/hugectr/include:$CPATH && \
-      export LIBRARY_PATH=/usr/local/hugectr/lib:$LIBRARY_PATH && \
-      git clone https://github.com/triton-inference-server/hugectr_backend /repos/hugectr_inference_backend && \
-      cd /repos/hugectr_inference_backend && if [ "$RELEASE" == "true" ] && [ ${HUGECTR_BACKEND_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${HUGECTR_BACKEND_VER}; else git checkout main; fi && \
+      chmod +x /usr/local/hugectr/bin/*; \
+    fi
+
+ENV CPATH=/usr/local/hugectr/include:$CPATH
+ENV LIBRARY_PATH=/usr/local/hugectr/lib:$LIBRARY_PATH
+ENV LD_LIBRARY_PATH=/usr/local/hugectr/lib:$LD_LIBRARY_PATH
+ENV PATH=/usr/local/hugectr/bin:$PATH
+
+RUN if [ "$HUGECTR_DEV_MODE" == "false" ]; then \
+      git clone https://${_CI_JOB_TOKEN}${_HUGECTR_BACKEND_REPO} /repos/hugectr_inference_backend && cd /repos/hugectr_inference_backend &&  \
+      if [ "$RELEASE" == "true" ] && [ "$HUGECTR_BACKEND_VER" != "vnightly" ]; then \
+        git fetch --all --tags && git checkout tags/${HUGECTR_BACKEND_VER}; \
+      else \
+        git checkout ${_HUGECTR_BACKEND_BRANCH}; \
+      fi && \
       mkdir -p build && cd build && \
       cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr/local/hugectr \
             -DTRITON_COMMON_REPO_TAG="r$TRITON_VERSION" \
             -DTRITON_CORE_REPO_TAG="r$TRITON_VERSION" \
             -DTRITON_BACKEND_REPO_TAG="r$TRITON_VERSION" .. && \
       make -j$(nproc) && make install && \
-      rm -rf /hugectr/build
-
-ENV CPATH=/usr/local/hugectr/include:$CPATH
-ENV LIBRARY_PATH=/usr/local/hugectr/lib:$LIBRARY_PATH
-ENV LD_LIBRARY_PATH=/usr/local/hugectr/lib:$LD_LIBRARY_PATH
-ENV PATH=/usr/local/hugectr/bin:$PATH
+      rm -rf /repos/hugectr_inference_backend; \
+    fi
 
 RUN ln -s /usr/local/hugectr/backends/hugectr /opt/tritonserver/backends/
 
