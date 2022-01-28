@@ -19,6 +19,9 @@ ENV PATH=${CUDA_HOME}/lib64/:${PATH}:${CUDA_HOME}/bin
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt update -y --fix-missing && \
     apt upgrade -y && \
+    apt install -y --no-install-recommends software-properties-common && \
+    add-apt-repository -y ppa:deadsnakes/ppa && \
+    apt update -y --fix-missing && \
     apt-get install -y --no-install-recommends \
         gdb \
         valgrind \
@@ -29,9 +32,9 @@ RUN apt update -y --fix-missing && \
         protobuf-compiler \
         libaio-dev \
         slapd && \
-    apt install -y --no-install-recommends software-properties-common && \
-    add-apt-repository -y ppa:deadsnakes/ppa && \
-    apt update -y --fix-missing
+    apt-get autoremove -y && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 # Install cmake
 RUN apt remove --purge cmake -y && wget http://www.cmake.org/files/v3.21/cmake-3.21.1.tar.gz && \
