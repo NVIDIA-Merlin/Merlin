@@ -121,7 +121,7 @@ RUN git clone --branch apache-arrow-5.0.0 --recurse-submodules https://github.co
 # Install rmm
 ENV INSTALL_PREFIX=/usr
 RUN git clone https://github.com/rapidsai/rmm.git build-env && cd build-env/ && \
-    if [ "$RELEASE" == "true" ] && [ ${RMM_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${RMM_VER}; else git checkout branch-21.10; fi; \
+    if [ "$RELEASE" == "true" ] && [ ${RMM_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${RMM_VER}; else git checkout branch-21.12; fi; \
     sed -i '/11.2/ a "11.4": "11.x",' python/setup.py && \
     cd ..; \
     pushd build-env && \
@@ -132,7 +132,7 @@ RUN git clone https://github.com/rapidsai/rmm.git build-env && cd build-env/ && 
 
 # Install CUDF
 RUN git clone https://github.com/rapidsai/cudf.git build-env && cd build-env/ && \
-    if [ "$RELEASE" == "true" ] && [ ${CUDF_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${CUDF_VER}; else git checkout branch-21.10; fi; \
+    if [ "$RELEASE" == "true" ] && [ ${CUDF_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${CUDF_VER}; else git checkout branch-21.12; fi; \
     sed -i '74s/set(CUDF_MIN_VERSION_Thrust 1.12.0)/set(CUDF_MIN_VERSION_Thrust 1.15.0)/' cpp/cmake/thirdparty/get_thrust.cmake && \
     sed -i 's/, thrust::host_space_tag//' cpp/src/io/orc/reader_impl.cu && \
     git submodule update --init --recursive && \
