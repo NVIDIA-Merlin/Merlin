@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-ARG IMAGE=nvcr.io/nvidia/tensorflow:21.12-tf2-py3
+ARG IMAGE=nvcr.io/nvidia/tensorflow:22.01-tf2-py3
 FROM ${IMAGE}
 
 # Args
