@@ -49,6 +49,12 @@ RUN apt update -y --fix-missing && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
+RUN wget https://dlcdn.apache.org/hadoop/common/hadoop-3.3.1/hadoop-3.3.1.tar.gz /hadoop-3.3.1.tar.gz
+RUN tar -xvf /hadoop-3.3.1.tar.gz 
+RUN cp -r  /hadoop-3.3.1 /usr/local/hadoop
+RUN sed -i -e 's/# export JAVA_HOME=/export JAVA_HOME=$(readlink -f /usr/bin/java | sed "s:bin/java::")/g'  /usr/local/hadoop/etc/hadoop/hadoop-env.sh
+ENV PATH=${PATH}:/usr/local/hadoop/bin/
+
 # Install cmake
 RUN apt remove --purge cmake -y && wget http://www.cmake.org/files/v3.21/cmake-3.21.1.tar.gz && \
     tar xf cmake-3.21.1.tar.gz && cd cmake-3.21.1 && ./configure && make && make install
@@ -102,6 +108,8 @@ RUN git clone --branch apache-arrow-5.0.0 --recurse-submodules https://github.co
               -DARROW_BUILD_TESTS=ON \
               -DARROW_CUDA=ON \
               -DARROW_DATASET=ON \
+              -DARROW_HDFS=ON \
+              -DARROW_S3=ON \ 
               .. && \
         make -j$(nproc) && \
         make install && \
@@ -111,6 +119,8 @@ RUN git clone --branch apache-arrow-5.0.0 --recurse-submodules https://github.co
         export PYARROW_WITH_CUDA=ON && \
         export PYARROW_WITH_ORC=OFF && \
         export PYARROW_WITH_DATASET=ON && \
+        export PYARROW_WITH_S3=ON && \
+        export PYARROW_WITH_HDFS=ON && \
         python setup.py build_ext --build-type=release bdist_wheel && \
         pip install dist/*.whl && \
       popd && \
