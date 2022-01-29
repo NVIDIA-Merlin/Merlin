@@ -48,7 +48,7 @@ RUN pip install pynvml pytest graphviz scipy matplotlib tqdm pydot nvidia-pyinde
 RUN pip install tritonclient[all] grpcio-channelz
 RUN pip install pybind11 jupyterlab gcsfs
 RUN pip3 install --no-cache-dir mpi4py ortools sklearn onnx onnxruntime
-RUN pip install dask==2021.09.1 distributed==2021.09.1 dask[dataframe]==2021.09.1 dask-cuda
+RUN pip install dask==2021.11.2 distributed==2021.11.2 dask[dataframe]==2021.11.2 dask-cuda
 RUN pip install gevent==21.8.0
 RUN git clone https://github.com/rapidsai/asvdb.git /repos/asvdb && cd /repos/asvdb && python setup.py install
 
@@ -106,7 +106,7 @@ RUN if [ "$HUGECTR_DEV_MODE" == "false" ]; then \
 # Clean up
 RUN rm -rf /repos
 RUN pip install numba numpy --upgrade
-RUN pip install dask==2021.09.1 distributed==2021.09.1 dask[dataframe]==2021.09.1 dask-cuda
+RUN pip install dask==2021.11.2 distributed==2021.11.2 dask[dataframe]==2021.11.2 dask-cuda
 RUN rm -rf /usr/local/share/jupyter/lab/staging/node_modules/fast-json-patch
 
 RUN echo $(du -h --max-depth=1 /)

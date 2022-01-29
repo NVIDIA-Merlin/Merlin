@@ -64,7 +64,7 @@ RUN pip install pynvml pytest graphviz scipy matplotlib tqdm pydot nvidia-pyinde
 RUN pip install tritonclient[all] grpcio-channelz
 RUN pip install pybind11 jupyterlab gcsfs
 RUN pip3 install --no-cache-dir mpi4py ortools sklearn onnx onnxruntime
-RUN pip install dask==2021.09.1 distributed==2021.09.1 dask[dataframe]==2021.09.1 dask-cuda
+RUN pip install dask==2021.11.2 distributed==2021.11.2 dask[dataframe]==2021.11.2 dask-cuda
 RUN pip install gevent==21.8.0
 RUN git clone https://github.com/rapidsai/asvdb.git /repos/asvdb && cd /repos/asvdb && python setup.py install
 RUN pip install botocore>=1.21.6
@@ -133,8 +133,6 @@ RUN git clone https://github.com/rapidsai/rmm.git build-env && cd build-env/ && 
 # Install CUDF
 RUN git clone https://github.com/rapidsai/cudf.git build-env && cd build-env/ && \
     if [ "$RELEASE" == "true" ] && [ ${CUDF_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${CUDF_VER}; else git checkout branch-21.12; fi; \
-    sed -i '74s/set(CUDF_MIN_VERSION_Thrust 1.12.0)/set(CUDF_MIN_VERSION_Thrust 1.15.0)/' cpp/cmake/thirdparty/get_thrust.cmake && \
-    sed -i 's/, thrust::host_space_tag//' cpp/src/io/orc/reader_impl.cu && \
     git submodule update --init --recursive && \
     cd .. && \
     pushd build-env && \
@@ -142,9 +140,7 @@ RUN git clone https://github.com/rapidsai/cudf.git build-env && cd build-env/ &&
       export CUDF_ROOT=${PWD}/cpp/build/ && \
       export CMAKE_LIBRARY_PATH=${CUDA_CUDA_LIBRARY} && \
       export CUDAFLAGS=-Wno-error=unknown-pragmas && \
-      sed -i 's/aa003db89e052e4ce408910ff17e1054b7c43b7d/ c435afaf4ba8a8d12f379d688effcb185886cec1/' cpp/cmake/thirdparty/get_nvcomp.cmake && \
       ./build.sh libcudf cudf dask_cudf --allgpuarch --cmake-args=\"-DCUDF_ENABLE_ARROW_S3=OFF\" && \
-      protoc -I=python/cudf/cudf/utils/metadata --python_out=/usr/local/lib/python3.8/dist-packages/cudf/utils/metadata python/cudf/cudf/utils/metadata/orc_column_statistics.proto && \
     popd && \
     rm -rf build-env
 
@@ -276,7 +272,7 @@ RUN ln -s /usr/local/hugectr/backends/hugectr /opt/tritonserver/backends/
 
 # Clean up
 RUN rm -rf /repos
-RUN pip install dask==2021.09.1 distributed==2021.09.1 dask[dataframe]==2021.09.1 dask-cuda
+RUN pip install dask==2021.11.2 distributed==2021.11.2 dask[dataframe]==2021.11.2 dask-cuda
 RUN pip install numba numpy --upgrade
 RUN echo $(du -h --max-depth=1 /)
 
