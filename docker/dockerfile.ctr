@@ -9,7 +9,7 @@ ARG HUGECTR_VER=vnightly
 ARG HWLOC_VER=2.4.1
 
 # Envs
-ENV CUDA_SHORT_VERSION=11.5
+ENV CUDA_SHORT_VERSION=11.6
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64:/usr/local/lib:/repos/dist/lib
 ENV CUDA_HOME=/usr/local/cuda
 ENV CUDA_PATH=$CUDA_HOME
@@ -47,7 +47,6 @@ RUN apt remove --purge cmake -y && wget http://www.cmake.org/files/v3.21/cmake-3
 
 # Install multiple packages
 RUN pip cache purge
-RUN pip uninstall cupy-cuda114 -y
 RUN pip install nvtx pandas cupy-cuda115 cachetools typing_extensions fastavro
 RUN pip install pynvml pytest graphviz scipy matplotlib tqdm pydot nvidia-pyindex
 RUN pip install tritonclient[all] grpcio-channelz
