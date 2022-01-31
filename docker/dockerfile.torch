@@ -55,20 +55,19 @@ RUN CC=/usr/bin/gcc CXX=/usr/bin/g++ HOROVOD_CUDA_HOME=/usr/local/cuda/ HOROVOD_
 ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
 RUN git clone https://github.com/NVIDIA-Merlin/NVTabular.git /nvtabular/ && \
     cd /nvtabular/; if [ "$RELEASE" == "true" ] && [ ${NVTAB_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${NVTAB_VER}; else git checkout main; fi; \
-    python setup.py develop;
+    python setup.py develop --no-deps;
 
 # Install Transformers4Rec
 RUN pip install llvmlite --ignore-installed
 RUN git clone https://github.com/NVIDIA-Merlin/Transformers4Rec.git /transformers4rec && \
     cd /transformers4rec/;  if [ "$RELEASE" == "true" ] && [ ${TF4REC_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${TF4REC_VER}; else git checkout main; fi; \
-    pip install -e .[pytorch,nvtabular] && python setup.py develop
+    pip install -e .[pytorch,nvtabular] && python setup.py develop --no-deps
 
 # Force torchmetrics 0.3.2 here
 RUN pip install torchmetrics==0.3.2
 
 # Clean up
 RUN rm -rf /repos
-RUN pip install dask==2021.11.2 distributed==2021.11.2 dask[dataframe]==2021.11.2 dask-cuda
 RUN pip uninstall sqlparse -y
 RUN pip install 'websockets>=10.0'
 RUN rm -rf /opt/conda/share/jupyter/lab/staging/node_modules/fast-json-patch

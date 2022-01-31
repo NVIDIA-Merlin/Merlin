@@ -57,14 +57,14 @@ ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
 RUN if [ "$INSTALL_NVT" == "true" ]; then \
         git clone https://github.com/NVIDIA-Merlin/NVTabular.git /nvtabular/ && \
         cd /nvtabular/; if [ "$RELEASE" == "true" ] && [ ${NVTAB_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${NVTAB_VER}; else git checkout main; fi; \
-        python setup.py develop; \
+        python setup.py develop --no-deps; \
     fi
 
 # Install Transformers4Rec
 RUN if [ "$INSTALL_NVT" == "true" ]; then \
         git clone https://github.com/NVIDIA-Merlin/Transformers4Rec.git /transformers4rec && \
         cd /transformers4rec/;  if [ "$RELEASE" == "true" ] && [ ${TF4REC_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${TF4REC_VER}; else git checkout main; fi; \
-        pip install -e .[tensorflow,nvtabular] && python setup.py develop; \
+        pip install -e .[tensorflow,nvtabular] && python setup.py develop --no-deps; \
     fi
 
 # Install HugeCTR
@@ -104,7 +104,6 @@ RUN if [ "$HUGECTR_DEV_MODE" == "false" ]; then \
 
 # Clean up
 RUN rm -rf /repos
-RUN pip install dask==2021.11.2 distributed==2021.11.2 dask[dataframe]==2021.11.2 dask-cuda
 RUN rm -rf /usr/local/share/jupyter/lab/staging/node_modules/fast-json-patch
 
 RUN echo $(du -h --max-depth=1 /)
