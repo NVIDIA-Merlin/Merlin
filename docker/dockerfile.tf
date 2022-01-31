@@ -104,7 +104,6 @@ RUN if [ "$HUGECTR_DEV_MODE" == "false" ]; then \
 
 # Clean up
 RUN rm -rf /repos
-RUN pip install numba numpy --upgrade
 RUN pip install dask==2021.11.2 distributed==2021.11.2 dask[dataframe]==2021.11.2 dask-cuda
 RUN rm -rf /usr/local/share/jupyter/lab/staging/node_modules/fast-json-patch
 
