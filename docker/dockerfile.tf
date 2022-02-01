@@ -64,7 +64,7 @@ RUN if [ "$INSTALL_NVT" == "true" ]; then \
 RUN if [ "$INSTALL_NVT" == "true" ]; then \
         git clone https://github.com/NVIDIA-Merlin/Transformers4Rec.git /transformers4rec && \
         cd /transformers4rec/;  if [ "$RELEASE" == "true" ] && [ ${TF4REC_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${TF4REC_VER}; else git checkout main; fi; \
-        pip install -e .[tensorflow,nvtabular] && python setup.py develop --no-deps; \
+        pip install -e .[tensorflow,nvtabular] --no-deps && python setup.py develop --no-deps; \
     fi
 
 # Install HugeCTR
