@@ -64,11 +64,6 @@ RUN git clone https://github.com/NVIDIA-Merlin/NVTabular.git /nvtabular/ && \
     cd /nvtabular/; if [ "$RELEASE" == "true" ] && [ ${NVTAB_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${NVTAB_VER}; else git checkout main; fi; \
     python setup.py develop --no-deps;
 
-# Install Models
-RUN git clone https://github.com/NVIDIA-Merlin/Models.git /models/ && \
-    cd /models/; if [ "$RELEASE" == "true" ] && [ ${MODELS_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${MODELS_VER}; else git checkout main; fi; \
-    python setup.py develop --no-deps;
-
 # Install CUDA-Aware hwloc
 RUN cd /opt/hpcx/ompi/include/openmpi/opal/mca/hwloc/hwloc201 && rm -rfv hwloc201.h hwloc/include/hwloc.h
 RUN mkdir -p /var/tmp && wget -q -nc --no-check-certificate -P /var/tmp https://download.open-mpi.org/release/hwloc/v2.4/hwloc-${HWLOC_VER}.tar.gz && \
