@@ -34,6 +34,11 @@ if [ "$container" != "merlin-training" ]; then
     /transformers4rec/ci/test_unit.sh $container $devices
 fi
 
+## Test Models
+if [ "$container" != "merlin-training" ]; then
+    /models/ci/test_unit.sh $container $devices
+fi
+
 
 #####################
 # Integration tests #
