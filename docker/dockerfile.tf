@@ -63,6 +63,7 @@ RUN if [ "$INSTALL_NVT" == "true" ]; then \
     fi
 
 # Install Transformers4Rec
+RUN pip install transformers
 RUN if [ "$INSTALL_NVT" == "true" ]; then \
         git clone https://github.com/NVIDIA-Merlin/Transformers4Rec.git /transformers4rec && \
         cd /transformers4rec/;  if [ "$RELEASE" == "true" ] && [ ${TF4REC_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${TF4REC_VER}; else git checkout main; fi; \
