@@ -5,6 +5,7 @@ FROM ${IMAGE}
 # Args
 ARG RELEASE=false
 ARG NVTAB_VER=vnightly
+ARG MODELS_VER=vnightly
 ARG HUGECTR_VER=vnightly
 ARG HWLOC_VER=2.4.1
 
@@ -61,6 +62,11 @@ RUN git clone https://github.com/rapidsai/asvdb.git /repos/asvdb && cd /repos/as
 ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
 RUN git clone https://github.com/NVIDIA-Merlin/NVTabular.git /nvtabular/ && \
     cd /nvtabular/; if [ "$RELEASE" == "true" ] && [ ${NVTAB_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${NVTAB_VER}; else git checkout main; fi; \
+    python setup.py develop --no-deps;
+
+# Install Models
+RUN git clone https://github.com/NVIDIA-Merlin/Models.git /models/ && \
+    cd /models/; if [ "$RELEASE" == "true" ] && [ ${MODELS_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${MODELS_VER}; else git checkout main; fi; \
     python setup.py develop --no-deps;
 
 # Install CUDA-Aware hwloc

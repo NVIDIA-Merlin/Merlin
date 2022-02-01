@@ -4,6 +4,7 @@ FROM ${IMAGE}
 # Args
 ARG RELEASE=false
 ARG NVTAB_VER=vnightly
+ARG MODELS_VER=vnightly
 ARG TF4REC_VER=vnightly
 
 # Envs
@@ -63,6 +64,11 @@ RUN pip install llvmlite --ignore-installed
 RUN git clone https://github.com/NVIDIA-Merlin/Transformers4Rec.git /transformers4rec && \
     cd /transformers4rec/;  if [ "$RELEASE" == "true" ] && [ ${TF4REC_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${TF4REC_VER}; else git checkout main; fi; \
     pip install -e .[pytorch,nvtabular] --no-deps && python setup.py develop --no-deps
+
+# Install Models
+RUN git clone https://github.com/NVIDIA-Merlin/Models.git /models/ && \
+    cd /models/; if [ "$RELEASE" == "true" ] && [ ${MODELS_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${MODELS_VER}; else git checkout main; fi; \
+    python setup.py develop --no-deps;
 
 # Force torchmetrics 0.3.2 here
 RUN pip install torchmetrics==0.3.2

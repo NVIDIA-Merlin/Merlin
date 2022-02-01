@@ -5,6 +5,7 @@ FROM ${IMAGE}
 # Args
 ARG RELEASE=false
 ARG NVTAB_VER=vnightly
+ARG MODELS_VER=vnightly
 ARG HUGECTR_VER=vnightly
 ARG TF4REC_VER=vnightly
 
@@ -67,6 +68,11 @@ RUN if [ "$INSTALL_NVT" == "true" ]; then \
         cd /transformers4rec/;  if [ "$RELEASE" == "true" ] && [ ${TF4REC_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${TF4REC_VER}; else git checkout main; fi; \
         pip install -e .[tensorflow,nvtabular] --no-deps && python setup.py develop --no-deps; \
     fi
+
+# Install Models
+RUN git clone https://github.com/NVIDIA-Merlin/Models.git /models/ && \
+    cd /models/; if [ "$RELEASE" == "true" ] && [ ${MODELS_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${MODELS_VER}; else git checkout main; fi; \
+    python setup.py develop --no-deps;
 
 # Install HugeCTR
 ENV LD_LIBRARY_PATH=/usr/local/hugectr/lib:$LD_LIBRARY_PATH \
