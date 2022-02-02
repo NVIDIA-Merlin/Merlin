@@ -36,6 +36,7 @@ fi
 
 ## Test Models
 if [ "$container" != "merlin-training" ]; then
+    pip install coverage
     chmod +x /models/ci/test_unit.sh
     /models/ci/test_unit.sh $container $devices
 fi
