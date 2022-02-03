@@ -38,7 +38,7 @@ fi
 if [ "$container" != "merlin-training" ]; then
     pip install coverage
     chmod +x /models/ci/test_unit.sh
-    #/models/ci/test_unit.sh $container $devices
+    /models/ci/test_unit.sh $container $devices
 fi
 
 
@@ -49,8 +49,7 @@ fi
 ## Test NVTabular 
 ### Not shared storage in blossom yet
 if [ "$container" != "merlin-inference" ]; then
-    echo "tmp skip"
-    #/nvtabular/ci/test_integration.sh $container $devices
+    /nvtabular/ci/test_integration.sh $container $devices
 fi
 ## Test HugeCTR
 # Waiting to sync integration tests with them
