@@ -49,7 +49,8 @@ fi
 ## Test NVTabular 
 ### Not shared storage in blossom yet
 if [ "$container" != "merlin-inference" ]; then
-    /nvtabular/ci/test_integration.sh $container $devices
+    echo "tmp skip"
+    #/nvtabular/ci/test_integration.sh $container $devices
 fi
 ## Test HugeCTR
 # Waiting to sync integration tests with them
