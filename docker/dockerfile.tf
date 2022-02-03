@@ -1,10 +1,11 @@
 # syntax=docker/dockerfile:1
-ARG IMAGE=nvcr.io/nvidia/tensorflow:21.12-tf2-py3
+ARG IMAGE=nvcr.io/nvidia/tensorflow:22.01-tf2-py3
 FROM ${IMAGE}
 
 # Args
 ARG RELEASE=false
 ARG NVTAB_VER=vnightly
+ARG MODELS_VER=vnightly
 ARG HUGECTR_VER=vnightly
 ARG TF4REC_VER=vnightly
 
@@ -19,6 +20,9 @@ ENV PATH=${CUDA_HOME}/lib64/:${PATH}:${CUDA_HOME}/bin
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt update -y --fix-missing && \
     apt upgrade -y && \
+    apt install -y --no-install-recommends software-properties-common && \
+    add-apt-repository -y ppa:deadsnakes/ppa && \
+    apt update -y --fix-missing && \
     apt-get install -y --no-install-recommends \
         gdb \
         valgrind \
@@ -29,9 +33,9 @@ RUN apt update -y --fix-missing && \
         protobuf-compiler \
         libaio-dev \
         slapd && \
-    apt install -y --no-install-recommends software-properties-common && \
-    add-apt-repository -y ppa:deadsnakes/ppa && \
-    apt update -y --fix-missing
+    apt-get autoremove -y && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 # Install cmake
 RUN apt remove --purge cmake -y && wget http://www.cmake.org/files/v3.21/cmake-3.21.1.tar.gz && \
@@ -39,15 +43,15 @@ RUN apt remove --purge cmake -y && wget http://www.cmake.org/files/v3.21/cmake-3
 
 # Install multiple packages
 RUN pip cache purge
-RUN pip uninstall cupy-cuda114 -y
 RUN pip install nvtx pandas cupy-cuda115 cachetools typing_extensions fastavro
 RUN pip install pynvml pytest graphviz scipy matplotlib tqdm pydot nvidia-pyindex
 RUN pip install tritonclient[all] grpcio-channelz
 RUN pip install pybind11 jupyterlab gcsfs
 RUN pip3 install --no-cache-dir mpi4py ortools sklearn onnx onnxruntime
-RUN pip install dask==2021.09.1 distributed==2021.09.1 dask[dataframe]==2021.09.1 dask-cuda
+RUN pip install dask==2021.11.2 distributed==2021.11.2 dask[dataframe]==2021.11.2 dask-cuda
+RUN pip install betterproto tensorflow-metadata
 RUN pip install gevent==21.8.0
-RUN git clone https://github.com/rapidsai/asvdb.git /repos/asvdb && cd /repos/asvdb && python setup.py install
+RUN pip install --no-cache-dir git+https://github.com/rapidsai/asvdb.git@main
 
 ARG INSTALL_NVT=true
 # Install NVTabular
@@ -55,15 +59,21 @@ ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
 RUN if [ "$INSTALL_NVT" == "true" ]; then \
         git clone https://github.com/NVIDIA-Merlin/NVTabular.git /nvtabular/ && \
         cd /nvtabular/; if [ "$RELEASE" == "true" ] && [ ${NVTAB_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${NVTAB_VER}; else git checkout main; fi; \
-        python setup.py develop; \
+        python setup.py develop --no-deps; \
     fi
 
 # Install Transformers4Rec
+RUN pip install transformers
 RUN if [ "$INSTALL_NVT" == "true" ]; then \
         git clone https://github.com/NVIDIA-Merlin/Transformers4Rec.git /transformers4rec && \
         cd /transformers4rec/;  if [ "$RELEASE" == "true" ] && [ ${TF4REC_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${TF4REC_VER}; else git checkout main; fi; \
-        pip install -e .[tensorflow,nvtabular] && python setup.py develop; \
+        pip install -e .[tensorflow,nvtabular] --no-deps && python setup.py develop --no-deps; \
     fi
+
+# Install Models
+RUN git clone https://github.com/NVIDIA-Merlin/Models.git /models/ && \
+    cd /models/; if [ "$RELEASE" == "true" ] && [ ${MODELS_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${MODELS_VER}; else git checkout main; fi; \
+    python setup.py develop --no-deps;
 
 # Install HugeCTR
 ENV LD_LIBRARY_PATH=/usr/local/hugectr/lib:$LD_LIBRARY_PATH \
@@ -102,8 +112,6 @@ RUN if [ "$HUGECTR_DEV_MODE" == "false" ]; then \
 
 # Clean up
 RUN rm -rf /repos
-RUN pip install numba numpy --upgrade
-RUN pip install dask==2021.09.1 distributed==2021.09.1 dask[dataframe]==2021.09.1 dask-cuda
 RUN rm -rf /usr/local/share/jupyter/lab/staging/node_modules/fast-json-patch
 
 RUN echo $(du -h --max-depth=1 /)

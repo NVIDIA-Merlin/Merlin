@@ -34,6 +34,13 @@ if [ "$container" != "merlin-training" ]; then
     /transformers4rec/ci/test_unit.sh $container $devices
 fi
 
+## Test Models
+if [ "$container" != "merlin-training" ]; then
+    pip install coverage
+    chmod +x /models/ci/test_unit.sh
+    /models/ci/test_unit.sh $container $devices
+fi
+
 
 #####################
 # Integration tests #
