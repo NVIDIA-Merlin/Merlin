@@ -51,7 +51,7 @@ RUN pip3 install --no-cache-dir mpi4py ortools sklearn onnx onnxruntime
 RUN pip install dask==2021.11.2 distributed==2021.11.2 dask[dataframe]==2021.11.2 dask-cuda
 RUN pip install betterproto tensorflow-metadata
 RUN pip install gevent==21.8.0
-RUN git clone https://github.com/rapidsai/asvdb.git /repos/asvdb && cd /repos/asvdb && python setup.py install
+RUN pip install --no-cache-dir git+https://github.com/rapidsai/asvdb.git@main
 
 ARG INSTALL_NVT=true
 # Install NVTabular
