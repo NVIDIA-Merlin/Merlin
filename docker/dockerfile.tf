@@ -19,7 +19,6 @@ ENV PATH=${CUDA_HOME}/lib64/:${PATH}:${CUDA_HOME}/bin
 # Install packages
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt update -y --fix-missing && \
-    apt upgrade -y && \
     apt install -y --no-install-recommends software-properties-common && \
     add-apt-repository -y ppa:deadsnakes/ppa && \
     apt update -y --fix-missing && \
@@ -37,17 +36,13 @@ RUN apt update -y --fix-missing && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Install cmake
-RUN apt remove --purge cmake -y && wget http://www.cmake.org/files/v3.21/cmake-3.21.1.tar.gz && \
-    tar xf cmake-3.21.1.tar.gz && cd cmake-3.21.1 && ./configure && make && make install
-
 # Install multiple packages
 RUN pip cache purge
 RUN pip install nvtx pandas cupy-cuda115 cachetools typing_extensions fastavro
 RUN pip install pynvml pytest graphviz scipy matplotlib tqdm pydot nvidia-pyindex
 RUN pip install tritonclient[all] grpcio-channelz
 RUN pip install pybind11 jupyterlab gcsfs
-RUN pip3 install --no-cache-dir mpi4py ortools sklearn onnx onnxruntime
+RUN pip install --no-cache-dir mpi4py ortools sklearn onnx onnxruntime
 RUN pip install dask==2021.11.2 distributed==2021.11.2 dask[dataframe]==2021.11.2 dask-cuda
 RUN pip install betterproto tensorflow-metadata
 RUN pip install gevent==21.8.0

@@ -13,6 +13,9 @@ ARG HUGECTR_VER=vnightly
 ARG HUGECTR_BACKEND_VER=vnightly
 ARG TF4REC_VER=vnightly
 
+# Base images
+from rapidsai/rapidsai-core-dev:21.12-cuda11.5-devel-ubuntu20.04-py3.8 as rapids
+
 # Envs
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64:/usr/local/lib:/repos/dist/lib
 ENV DEBIAN_FRONTEND=noninteractive
@@ -25,7 +28,6 @@ ENV PYTHONPATH=/usr/lib/python3.8/site-packages:$PYTHONPATH
 # Install packages
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt update -y --fix-missing && \
-    apt upgrade -y && \
     apt install -y --no-install-recommends software-properties-common && \
     add-apt-repository -y ppa:deadsnakes/ppa && \
     apt update -y --fix-missing && \
@@ -51,9 +53,42 @@ RUN apt update -y --fix-missing && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Install cmake
-RUN apt remove --purge cmake -y && wget http://www.cmake.org/files/v3.21/cmake-3.21.1.tar.gz && \
-    tar xf cmake-3.21.1.tar.gz && cd cmake-3.21.1 && ./configure && make && make install
+# Install Rapids
+RUN --mount=from=rapids,source=/rapids,target=/rapids \
+    export LD_LIBRARY_PATH="${LD_LIBRARY_PATH:+$LD_LIBRARY_PATH:}$CUDA_HOME/lib:$CUDA_HOME/lib64" \
+ && tar --exclude="*.a" -C /usr --strip-components=1 -xf /rapids/RMM-*.tar.gz \
+ && tar --exclude="*.a" -C /usr --strip-components=1 -xf /rapids/CUMLPRIMS_MG-*.tar.gz \
+ && tar --exclude="*.a" -C /usr --strip-components=1 -xf /rapids/CUML-*.tar.gz \
+ && tar --exclude="*.a" -C /usr --strip-components=1 -xf /rapids/CUGRAPH-*.tar.gz \
+ && tar --exclude="*.a" -C /usr --strip-components=1 -xf /rapids/CUDF-*.tar.gz \
+ && tar --exclude="*.a" --exclude="bin/xgboost" -C /usr --strip-components=1 -xf /rapids/xgboost-*.tar.gz \
+ && pip install --no-cache-dir \
+        /rapids/Cython-*.whl \
+        /rapids/numba-*.whl \
+        /rapids/nvtx-*.whl \
+        /rapids/fsspec-*.whl \
+        /rapids/fastavro-*.whl \
+        /rapids/transformers-*.whl \
+        /rapids/pandas-*.whl \
+        /rapids/cmake_setuptools-*.tar.gz \
+        /rapids/cupy_cuda*-*.whl \
+        /rapids/dask-*.whl \
+        /rapids/distributed-*.whl \
+        /rapids/dask_cuda-*.whl \
+        /rapids/treelite-*.whl \
+        /rapids/scikit_learn-*.whl \
+        /rapids/treelite_runtime-*.whl \
+        /rapids/rmm-*.whl \
+        /rapids/pyarrow-*.whl \
+        /rapids/ucx_py-*.whl \
+        /rapids/cuml-*.whl \
+        /rapids/cugraph-*.whl \
+        /rapids/cudf-*.whl \
+        /rapids/dask_cudf-*.whl \
+        /rapids/xgboost-*.whl \
+        matplotlib==3.5.0 \
+        networkx==2.6.3 \
+ && rm $(pip show xgboost | grep Location | awk '{print $2}')/xgboost/lib/libxgboost.so;
 
 # Install multiple packages
 RUN ln -s /usr/bin/python3 /usr/bin/python
@@ -71,87 +106,7 @@ RUN pip install gevent==21.8.0
 RUN pip install --no-cache-dir git+https://github.com/rapidsai/asvdb.git@main
 RUN pip install botocore>=1.21.6
 
-# Install spdlog
-RUN git clone --branch v1.9.2 https://github.com/gabime/spdlog.git build-env && \
-    pushd build-env && \
-      mkdir build && cd build && cmake .. && make -j && make install && \
-    popd && \
-    rm -rf build-env
-    
-# Install arrow
-ENV ARROW_HOME=/usr/local
-RUN git clone --branch apache-arrow-5.0.0 --recurse-submodules https://github.com/apache/arrow.git build-env && \
-    pushd build-env && \
-      export PARQUET_TEST_DATA="${PWD}/cpp/submodules/parquet-testing/data" && \
-      export ARROW_TEST_DATA="${PWD}/testing/data" && \
-      pip install -r python/requirements-build.txt && \
-      mkdir cpp/release && \
-      pushd cpp/release && \
-        cmake -DCMAKE_INSTALL_PREFIX=${ARROW_HOME} \
-              -DCMAKE_INSTALL_LIBDIR=lib \
-              -DCMAKE_LIBRARY_PATH=${CUDA_CUDA_LIBRARY} \
-              -DARROW_FLIGHT=ON \
-              -DARROW_GANDIVA=OFF \
-              -DARROW_ORC=ON \
-              -DARROW_WITH_BZ2=ON \
-              -DARROW_WITH_ZLIB=ON \
-              -DARROW_WITH_ZSTD=ON \
-              -DARROW_WITH_LZ4=ON \
-              -DARROW_WITH_SNAPPY=ON \
-              -DARROW_WITH_BROTLI=ON \
-              -DARROW_PARQUET=ON \
-              -DARROW_PYTHON=ON \
-              -DARROW_PLASMA=ON \
-              -DARROW_BUILD_TESTS=ON \
-              -DARROW_CUDA=ON \
-              -DARROW_DATASET=ON \
-              -DARROW_HDFS=ON \
-              -DARROW_S3=ON \ 
-              .. && \
-        make -j$(nproc) && \
-        make install && \
-      popd && \
-      pushd python && \
-        export PYARROW_WITH_PARQUET=ON && \
-        export PYARROW_WITH_CUDA=ON && \
-        export PYARROW_WITH_ORC=ON && \
-        export PYARROW_WITH_DATASET=ON && \
-        export PYARROW_WITH_S3=ON && \
-        export PYARROW_WITH_HDFS=ON && \
-        python setup.py build_ext --build-type=release bdist_wheel && \
-        pip install dist/*.whl && \
-      popd && \
-    popd && \
-    rm -rf build-env
-
-# Install rmm
-ENV INSTALL_PREFIX=/usr
-RUN git clone https://github.com/rapidsai/rmm.git build-env && cd build-env/ && \
-    if [ "$RELEASE" == "true" ] && [ ${RMM_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${RMM_VER}; else git checkout branch-21.12; fi; \
-    sed -i '/11.2/ a "11.4": "11.x",' python/setup.py && \
-    cd ..; \
-    pushd build-env && \
-    ./build.sh librmm && \
-    pip install python/. && \
-    popd && \
-    rm -rf build-env
-
-# Install CUDF
-RUN git clone https://github.com/rapidsai/cudf.git build-env && cd build-env/ && \
-    if [ "$RELEASE" == "true" ] && [ ${CUDF_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${CUDF_VER}; else git checkout branch-21.12; fi; \
-    git submodule update --init --recursive && \
-    cd .. && \
-    pushd build-env && \
-      export CUDF_HOME=${PWD} && \
-      export CUDF_ROOT=${PWD}/cpp/build/ && \
-      export CMAKE_LIBRARY_PATH=${CUDA_CUDA_LIBRARY} && \
-      export CUDAFLAGS=-Wno-error=unknown-pragmas && \
-      ./build.sh libcudf cudf dask_cudf --allgpuarch --cmake-args=\"-DCUDF_ENABLE_ARROW_S3=OFF\" && \
-    popd && \
-    rm -rf build-env
-
 # Install NVTabular
-ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
 RUN git clone https://github.com/NVIDIA-Merlin/NVTabular.git /nvtabular/ && \
     cd /nvtabular/; if [ "$RELEASE" == "true" ] && [ ${NVTAB_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${NVTAB_VER}; else git checkout main; fi; \
     python setup.py develop --no-deps;
