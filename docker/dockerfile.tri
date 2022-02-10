@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1
+# syntax=docker/dockerfile:1.2
 ARG TRITON_VERSION=22.01
 ARG IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-py3
 FROM ${IMAGE}
@@ -14,7 +14,7 @@ ARG HUGECTR_BACKEND_VER=vnightly
 ARG TF4REC_VER=vnightly
 
 # Base images
-from rapidsai/rapidsai-core-dev:21.12-cuda11.5-devel-ubuntu20.04-py3.8 as rapids
+# from rapidsai/rapidsai-core-dev:21.12-cuda11.5-devel-ubuntu20.04-py3.8 as rapids_image
 
 # Envs
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64:/usr/local/lib:/repos/dist/lib
@@ -54,7 +54,7 @@ RUN apt update -y --fix-missing && \
     rm -rf /var/lib/apt/lists/*
 
 # Install Rapids
-RUN --mount=from=rapids,source=/rapids,target=/rapids \
+RUN --mount=from=rapidsai/rapidsai-core-dev:21.12-cuda11.5-devel-ubuntu20.04-py3.8,source=/rapids,target=/rapids \
     export LD_LIBRARY_PATH="${LD_LIBRARY_PATH:+$LD_LIBRARY_PATH:}$CUDA_HOME/lib:$CUDA_HOME/lib64" \
  && tar --exclude="*.a" -C /usr --strip-components=1 -xf /rapids/RMM-*.tar.gz \
  && tar --exclude="*.a" -C /usr --strip-components=1 -xf /rapids/CUMLPRIMS_MG-*.tar.gz \

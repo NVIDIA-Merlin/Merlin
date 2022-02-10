@@ -4,10 +4,10 @@ FROM ${IMAGE}
 
 # Args
 ARG RELEASE=false
-ARG NVTAB_VER=vnightly
-ARG MODELS_VER=vnightly
-ARG HUGECTR_VER=vnightly
-ARG TF4REC_VER=vnightly
+ARG HUGECTR_VER=master
+ARG NVTAB_VER=main
+ARG MODELS_VER=main
+ARG TF4REC_VER=main
 
 # Envs
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64:/usr/local/lib:/repos/dist/lib
@@ -20,55 +20,50 @@ ENV PATH=${CUDA_HOME}/lib64/:${PATH}:${CUDA_HOME}/bin
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt update -y --fix-missing && \
     apt install -y --no-install-recommends software-properties-common && \
-    add-apt-repository -y ppa:deadsnakes/ppa && \
-    apt update -y --fix-missing && \
     apt-get install -y --no-install-recommends \
-        gdb \
-        valgrind \
-        zlib1g-dev lsb-release clang-format libboost-serialization-dev \
-        openssl \
-        graphviz \
-        libssl-dev \
-        protobuf-compiler \
-        libaio-dev \
-        slapd && \
+    #    gdb \
+    #    valgrind \
+    #    zlib1g-dev lsb-release clang-format libboost-serialization-dev \
+    #    openssl \
+    #    graphviz \
+    #    libssl-dev \
+        protobuf-compiler && \
+    #    libaio-dev \
+    #    slapd && \
     apt-get autoremove -y && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
 # Install multiple packages
-RUN pip cache purge
-RUN pip install nvtx pandas cupy-cuda115 cachetools typing_extensions fastavro
-RUN pip install pynvml pytest graphviz scipy matplotlib tqdm pydot nvidia-pyindex
-RUN pip install tritonclient[all] grpcio-channelz
-RUN pip install pybind11 jupyterlab gcsfs
-RUN pip install --no-cache-dir mpi4py ortools sklearn onnx onnxruntime
-RUN pip install dask==2021.11.2 distributed==2021.11.2 dask[dataframe]==2021.11.2 dask-cuda
-RUN pip install betterproto tensorflow-metadata
-RUN pip install gevent==21.8.0
+pip install pytest
+#RUN pip install nvtx pandas cupy-cuda115 cachetools typing_extensions fastavro
+#RUN pip install pynvml pytest graphviz scipy matplotlib tqdm pydot nvidia-pyindex
+#RUN pip install tritonclient[all] grpcio-channelz
+#RUN pip install pybind11 jupyterlab gcsfs
+#RUN pip install --no-cache-dir mpi4py ortools sklearn onnx onnxruntime
+#RUN pip install dask==2021.11.2 distributed==2021.11.2 dask[dataframe]==2021.11.2 dask-cuda
+RUN pip install betterproto
+#RUN pip install gevent==21.8.0
 RUN pip install --no-cache-dir git+https://github.com/rapidsai/asvdb.git@main
+#RUN pip install transformers
 
 ARG INSTALL_NVT=true
 # Install NVTabular
 ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
 RUN if [ "$INSTALL_NVT" == "true" ]; then \
-        git clone https://github.com/NVIDIA-Merlin/NVTabular.git /nvtabular/ && \
-        cd /nvtabular/; if [ "$RELEASE" == "true" ] && [ ${NVTAB_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${NVTAB_VER}; else git checkout main; fi; \
-        pip install . --no-deps; \
+      git clone https://github.com/NVIDIA-Merlin/NVTabular.git /nvtabular/ && \
+      cd /nvtabular/ && git checkout ${NVTAB_VER} && pip install . --no-deps; \
     fi
 
 # Install Transformers4Rec
-RUN pip install transformers
 RUN if [ "$INSTALL_NVT" == "true" ]; then \
-        git clone https://github.com/NVIDIA-Merlin/Transformers4Rec.git /transformers4rec && \
-        cd /transformers4rec/;  if [ "$RELEASE" == "true" ] && [ ${TF4REC_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${TF4REC_VER}; else git checkout main; fi; \
-        pip install .[tensorflow,nvtabular] --no-deps; \
+      git clone https://github.com/NVIDIA-Merlin/Transformers4Rec.git /transformers4rec && \
+      cd /transformers4rec/ && git checkout ${TF4REC_VER} && pip install .[tensorflow,nvtabular] --no-deps; \
     fi
 
 # Install Models
 RUN git clone https://github.com/NVIDIA-Merlin/Models.git /models/ && \
-    cd /models/; if [ "$RELEASE" == "true" ] && [ ${MODELS_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${MODELS_VER}; else git checkout main; fi; \
-    python setup.py develop --no-deps;
+    cd /models/ && git checkout ${MODELS_VER} && pip install . --no-deps
 
 # Install HugeCTR
 ENV LD_LIBRARY_PATH=/usr/local/hugectr/lib:$LD_LIBRARY_PATH \
@@ -77,7 +72,6 @@ ENV LD_LIBRARY_PATH=/usr/local/hugectr/lib:$LD_LIBRARY_PATH \
 
 # Arguments "_XXXX" are only valid when $HUGECTR_DEV_MODE==false
 ARG HUGECTR_DEV_MODE=false
-ARG _HUGECTR_BRANCH=master
 ARG _HUGECTR_REPO="github.com/NVIDIA-Merlin/HugeCTR.git"
 ARG _CI_JOB_TOKEN=""
 
@@ -87,14 +81,11 @@ RUN mkdir -p /usr/local/nvidia/lib64 && \
 RUN ln -s /usr/lib/x86_64-linux-gnu/libibverbs.so.1 /usr/lib/x86_64-linux-gnu/libibverbs.so
 
 RUN if [ "$HUGECTR_DEV_MODE" == "false" ]; then \
-        git clone https://${_CI_JOB_TOKEN}${_HUGECTR_REPO} build-env && pushd build-env && git fetch --all; \
-        if [ "$RELEASE" == "true" ] && [ ${HUGECTR_VER} != "vnightly" ]; then \
-            git fetch --all --tags && git checkout tags/${HUGECTR_VER}; \
-        else \
-            git checkout ${_HUGECTR_BRANCH}; \
-        fi; \
-        cd sparse_operation_kit && \
-        python setup.py install && \
+        git clone https://${_CI_JOB_TOKEN}${_HUGECTR_REPO} build-env && \
+        pushd build-env && \ 
+          git checkout ${HUGECTR_VER} && \
+          cd sparse_operation_kit && \
+          python setup.py install && \
         popd && \
         rm -rf build-env; \
     fi
@@ -102,8 +93,6 @@ RUN if [ "$HUGECTR_DEV_MODE" == "false" ]; then \
 # Clean up
 RUN rm -rf /repos
 RUN rm -rf /usr/local/share/jupyter/lab/staging/node_modules/fast-json-patch
-
-RUN echo $(du -h --max-depth=1 /)
 
 HEALTHCHECK NONE
 CMD ["/bin/bash"]
