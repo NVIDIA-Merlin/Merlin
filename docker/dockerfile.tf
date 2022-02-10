@@ -54,7 +54,7 @@ ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
 RUN if [ "$INSTALL_NVT" == "true" ]; then \
         git clone https://github.com/NVIDIA-Merlin/NVTabular.git /nvtabular/ && \
         cd /nvtabular/; if [ "$RELEASE" == "true" ] && [ ${NVTAB_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${NVTAB_VER}; else git checkout main; fi; \
-        python setup.py develop --no-deps; \
+        pip install . --no-deps; \
     fi
 
 # Install Transformers4Rec
@@ -62,7 +62,7 @@ RUN pip install transformers
 RUN if [ "$INSTALL_NVT" == "true" ]; then \
         git clone https://github.com/NVIDIA-Merlin/Transformers4Rec.git /transformers4rec && \
         cd /transformers4rec/;  if [ "$RELEASE" == "true" ] && [ ${TF4REC_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${TF4REC_VER}; else git checkout main; fi; \
-        pip install -e .[tensorflow,nvtabular] --no-deps && python setup.py develop --no-deps; \
+        pip install .[tensorflow,nvtabular] --no-deps; \
     fi
 
 # Install Models
@@ -74,12 +74,6 @@ RUN git clone https://github.com/NVIDIA-Merlin/Models.git /models/ && \
 ENV LD_LIBRARY_PATH=/usr/local/hugectr/lib:$LD_LIBRARY_PATH \
     LIBRARY_PATH=/usr/local/hugectr/lib:$LIBRARY_PATH \
     PYTHONPATH=/usr/local/hugectr/lib:$PYTHONPATH
-
-RUN git clone https://github.com/rapidsai/asvdb.git build-env && \
-    pushd build-env && \
-      python setup.py install && \
-    popd && \
-    rm -rf build-env
 
 # Arguments "_XXXX" are only valid when $HUGECTR_DEV_MODE==false
 ARG HUGECTR_DEV_MODE=false
