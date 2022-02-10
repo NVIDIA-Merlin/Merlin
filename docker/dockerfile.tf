@@ -3,7 +3,6 @@ ARG IMAGE=nvcr.io/nvidia/tensorflow:22.01-tf2-py3
 FROM ${IMAGE}
 
 # Args
-ARG RELEASE=false
 ARG HUGECTR_VER=master
 ARG NVTAB_VER=main
 ARG MODELS_VER=main
