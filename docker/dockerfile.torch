@@ -3,9 +3,10 @@ FROM ${IMAGE}
 
 # Args
 ARG RELEASE=false
-ARG NVTAB_VER=vnightly
-ARG MODELS_VER=vnightly
-ARG TF4REC_VER=vnightly
+ARG DASK_VER=2021.11.2
+ARG NVTAB_VER=main
+ARG MODELS_VER=main
+ARG TF4REC_VER=main
 
 # Envs
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64:/usr/local/lib:/repos/dist/lib
@@ -14,60 +15,54 @@ ENV CUDA_PATH=$CUDA_HOME
 ENV CUDA_CUDA_LIBRARY=${CUDA_HOME}/lib64/stubs
 ENV PATH=${CUDA_HOME}/lib64/:${PATH}:${CUDA_HOME}/bin
 
-# Install packages
+# Install system packages
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt update -y --fix-missing && \
     apt install -y --no-install-recommends software-properties-common && \
-    add-apt-repository -y ppa:deadsnakes/ppa && \
-    apt update -y --fix-missing && \
-    apt-get install -y --no-install-recommends \
-        git \
-        libboost-serialization-dev \
-        build-essential \
-        autoconf \
-        graphviz \
-        bison \
-        flex \
-        wget \
-        libssl-dev \
-        protobuf-compiler && \
-    apt-get autoremove -y && \
-    apt-get clean && \
+    #apt install -y --no-install-recommends \
+        #autoconf \
+        #build-essential \
+        #bison \
+        #flex \
+        #graphviz && \
+        #git \
+        #protobuf-compiler && \
+        #libboost-serialization-dev \
+        #libssl-dev \
+        #wget \
+    apt autoremove -y && \
+    apt clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Install multiple packages
-RUN pip install nvtx pandas cupy-cuda115 cachetools typing_extensions fastavro
-RUN pip install pynvml pytest graphviz scipy matplotlib tqdm pydot nvidia-pyindex
-RUN pip install tritonclient[all] grpcio-channelz
-RUN pip install pybind11 jupyterlab gcsfs
-RUN pip3 install --no-cache-dir mpi4py ortools sklearn onnx onnxruntime
-RUN pip install dask==2021.11.2 distributed==2021.11.2 dask[dataframe]==2021.11.2 dask-cuda
-RUN pip install betterproto tensorflow-metadata
-RUN pip install gevent==21.8.0
-RUN pip install --no-cache-dir git+https://github.com/rapidsai/asvdb.git@main
-RUN pip install --no-deps fastai fastcore fastprogress fastdownload
-RUN CC=/usr/bin/gcc CXX=/usr/bin/g++ HOROVOD_CUDA_HOME=/usr/local/cuda/ HOROVOD_BUILD_CUDA_CC_LIST=60,70,75,80 HOROVOD_GPU_OPERATIONS=NCCL HOROVOD_WITH_PYTORCH=1 HOROVOD_NCCL_LINK=SHARED pip install --no-cache-dir git+https://github.com/horovod/horovod.git@master
+# Install python packages
+#RUN pip install nvtx pandas cupy-cuda115 cachetools typing_extensions fastavro
+#RUN pip install pynvml pytest graphviz scipy matplotlib tqdm pydot nvidia-pyindex
+#RUN pip install tritonclient[all] grpcio-channelz
+#RUN pip install pybind11 jupyterlab gcsfs
+#RUN pip install mpi4py ortools sklearn onnx onnxruntime
+#RUN pip install dask==${DASK_VER} distributed dask[dataframe]  dask-cuda
+RUN pip install betterproto 
+RUN pip install tensorflow-metadata
+#RUN pip install gevent==21.8.0
+RUN pip install git+https://github.com/rapidsai/asvdb.git@main
+RUN pip install transformers
+RUN pip install torchmetrics
+#RUN pip install --no-deps fastai fastcore fastprogress fastdownload
+#RUN CC=/usr/bin/gcc CXX=/usr/bin/g++ HOROVOD_CUDA_HOME=/usr/local/cuda/ HOROVOD_BUILD_CUDA_CC_LIST=60,70,75,80 HOROVOD_GPU_OPERATIONS=NCCL HOROVOD_WITH_PYTORCH=1 HOROVOD_NCCL_LINK=SHARED pip install --no-cache-dir git+https://github.com/horovod/horovod.git@master
 
 # Install NVTabular
 ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
 RUN git clone https://github.com/NVIDIA-Merlin/NVTabular.git /nvtabular/ && \
-    cd /nvtabular/; if [ "$RELEASE" == "true" ] && [ ${NVTAB_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${NVTAB_VER}; else git checkout main; fi; \
-    python setup.py develop --no-deps;
+    cd /nvtabular/ && git checkout ${NVTAB_VER} && pip install . --no-deps;
 
 # Install Transformers4Rec
-RUN pip install llvmlite --ignore-installed
-RUN pip install transformers
+#RUN pip install llvmlite --ignore-installed
 RUN git clone https://github.com/NVIDIA-Merlin/Transformers4Rec.git /transformers4rec && \
-    cd /transformers4rec/;  if [ "$RELEASE" == "true" ] && [ ${TF4REC_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${TF4REC_VER}; else git checkout main; fi; \
-    pip install .[pytorch,nvtabular] --no-deps
+    cd /transformers4rec/ && git checkout ${TF4REC_VER} && pip install .[pytorch,nvtabular] --no-deps
 
 # Install Models
 RUN git clone https://github.com/NVIDIA-Merlin/Models.git /models/ && \
-    cd /models/; if [ "$RELEASE" == "true" ] && [ ${MODELS_VER} != "vnightly" ] ; then git fetch --all --tags && git checkout tags/${MODELS_VER}; else git checkout main; fi; \
-    pip install . --no-deps;
-
-# Force torchmetrics 0.3.2 here
-RUN pip install torchmetrics==0.3.2
+    cd /models/ && git checkout ${MODELS_VER} && pip install . --no-deps;
 
 # Clean up
 RUN rm -rf /repos
