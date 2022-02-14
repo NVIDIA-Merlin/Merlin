@@ -34,7 +34,7 @@ RUN apt update -y --fix-missing && \
     rm -rf /var/lib/apt/lists/*
 
 # Install multiple packages
-pip install pytest
+RUN pip install pytest
 #RUN pip install nvtx pandas cupy-cuda115 cachetools typing_extensions fastavro
 #RUN pip install pynvml pytest graphviz scipy matplotlib tqdm pydot nvidia-pyindex
 #RUN pip install tritonclient[all] grpcio-channelz

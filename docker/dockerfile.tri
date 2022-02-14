@@ -25,7 +25,7 @@ ENV PYTHONPATH=/usr/lib/python3.8/site-packages:$PYTHONPATH
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt update -y --fix-missing && \
     apt install -y --no-install-recommends software-properties-common && \
-    #apt-get install -y --no-install-recommends \
+    apt-get install -y --no-install-recommends \
     #    git \
     #    build-essential \
     #    autoconf \
@@ -34,7 +34,7 @@ RUN apt update -y --fix-missing && \
     #    libboost-serialization-dev \
     #    wget \
     #    graphviz \
-    #    libssl-dev \
+        libssl-dev && \
     #    zlib1g-dev \
     #    protobuf-compiler \
     #    clang-format \
@@ -46,6 +46,10 @@ RUN apt update -y --fix-missing && \
     apt-get autoremove -y && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
+
+# Install cmake
+RUN apt remove --purge cmake -y && wget http://www.cmake.org/files/v3.21/cmake-3.21.1.tar.gz && \
+    tar xf cmake-3.21.1.tar.gz && cd cmake-3.21.1 && ./configure && make && make install
 
 # Install spdlog
 RUN git clone --branch v1.9.2 https://github.com/gabime/spdlog.git build-env && \
