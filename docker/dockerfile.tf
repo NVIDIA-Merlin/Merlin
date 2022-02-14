@@ -24,7 +24,7 @@ RUN apt update -y --fix-missing && \
     #    valgrind \
     #    zlib1g-dev lsb-release clang-format libboost-serialization-dev \
     #    openssl \
-    #    graphviz \
+        graphviz \
     #    libssl-dev \
         protobuf-compiler && \
     #    libaio-dev \
