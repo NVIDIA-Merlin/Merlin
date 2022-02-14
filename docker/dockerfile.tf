@@ -91,7 +91,6 @@ RUN if [ "$HUGECTR_DEV_MODE" == "false" ]; then \
 
 # Clean up
 RUN rm -rf /repos
-RUN rm -rf /usr/local/share/jupyter/lab/staging/node_modules/fast-json-patch
 
 HEALTHCHECK NONE
 CMD ["/bin/bash"]
