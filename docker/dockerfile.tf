@@ -36,9 +36,11 @@ RUN apt update -y --fix-missing && \
 # Install multiple packages
 RUN pip install pytest
 RUN pip install graphviz
+RUN pip install pydot
+RUN pip install nvidia-pyindex
 #RUN pip install nvtx pandas cupy-cuda115 cachetools typing_extensions fastavro
 #RUN pip install pynvml pytest graphviz scipy matplotlib tqdm pydot nvidia-pyindex
-#RUN pip install tritonclient[all] grpcio-channelz
+RUN pip install tritonclient[all] grpcio-channelz
 #RUN pip install pybind11 jupyterlab gcsfs
 #RUN pip install --no-cache-dir mpi4py ortools sklearn onnx onnxruntime
 #RUN pip install dask==2021.11.2 distributed==2021.11.2 dask[dataframe]==2021.11.2 dask-cuda
