@@ -54,7 +54,7 @@ ARG INSTALL_NVT=true
 ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
 RUN if [ "$INSTALL_NVT" == "true" ]; then \
       git clone https://github.com/NVIDIA-Merlin/NVTabular.git /nvtabular/ && \
-      cd /nvtabular/ && git checkout ${NVTAB_VER} && pip install . --no-deps; \
+      cd /nvtabular/ && git checkout ${NVTAB_VER} && pip install . --no-deps && python setup.py develop --no-deps; \
     fi
 
 # Install Transformers4Rec
