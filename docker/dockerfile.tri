@@ -40,7 +40,7 @@ RUN apt update -y --fix-missing && \
     #    clang-format \
     #    libtbb-dev \
     #    aptitude \
-    #    rapidjson-dev \
+        rapidjson-dev \
     #    libaio-dev \
     #    libtool && \
     apt-get autoremove -y && \
@@ -138,6 +138,7 @@ RUN git clone https://github.com/rapidsai/cudf.git build-env && cd build-env/ &&
 #RUN pip install pynvml pytest graphviz scipy matplotlib tqdm pydot nvidia-pyindex
 #RUN pip install tritonclient[all] grpcio-channelz
 #RUN pip install pybind11 jupyterlab gcsfs
+RUN pip install pybind11
 #RUN pip3 install --no-cache-dir mpi4py ortools sklearn onnx onnxruntime
 #RUN pip install dask==2021.11.2 distributed==2021.11.2 dask[dataframe]==2021.11.2 dask-cuda
 #RUN pip install betterproto tensorflow-metadata
@@ -148,7 +149,7 @@ RUN git clone https://github.com/rapidsai/cudf.git build-env && cd build-env/ &&
 
 # Install NVTabular
 RUN git clone https://github.com/NVIDIA-Merlin/NVTabular.git /nvtabular/ && \
-    cd /nvtabular/ && git checkout ${NVTAB_VER} && pip install . && python setup.py develop --no-deps
+    cd /nvtabular/ && git checkout ${NVTAB_VER} && pip install -e . --no-deps #&& python setup.py develop --no-deps
 
 # Install Transformers4Rec
 RUN git clone https://github.com/NVIDIA-Merlin/Transformers4Rec.git /transformers4rec && \
@@ -156,7 +157,7 @@ RUN git clone https://github.com/NVIDIA-Merlin/Transformers4Rec.git /transformer
 
 # Install Models
 RUN git clone https://github.com/NVIDIA-Merlin/Models.git /models/ && \
-    cd /models/ && git checkout ${MODELS_VER} && python install . --no-deps;
+    cd /models/ && git checkout ${MODELS_VER} && pip install . --no-deps;
 
 # Install NVTabular Triton Backend
 ARG TRITON_VERSION
