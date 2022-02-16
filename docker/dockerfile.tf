@@ -42,6 +42,7 @@ RUN pip install nvidia-pyindex
 #RUN pip install pynvml pytest graphviz scipy matplotlib tqdm pydot nvidia-pyindex
 RUN pip install tritonclient[all] grpcio-channelz
 #RUN pip install pybind11 jupyterlab gcsfs
+RUN pip install pybind11
 #RUN pip install --no-cache-dir mpi4py ortools sklearn onnx onnxruntime
 #RUN pip install dask==2021.11.2 distributed==2021.11.2 dask[dataframe]==2021.11.2 dask-cuda
 RUN pip install betterproto
