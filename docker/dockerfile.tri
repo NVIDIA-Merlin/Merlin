@@ -232,6 +232,7 @@ ARG _HUGECTR_BACKEND_REPO="github.com/triton-inference-server/hugectr_backend"
 ARG _CI_JOB_TOKEN=""
 
 # Install HugeCTR
+RUN apt-get update && apt-get install -y libboost-serialization-dev libtbb-dev
 RUN if [ "$HUGECTR_DEV_MODE" == "false" ]; then \
       git clone https://${_CI_JOB_TOKEN}${_HUGECTR_REPO} /hugectr && cd /hugectr && git checkout ${HUGECTR_VER} && \
       git submodule update --init --recursive && \
