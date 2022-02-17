@@ -37,7 +37,7 @@ RUN apt update -y --fix-missing && \
         libssl-dev \
         zlib1g-dev \
         protobuf-compiler \
-    #    clang-format \
+        clang-format \
     #    libtbb-dev \
     #    aptitude \
         rapidjson-dev && \
@@ -149,7 +149,7 @@ RUN pip install pybind11
 
 # Install NVTabular
 RUN git clone https://github.com/NVIDIA-Merlin/NVTabular.git /nvtabular/ && \
-    cd /nvtabular/ && git checkout ${NVTAB_VER} && pip install -e . --no-deps #&& python setup.py develop --no-deps
+    cd /nvtabular/ && git checkout ${NVTAB_VER} && pip install -e . --no-deps
 
 # Install Transformers4Rec
 RUN git clone https://github.com/NVIDIA-Merlin/Transformers4Rec.git /transformers4rec && \
