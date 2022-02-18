@@ -15,40 +15,23 @@ ENV CUDA_PATH=$CUDA_HOME
 ENV CUDA_CUDA_LIBRARY=${CUDA_HOME}/lib64/stubs
 ENV PATH=${CUDA_HOME}/lib64/:${PATH}:${CUDA_HOME}/bin
 
-# Install packages
+# Install system packages
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt update -y --fix-missing && \
     apt install -y --no-install-recommends software-properties-common && \
     apt-get install -y --no-install-recommends \
-    #    gdb \
-    #    valgrind \
-    #    zlib1g-dev lsb-release clang-format libboost-serialization-dev \
-    #    openssl \
         graphviz \
-    #    libssl-dev \
         protobuf-compiler && \
-    #    libaio-dev \
-    #    slapd && \
     apt-get autoremove -y && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
 # Install multiple packages
-RUN pip install pytest
-RUN pip install graphviz
-RUN pip install pydot
 RUN pip install nvidia-pyindex
-#RUN pip install nvtx pandas cupy-cuda115 cachetools typing_extensions fastavro
-#RUN pip install pynvml pytest graphviz scipy matplotlib tqdm pydot nvidia-pyindex
+RUN pip install betterproto graphviz pybind11 pydot pytest
 RUN pip install tritonclient[all] grpcio-channelz
-#RUN pip install pybind11 jupyterlab gcsfs
-RUN pip install pybind11
-#RUN pip install --no-cache-dir mpi4py ortools sklearn onnx onnxruntime
-#RUN pip install dask==2021.11.2 distributed==2021.11.2 dask[dataframe]==2021.11.2 dask-cuda
 RUN pip install betterproto
-#RUN pip install gevent==21.8.0
-RUN pip install --no-cache-dir git+https://github.com/rapidsai/asvdb.git@main
-#RUN pip install transformers
+RUN pip install git+https://github.com/rapidsai/asvdb.git@main
 
 ARG INSTALL_NVT=true
 # Install NVTabular

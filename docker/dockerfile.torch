@@ -19,36 +19,16 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt update -y --fix-missing && \
     apt install -y --no-install-recommends software-properties-common && \
     apt install -y --no-install-recommends \
-        #autoconf \
-        #build-essential \
-        #bison \
-        #flex \
         graphviz && \
-        #git \
-        #protobuf-compiler && \
-        #libboost-serialization-dev \
-        #libssl-dev \
-        #wget \
     apt autoremove -y && \
     apt clean && \
     rm -rf /var/lib/apt/lists/*
 
 # Install python packages
-#RUN pip install nvtx pandas cupy-cuda115 cachetools typing_extensions fastavro
-#RUN pip install pynvml pytest graphviz scipy matplotlib tqdm pydot nvidia-pyindex
-#RUN pip install tritonclient[all] grpcio-channelz
-#RUN pip install pybind11 jupyterlab gcsfs
-#RUN pip install mpi4py ortools sklearn onnx onnxruntime
-#RUN pip install dask==${DASK_VER} distributed dask[dataframe]  dask-cuda
-RUN pip install graphviz
-RUN pip install betterproto 
-RUN pip install tensorflow-metadata
-#RUN pip install gevent==21.8.0
-RUN pip install git+https://github.com/rapidsai/asvdb.git@main
-RUN pip install transformers
-RUN pip install torchmetrics
+RUN pip install betterproto graphviz transformers tensorflow-metadata torchmetrics
 RUN pip install --no-deps fastai fastcore fastprogress fastdownload
-#RUN CC=/usr/bin/gcc CXX=/usr/bin/g++ HOROVOD_CUDA_HOME=/usr/local/cuda/ HOROVOD_BUILD_CUDA_CC_LIST=60,70,75,80 HOROVOD_GPU_OPERATIONS=NCCL HOROVOD_WITH_PYTORCH=1 HOROVOD_NCCL_LINK=SHARED pip install --no-cache-dir git+https://github.com/horovod/horovod.git@master
+RUN pip install git+https://github.com/rapidsai/asvdb.git@main
+RUN CC=/usr/bin/gcc CXX=/usr/bin/g++ HOROVOD_CUDA_HOME=/usr/local/cuda/ HOROVOD_BUILD_CUDA_CC_LIST=60,70,75,80 HOROVOD_GPU_OPERATIONS=NCCL HOROVOD_WITH_PYTORCH=1 HOROVOD_NCCL_LINK=SHARED pip install --no-cache-dir git+https://github.com/horovod/horovod.git@master
 
 # Install NVTabular
 ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
@@ -56,7 +36,6 @@ RUN git clone https://github.com/NVIDIA-Merlin/NVTabular.git /nvtabular/ && \
     cd /nvtabular/ && git checkout ${NVTAB_VER} && pip install . --no-deps
 
 # Install Transformers4Rec
-#RUN pip install llvmlite --ignore-installed
 RUN git clone https://github.com/NVIDIA-Merlin/Transformers4Rec.git /transformers4rec && \
     cd /transformers4rec/ && git checkout ${TF4REC_VER} && pip install .[pytorch,nvtabular] --no-deps
 

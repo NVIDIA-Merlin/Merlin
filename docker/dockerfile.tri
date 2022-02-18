@@ -26,28 +26,25 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt update -y --fix-missing && \
     apt install -y --no-install-recommends software-properties-common && \
     apt-get install -y --no-install-recommends \
-    #    git \
-    #    build-essential \
-    #    autoconf \
-    #    bison \
-    #    flex \
-        libboost-serialization-dev \
-    #    wget \
-    #    graphviz \
-        libssl-dev \
-        zlib1g-dev \
-        protobuf-compiler \
         clang-format \
+        libboost-serialization-dev \
+        libssl-dev \
         libtbb-dev \
-    #    aptitude \
-        rapidjson-dev && \
-    #    libaio-dev \
-    #    libtool && \
+        protobuf-compiler \
+        rapidjson-dev \
+        zlib1g-dev && \
     apt-get autoremove -y && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
 RUN ln -s /usr/bin/python3 /usr/bin/python
+
+# Install multiple packages
+RUN pip install cupy-cuda116 nvidia-pyindex pybind11 pytest protobuf transformers tensorflow-metadata 
+RUN pip install tritonclient[all] grpcio-channelz
+RUN pip install dask==2021.11.2 distributed==2021.11.2 dask[dataframe]==2021.11.2 dask-cuda
+RUN pip install numpy==1.22.1
+RUN pip install git+https://github.com/rapidsai/asvdb.git@main
 
 # Install cmake
 RUN apt remove --purge cmake -y && wget http://www.cmake.org/files/v3.21/cmake-3.21.1.tar.gz && \
@@ -131,29 +128,9 @@ RUN git clone https://github.com/rapidsai/cudf.git build-env && cd build-env/ &&
     popd && \
     rm -rf build-env
 
-# Install multiple packages
-#RUN pip uninstall protobuf -y
-RUN pip install protobuf
-RUN pip install pytest
-#RUN pip install nvtx pandas cupy-cuda115 cachetools typing_extensions fastavro
-#RUN pip install pynvml pytest graphviz scipy matplotlib tqdm pydot 
-RUN pip install nvidia-pyindex
-RUN pip install tritonclient[all] grpcio-channelz
-#RUN pip install pybind11 jupyterlab gcsfs
-RUN pip install pybind11
-#RUN pip3 install --no-cache-dir mpi4py ortools sklearn onnx onnxruntime
-RUN pip install dask==2021.11.2 distributed==2021.11.2 dask[dataframe]==2021.11.2 dask-cuda
-RUN pip install numpy==1.22.1
-#RUN pip install betterproto i
-RUN pip install tensorflow-metadata
-#RUN pip install gevent==21.8.0
-RUN pip install --no-cache-dir git+https://github.com/rapidsai/asvdb.git@main
-#RUN pip install botocore>=1.21.6
-RUN pip install transformers
-
 # Install NVTabular
 RUN git clone https://github.com/NVIDIA-Merlin/NVTabular.git /nvtabular/ && \
-    cd /nvtabular/ && git checkout ${NVTAB_VER} && pip install -e . --no-deps
+    cd /nvtabular/ && git checkout ${NVTAB_VER} && pip install . --no-deps
 
 # Install Transformers4Rec
 RUN git clone https://github.com/NVIDIA-Merlin/Transformers4Rec.git /transformers4rec && \

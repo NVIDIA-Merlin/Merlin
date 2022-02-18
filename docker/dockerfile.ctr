@@ -18,23 +18,16 @@ ENV PATH=${CUDA_HOME}/lib64/:${PATH}:${CUDA_HOME}/bin
 ENV PATH=$PATH:/usr/lib/x86_64-linux-gnu/
 RUN ln -s /usr/local/cuda/lib64/stubs/libcuda.so /usr/local/cuda/lib64/stubs/libcuda.so.1
 
-# Install packages
+# Install system packages
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt update -y --fix-missing && \
     apt install -y --no-install-recommends software-properties-common && \
     apt-get install -y --no-install-recommends \
-    #    gdb \
-        graphviz \
-    #    valgrind \
-    #    zlib1g-dev lsb-release clang-format \
        clang-format \
-    #    libboost-serialization-dev \
-    #    openssl \
-    #    libssl-dev \
-        protobuf-compiler \
-        libtbb-dev \
-        libaio-dev && \
-    #    slapd && \
+       graphviz \
+       libaio-dev \
+       libtbb-dev \
+       protobuf-compiler && \
     apt-get autoremove -y && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
@@ -44,18 +37,10 @@ RUN apt remove --purge cmake -y && wget http://www.cmake.org/files/v3.21/cmake-3
     tar xf cmake-3.21.1.tar.gz && cd cmake-3.21.1 && ./configure && make && make install
 
 # Install multiple packages
-RUN pip install betterproto
-RUN pip install graphviz
-RUN pip install pytest
-#RUN pip install nvtx pandas cupy-cuda115 cachetools typing_extensions fastavro
-#RUN pip install pynvml pytest graphviz scipy matplotlib tqdm pydot 
+RUN pip install nvidia-pyindex
+RUN pip install betterproto graphviz pybind11 pytest
 RUN pip install tritonclient[all] grpcio-channelz
-#RUN pip install pybind11 jupyterlab gcsfs
-RUN pip install pybind11
-#RUN pip install --no-cache-dir mpi4py ortools sklearn onnx onnxruntime
-#RUN pip install dask==2021.11.2 distributed==2021.11.2 dask[dataframe]==2021.11.2 dask-cuda
-#RUN pip install gevent==21.8.0
-RUN pip install --no-cache-dir git+https://github.com/rapidsai/asvdb.git@main
+RUN pip install git+https://github.com/rapidsai/asvdb.git@main
 
 # Install NVTabular
 ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
