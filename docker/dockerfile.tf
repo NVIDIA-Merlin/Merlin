@@ -50,7 +50,7 @@ RUN if [ "$INSTALL_NVT" == "true" ]; then \
 # Install Transformers4Rec
 RUN if [ "$INSTALL_NVT" == "true" ]; then \
       git clone https://github.com/NVIDIA-Merlin/Transformers4Rec.git /transformers4rec && \
-      cd /transformers4rec/ && git checkout ${TF4REC_VER} && pip install .[tensorflow,nvtabular] --no-deps; \
+      cd /transformers4rec/ && git checkout ${TF4REC_VER} && pip install . --no-deps; \
     fi
 
 # Install Models
