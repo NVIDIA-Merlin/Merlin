@@ -4,6 +4,7 @@ ARG IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-py3
 FROM ${IMAGE}
 
 # Args
+ARG CORE_VER=main
 ARG RMM_VER=v21.12.00
 ARG CUDF_VER=v21.12.02
 ARG NVTAB_VER=main
@@ -40,10 +41,11 @@ RUN apt update -y --fix-missing && \
 RUN ln -s /usr/bin/python3 /usr/bin/python
 
 # Install multiple packages
-RUN pip install cupy-cuda116 nvidia-pyindex pybind11 pytest protobuf transformers tensorflow-metadata 
+RUN pip install cupy-cuda115 nvidia-pyindex pybind11 pytest protobuf transformers tensorflow-metadata 
 RUN pip install tritonclient[all] grpcio-channelz
 RUN pip install dask==2021.11.2 distributed==2021.11.2 dask[dataframe]==2021.11.2 dask-cuda
-RUN pip install numpy==1.22.1
+RUN pip install numpy==1.22.0
+RUN pip install numba==0.53.1
 RUN pip install git+https://github.com/rapidsai/asvdb.git@main
 
 # Install cmake
@@ -127,6 +129,10 @@ RUN git clone https://github.com/rapidsai/cudf.git build-env && cd build-env/ &&
       ./build.sh libcudf cudf dask_cudf --allgpuarch --cmake-args=\"-DCUDF_ENABLE_ARROW_S3=OFF\" && \
     popd && \
     rm -rf build-env
+
+# Install Merlin Core
+RUN git clone https://github.com/NVIDIA-Merlin/core.git /core/ && \
+    cd /core/ && git checkout ${CORE_VER} && pip install . --no-deps
 
 # Install NVTabular
 RUN git clone https://github.com/NVIDIA-Merlin/NVTabular.git /nvtabular/ && \

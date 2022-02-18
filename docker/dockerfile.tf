@@ -3,6 +3,7 @@ ARG IMAGE=nvcr.io/nvidia/tensorflow:22.01-tf2-py3
 FROM ${IMAGE}
 
 # Args
+ARG CORE_VER=main
 ARG HUGECTR_VER=master
 ARG NVTAB_VER=main
 ARG MODELS_VER=main
@@ -32,6 +33,11 @@ RUN pip install betterproto graphviz pybind11 pydot pytest
 RUN pip install tritonclient[all] grpcio-channelz
 RUN pip install betterproto
 RUN pip install git+https://github.com/rapidsai/asvdb.git@main
+
+
+# Install Merlin Core
+RUN git clone https://github.com/NVIDIA-Merlin/core.git /core/ && \
+    cd /core/ && git checkout ${CORE_VER} && pip install . --no-deps
 
 ARG INSTALL_NVT=true
 # Install NVTabular
