@@ -45,7 +45,8 @@ RUN pip install git+https://github.com/rapidsai/asvdb.git@main
 # Install NVTabular
 ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
 RUN git clone https://github.com/NVIDIA-Merlin/NVTabular.git /nvtabular/ && \
-    cd /nvtabular/ && git checkout ${NVTAB_VER} && pip install . --no-deps
+    cd /nvtabular/ && git checkout ${NVTAB_VER} && pip install -e . --no-deps
+ENV PYTHONPATH=/nvtabular:$PYTHONPATH
 
 # Install CUDA-Aware hwloc
 RUN cd /opt/hpcx/ompi/include/openmpi/opal/mca/hwloc/hwloc201 && rm -rfv hwloc201.h hwloc/include/hwloc.h

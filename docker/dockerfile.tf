@@ -37,25 +37,29 @@ RUN pip install git+https://github.com/rapidsai/asvdb.git@main
 
 # Install Merlin Core
 RUN git clone https://github.com/NVIDIA-Merlin/core.git /core/ && \
-    cd /core/ && git checkout ${CORE_VER} && pip install . --no-deps
+    cd /core/ && git checkout ${CORE_VER} && pip install -e . --no-deps
+ENV PYTHONPATH=/core:$PYTHONPATH
 
 ARG INSTALL_NVT=true
 # Install NVTabular
 ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
 RUN if [ "$INSTALL_NVT" == "true" ]; then \
       git clone https://github.com/NVIDIA-Merlin/NVTabular.git /nvtabular/ && \
-      cd /nvtabular/ && git checkout ${NVTAB_VER} && pip install . --no-deps; \
+      cd /nvtabular/ && git checkout ${NVTAB_VER} && pip install -e . --no-deps; \
     fi
+ENV PYTHONPATH=/nvtabular:$PYTHONPATH
 
 # Install Transformers4Rec
 RUN if [ "$INSTALL_NVT" == "true" ]; then \
       git clone https://github.com/NVIDIA-Merlin/Transformers4Rec.git /transformers4rec && \
-      cd /transformers4rec/ && git checkout ${TF4REC_VER} && pip install . --no-deps; \
+      cd /transformers4rec/ && git checkout ${TF4REC_VER} && pip install -e . --no-deps; \
     fi
+ENV PYTHONPATH=/transformers4rec:$PYTHONPATH
 
 # Install Models
 RUN git clone https://github.com/NVIDIA-Merlin/Models.git /models/ && \
-    cd /models/ && git checkout ${MODELS_VER} && pip install . --no-deps
+    cd /models/ && git checkout ${MODELS_VER} && pip install -e . --no-deps
+ENV PYTHONPATH=/models:$PYTHONPATH
 
 # Install HugeCTR
 ENV LD_LIBRARY_PATH=/usr/local/hugectr/lib:$LD_LIBRARY_PATH \
