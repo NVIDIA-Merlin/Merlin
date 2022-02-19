@@ -28,16 +28,15 @@ RUN apt update -y --fix-missing && \
     rm -rf /var/lib/apt/lists/*
 
 # Install multiple packages
-RUN pip install nvidia-pyindex
 RUN pip install betterproto graphviz pybind11 pydot pytest
+RUN pip install nvidia-pyindex
 RUN pip install tritonclient[all] grpcio-channelz
-RUN pip install betterproto
+RUN pip install numba==0.55.1
 RUN pip install git+https://github.com/rapidsai/asvdb.git@main
-
 
 # Install Merlin Core
 RUN git clone https://github.com/NVIDIA-Merlin/core.git /core/ && \
-    cd /core/ && git checkout ${CORE_VER} && pip install -e . --no-deps
+    cd /core/ && git checkout ${CORE_VER} && pip install --no-deps -e .
 ENV PYTHONPATH=/core:$PYTHONPATH
 
 ARG INSTALL_NVT=true
@@ -45,14 +44,14 @@ ARG INSTALL_NVT=true
 ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
 RUN if [ "$INSTALL_NVT" == "true" ]; then \
       git clone https://github.com/NVIDIA-Merlin/NVTabular.git /nvtabular/ && \
-      cd /nvtabular/ && git checkout ${NVTAB_VER} && pip install -e . --no-deps; \
+      cd /nvtabular/ && git checkout ${NVTAB_VER} && pip install --no-deps -e .; \
     fi
 ENV PYTHONPATH=/nvtabular:$PYTHONPATH
 
 # Install Transformers4Rec
 RUN if [ "$INSTALL_NVT" == "true" ]; then \
       git clone https://github.com/NVIDIA-Merlin/Transformers4Rec.git /transformers4rec && \
-      cd /transformers4rec/ && git checkout ${TF4REC_VER} && pip install -e . --no-deps; \
+      cd /transformers4rec/ && git checkout ${TF4REC_VER} && pip install . --no-deps; \
     fi
 ENV PYTHONPATH=/transformers4rec:$PYTHONPATH
 
