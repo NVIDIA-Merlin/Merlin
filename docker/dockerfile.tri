@@ -42,10 +42,9 @@ RUN ln -s /usr/bin/python3 /usr/bin/python
 
 # Install multiple packages
 RUN pip install cupy-cuda115 nvidia-pyindex pybind11 pytest protobuf transformers tensorflow-metadata 
+RUN pip install numba --no-deps
 RUN pip install tritonclient[all] grpcio-channelz
 RUN pip install dask==2021.11.2 distributed==2021.11.2 dask[dataframe]==2021.11.2 dask-cuda
-RUN pip install numpy==1.22.0
-RUN pip install numba==0.53.1
 RUN pip install git+https://github.com/rapidsai/asvdb.git@main
 
 # Install cmake
