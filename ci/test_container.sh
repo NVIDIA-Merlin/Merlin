@@ -49,7 +49,7 @@ fi
 ## Test NVTabular 
 ### Not shared storage in blossom yet
 if [ "$container" != "merlin-inference" ]; then
-    /nvtabular/ci/test_integration.sh $container $devices
+    /nvtabular/ci/test_integration.sh $container $devices --report 1
 fi
 ## Test HugeCTR
 # Waiting to sync integration tests with them
