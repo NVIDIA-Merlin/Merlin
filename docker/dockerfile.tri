@@ -12,7 +12,7 @@ ARG MODELS_VER=main
 ARG HUGECTR_VER=master
 ARG HUGECTR_BACKEND_VER=main
 ARG TF4REC_VER=main
-
+#
 # Envs
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64:/usr/local/lib:/repos/dist/lib
 ENV DEBIAN_FRONTEND=noninteractive
@@ -41,7 +41,7 @@ RUN apt update -y --fix-missing && \
 RUN ln -s /usr/bin/python3 /usr/bin/python
 
 # Install multiple packages
-RUN pip install cupy-cuda115 nvidia-pyindex pybind11 pytest protobuf transformers tensorflow-metadata 
+RUN pip install cupy-cuda115 nvidia-pyindex pybind11 pytest protobuf transformers==4.12 tensorflow-metadata 
 RUN pip install betterproto cachetools graphviz nvtx scipy sklearn
 RUN pip install numba --no-deps
 RUN pip install tritonclient[all] grpcio-channelz
@@ -142,6 +142,7 @@ RUN git clone https://github.com/NVIDIA-Merlin/NVTabular.git /nvtabular/ && \
 ENV PYTHONPATH=/nvtabular:$PYTHONPATH
 
 # Install Transformers4Rec
+RUN pip install transformers==4.12
 RUN git clone https://github.com/NVIDIA-Merlin/Transformers4Rec.git /transformers4rec && \
     cd /transformers4rec/ && git checkout ${TF4REC_VER} && pip install -e . --no-deps
 ENV PYTHONPATH=/transformers4rec:$PYTHONPATH
