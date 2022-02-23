@@ -1,0 +1,170 @@
+# syntax=docker/dockerfile:1
+ARG IMAGE=nvcr.io/nvidia/tensorflow:22.01-tf2-py3
+FROM ${IMAGE}
+
+# Args
+ARG NVTAB_VER=main
+ARG MODELS_VER=main
+ARG HUGECTR_VER=master
+ARG HWLOC_VER=2.4.1
+
+# Envs
+ENV CUDA_SHORT_VERSION=11.6
+ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64:/usr/local/lib:/repos/dist/lib
+ENV CUDA_HOME=/usr/local/cuda
+ENV CUDA_PATH=$CUDA_HOME
+ENV CUDA_CUDA_LIBRARY=${CUDA_HOME}/lib64/stubs
+ENV PATH=${CUDA_HOME}/lib64/:${PATH}:${CUDA_HOME}/bin
+ENV PATH=$PATH:/usr/lib/x86_64-linux-gnu/
+RUN ln -s /usr/local/cuda/lib64/stubs/libcuda.so /usr/local/cuda/lib64/stubs/libcuda.so.1
+
+# Install system packages
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt update -y --fix-missing && \
+    apt install -y --no-install-recommends software-properties-common && \
+    apt-get install -y --no-install-recommends \
+       clang-format \
+       graphviz \
+       libaio-dev \
+       libtbb-dev \
+       protobuf-compiler && \
+    apt-get autoremove -y && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Install cmake newer version
+RUN apt remove --purge cmake -y && wget http://www.cmake.org/files/v3.21/cmake-3.21.1.tar.gz && \
+    tar xf cmake-3.21.1.tar.gz && cd cmake-3.21.1 && ./configure && make && make install
+
+# Install multiple packages
+RUN pip install nvidia-pyindex
+RUN pip install betterproto graphviz pybind11 pytest
+RUN pip install tritonclient[all] grpcio-channelz
+RUN pip install git+https://github.com/rapidsai/asvdb.git@main
+
+# Install NVTabular
+ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
+RUN git clone https://github.com/NVIDIA-Merlin/NVTabular.git /nvtabular/ && \
+    cd /nvtabular/ && git checkout ${NVTAB_VER} && pip install -e . --no-deps
+ENV PYTHONPATH=/nvtabular:$PYTHONPATH
+
+# Install CUDA-Aware hwloc
+RUN cd /opt/hpcx/ompi/include/openmpi/opal/mca/hwloc/hwloc201 && rm -rfv hwloc201.h hwloc/include/hwloc.h
+RUN mkdir -p /var/tmp && wget -q -nc --no-check-certificate -P /var/tmp https://download.open-mpi.org/release/hwloc/v2.4/hwloc-${HWLOC_VER}.tar.gz && \
+    mkdir -p /var/tmp && tar -x -f /var/tmp/hwloc-${HWLOC_VER}.tar.gz -C /var/tmp && \
+    cd /var/tmp/hwloc-${HWLOC_VER} && \
+    ./configure CPPFLAGS="-I/usr/local/cuda/include/ -L/usr/local/cuda/lib64/" LDFLAGS="-L/usr/local/cuda/lib64" --enable-cuda && \
+    make -j$(nproc) && make install && \
+    rm -rf /var/tmp/hwloc-${HWLOC_VER} /var/tmp/hwloc-${HWLOC_VER}.tar.gz
+
+# Install Hiredis
+RUN mkdir -p /var/tmp && cd /var/tmp && git clone --depth=1 https://github.com/redis/hiredis.git && cd - && \
+    cd /var/tmp/hiredis && \
+    mkdir build && cd build && \
+    cmake .. && \
+    make -j$(nproc) && make install && \
+    rm -rf /var/tmp/hiredis
+
+# Install redis++
+RUN mkdir -p /var/tmp && cd /var/tmp && git clone --depth=1 -b 1.3.2 https://github.com/sewenew/redis-plus-plus.git && cd - && \
+    cd /var/tmp/redis-plus-plus && \
+    mkdir build && cd build && \
+    cmake -DREDIS_PLUS_PLUS_CXX_STANDARD=17 .. && \
+    make -j$(nproc) && make install && \
+    rm -rf /var/tmp/redis-plus-plus
+
+# Install RocksDB
+RUN mkdir -p /var/tmp && cd /var/tmp && git clone --depth=1 https://github.com/facebook/rocksdb.git && cd - && \
+    cd /var/tmp/rocksdb && \
+    PORTABLE=1 make -j$(nproc) shared_lib && \
+    make install-shared && \
+    rm -rf /var/tmp/rocksdb
+    
+# Install LibRdKafka
+RUN apt-get update -y && \
+    DEBIAN_FRONTEND=noninteractive && apt-get install -y --no-install-recommends libssl-dev libsasl2-dev liblz4-dev libzstd-dev && \
+    mkdir -p /var/tmp && cd /var/tmp && git clone --depth 1 -b v1.8.2 https://github.com/edenhill/librdkafka.git && cd - && \
+    cd /var/tmp/librdkafka && \
+    ./configure && make -j$(nproc) && make install && \
+    rm -rf /var/tmp/librdkafka
+
+#Install Java
+RUN mkdir -p /var/tmp && cd /var/tmp && wget https://download.java.net/java/GA/jdk16.0.2/d4a915d82b4c4fbb9bde534da945d746/7/GPL/openjdk-16.0.2_linux-x64_bin.tar.gz && \
+    mkdir -p /usr/java && tar -zxvf ./openjdk-16.0.2_linux-x64_bin.tar.gz -C /usr/java &&  \
+    rm -rf ./openjdk-16.0.2_linux-x64_bin.tar.gz
+
+#Intall libhdfs client
+RUN mkdir -p /var/tmp && cd /var/tmp && wget https://archive.apache.org/dist/hadoop/common/hadoop-3.3.1/hadoop-3.3.1.tar.gz && \
+    tar -zxvf ./hadoop-3.3.1.tar.gz && rm -rf hadoop-3.3.1.tar.gz && \
+    cp ./hadoop-3.3.1/lib/native/libhdfs.so.0.0.0 /usr/local/lib/ && cp hadoop-3.3.1/include/hdfs.h /usr/local/include/ && \
+    mv ./hadoop-3.3.1 /usr/local/hadoop && cd /usr/local/lib/ && ln -s libhdfs.so.0.0.0 libhdfs.so
+
+ENV JAVA_HOME=/usr/java/jdk-16.0.2
+ENV PATH=$JAVA_HOME/bin:$PATH
+ENV LD_LIBRARY_PATH=$JAVA_HOME/lib/server
+ENV HADOOP_HOME=/usr/local/hadoop
+ENV PATH=$PATH:$HADOOP_HOME/bin:$HADOOP_HOME/sbin
+ENV HDFS_NAMENODE_USER=root
+ENV HDFS_DATANODE_USER=root
+ENV HDFS_SECONDARYNAMENODE_USER=root
+ENV YARN_RESOURCEMANAGER_USER=root
+ENV YARN_NODEMANAGER_USER=root
+
+# Arguments "_XXXX" are only valid when $HUGECTR_DEV_MODE==false
+ARG HUGECTR_DEV_MODE=false
+ARG _HUGECTR_REPO="github.com/NVIDIA-Merlin/HugeCTR.git"
+ARG _CI_JOB_TOKEN=""
+
+# Install HugeCTR
+ENV CPATH=/usr/local/include:$CPATH
+
+ENV OMPI_MCA_plm_rsh_agent=sh
+ENV OMPI_MCA_opal_cuda_support=true
+
+ENV NCCL_LAUNCH_MODE=PARALLEL
+ENV NCCL_COLLNET_ENABLE=0
+
+ENV SHARP_COLL_NUM_COLL_GROUP_RESOURCE_ALLOC_THRESHOLD=0
+ENV SHARP_COLL_LOCK_ON_COMM_INIT=1
+ENV SHARP_COLL_LOG_LEVEL=3
+ENV HCOLL_ENABLE_MCAST=0
+
+# link sub modules expected by hugectr cmake
+RUN ln -s /usr/lib/libcudf.so /usr/lib/libcudf_base.so
+RUN ln -s /usr/lib/libcudf.so /usr/lib/libcudf_io.so
+RUN ln -s /usr/lib/x86_64-linux-gnu/libibverbs.so.1 /usr/lib/x86_64-linux-gnu/libibverbs.so
+
+RUN rm -rf /usr/lib/x86_64-linux-gnu/libibverbs.so && \
+    ln -s /usr/lib/x86_64-linux-gnu/libibverbs.so.1.14.36.0 /usr/lib/x86_64-linux-gnu/libibverbs.so
+
+# Install hugectr
+RUN if [ "$HUGECTR_DEV_MODE" == "false" ]; then \
+        git clone https://${_CI_JOB_TOKEN}${_HUGECTR_REPO} /hugectr && cd /hugectr && git checkout ${HUGECTR_VER} && \
+        git submodule update --init --recursive && \
+        mkdir build && cd build && \
+        LD_LIBRARY_PATH=/usr/local/cuda/lib64/stubs/:$LD_LIBRARY_PATH && \
+        export PATH=$PATH:/usr/local/cuda-${CUDA_SHORT_VERSION}/compat/ && \
+        cmake -DCMAKE_CXX_COMPILER=/usr/bin/g++ -DCMAKE_C_COMPILER=/usr/bin/gcc -DCMAKE_BUILD_TYPE=Release -DSM="60;61;70;75;80" \
+            -DENABLE_MULTINODES=ON .. && \
+        make -j$(nproc) && make install && \
+        chmod +x /usr/local/hugectr/bin/* && \
+        chmod +x /usr/local/hugectr/lib/* && \
+        cd /hugectr/onnx_converter && \
+        python setup.py install && \
+        rm -rf /hugectr; \
+    fi
+
+ENV PATH=/usr/local/hugectr/bin:$PATH
+ENV LIBRARY_PATH=/usr/local/hugectr/lib:$LIBRARY_PATH
+ENV LD_LIBRARY_PATH=/usr/local/hugectr/lib:$LD_LIBRARY_PATH
+ENV PYTHONPATH=/usr/local/hugectr/lib:$PYTHONPATH
+ENV PYTHONPATH=/hugectr/onnx_converter:$PYTHONPATH
+
+# Remove fake lib
+RUN rm /usr/local/cuda/lib64/stubs/libcuda.so.1
+
+# Clean up
+RUN rm -rf /repos
+
+HEALTHCHECK NONE
+CMD ["/bin/bash"]

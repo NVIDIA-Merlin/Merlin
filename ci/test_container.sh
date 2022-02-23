@@ -48,7 +48,8 @@ fi
 
 ## Test NVTabular 
 ### Not shared storage in blossom yet
-if [ "$container" != "merlin-inference" ]; then
+regex="merlin(.)*-inference"
+if [[ "$container" =~ $regex ]]; then
     /nvtabular/ci/test_integration.sh $container $devices --report 1
 fi
 ## Test HugeCTR
