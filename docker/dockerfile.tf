@@ -28,7 +28,7 @@ RUN apt update -y --fix-missing && \
     rm -rf /var/lib/apt/lists/*
 
 # Install multiple packages
-RUN pip install betterproto graphviz pybind11 pydot pytest
+RUN pip install betterproto graphviz pybind11 pydot pytest mpi4py
 RUN pip install nvidia-pyindex
 RUN pip install tritonclient[all] grpcio-channelz
 RUN pip install numba==0.55.1
