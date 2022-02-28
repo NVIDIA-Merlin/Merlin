@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.2
-ARG TRITON_VERSION=22.01
+ARG TRITON_VERSION=22.02
 ARG IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-tf2-python-py3
 FROM ${IMAGE}
 
