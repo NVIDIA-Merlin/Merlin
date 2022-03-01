@@ -21,6 +21,8 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt update -y --fix-missing && \
     apt install -y --no-install-recommends software-properties-common && \
     apt-get install -y --no-install-recommends \
+        libexpat1-dev \
+	libsasl2-2 \
         graphviz \
         protobuf-compiler && \
     apt-get autoremove -y && \
@@ -29,6 +31,7 @@ RUN apt update -y --fix-missing && \
 
 # Install multiple packages
 RUN pip install betterproto graphviz pybind11 pydot pytest mpi4py
+RUN pip install --upgrade ipython
 RUN pip install nvidia-pyindex
 RUN pip install tritonclient[all] grpcio-channelz
 RUN pip install numba==0.55.1
@@ -87,6 +90,8 @@ RUN if [ "$HUGECTR_DEV_MODE" == "false" ]; then \
 
 # Clean up
 RUN rm -rf /repos
+RUN rm -rf /usr/local/share/jupyter/lab/staging/node_modules/marked
+RUN rm -rf /usr/local/share/jupyter/lab/staging/node_modules/node-fetch
 
 HEALTHCHECK NONE
 CMD ["/bin/bash"]
