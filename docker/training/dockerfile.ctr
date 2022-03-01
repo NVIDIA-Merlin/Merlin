@@ -96,12 +96,7 @@ RUN if [ "$INSTALL_HDFS" == "true" ]; then \
     mkdir -p /var/tmp && cd /var/tmp && wget https://archive.apache.org/dist/hadoop/common/hadoop-3.3.1/hadoop-3.3.1.tar.gz && \
     tar -zxvf ./hadoop-3.3.1.tar.gz && rm -rf hadoop-3.3.1.tar.gz && \
     cp ./hadoop-3.3.1/lib/native/libhdfs.so.0.0.0 /usr/local/lib/ && cp hadoop-3.3.1/include/hdfs.h /usr/local/include/ && \
-    mv ./hadoop-3.3.1 /usr/local/hadoop && cd /usr/local/lib/ && ln -s libhdfs.so.0.0.0 libhdfs.so && \
-    rm /usr/local/hadoop/share/hadoop/common/lib/jackson-databind-2.10.5.1.jar && rm /usr/local/hadoop/share/hadoop/hdfs/lib/jackson-databind-2.10.5.1.jar && \
-    wget https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-databind/2.13.1/jackson-databind-2.13.1.jar && \
-    cp jackson-databind-2.13.1.jar /usr/local/hadoop/share/hadoop/hdfs/lib/ && \
-    mv jackson-databind-2.13.1.jar /usr/local/hadoop/share/hadoop/common/lib/ && \
-    rm /usr/local/hadoop/share/hadoop/common/lib/log4j-1.2.17.jar && rm /usr/local/hadoop/share/hadoop/hdfs/lib/log4j-1.2.17.jar; \
+    mv ./hadoop-3.3.1 /usr/local/hadoop && cd /usr/local/lib/ && ln -s libhdfs.so.0.0.0 libhdfs.so ; \
 fi
 
 ENV JAVA_HOME=/usr/java/jdk-16.0.2
