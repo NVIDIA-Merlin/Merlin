@@ -26,6 +26,7 @@ RUN apt update -y --fix-missing && \
        clang-format \
        graphviz \
        libaio-dev \
+       libexpat1-dev \
        libtbb-dev \
        protobuf-compiler && \
     apt-get autoremove -y && \
@@ -39,6 +40,7 @@ RUN apt remove --purge cmake -y && wget http://www.cmake.org/files/v3.21/cmake-3
 # Install multiple packages
 RUN pip install nvidia-pyindex mpi4py onnx onnxruntime
 RUN pip install betterproto graphviz pybind11 pytest
+RUN pip install --upgrade ipython
 RUN pip install tritonclient[all] grpcio-channelz
 RUN pip install git+https://github.com/rapidsai/asvdb.git@main
 
@@ -165,6 +167,8 @@ RUN rm /usr/local/cuda/lib64/stubs/libcuda.so.1
 
 # Clean up
 RUN rm -rf /repos
+RUN rm -rf /usr/local/share/jupyter/lab/staging/node_modules/marked
+RUN rm -rf /usr/local/share/jupyter/lab/staging/node_modules/node-fetch
 
 HEALTHCHECK NONE
 CMD ["/bin/bash"]
