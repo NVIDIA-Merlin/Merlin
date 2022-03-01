@@ -51,10 +51,9 @@ RUN pip install dask==2021.11.2 distributed==2021.11.2 dask[dataframe]==2021.11.
 RUN pip install git+https://github.com/rapidsai/asvdb.git@main
 
 # Install cmake
-#RUN apt remove --purge cmake -y && wget http://www.cmake.org/files/v3.21/cmake-3.21.1.tar.gz && \
-#    tar xf cmake-3.21.1.tar.gz && cd cmake-3.21.1 && ./configure && make && make install
+RUN apt remove --purge cmake -y && wget http://www.cmake.org/files/v3.21/cmake-3.21.1.tar.gz && \
+    tar xf cmake-3.21.1.tar.gz && cd cmake-3.21.1 && ./configure && make && make install
 
-RUN apt update -y && apt install -y cmake
 # Install spdlog
 RUN git clone --branch v1.9.2 https://github.com/gabime/spdlog.git build-env && \
     pushd build-env && \
