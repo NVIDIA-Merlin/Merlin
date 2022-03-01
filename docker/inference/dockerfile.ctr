@@ -27,28 +27,15 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt update -y --fix-missing && \
     apt install -y --no-install-recommends software-properties-common && \
     apt-get install -y --no-install-recommends \
-        brotli \
-        bzip2 \
         clang-format \
-        clang-tools \
-        curl \
         libboost-serialization-dev \
-        libc-ares2 \
         libcurl4-openssl-dev \
-        libgflags2.2 \
-        libgtest-dev \
-        liblz4-tool \
-        libprotobuf-dev \
-        libre2-5 \
         libssl-dev \
         libtbb-dev \
-        libutf8proc2 \
         protobuf-compiler \
+        python3-dev \
         python3-pip \
-        rapidjson-dev \
-        ubuntu-snappy-cli \
-        zlib1g-dev \
-        zstd && \
+        rapidjson-dev &&\
     apt-get autoremove -y && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
@@ -64,16 +51,18 @@ RUN pip install dask==2021.11.2 distributed==2021.11.2 dask[dataframe]==2021.11.
 RUN pip install git+https://github.com/rapidsai/asvdb.git@main
 
 # Install cmake
-RUN apt remove --purge cmake -y && wget http://www.cmake.org/files/v3.21/cmake-3.21.1.tar.gz && \
-    tar xf cmake-3.21.1.tar.gz && cd cmake-3.21.1 && ./configure && make && make install
+#RUN apt remove --purge cmake -y && wget http://www.cmake.org/files/v3.21/cmake-3.21.1.tar.gz && \
+#    tar xf cmake-3.21.1.tar.gz && cd cmake-3.21.1 && ./configure && make && make install
 
+RUN apt update -y && apt install -y cmake
 # Install spdlog
 RUN git clone --branch v1.9.2 https://github.com/gabime/spdlog.git build-env && \
     pushd build-env && \
       mkdir build && cd build && cmake .. && make -j && make install && \
     popd && \
     rm -rf build-env
-    
+   
+
 # Install arrow
 ENV ARROW_HOME=/usr/local
 RUN git clone --branch apache-arrow-5.0.0 --recurse-submodules https://github.com/apache/arrow.git build-env && \
