@@ -44,6 +44,11 @@ RUN pip install --upgrade ipython
 RUN pip install tritonclient[all] grpcio-channelz
 RUN pip install git+https://github.com/rapidsai/asvdb.git@main
 
+# Install Models
+RUN git clone https://github.com/NVIDIA-Merlin/Models.git /models/ && \
+    cd /models/ && git checkout ${MODELS_VER} && pip install -e . --no-deps
+ENV PYTHONPATH=/models:$PYTHONPATH
+
 # Install NVTabular
 ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
 RUN git clone https://github.com/NVIDIA-Merlin/NVTabular.git /nvtabular/ && \
