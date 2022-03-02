@@ -9,6 +9,7 @@ devices=$2
 ##############
 
 ## Test NVTabular
+rm /opt/tritonserver/backends/nvtabular/libtriton_nvtabular.so || true
 pytest /nvtabular/tests/unit
 
 ## Test HugeCTR
