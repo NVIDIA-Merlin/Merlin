@@ -41,6 +41,7 @@ RUN apt remove --purge cmake -y && wget http://www.cmake.org/files/v3.21/cmake-3
 RUN pip install nvidia-pyindex mpi4py onnx onnxruntime
 RUN pip install betterproto graphviz pybind11 pytest
 RUN pip install --upgrade ipython
+RUN pip install numba==0.55.1 numpy==1.21.5 --no-deps
 RUN pip install tritonclient[all] grpcio-channelz
 RUN pip install git+https://github.com/rapidsai/asvdb.git@main
 
@@ -171,6 +172,7 @@ ENV PYTHONPATH=/hugectr/onnx_converter:$PYTHONPATH
 RUN rm /usr/local/cuda/lib64/stubs/libcuda.so.1
 
 # Clean up
+RUN pip install numba==0.53.1 numpy==1.22.2 --no-deps
 RUN rm -rf /repos
 RUN rm -rf /usr/local/share/jupyter/lab/staging/node_modules/marked
 RUN rm -rf /usr/local/share/jupyter/lab/staging/node_modules/node-fetch
