@@ -8,6 +8,7 @@ ARG CORE_VER=main
 ARG RMM_VER=v21.12.00
 ARG CUDF_VER=v21.12.02
 ARG NVTAB_VER=main
+ARG NVTAB_BACKEND_VER=main
 ARG MODELS_VER=main
 ARG HUGECTR_VER=master
 ARG HUGECTR_BACKEND_VER=main
@@ -157,7 +158,7 @@ ENV PYTHONPATH=/models:$PYTHONPATH
 # Install NVTabular Triton Backend
 ARG TRITON_VERSION
 RUN git clone https://github.com/NVIDIA-Merlin/nvtabular_triton_backend.git build-env && \
-    cd build-env && git checkout ${NVTAB_VER} && cd .. && \
+    cd build-env && git checkout ${NVTAB_BACKEND_VER} && cd .. && \
     pushd build-env && \
       mkdir build && \
       cd build && \
