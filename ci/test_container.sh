@@ -1,5 +1,4 @@
 #!/bin/bash
-set -e
 
 container=$1
 devices=$2
