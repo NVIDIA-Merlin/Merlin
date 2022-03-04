@@ -1,5 +1,4 @@
 #!/bin/bash
-set -e
 
 container=$1
 devices=$2
@@ -46,16 +45,16 @@ fi
 # Integration tests #
 #####################
 
-## Test NVTabular 
-### Not shared storage in blossom yet
+# Test NVTabular 
+## Not shared storage in blossom yet
 regex="merlin(.)*-inference"
 if [[ "$container" =~ $regex ]]; then
     /nvtabular/ci/test_integration.sh $container $devices --report 1
 fi
-## Test HugeCTR
+# Test HugeCTR
 # Waiting to sync integration tests with them
 
-## Test Transformers4Rec
+# Test Transformers4Rec
 if [ "$container" != "merlin-training" ]; then
     /transformers4rec/ci/test_integration.sh $container $devices
 fi
