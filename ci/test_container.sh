@@ -45,16 +45,16 @@ fi
 # Integration tests #
 #####################
 
-## Test NVTabular 
-### Not shared storage in blossom yet
-#regex="merlin(.)*-inference"
-#if [[ "$container" =~ $regex ]]; then
-#    /nvtabular/ci/test_integration.sh $container $devices --report 1
-#fi
-## Test HugeCTR
+# Test NVTabular 
+## Not shared storage in blossom yet
+regex="merlin(.)*-inference"
+if [[ "$container" =~ $regex ]]; then
+    /nvtabular/ci/test_integration.sh $container $devices --report 1
+fi
+# Test HugeCTR
 # Waiting to sync integration tests with them
 
-## Test Transformers4Rec
-#if [ "$container" != "merlin-training" ]; then
-#    /transformers4rec/ci/test_integration.sh $container $devices
-#fi
+# Test Transformers4Rec
+if [ "$container" != "merlin-training" ]; then
+    /transformers4rec/ci/test_integration.sh $container $devices
+fi
