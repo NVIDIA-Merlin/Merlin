@@ -2,7 +2,8 @@
 ARG TRITON_VERSION=22.02
 ARG FULL_IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-py3
 ARG BASE_IMAGE=${FULL_IMAGE}-min
-FROM ${BASE_IMAGE}
+FROM ${FULL_IMAGE} as full
+FROM ${BASE_IMAGE} as base
 
 
 # Args
@@ -55,7 +56,6 @@ RUN pip install git+https://github.com/rapidsai/asvdb.git@main
 
 
 # Triton Server
-FROM ${FULL_IMAGE} as full
 WORKDIR /opt/tritonserver
 COPY --chown=1000:1000 --from=full /opt/tritonserver/LICENSE .
 COPY --chown=1000:1000 --from=full /opt/tritonserver/TRITON_VERSION .
