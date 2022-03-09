@@ -16,13 +16,16 @@ ARG TF4REC_VER=main
 ARG HWLOC_VER=2.4.1
 
 # Envs
+ENV CUDA_SHORT_VERSION=11.6
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64:/usr/local/lib:/repos/dist/lib
 ENV DEBIAN_FRONTEND=noninteractive
 ENV CUDA_HOME=/usr/local/cuda
 ENV CUDA_PATH=$CUDA_HOME
 ENV CUDA_CUDA_LIBRARY=${CUDA_HOME}/lib64/stubs
 ENV PATH=${CUDA_HOME}/lib64/:${PATH}:${CUDA_HOME}/bin
+ENV PATH=$PATH:/usr/lib/x86_64-linux-gnu/
 ENV PYTHONPATH=/usr/lib/python3.8/site-packages:$PYTHONPATH
+RUN ln -s /usr/local/cuda/lib64/stubs/libcuda.so /usr/local/cuda/lib64/stubs/libcuda.so.1
 
 # Install packages
 ENV DEBIAN_FRONTEND=noninteractive
@@ -239,13 +242,6 @@ ENV LD_LIBRARY_PATH=$JAVA_HOME/lib/server
 ENV HADOOP_HOME=/usr/local/hadoop
 ENV PATH=$PATH:$HADOOP_HOME/bin:$HADOOP_HOME/sbin
 
-# Arguments "_XXXX" are only valid when $HUGECTR_DEV_MODE==false
-ARG HUGECTR_DEV_MODE=false
-ARG _HUGECTR_REPO="github.com/NVIDIA-Merlin/HugeCTR.git"
-ARG _HUGECTR_BACKEND_REPO="github.com/triton-inference-server/hugectr_backend"
-
-ARG _CI_JOB_TOKEN=""
-
 # Install HugeCTR - Training
 ENV CPATH=/usr/local/include:$CPATH
 
@@ -268,21 +264,19 @@ RUN ln -s /usr/lib/x86_64-linux-gnu/libibverbs.so.1 /usr/lib/x86_64-linux-gnu/li
 RUN rm -rf /usr/lib/x86_64-linux-gnu/libibverbs.so && \
     ln -s /usr/lib/x86_64-linux-gnu/libibverbs.so.1.14.36.0 /usr/lib/x86_64-linux-gnu/libibverbs.so
 
-RUN if [ "$HUGECTR_DEV_MODE" == "false" ]; then \
-        git clone https://${_CI_JOB_TOKEN}${_HUGECTR_REPO} /hugectr && cd /hugectr && git checkout ${HUGECTR_VER} && \
-        git submodule update --init --recursive && \
-        mkdir build && cd build && \
-        LD_LIBRARY_PATH=/usr/local/cuda/lib64/stubs/:$LD_LIBRARY_PATH && \
-        export PATH=$PATH:/usr/local/cuda-${CUDA_SHORT_VERSION}/compat/ && \
-        cmake -DCMAKE_CXX_COMPILER=/usr/bin/g++ -DCMAKE_C_COMPILER=/usr/bin/gcc -DCMAKE_BUILD_TYPE=Release -DSM="60;61;70;75;80" \
-            -DENABLE_MULTINODES=ON .. && \
-        make -j$(nproc) && make install && \
-        chmod +x /usr/local/hugectr/bin/* && \
-        chmod +x /usr/local/hugectr/lib/* && \
-        cd /hugectr/onnx_converter && \
-        python setup.py install && \
-        rm -rf /hugectr; \
-    fi
+RUN git clone https://github.com/NVIDIA-Merlin/HugeCTR.git /hugectr && cd /hugectr && git checkout ${HUGECTR_VER} && \
+    git submodule update --init --recursive && \
+    mkdir build && cd build && \
+    LD_LIBRARY_PATH=/usr/local/cuda/lib64/stubs/:$LD_LIBRARY_PATH && \
+    export PATH=$PATH:/usr/local/cuda-${CUDA_SHORT_VERSION}/compat/ && \
+    cmake -DCMAKE_CXX_COMPILER=/usr/bin/g++ -DCMAKE_C_COMPILER=/usr/bin/gcc -DCMAKE_BUILD_TYPE=Release -DSM="60;61;70;75;80" \
+        -DENABLE_MULTINODES=ON .. && \
+    make -j && make install && \
+    chmod +x /usr/local/hugectr/bin/* && \
+    chmod +x /usr/local/hugectr/lib/* && \
+    cd /hugectr/onnx_converter && \
+    python setup.py install && \
+    rm -rf /hugectr \
 
 ENV CPATH=/usr/local/hugectr/include:$CPATH
 ENV PATH=/usr/local/hugectr/bin:$PATH
@@ -292,37 +286,29 @@ ENV PYTHONPATH=/usr/local/hugectr/lib:$PYTHONPATH
 ENV PYTHONPATH=/hugectr/onnx_converter:$PYTHONPATH
 
 # Install HugeCTR - TF Plugin
-RUN if [ "$HUGECTR_DEV_MODE" == "false" ]; then \
-        git clone https://${_CI_JOB_TOKEN}${_HUGECTR_REPO} build-env && \
-        pushd build-env && \ 
-          git checkout ${HUGECTR_VER} && \
-          cd sparse_operation_kit && \
-          python setup.py install && \
-        popd && \
-        rm -rf build-env; \
-    fi
+RUN git clone https://github.com/NVIDIA-Merlin/HugeCTR.git /hugectr && cd /hugectr && git checkout ${HUGECTR_VER} && \
+    cd sparse_operation_kit && \
+    python setup.py install && \
+    rm -rf /hugectr \
 
 # Install HugeCTR - Inference
-RUN if [ "$HUGECTR_DEV_MODE" == "false" ]; then \
-      git clone https://${_CI_JOB_TOKEN}${_HUGECTR_REPO} /hugectr && cd /hugectr && git checkout ${HUGECTR_VER} && \
-      git submodule update --init --recursive && \
-      mkdir -p build && cd build &&\
-      cmake -DCMAKE_BUILD_TYPE=Release -DSM="60;61;70;75;80" -DENABLE_INFERENCE=ON .. && \
-      make -j$(nproc) && make install && \
-      chmod +x /usr/local/hugectr/bin/*; \
-    fi
+RUN git clone https://github.com/NVIDIA-Merlin/HugeCTR.git /hugectr && cd /hugectr && git checkout ${HUGECTR_VER} && \
+    git submodule update --init --recursive && \
+    mkdir -p build && cd build &&\
+    cmake -DCMAKE_BUILD_TYPE=Release -DSM="60;61;70;75;80" -DENABLE_INFERENCE=ON .. && \
+    make -j && make install && \
+    chmod +x /usr/local/hugectr/bin/* && \
+    rm -rf /hugectr \
 
-RUN if [ "$HUGECTR_DEV_MODE" == "false" ]; then \
-      git clone https://${_CI_JOB_TOKEN}${_HUGECTR_BACKEND_REPO} /repos/hugectr_inference_backend && cd /repos/hugectr_inference_backend &&  \
-      git checkout ${HUGECTR_BACKEND_VER} && \
-      mkdir -p build && cd build && \
-      cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr/local/hugectr \
-            -DTRITON_COMMON_REPO_TAG="r$TRITON_VERSION" \
-            -DTRITON_CORE_REPO_TAG="r$TRITON_VERSION" \
-            -DTRITON_BACKEND_REPO_TAG="r$TRITON_VERSION" .. && \
-      make -j$(nproc) && make install && \
-      rm -rf /repos/hugectr_inference_backend; \
-    fi
+RUN git clone https://github.com/triton-inference-server/hugectr_backend /repos/hugectr_inference_backend && cd /repos/hugectr_inference_backend && \
+    git checkout ${HUGECTR_BACKEND_VER} && \
+    mkdir -p build && cd build && \
+    cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr/local/hugectr \
+          -DTRITON_COMMON_REPO_TAG="r$TRITON_VERSION" \
+          -DTRITON_CORE_REPO_TAG="r$TRITON_VERSION" \
+          -DTRITON_BACKEND_REPO_TAG="r$TRITON_VERSION" .. && \
+    make -j && make install && \
+    rm -rf /repos/hugectr_inference_backend \
 
 RUN ln -s /usr/local/hugectr/backends/hugectr /opt/tritonserver/backends/
 
