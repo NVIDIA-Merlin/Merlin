@@ -277,7 +277,7 @@ RUN git clone https://github.com/NVIDIA-Merlin/HugeCTR.git /hugectr && cd /hugec
     chmod +x /usr/local/hugectr/lib/* && \
     cd /hugectr/onnx_converter && \
     python setup.py install && \
-    rm -rf /hugectr \
+    rm -rf /hugectr
 
 ENV CPATH=/usr/local/hugectr/include:$CPATH
 ENV PATH=/usr/local/hugectr/bin:$PATH
@@ -290,7 +290,7 @@ ENV PYTHONPATH=/hugectr/onnx_converter:$PYTHONPATH
 RUN git clone https://github.com/NVIDIA-Merlin/HugeCTR.git /hugectr && cd /hugectr && git checkout ${HUGECTR_VER} && \
     cd sparse_operation_kit && \
     python setup.py install && \
-    rm -rf /hugectr \
+    rm -rf /hugectr
 
 # Install HugeCTR - Inference
 RUN git clone https://github.com/NVIDIA-Merlin/HugeCTR.git /hugectr && cd /hugectr && git checkout ${HUGECTR_VER} && \
@@ -299,7 +299,7 @@ RUN git clone https://github.com/NVIDIA-Merlin/HugeCTR.git /hugectr && cd /hugec
     cmake -DCMAKE_BUILD_TYPE=Release -DSM="60;61;70;75;80" -DENABLE_INFERENCE=ON .. && \
     make -j && make install && \
     chmod +x /usr/local/hugectr/bin/* && \
-    rm -rf /hugectr \
+    rm -rf /hugectr
 
 RUN git clone https://github.com/triton-inference-server/hugectr_backend /repos/hugectr_inference_backend && cd /repos/hugectr_inference_backend && \
     git checkout ${HUGECTR_BACKEND_VER} && \
@@ -309,7 +309,7 @@ RUN git clone https://github.com/triton-inference-server/hugectr_backend /repos/
           -DTRITON_CORE_REPO_TAG="r$TRITON_VERSION" \
           -DTRITON_BACKEND_REPO_TAG="r$TRITON_VERSION" .. && \
     make -j && make install && \
-    rm -rf /repos/hugectr_inference_backend \
+    rm -rf /repos/hugectr_inference_backend
 
 RUN ln -s /usr/local/hugectr/backends/hugectr /opt/tritonserver/backends/
 
