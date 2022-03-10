@@ -65,6 +65,8 @@ COPY --chown=1000:1000 --from=full /opt/tritonserver/lib lib/
 COPY --chown=1000:1000 --from=full /opt/tritonserver/include include/
 COPY --chown=1000:1000 --from=full /opt/tritonserver/repoagents/ repoagents/ 
 COPY --chown=1000:1000 --from=full /usr/bin/serve /usr/bin/.
+ENV PATH=/opt/tritonserver/bin:${PATH}:
+ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/tritonserver/lib
 
 # Install cmake
 RUN apt remove --purge cmake -y && wget http://www.cmake.org/files/v3.21/cmake-3.21.1.tar.gz && \
