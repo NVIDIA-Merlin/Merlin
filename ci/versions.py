@@ -16,6 +16,7 @@
 import argparse
 import contextlib
 import docker
+from tomark import Tomark
 
 @contextlib.contextmanager
 def managed_container(img):
@@ -44,29 +45,34 @@ def main(args):
   containers = ["merlin-training",  "merlin-tensorflow-training",  "merlin-pytorch-training", 
                 "merlin-inference", "merlin-tensorflow-inference", "merlin-pytorch-inference"]
   # Information
-  info = {}
+  table_info = []
   # Itaretae images getting information
   for cont in containers:
-    info[cont] = {}
+    cont_info = {}
     img = ngc_base + cont + ":" + args.version
+    cont_info["Container"] = img
     with managed_container(img) as container:
        # Get CUDA version
-       info[cont]["CUDA"] = get_cuda_version(container)
+       cont_info["CUDA"] = get_cuda_version(container)
        # Get rmm version
-       info[cont]["rmm"] = get_pythonpkg_version(container, "rmm")
+       cont_info["rmm"] = get_pythonpkg_version(container, "rmm")
        # Get cuDF version
-       info[cont]["cudf"] = get_pythonpkg_version(container, "cudf")
+       cont_info["cudf"] = get_pythonpkg_version(container, "cudf")
        # Get Merlin Core
-       info[cont]["merlin-core"] = get_pythonpkg_version(container, "merlin-core")
+       cont_info["merlin-core"] = get_pythonpkg_version(container, "merlin-core")
        # Get NVTabular
-       info[cont]["nvtabular"] = get_pythonpkg_version(container, "nvtabular")
+       cont_info["nvtabular"] = get_pythonpkg_version(container, "nvtabular")
        # Get Transformers4rec
-       info[cont]["transformers4rec"] = get_pythonpkg_version(container, "transformers4rec")
+       cont_info["transformers4rec"] = get_pythonpkg_version(container, "transformers4rec")
        # Get Models
-       info[cont]["models"] = get_pythonpkg_version(container, "models")
+       cont_info["models"] = get_pythonpkg_version(container, "models")
        # Get HugeCTR
-       info[cont]["hugectr"] = get_pythonpkg_version(container, "hugectr")
-  print(info)
+       cont_info["hugectr"] = get_pythonpkg_version(container, "hugectr")
+       # Update table
+       table_info.append(cont_info)
+  # Generate markdown
+  markdown = Tomark.table(table_info)
+  print(markdown)
 
 def parse_args():
     """
