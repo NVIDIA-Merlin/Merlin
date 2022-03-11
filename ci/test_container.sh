@@ -55,6 +55,6 @@ fi
 # Waiting to sync integration tests with them
 
 # Test Transformers4Rec
-if [ "$container" != "merlin-training" ]; then
+if [[ "$container" == "merlin-tensorflow-training" || "$container" == "merlin-pytorch-training" ]]; then
     /transformers4rec/ci/test_integration.sh $container $devices
 fi
