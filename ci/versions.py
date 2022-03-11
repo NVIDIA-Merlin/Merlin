@@ -16,6 +16,7 @@
 import argparse
 import contextlib
 import docker
+from github import Github
 from tomark import Tomark
 
 @contextlib.contextmanager
@@ -38,6 +39,13 @@ def get_pythonpkg_version(container, pkg):
         return output[1].decode("utf-8").split()[1]
     except:
         return "N/A"
+
+def create_pr(repo, branch, filename, content, token, version):
+    g = Github(token)
+    r = g.get_repo(repo)
+    r.create_git_ref(ref='refs/heads/' + branch, sha=r.get_branch("main").commit.sha)
+    r.create_file(filename, "release "+ version, content, branch=branch)
+    pr = r.create_pull(title="Merlin Release " + version, body="", head=branch, base="main")
 
 def main(args):
   # Images information
@@ -70,9 +78,10 @@ def main(args):
        cont_info["hugectr"] = get_pythonpkg_version(container, "hugectr")
        # Update table
        table_info.append(cont_info)
-  # Generate markdown
+  # Generate markdown file and create PR
+  filename = "Release.md"
   markdown = Tomark.table(table_info)
-  print(markdown)
+  create_pr("Nvidia-Merlin/Merlin", "release-info-" + args.version, filename, markdown, args.token, args.version)
 
 def parse_args():
     """
@@ -80,12 +89,20 @@ def parse_args():
     python versions.py -v 22.03
     """
     parser = argparse.ArgumentParser(description=("Merlin Versions Tool"))
-    # Config file
+    # Containers version
     parser.add_argument(
         "-v",
         "--version",
         type=str,
         help="Merlin version (Required)",
+    )
+    
+    # Github token
+    parser.add_argument(
+        "-t",
+        "--token",
+        type=str,
+        help="GitHub token (Required)",
     )
 
     args = parser.parse_args()
