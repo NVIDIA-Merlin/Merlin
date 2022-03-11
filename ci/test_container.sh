@@ -46,10 +46,10 @@ fi
 
 # Test NVTabular 
 ## Not shared storage in blossom yet
-regex="merlin(.)*-inference"
-if [[ ! "$container" =~ $regex ]]; then
-    /nvtabular/ci/test_integration.sh $container $devices --report 1
-fi
+#regex="merlin(.)*-inference"
+#if [[ ! "$container" =~ $regex ]]; then
+#    /nvtabular/ci/test_integration.sh $container $devices --report 1
+#fi
 
 # Test Transformers4Rec
 if [ "$container" != "merlin-training" ]; then
