@@ -21,16 +21,16 @@ RUN ln -s /usr/local/cuda/lib64/stubs/libcuda.so /usr/local/cuda/lib64/stubs/lib
 # Install system packages
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt update -y --fix-missing && \
-    apt install -y --no-install-recommends software-properties-common && \
-    apt-get install -y --no-install-recommends \
+    apt install -y --no-install-recommends \
        clang-format \
        graphviz \
        libaio-dev \
        libexpat1-dev \
        libtbb-dev \
-       protobuf-compiler && \
-    apt-get autoremove -y && \
-    apt-get clean && \
+       protobuf-compiler \
+       software-properties-common && \
+    apt autoremove -y && \
+    apt clean && \
     rm -rf /var/lib/apt/lists/*
 
 # Install cmake newer version

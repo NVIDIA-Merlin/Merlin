@@ -26,8 +26,7 @@ ENV PYTHONPATH=/usr/lib/python3.8/site-packages:$PYTHONPATH
 # Install packages
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt update -y --fix-missing && \
-    apt install -y --no-install-recommends software-properties-common && \
-    apt-get install -y --no-install-recommends \
+    apt install -y --no-install-recommends \
         clang-format \
         libboost-serialization-dev \
         libexpat1-dev \
@@ -37,9 +36,10 @@ RUN apt update -y --fix-missing && \
         policykit-1 \
         protobuf-compiler \
         rapidjson-dev \
+        software-properties-common \
         zlib1g-dev && \
-    apt-get autoremove -y && \
-    apt-get clean && \
+    apt autoremove -y && \
+    apt clean && \
     rm -rf /var/lib/apt/lists/*
 
 RUN ln -s /usr/bin/python3 /usr/bin/python

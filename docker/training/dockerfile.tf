@@ -19,14 +19,14 @@ ENV PATH=${CUDA_HOME}/lib64/:${PATH}:${CUDA_HOME}/bin
 # Install system packages
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt update -y --fix-missing && \
-    apt install -y --no-install-recommends software-properties-common && \
-    apt-get install -y --no-install-recommends \
+    apt install -y --no-install-recommends \
         libexpat1-dev \
 	libsasl2-2 \
         graphviz \
-        protobuf-compiler && \
-    apt-get autoremove -y && \
-    apt-get clean && \
+        protobuf-compiler \
+	software-properties-common && \
+    apt autoremove -y && \
+    apt clean && \
     rm -rf /var/lib/apt/lists/*
 
 # Install multiple packages
