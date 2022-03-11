@@ -7,8 +7,20 @@ devices=$2
 # Unit tests #
 ##############
 
+## Test Core
+/core/ci/test_unit.sh $container $devices
+
 ## Test NVTabular
-pytest /nvtabular/tests/unit
+/nvtabular/ci/test_unit.sh $container $devices
+
+if [ "$container" != "merlin-training" ]; then
+  ## Test Transformers4Rec
+  /transformers4rec/ci/test_unit.sh $container $devices
+
+  ## Test Models
+  pip install coverage
+  /models/ci/test_unit.sh $container $devices
+fi
 
 ## Test HugeCTR
 ### Training container
@@ -28,19 +40,6 @@ if [ "$container" == "merlin-training" ]; then
     # inference_test
 fi
 
-## Test Transformers4Rec
-if [ "$container" != "merlin-training" ]; then
-    /transformers4rec/ci/test_unit.sh $container $devices
-fi
-
-## Test Models
-if [ "$container" != "merlin-training" ]; then
-    pip install coverage
-    chmod +x /models/ci/test_unit.sh
-    /models/ci/test_unit.sh $container $devices
-fi
-
-
 #####################
 # Integration tests #
 #####################
@@ -48,13 +47,11 @@ fi
 # Test NVTabular 
 ## Not shared storage in blossom yet
 regex="merlin(.)*-inference"
-if [[ "$container" =~ $regex ]]; then
+if [[ ! "$container" =~ $regex ]]; then
     /nvtabular/ci/test_integration.sh $container $devices --report 1
 fi
-# Test HugeCTR
-# Waiting to sync integration tests with them
 
 # Test Transformers4Rec
-if [[ "$container" == "merlin-tensorflow-training" || "$container" == "merlin-pytorch-training" ]]; then
+if [ "$container" != "merlin-training" ]; then
     /transformers4rec/ci/test_integration.sh $container $devices
 fi
