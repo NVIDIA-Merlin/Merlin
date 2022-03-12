@@ -23,21 +23,8 @@ if [ "$container" != "merlin-training" ]; then
 fi
 
 ## Test HugeCTR
-### Training container
 if [ "$container" == "merlin-training" ]; then
-    # layers_test && \ Running oom in blossom
-    checker_test && \
-    # data_reader_test && \ Need Multi-GPU
-    device_map_test && \
-    loss_test && \
-    optimizer_test && \
-    regularizers_test # && \
-    # parser_test && \ Needs Multi-GPU
-    # auc_test Needs Multi-GPU
-### Inference container
-# elif [ "$container" == "merlin-inference" ]; then
-    # HugeCTR - Deactivated until it is self-contained and it runs
-    # inference_test
+    /hugectr/ci/test_unit.sh $container $devices
 fi
 
 #####################
