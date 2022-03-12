@@ -61,6 +61,7 @@ RUN pip install dask==2021.11.2 distributed==2021.11.2 dask[dataframe]==2021.11.
 RUN pip install git+https://github.com/rapidsai/asvdb.git@main
 RUN pip install pip install tensorflow-gpu mpi4py
 RUN pip install torch==1.10.2+cu113 torchvision==0.11.3+cu113 torchaudio==0.10.2+cu113 -f https://download.pytorch.org/whl/cu113/torch_stable.html
+RUN pip install torchmetrics
 RUN pip install --no-deps fastai fastcore fastprogress fastdownload
 RUN CC=/usr/bin/gcc CXX=/usr/bin/g++ HOROVOD_CUDA_HOME=/usr/local/cuda/ HOROVOD_BUILD_CUDA_CC_LIST=60,70,75,80 HOROVOD_GPU_OPERATIONS=NCCL HOROVOD_WITH_PYTORCH=1 HOROVOD_WITH_TENSORFLOW=1 HOROVOD_NCCL_LINK=SHARED pip install --no-cache-dir git+https://github.com/horovod/horovod.git@master
 
