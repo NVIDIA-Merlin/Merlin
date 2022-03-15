@@ -1,7 +1,9 @@
 # syntax=docker/dockerfile:1.2
 ARG TRITON_VERSION=22.02
-ARG IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-tf2-python-py3
-FROM ${IMAGE}
+ARG FULL_IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-py3
+ARG BASE_IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-tf2-python-py3
+FROM ${FULL_IMAGE} as full
+FROM ${BASE_IMAGE} as bas
 
 # Args
 ARG CUDF_VER=v21.12.02
@@ -52,6 +54,12 @@ RUN pip install numba --no-deps
 RUN pip install tritonclient[all] grpcio-channelz
 RUN pip install dask==2021.11.2 distributed==2021.11.2 dask[dataframe]==2021.11.2 dask-cuda
 RUN pip install git+https://github.com/rapidsai/asvdb.git@main
+
+
+
+# Triton Server
+WORKDIR /opt/tritonserver
+COPY --chown=1000:1000 --from=full /opt/tritonserver/backends/fil fil/
 
 # Install cmake
 RUN apt remove --purge cmake -y && wget http://www.cmake.org/files/v3.21/cmake-3.21.1.tar.gz && \
