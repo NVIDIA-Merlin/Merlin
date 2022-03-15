@@ -13,7 +13,8 @@ ARG MODELS_VER=main
 ARG HUGECTR_VER=master
 ARG HUGECTR_BACKEND_VER=main
 ARG TF4REC_VER=main
-#
+ARG SYSTEMS_VER=main
+
 # Envs
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64:/usr/local/lib:/repos/dist/lib
 ENV DEBIAN_FRONTEND=noninteractive
@@ -138,6 +139,11 @@ RUN git clone https://github.com/rapidsai/cudf.git build-env && cd build-env/ &&
 RUN git clone https://github.com/NVIDIA-Merlin/core.git /core/ && \
     cd /core/ && git checkout ${CORE_VER} && pip install -e . --no-deps
 ENV PYTHONPATH=/core:$PYTHONPATH
+
+# Install Merlin Systems
+RUN git clone https://github.com/NVIDIA-Merlin/systems.git /systems/ && \
+    cd /systems/ && git checkout ${SYSTEMS_VER} && pip install --no-deps -e .
+    ENV PYTHONPATH=/systems:$PYTHONPATH
 
 # Install NVTabular
 ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'

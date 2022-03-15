@@ -7,6 +7,7 @@ ARG NVTAB_VER=main
 ARG MODELS_VER=main
 ARG HUGECTR_VER=master
 ARG HWLOC_VER=2.4.1
+ARG SYSTEMS_VER=main
 
 # Envs
 ENV CUDA_SHORT_VERSION=11.6
@@ -48,6 +49,11 @@ RUN pip install git+https://github.com/rapidsai/asvdb.git@main
 RUN git clone https://github.com/NVIDIA-Merlin/core.git /core/ && \
     cd /core/ && git checkout ${CORE_VER} && pip install --no-deps -e .
 ENV PYTHONPATH=/core:$PYTHONPATH
+
+# Install Merlin Systems
+RUN git clone https://github.com/NVIDIA-Merlin/systems.git /systems/ && \
+    cd /systems/ && git checkout ${SYSTEMS_VER} && pip install --no-deps -e .
+    ENV PYTHONPATH=/systems:$PYTHONPATH
 
 # Install NVTabular
 ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'

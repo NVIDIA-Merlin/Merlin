@@ -8,6 +8,7 @@ ARG HUGECTR_VER=master
 ARG NVTAB_VER=main
 ARG MODELS_VER=main
 ARG TF4REC_VER=main
+ARG SYSTEMS_VER=main
 
 # Envs
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64:/usr/local/lib:/repos/dist/lib
@@ -41,6 +42,11 @@ RUN pip install git+https://github.com/rapidsai/asvdb.git@main
 RUN git clone https://github.com/NVIDIA-Merlin/core.git /core/ && \
     cd /core/ && git checkout ${CORE_VER} && pip install --no-deps -e .
 ENV PYTHONPATH=/core:$PYTHONPATH
+
+# Install Merlin Systems
+RUN git clone https://github.com/NVIDIA-Merlin/systems.git /systems/ && \
+    cd /systems/ && git checkout ${SYSTEMS_VER} && pip install --no-deps -e .
+    ENV PYTHONPATH=/systems:$PYTHONPATH
 
 ARG INSTALL_NVT=true
 # Install NVTabular
