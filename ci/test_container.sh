@@ -13,14 +13,12 @@ devices=$2
 ## Test NVTabular
 /nvtabular/ci/test_unit.sh $container $devices
 
-if [ "$container" != "merlin-training" ]; then
-  ## Test Transformers4Rec
-  /transformers4rec/ci/test_unit.sh $container $devices
+## Test Transformers4Rec
+/transformers4rec/ci/test_unit.sh $container $devices
 
-  ## Test Models
-  pip install coverage
-  /models/ci/test_unit.sh $container $devices
-fi
+## Test Models
+pip install coverage
+/models/ci/test_unit.sh $container $devices
 
 ## Test HugeCTR
 if [ "$container" == "merlin-training" ]; then
@@ -33,12 +31,10 @@ fi
 
 # Test NVTabular 
 ## Not shared storage in blossom yet
-#regex="merlin(.)*-inference"
-#if [[ ! "$container" =~ $regex ]]; then
-#    /nvtabular/ci/test_integration.sh $container $devices --report 1
-#fi
+regex="merlin(.)*-inference"
+if [[ ! "$container" =~ $regex ]]; then
+    /nvtabular/ci/test_integration.sh $container $devices --report 1
+fi
 
 # Test Transformers4Rec
-if [ "$container" != "merlin-training" ]; then
-    /transformers4rec/ci/test_integration.sh $container $devices
-fi
+/transformers4rec/ci/test_integration.sh $container $devices
