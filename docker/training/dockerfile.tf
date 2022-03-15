@@ -5,10 +5,10 @@ FROM ${IMAGE}
 # Args
 ARG CORE_VER=main
 ARG HUGECTR_VER=master
-ARG NVTAB_VER=main
 ARG MODELS_VER=main
-ARG TF4REC_VER=main
+ARG NVTAB_VER=main
 ARG SYSTEMS_VER=main
+ARG TF4REC_VER=main
 
 # Envs
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64:/usr/local/lib:/repos/dist/lib

@@ -4,16 +4,16 @@ ARG IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-tf2-python-py3
 FROM ${IMAGE}
 
 # Args
-ARG CORE_VER=main
-ARG RMM_VER=v21.12.00
 ARG CUDF_VER=v21.12.02
-ARG NVTAB_VER=main
-ARG NVTAB_BACKEND_VER=main
-ARG MODELS_VER=main
+ARG RMM_VER=v21.12.00
+ARG CORE_VER=main
 ARG HUGECTR_VER=master
 ARG HUGECTR_BACKEND_VER=main
-ARG TF4REC_VER=main
+ARG MODELS_VER=main
+ARG NVTAB_VER=main
+ARG NVTAB_BACKEND_VER=main
 ARG SYSTEMS_VER=main
+ARG TF4REC_VER=main
 
 # Envs
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64:/usr/local/lib:/repos/dist/lib

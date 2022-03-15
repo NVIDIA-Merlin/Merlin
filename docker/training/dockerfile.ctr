@@ -3,11 +3,13 @@ ARG IMAGE=nvcr.io/nvidia/tensorflow:22.02-tf2-py3
 FROM ${IMAGE}
 
 # Args
-ARG NVTAB_VER=main
-ARG MODELS_VER=main
-ARG HUGECTR_VER=master
 ARG HWLOC_VER=2.4.1
+ARG CORE_VER=main
+ARG HUGECTR_VER=master
+ARG MODELS_VER=main
+ARG NVTAB_VER=main
 ARG SYSTEMS_VER=main
+ARG TF4REC_VER=main
 
 # Envs
 ENV CUDA_SHORT_VERSION=11.6
@@ -60,6 +62,16 @@ ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
 RUN git clone https://github.com/NVIDIA-Merlin/NVTabular.git /nvtabular/ && \
     cd /nvtabular/ && git checkout ${NVTAB_VER} && pip install -e . --no-deps
 ENV PYTHONPATH=/nvtabular:$PYTHONPATH
+
+# Install Transformers4Rec
+RUN git clone https://github.com/NVIDIA-Merlin/Transformers4Rec.git /transformers4rec && \
+    cd /transformers4rec/ && git checkout ${TF4REC_VER} && pip install -e . --no-deps
+ENV PYTHONPATH=/transformers4rec:$PYTHONPATH
+
+# Install Models
+RUN git clone https://github.com/NVIDIA-Merlin/Models.git /models/ && \
+    cd /models/ && git checkout ${MODELS_VER} && pip install -e . --no-deps
+ENV PYTHONPATH=/models:$PYTHONPATH
 
 # Install CUDA-Aware hwloc
 RUN cd /opt/hpcx/ompi/include/openmpi/opal/mca/hwloc/hwloc201 && rm -rfv hwloc201.h hwloc/include/hwloc.h
