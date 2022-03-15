@@ -152,7 +152,6 @@ RUN git clone https://github.com/NVIDIA-Merlin/NVTabular.git /nvtabular/ && \
 ENV PYTHONPATH=/nvtabular:$PYTHONPATH
 
 # Install Transformers4Rec
-RUN pip install transformers==4.12
 RUN git clone https://github.com/NVIDIA-Merlin/Transformers4Rec.git /transformers4rec && \
     cd /transformers4rec/ && git checkout ${TF4REC_VER} && pip install -e . --no-deps
 ENV PYTHONPATH=/transformers4rec:$PYTHONPATH
