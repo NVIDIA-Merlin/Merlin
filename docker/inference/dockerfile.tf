@@ -57,7 +57,7 @@ RUN pip install git+https://github.com/rapidsai/asvdb.git@main
 
 # Triton Server
 WORKDIR /opt/tritonserver
-COPY --chown=1000:1000 --from=full /opt/tritonserver/backends/fil fil/
+COPY --chown=1000:1000 --from=full /opt/tritonserver/backends/fil backends/fil/
 
 # Install cmake
 RUN apt remove --purge cmake -y && wget http://www.cmake.org/files/v3.21/cmake-3.21.1.tar.gz && \
