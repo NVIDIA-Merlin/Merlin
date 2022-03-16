@@ -40,6 +40,7 @@ RUN apt update -y --fix-missing && \
 RUN apt update -y --fix-missing && \
     apt install -y --no-install-recommends \
         clang-format \
+        datacenter-gpu-manager \
         libb64-dev \
         libboost-serialization-dev \
         libcurl4-openssl-dev \
@@ -58,12 +59,13 @@ RUN apt update -y --fix-missing && \
 RUN ln -s /usr/bin/python3 /usr/bin/python
 
 # Install multiple packages
+RUN pip install numba==0.55.1 numpu==1.21.5 --no-deps
 RUN pip install cupy-cuda115 nvidia-pyindex pybind11 pytest protobuf transformers==4.12 tensorflow-metadata 
-RUN pip install betterproto cachetools graphviz nvtx scipy sklearn
-RUN pip install numba --no-deps
+RUN pip install betterproto cachetools graphviz nvtx scipy sklearn pandas
 RUN pip install tritonclient[all] grpcio-channelz
 RUN pip install dask==2021.11.2 distributed==2021.11.2 dask[dataframe]==2021.11.2 dask-cuda
 RUN pip install git+https://github.com/rapidsai/asvdb.git@main
+RUN pip install numba==0.55.1 numpu==1.21.5 --no-deps
 
 
 # Triton Server
