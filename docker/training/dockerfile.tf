@@ -23,7 +23,9 @@ RUN apt update -y --fix-missing && \
     apt install -y --no-install-recommends \
         libexpat1-dev \
 	libsasl2-2 \
+	libssl-dev \
         graphviz \
+	openssl \
         protobuf-compiler \
 	software-properties-common && \
     apt autoremove -y && \

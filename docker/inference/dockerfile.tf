@@ -36,6 +36,7 @@ RUN apt update -y --fix-missing && \
 	libsasl2-2 \
         libssl-dev \
         libtbb-dev \
+	openssl \
 	policykit-1 \
         protobuf-compiler \
         rapidjson-dev \
