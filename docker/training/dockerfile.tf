@@ -5,8 +5,9 @@ FROM ${IMAGE}
 # Args
 ARG CORE_VER=main
 ARG HUGECTR_VER=master
-ARG NVTAB_VER=main
 ARG MODELS_VER=main
+ARG NVTAB_VER=main
+ARG SYSTEMS_VER=main
 ARG TF4REC_VER=main
 
 # Envs
@@ -19,18 +20,20 @@ ENV PATH=${CUDA_HOME}/lib64/:${PATH}:${CUDA_HOME}/bin
 # Install system packages
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt update -y --fix-missing && \
-    apt install -y --no-install-recommends software-properties-common && \
-    apt-get install -y --no-install-recommends \
+    apt install -y --no-install-recommends \
         libexpat1-dev \
 	libsasl2-2 \
+	libssl-dev \
         graphviz \
-        protobuf-compiler && \
-    apt-get autoremove -y && \
-    apt-get clean && \
+	openssl \
+        protobuf-compiler \
+	software-properties-common && \
+    apt autoremove -y && \
+    apt clean && \
     rm -rf /var/lib/apt/lists/*
 
 # Install multiple packages
-RUN pip install betterproto graphviz pybind11 pydot pytest mpi4py
+RUN pip install betterproto graphviz pybind11 pydot pytest mpi4py transformers==4.12
 RUN pip install --upgrade ipython
 RUN pip install nvidia-pyindex
 RUN pip install tritonclient[all] grpcio-channelz
@@ -41,6 +44,11 @@ RUN pip install git+https://github.com/rapidsai/asvdb.git@main
 RUN git clone https://github.com/NVIDIA-Merlin/core.git /core/ && \
     cd /core/ && git checkout ${CORE_VER} && pip install --no-deps -e .
 ENV PYTHONPATH=/core:$PYTHONPATH
+
+# Install Merlin Systems
+RUN git clone https://github.com/NVIDIA-Merlin/systems.git /systems/ && \
+    cd /systems/ && git checkout ${SYSTEMS_VER} && pip install --no-deps -e .
+    ENV PYTHONPATH=/systems:$PYTHONPATH
 
 ARG INSTALL_NVT=true
 # Install NVTabular

@@ -1,19 +1,22 @@
 # syntax=docker/dockerfile:1.2
 ARG TRITON_VERSION=22.02
-ARG IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-tf2-python-py3
-FROM ${IMAGE}
+ARG FULL_IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-py3
+ARG BASE_IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-tf2-python-py3
+FROM ${FULL_IMAGE} as full
+FROM ${BASE_IMAGE} as bas
 
 # Args
-ARG CORE_VER=main
-ARG RMM_VER=v21.12.00
 ARG CUDF_VER=v21.12.02
-ARG NVTAB_VER=main
-ARG NVTAB_BACKEND_VER=main
-ARG MODELS_VER=main
+ARG RMM_VER=v21.12.00
+ARG CORE_VER=main
 ARG HUGECTR_VER=master
 ARG HUGECTR_BACKEND_VER=main
+ARG MODELS_VER=main
+ARG NVTAB_VER=main
+ARG NVTAB_BACKEND_VER=main
+ARG SYSTEMS_VER=main
 ARG TF4REC_VER=main
-#
+
 # Envs
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64:/usr/local/lib:/repos/dist/lib
 ENV DEBIAN_FRONTEND=noninteractive
@@ -26,20 +29,21 @@ ENV PYTHONPATH=/usr/lib/python3.8/site-packages:$PYTHONPATH
 # Install packages
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt update -y --fix-missing && \
-    apt install -y --no-install-recommends software-properties-common && \
-    apt-get install -y --no-install-recommends \
+    apt install -y --no-install-recommends \
         clang-format \
         libboost-serialization-dev \
 	libexpat1-dev \
 	libsasl2-2 \
         libssl-dev \
         libtbb-dev \
+	openssl \
 	policykit-1 \
         protobuf-compiler \
         rapidjson-dev \
+	software-properties-common \
         zlib1g-dev && \
-    apt-get autoremove -y && \
-    apt-get clean && \
+    apt autoremove -y && \
+    apt clean && \
     rm -rf /var/lib/apt/lists/*
 
 RUN ln -s /usr/bin/python3 /usr/bin/python
@@ -51,6 +55,10 @@ RUN pip install numba --no-deps
 RUN pip install tritonclient[all] grpcio-channelz
 RUN pip install dask==2021.11.2 distributed==2021.11.2 dask[dataframe]==2021.11.2 dask-cuda
 RUN pip install git+https://github.com/rapidsai/asvdb.git@main
+
+# Triton Server
+WORKDIR /opt/tritonserver
+COPY --chown=1000:1000 --from=full /opt/tritonserver/backends/fil backends/fil/
 
 # Install cmake
 RUN apt remove --purge cmake -y && wget http://www.cmake.org/files/v3.21/cmake-3.21.1.tar.gz && \
@@ -139,6 +147,11 @@ RUN git clone https://github.com/NVIDIA-Merlin/core.git /core/ && \
     cd /core/ && git checkout ${CORE_VER} && pip install -e . --no-deps
 ENV PYTHONPATH=/core:$PYTHONPATH
 
+# Install Merlin Systems
+RUN git clone https://github.com/NVIDIA-Merlin/systems.git /systems/ && \
+    cd /systems/ && git checkout ${SYSTEMS_VER} && pip install --no-deps -e .
+    ENV PYTHONPATH=/systems:$PYTHONPATH
+
 # Install NVTabular
 ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
 RUN git clone https://github.com/NVIDIA-Merlin/NVTabular.git /nvtabular/ && \
@@ -146,7 +159,6 @@ RUN git clone https://github.com/NVIDIA-Merlin/NVTabular.git /nvtabular/ && \
 ENV PYTHONPATH=/nvtabular:$PYTHONPATH
 
 # Install Transformers4Rec
-RUN pip install transformers==4.12
 RUN git clone https://github.com/NVIDIA-Merlin/Transformers4Rec.git /transformers4rec && \
     cd /transformers4rec/ && git checkout ${TF4REC_VER} && pip install -e . --no-deps
 ENV PYTHONPATH=/transformers4rec:$PYTHONPATH

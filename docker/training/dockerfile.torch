@@ -3,9 +3,9 @@ FROM ${IMAGE}
 
 # Args
 ARG CORE_VER=main
-ARG DASK_VER=2021.11.2
-ARG NVTAB_VER=main
 ARG MODELS_VER=main
+ARG NVTAB_VER=main
+ARG SYSTEMS_VER=main
 ARG TF4REC_VER=main
 
 # Envs
@@ -18,11 +18,13 @@ ENV PATH=${CUDA_HOME}/lib64/:${PATH}:${CUDA_HOME}/bin
 # Install system packages
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt update -y --fix-missing && \
-    apt install -y --no-install-recommends software-properties-common && \
     apt install -y --no-install-recommends \
         libexpat1-dev \
         libsasl2-2 \
-        graphviz && \
+        libssl-dev \
+        graphviz \
+        openssl \
+        software-properties-common && \
     apt autoremove -y && \
     apt clean && \
     rm -rf /var/lib/apt/lists/*
@@ -36,8 +38,6 @@ RUN pip install --upgrade Pillow
 RUN pip install nvidia-pyindex
 RUN pip install tritonclient[all] grpcio-channelz
 RUN pip install --no-deps fastai fastcore fastprogress fastdownload
-RUN pip install numba==0.55.1 numpy==1.21.5 --no-deps
-RUN pip install --ignore-installed llvmlite==0.38.0 --no-deps
 RUN pip install git+https://github.com/rapidsai/asvdb.git@main
 RUN CC=/usr/bin/gcc CXX=/usr/bin/g++ HOROVOD_CUDA_HOME=/usr/local/cuda/ HOROVOD_BUILD_CUDA_CC_LIST=60,70,75,80 HOROVOD_GPU_OPERATIONS=NCCL HOROVOD_WITH_PYTORCH=1 HOROVOD_NCCL_LINK=SHARED pip install --no-cache-dir git+https://github.com/horovod/horovod.git@master
 
@@ -45,6 +45,11 @@ RUN CC=/usr/bin/gcc CXX=/usr/bin/g++ HOROVOD_CUDA_HOME=/usr/local/cuda/ HOROVOD_
 RUN git clone https://github.com/NVIDIA-Merlin/core.git /core/ && \
     cd /core/ && git checkout ${CORE_VER} && pip install -e . --no-deps
 ENV PYTHONPATH=/core:$PYTHONPATH
+
+# Install Merlin Systems
+RUN git clone https://github.com/NVIDIA-Merlin/systems.git /systems/ && \
+    cd /systems/ && git checkout ${SYSTEMS_VER} && pip install --no-deps -e .
+    ENV PYTHONPATH=/systems:$PYTHONPATH
 
 # Install NVTabular
 ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
@@ -63,7 +68,6 @@ RUN git clone https://github.com/NVIDIA-Merlin/Models.git /models/ && \
 ENV PYTHONPATH=/models:$PYTHONPATH
 
 # Clean up
-RUN pip install numba==0.53.1 numpy==1.22.2 --no-deps
 RUN rm -rf /repos
 RUN rm -rf /opt/conda/share/jupyter/lab/staging/node_modules/marked
 RUN rm -rf /opt/conda/share/jupyter/lab/staging/node_modules/node-fetch

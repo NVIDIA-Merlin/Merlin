@@ -1,19 +1,23 @@
 # syntax=docker/dockerfile:1.2
 ARG TRITON_VERSION=22.02
-ARG IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-py3-min
-FROM ${IMAGE}
+ARG FULL_IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-py3
+ARG BASE_IMAGE=${FULL_IMAGE}-min
+FROM ${FULL_IMAGE} as full
+FROM ${BASE_IMAGE} as base
+
 
 # Args
-ARG CORE_VER=main
-ARG RMM_VER=v21.12.00
 ARG CUDF_VER=v21.12.02
+ARG RMM_VER=v21.12.00
+ARG CORE_VER=main
+ARG HUGECTR_VER=master
+ARG HUGECTR_BACKEND_VER=main
 ARG NVTAB_VER=main
 ARG NVTAB_BACKEND_VER=main
 ARG MODELS_VER=main
-ARG HUGECTR_VER=master
-ARG HUGECTR_BACKEND_VER=main
+ARG SYSTEMS_VER=main
 ARG TF4REC_VER=main
-#
+
 # Envs
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64:/usr/local/lib:/repos/dist/lib
 ENV DEBIAN_FRONTEND=noninteractive
@@ -23,33 +27,61 @@ ENV CUDA_CUDA_LIBRARY=${CUDA_HOME}/lib64/stubs
 ENV PATH=${CUDA_HOME}/lib64/:${PATH}:${CUDA_HOME}/bin
 ENV PYTHONPATH=/usr/lib/python3.8/site-packages:$PYTHONPATH
 
-# Install packages
+# Install system packages
 ENV DEBIAN_FRONTEND=noninteractive
+
 RUN apt update -y --fix-missing && \
     apt install -y --no-install-recommends software-properties-common && \
-    apt-get install -y --no-install-recommends \
+    wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-ubuntu2004.pin && \
+    mv cuda-ubuntu2004.pin /etc/apt/preferences.d/cuda-repository-pin-600 && \
+    apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/7fa2af80.pub && \
+    add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/ /"
+
+RUN apt update -y --fix-missing && \
+    apt install -y --no-install-recommends \
         clang-format \
+        datacenter-gpu-manager \
+        libb64-dev \
         libboost-serialization-dev \
         libcurl4-openssl-dev \
+        libre2-dev \
         libssl-dev \
         libtbb-dev \
+        openssl \
+        pkg-config \
         protobuf-compiler \
         python3-dev \
         python3-pip \
-        rapidjson-dev &&\
-    apt-get autoremove -y && \
-    apt-get clean && \
+        rapidjson-dev && \
+    apt autoremove -y && \
+    apt clean && \
     rm -rf /var/lib/apt/lists/*
 
 RUN ln -s /usr/bin/python3 /usr/bin/python
 
 # Install multiple packages
+RUN pip install numba==0.55.1 numpy==1.21.5 --no-deps
 RUN pip install cupy-cuda115 nvidia-pyindex pybind11 pytest protobuf transformers==4.12 tensorflow-metadata 
-RUN pip install betterproto cachetools graphviz nvtx scipy sklearn
-RUN pip install pandas numba==0.55.1 numpy==1.21.5
+RUN pip install betterproto cachetools graphviz nvtx scipy sklearn pandas
 RUN pip install tritonclient[all] grpcio-channelz
 RUN pip install dask==2021.11.2 distributed==2021.11.2 dask[dataframe]==2021.11.2 dask-cuda
 RUN pip install git+https://github.com/rapidsai/asvdb.git@main
+RUN pip install numba==0.55.1 numpy==1.21.5 --no-deps
+
+
+# Triton Server
+WORKDIR /opt/tritonserver
+COPY --chown=1000:1000 --from=full /opt/tritonserver/LICENSE .
+COPY --chown=1000:1000 --from=full /opt/tritonserver/TRITON_VERSION .
+COPY --chown=1000:1000 --from=full /opt/tritonserver/NVIDIA_Deep_Learning_Container_License.pdf .
+COPY --chown=1000:1000 --from=full /opt/tritonserver/bin bin/
+COPY --chown=1000:1000 --from=full /opt/tritonserver/lib lib/
+COPY --chown=1000:1000 --from=full /opt/tritonserver/include include/
+COPY --chown=1000:1000 --from=full /opt/tritonserver/repoagents/ repoagents/
+COPY --chown=1000:1000 --from=full /opt/tritonserver/backends/python backends/python
+COPY --chown=1000:1000 --from=full /usr/bin/serve /usr/bin/.
+ENV PATH=/opt/tritonserver/bin:${PATH}:
+ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/tritonserver/lib
 
 # Install cmake
 RUN apt remove --purge cmake -y && wget http://www.cmake.org/files/v3.21/cmake-3.21.1.tar.gz && \
@@ -138,6 +170,11 @@ RUN git clone https://github.com/NVIDIA-Merlin/core.git /core/ && \
     cd /core/ && git checkout ${CORE_VER} && pip install -e . --no-deps
 ENV PYTHONPATH=/core:$PYTHONPATH
 
+# Install Merlin Systems
+RUN git clone https://github.com/NVIDIA-Merlin/systems.git /systems/ && \
+    cd /systems/ && git checkout ${SYSTEMS_VER} && pip install --no-deps -e .
+    ENV PYTHONPATH=/systems:$PYTHONPATH
+
 # Install NVTabular
 ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
 RUN git clone https://github.com/NVIDIA-Merlin/NVTabular.git /nvtabular/ && \
@@ -145,7 +182,6 @@ RUN git clone https://github.com/NVIDIA-Merlin/NVTabular.git /nvtabular/ && \
 ENV PYTHONPATH=/nvtabular:$PYTHONPATH
 
 # Install Transformers4Rec
-RUN pip install transformers==4.12
 RUN git clone https://github.com/NVIDIA-Merlin/Transformers4Rec.git /transformers4rec && \
     cd /transformers4rec/ && git checkout ${TF4REC_VER} && pip install -e . --no-deps
 ENV PYTHONPATH=/transformers4rec:$PYTHONPATH
