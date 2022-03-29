@@ -1,13 +1,13 @@
 # syntax=docker/dockerfile:1.2
-ARG TRITON_VERSION=22.02
+ARG TRITON_VERSION=22.03
 ARG FULL_IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-py3
 ARG BASE_IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-tf2-python-py3
 FROM ${FULL_IMAGE} as full
 FROM ${BASE_IMAGE} as bas
 
 # Args
-ARG CUDF_VER=v21.12.02
-ARG RMM_VER=v21.12.00
+ARG CUDF_VER=v22.02.00
+ARG RMM_VER=v22.02.00
 ARG CORE_VER=main
 ARG HUGECTR_VER=master
 ARG HUGECTR_BACKEND_VER=main
