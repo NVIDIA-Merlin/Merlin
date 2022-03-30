@@ -3,6 +3,28 @@
 container=$1
 devices=$2
 
+
+
+##################
+# Software check #
+##################  
+regex="merlin(.)*-inference"
+if [[ ! "$container" =~ $regex ]]; then
+    whereis tritonserver
+fi
+
+if [ "$container" == "merlin-training" ]; then
+    python -c "import hugectr"
+fi
+
+if [ "$container" == "merlin-tensorflow-training" ]; then
+    python -c "import tensorflow"
+fi
+
+if [ "$container" == "merlin-pytorch-training" ]; then
+    python -c "import torch"
+fi
+
 ##############
 # Unit tests #
 ##############
