@@ -12,7 +12,7 @@ Each example notebook is structured as follows:
 
 ## Running the Example Notebooks
 
-You can run the example notebooks by [installing NVTabular](https://github.com/NVIDIA/NVTabular#installation) and other required libraries. Alternatively, Docker conatiners are available on http://ngc.nvidia.com/catalog/containers/ with pre-installed versions. For the PoC example notebooks we used `merlin-tensorflow-inference` container.
+You can run the example notebooks by [installing NVTabular](https://github.com/NVIDIA/NVTabular#installation) and other required libraries. Alternatively, Docker conatiners are available on http://ngc.nvidia.com/catalog/containers/ with pre-installed versions. For the PoC example notebooks we used `merlin-tensorflow-inference:nightly` container.
 
 - merlin-tensorflow-inference contains NVTabular with TensorFlow and Triton Inference support
 
@@ -30,14 +30,28 @@ To run the example notebooks using Docker containers, do the following:
     root@f9b2754d5741:/opt/tritonserver# 
    ```
    
-2. Install jupyter-lab with `conda` or `pip` by running the following command:
+2. Install Tensorflow
+
+    ```
+    pip install tensorflow-gpu
+    ```
+
+3. Install feast and faiss libraries
+
+    ```
+    pip install feast
+    pip install faiss-gpu
+    ```
+
+4. Install jupyter-lab and matplotlib by running the following command:
    ```
    pip install jupyterlab
+   pip install matplotlib
    ```
    
    For more information, see [Installation Guide](https://jupyterlab.readthedocs.io/en/stable/getting_started/installation.html).
 
-3. Start the jupyter-lab server by running the following command:
+5. Start the jupyter-lab server by running the following command:
    ```
    jupyter-lab --allow-root --ip='0.0.0.0' --NotebookApp.token='<password>'
    ```
