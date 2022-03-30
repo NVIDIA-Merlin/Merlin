@@ -1,12 +1,12 @@
 # NVIDIA Merlin Example Notebooks
 
-We created a jupyter notebook example based on different stages of a Recommender Systems to provide an end-to-end example. The notebook demonstrate how to use NVTabular, Merlin Models and Merlin Systems for ETL, training, and inference, respectively.
+We created two jupyter notebook examples based on different stages of a Recommender Systems to demonstrate how to deploy a Recommender Systems. The notebook demonstrate how to use NVTabular, Merlin Models and Merlin Systems libraries for ETL, training, and inference, respectively.
 
 ## Structure
 
 Each example notebook is structured as follows:
 - execute the preprocessing and feature engineering pipeline (ETL) with NVTabular on the GPU
-- train a model with TensorFlow based on the ETL output
+- train a ranking and retrieval model with TensorFlow based on the ETL output
 - perform Inference with the Triton Inference Server using Merlin Systems library.
 
 
@@ -58,4 +58,4 @@ To run the example notebooks using Docker containers, do the following:
 
 4. Open any browser to access the jupyter-lab server using <MachineIP>:8888.
 
-5. Once in the server, navigate to the ```/Merlin/examples``` directory and try out the example notebooks.
+5. Once in the server, navigate to the ```/Merlin/examples``` directory and execute the example notebooks.
