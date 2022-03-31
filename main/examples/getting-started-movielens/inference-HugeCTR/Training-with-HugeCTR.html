@@ -1,0 +1,1195 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Overview &mdash; Merlin  documentation</title><link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "tex2jax_ignore|mathjax_ignore|document", "processClass": "tex2jax_process|mathjax_process|math|output_area"}})</script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> Merlin
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../README.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../index.html">Example Notebooks</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Merlin</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Overview</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput.container div.prompt *,
+div.nboutput.container div.prompt *,
+div.nbinput.container div.input_area pre,
+div.nboutput.container div.output_area pre,
+div.nbinput.container div.input_area .highlight,
+div.nboutput.container div.output_area .highlight {
+    border: none;
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+div.nbinput.container > div[class*=highlight],
+div.nboutput.container > div[class*=highlight] {
+    margin: 0;
+}
+
+div.nbinput.container div.prompt *,
+div.nboutput.container div.prompt * {
+    background: none;
+}
+
+div.nboutput.container div.output_area .highlight,
+div.nboutput.container div.output_area pre {
+    background: unset;
+}
+
+div.nboutput.container div.output_area div.highlight {
+    color: unset;  /* override Pygments text color */
+}
+
+/* avoid gaps between output lines */
+div.nboutput.container div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput.container,
+div.nboutput.container {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput.container,
+    div.nboutput.container {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput.container {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast.container {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput.container div.prompt pre {
+    color: #307FC1;
+}
+
+/* output prompt */
+div.nboutput.container div.prompt pre {
+    color: #BF5B3D;
+}
+
+/* all prompts */
+div.nbinput.container div.prompt,
+div.nboutput.container div.prompt {
+    width: 4.5ex;
+    padding-top: 5px;
+    position: relative;
+    user-select: none;
+}
+
+div.nbinput.container div.prompt > div,
+div.nboutput.container div.prompt > div {
+    position: absolute;
+    right: 0;
+    margin-right: 0.3ex;
+}
+
+@media (max-width: 540px) {
+    div.nbinput.container div.prompt,
+    div.nboutput.container div.prompt {
+        width: unset;
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput.container div.prompt.empty {
+        padding: 0;
+    }
+
+    div.nbinput.container div.prompt > div,
+    div.nboutput.container div.prompt > div {
+        position: unset;
+    }
+}
+
+/* disable scrollbars on prompts */
+div.nbinput.container div.prompt pre,
+div.nboutput.container div.prompt pre {
+    overflow: hidden;
+}
+
+/* input/output area */
+div.nbinput.container div.input_area,
+div.nboutput.container div.output_area {
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput.container div.input_area,
+    div.nboutput.container div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput.container div.input_area {
+    border: 1px solid #e0e0e0;
+    border-radius: 2px;
+    /*background: #f5f5f5;*/
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput.container div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.imgmath center alignment in output cells */
+div.nboutput.container div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput.container div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-default-inverse-fg { color: #FFFFFF; }
+.ansi-default-inverse-bg { background-color: #000000; }
+
+.ansi-bold { font-weight: bold; }
+.ansi-underline { text-decoration: underline; }
+
+
+div.nbinput.container div.input_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight].math,
+div.nboutput.container div.output_area.rendered_html,
+div.nboutput.container div.output_area > div.output_javascript,
+div.nboutput.container div.output_area:not(.rendered_html) > img{
+    padding: 5px;
+    margin: 0;
+}
+
+/* fix copybtn overflow problem in chromium (needed for 'sphinx_copybutton') */
+div.nbinput.container div.input_area > div[class^='highlight'],
+div.nboutput.container div.output_area > div[class^='highlight']{
+    overflow-y: hidden;
+}
+
+/* hide copybtn icon on prompts (needed for 'sphinx_copybutton') */
+.prompt .copybtn {
+    display: none;
+}
+
+/* Some additional styling taken form the Jupyter notebook CSS */
+div.rendered_html table {
+  border: none;
+  border-collapse: collapse;
+  border-spacing: 0;
+  color: black;
+  font-size: 12px;
+  table-layout: fixed;
+}
+div.rendered_html thead {
+  border-bottom: 1px solid black;
+  vertical-align: bottom;
+}
+div.rendered_html tr,
+div.rendered_html th,
+div.rendered_html td {
+  text-align: right;
+  vertical-align: middle;
+  padding: 0.5em 0.5em;
+  line-height: normal;
+  white-space: normal;
+  max-width: none;
+  border: none;
+}
+div.rendered_html th {
+  font-weight: bold;
+}
+div.rendered_html tbody tr:nth-child(odd) {
+  background: #f5f5f5;
+}
+div.rendered_html tbody tr:hover {
+  background: rgba(66, 165, 245, 0.2);
+}
+
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Copyright 2021 NVIDIA Corporation. All Rights Reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+<span class="c1"># ==============================================================================</span>
+</pre></div>
+</div>
+</div>
+<p><img alt="a68bdd8717ad4e7d86fcd67e064f0bd6" src="http://developer.download.nvidia.com/compute/machine-learning/frameworks/nvidia_logo.png" /></p>
+<div class="section" id="Overview">
+<h1>Overview<a class="headerlink" href="#Overview" title="Permalink to this headline"></a></h1>
+<p>In this notebook, we want to provide an overview what HugeCTR framework is, its features and benefits. We will use HugeCTR to train a basic neural network architecture and deploy the saved model to Triton Inference Server.</p>
+<p>Learning Objectives: * Adopt NVTabular workflow to provide input files to HugeCTR * Define HugeCTR neural network architecture * Train a deep learning model with HugeCTR * Deploy HugeCTR to Triton Inference Server</p>
+<div class="section" id="Why-using-HugeCTR?">
+<h2>Why using HugeCTR?<a class="headerlink" href="#Why-using-HugeCTR?" title="Permalink to this headline"></a></h2>
+<p>HugeCTR is a GPU-accelerated recommender framework designed to distribute training across multiple GPUs and nodes and estimate Click-Through Rates (CTRs).</p>
+<p>HugeCTR offers multiple advantages to train deep learning recommender systems: 1. <strong>Speed</strong>: HugeCTR is a highly efficient framework written C++. We experienced up to 10x speed up. HugeCTR on a NVIDIA DGX A100 system proved to be the fastest commercially available solution for training the architecture Deep Learning Recommender Model (DLRM) developed by Facebook. 2. <strong>Scale</strong>: HugeCTR supports model parallel scaling. It distributes the large embedding tables over multiple GPUs or multiple nodes.
+3. <strong>Easy-to-use</strong>: Easy-to-use Python API similar to Keras. Examples for popular deep learning recommender systems architectures (Wide&amp;Deep, DLRM, DCN, DeepFM) are available.</p>
+</div>
+<div class="section" id="Other-Features-of-HugeCTR">
+<h2>Other Features of HugeCTR<a class="headerlink" href="#Other-Features-of-HugeCTR" title="Permalink to this headline"></a></h2>
+<p>HugeCTR is designed to scale deep learning models for recommender systems. It provides a list of other important features: * Proficiency in oversubscribing models to train embedding tables with single nodes that don’t fit within the GPU or CPU memory (only required embeddings are prefetched from a parameter server per batch) * Asynchronous and multithreaded data pipelines * A highly optimized data loader. * Supported data formats such as parquet and binary * Integration with Triton
+Inference Server for deployment to production</p>
+</div>
+<div class="section" id="Getting-Started">
+<h2>Getting Started<a class="headerlink" href="#Getting-Started" title="Permalink to this headline"></a></h2>
+<p>In this example, we will train a neural network with HugeCTR. We will use NVTabular for preprocessing.</p>
+<div class="section" id="Preprocessing-and-Feature-Engineering-with-NVTabular">
+<h3>Preprocessing and Feature Engineering with NVTabular<a class="headerlink" href="#Preprocessing-and-Feature-Engineering-with-NVTabular" title="Permalink to this headline"></a></h3>
+<p>We use NVTabular to <code class="docutils literal notranslate"><span class="pre">Categorify</span></code> our categorical input columns.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># External dependencies</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+<span class="kn">import</span> <span class="nn">gc</span>
+
+<span class="kn">import</span> <span class="nn">nvtabular</span> <span class="k">as</span> <span class="nn">nvt</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">os</span> <span class="kn">import</span> <span class="n">path</span>
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">train_test_split</span>
+
+<span class="kn">from</span> <span class="nn">nvtabular.utils</span> <span class="kn">import</span> <span class="n">download_file</span>
+
+<span class="c1"># Get dataframe library - cudf or pandas</span>
+<span class="kn">from</span> <span class="nn">nvtabular.dispatch</span> <span class="kn">import</span> <span class="n">get_lib</span>
+<span class="n">df_lib</span> <span class="o">=</span> <span class="n">get_lib</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<p>We define our base directory, containing the data.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># path to store raw and preprocessed data</span>
+<span class="n">BASE_DIR</span> <span class="o">=</span> <span class="s2">&quot;/model/data/&quot;</span>
+</pre></div>
+</div>
+</div>
+<p>If the data is not available in the base directory, we will download and unzip the data.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">download_file</span><span class="p">(</span>
+    <span class="s2">&quot;http://files.grouplens.org/datasets/movielens/ml-25m.zip&quot;</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s2">&quot;ml-25m.zip&quot;</span><span class="p">)</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+downloading ml-25m.zip: 262MB [03:23, 1.29MB/s]
+unzipping files: 100%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 8/8 [00:05&lt;00:00,  1.34files/s]
+</pre></div></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="Preparing-the-dataset-with-NVTabular">
+<h1>Preparing the dataset with NVTabular<a class="headerlink" href="#Preparing-the-dataset-with-NVTabular" title="Permalink to this headline"></a></h1>
+<p>First, we take a look at the movie metadata.</p>
+<p>Let’s load the movie ratings.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ratings</span> <span class="o">=</span> <span class="n">df_lib</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s2">&quot;ml-25m&quot;</span><span class="p">,</span> <span class="s2">&quot;ratings.csv&quot;</span><span class="p">))</span>
+<span class="n">ratings</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>userId</th>
+      <th>movieId</th>
+      <th>rating</th>
+      <th>timestamp</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1</td>
+      <td>296</td>
+      <td>5.0</td>
+      <td>1147880044</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>1</td>
+      <td>306</td>
+      <td>3.5</td>
+      <td>1147868817</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>1</td>
+      <td>307</td>
+      <td>5.0</td>
+      <td>1147868828</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>1</td>
+      <td>665</td>
+      <td>5.0</td>
+      <td>1147878820</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>1</td>
+      <td>899</td>
+      <td>3.5</td>
+      <td>1147868510</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p>We drop the timestamp column and split the ratings into training and test dataset. We use a simple random split.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ratings</span> <span class="o">=</span> <span class="n">ratings</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s2">&quot;timestamp&quot;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">train</span><span class="p">,</span> <span class="n">valid</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">ratings</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">train</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>userId</th>
+      <th>movieId</th>
+      <th>rating</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>19120594</th>
+      <td>124027</td>
+      <td>56587</td>
+      <td>4.0</td>
+    </tr>
+    <tr>
+      <th>15253127</th>
+      <td>98809</td>
+      <td>2641</td>
+      <td>2.5</td>
+    </tr>
+    <tr>
+      <th>12584278</th>
+      <td>81377</td>
+      <td>122886</td>
+      <td>4.5</td>
+    </tr>
+    <tr>
+      <th>18034326</th>
+      <td>116853</td>
+      <td>78499</td>
+      <td>4.5</td>
+    </tr>
+    <tr>
+      <th>18073299</th>
+      <td>117118</td>
+      <td>1302</td>
+      <td>2.5</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p>We save our train and valid datasets as parquet files on disk, and below we will read them in while initializing the Dataset objects.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">train</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span><span class="n">BASE_DIR</span> <span class="o">+</span> <span class="s2">&quot;train.parquet&quot;</span><span class="p">)</span>
+<span class="n">valid</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span><span class="n">BASE_DIR</span> <span class="o">+</span> <span class="s2">&quot;valid.parquet&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">del</span> <span class="n">train</span>
+<span class="k">del</span> <span class="n">valid</span>
+<span class="n">gc</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+0
+</pre></div></div>
+</div>
+<p>Let’s define our categorical and label columns. Note that in that example we do not have numerical columns.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">CATEGORICAL_COLUMNS</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;userId&quot;</span><span class="p">,</span> <span class="s2">&quot;movieId&quot;</span><span class="p">]</span>
+<span class="n">LABEL_COLUMNS</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;rating&quot;</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<p>Let’s add Categorify op for our categorical features, userId, movieId.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">cat_features</span> <span class="o">=</span> <span class="n">CATEGORICAL_COLUMNS</span> <span class="o">&gt;&gt;</span> <span class="n">nvt</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">Categorify</span><span class="p">(</span><span class="n">cat_cache</span><span class="o">=</span><span class="s2">&quot;device&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>The ratings are on a scale between 1-5. We want to predict a binary target with 1 are all ratings &gt;=4 and 0 are all ratings &lt;=3. We use the LambdaOp for it.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ratings</span> <span class="o">=</span> <span class="n">nvt</span><span class="o">.</span><span class="n">ColumnGroup</span><span class="p">([</span><span class="s2">&quot;rating&quot;</span><span class="p">])</span> <span class="o">&gt;&gt;</span> <span class="p">(</span><span class="k">lambda</span> <span class="n">col</span><span class="p">:</span> <span class="p">(</span><span class="n">col</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;int8&quot;</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<p>We can visualize our calculation graph.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">output</span> <span class="o">=</span> <span class="n">cat_features</span> <span class="o">+</span> <span class="n">ratings</span>
+<span class="p">(</span><span class="n">output</span><span class="p">)</span><span class="o">.</span><span class="n">graph</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<img alt="../../../_images/examples_getting-started-movielens_inference-HugeCTR_Training-with-HugeCTR_28_0.svg" src="../../../_images/examples_getting-started-movielens_inference-HugeCTR_Training-with-HugeCTR_28_0.svg" /></div>
+</div>
+<p>We initialize our NVTabular workflow.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">workflow</span> <span class="o">=</span> <span class="n">nvt</span><span class="o">.</span><span class="n">Workflow</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>We initialize NVTabular Datasets, and use the part_size parameter, which defines the size read into GPU-memory at once, in nvt.Dataset.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">train_dataset</span> <span class="o">=</span> <span class="n">nvt</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">BASE_DIR</span> <span class="o">+</span> <span class="s2">&quot;train.parquet&quot;</span><span class="p">,</span> <span class="n">part_size</span><span class="o">=</span><span class="s2">&quot;100MB&quot;</span><span class="p">)</span>
+<span class="n">valid_dataset</span> <span class="o">=</span> <span class="n">nvt</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">BASE_DIR</span> <span class="o">+</span> <span class="s2">&quot;valid.parquet&quot;</span><span class="p">,</span> <span class="n">part_size</span><span class="o">=</span><span class="s2">&quot;100MB&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>First, we collect the training dataset statistics.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%time</span>
+
+<span class="n">workflow</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train_dataset</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+CPU times: user 1.01 s, sys: 315 ms, total: 1.32 s
+Wall time: 1.39 s
+</pre></div></div>
+</div>
+<p>This step is slightly different for HugeCTR. HugeCTR expect the categorical input columns as <code class="docutils literal notranslate"><span class="pre">int64</span></code> and continuous/label columns as <code class="docutils literal notranslate"><span class="pre">float32</span></code> We can define output datatypes for our NVTabular workflow.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">dict_dtypes</span> <span class="o">=</span> <span class="p">{}</span>
+
+<span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">CATEGORICAL_COLUMNS</span><span class="p">:</span>
+    <span class="n">dict_dtypes</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">int64</span>
+
+<span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">LABEL_COLUMNS</span><span class="p">:</span>
+    <span class="n">dict_dtypes</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span>
+</pre></div>
+</div>
+</div>
+<p>Note: We do not have numerical output columns</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">train_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s2">&quot;train&quot;</span><span class="p">)</span>
+<span class="n">valid_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s2">&quot;valid&quot;</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">train_dir</span><span class="p">):</span>
+    <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">train_dir</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">valid_dir</span><span class="p">):</span>
+    <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">valid_dir</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>In addition, we need to provide the data schema to the output calls. We need to define which output columns are <code class="docutils literal notranslate"><span class="pre">categorical</span></code>, <code class="docutils literal notranslate"><span class="pre">continuous</span></code> and which is the <code class="docutils literal notranslate"><span class="pre">label</span></code> columns. NVTabular will write metadata files, which HugeCTR requires to load the data and optimize training.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">workflow</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">train_dataset</span><span class="p">)</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span>
+    <span class="n">output_path</span><span class="o">=</span><span class="n">BASE_DIR</span> <span class="o">+</span> <span class="s2">&quot;train/&quot;</span><span class="p">,</span>
+    <span class="n">shuffle</span><span class="o">=</span><span class="n">nvt</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">Shuffle</span><span class="o">.</span><span class="n">PER_PARTITION</span><span class="p">,</span>
+    <span class="n">cats</span><span class="o">=</span><span class="n">CATEGORICAL_COLUMNS</span><span class="p">,</span>
+    <span class="n">labels</span><span class="o">=</span><span class="n">LABEL_COLUMNS</span><span class="p">,</span>
+    <span class="n">dtypes</span><span class="o">=</span><span class="n">dict_dtypes</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">workflow</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">valid_dataset</span><span class="p">)</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span>
+    <span class="n">output_path</span><span class="o">=</span><span class="n">BASE_DIR</span> <span class="o">+</span> <span class="s2">&quot;valid/&quot;</span><span class="p">,</span>
+    <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">cats</span><span class="o">=</span><span class="n">CATEGORICAL_COLUMNS</span><span class="p">,</span>
+    <span class="n">labels</span><span class="o">=</span><span class="n">LABEL_COLUMNS</span><span class="p">,</span>
+    <span class="n">dtypes</span><span class="o">=</span><span class="n">dict_dtypes</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="Scaling-Accelerated-training-with-HugeCTR">
+<h1>Scaling Accelerated training with HugeCTR<a class="headerlink" href="#Scaling-Accelerated-training-with-HugeCTR" title="Permalink to this headline"></a></h1>
+<p>HugeCTR is a deep learning framework dedicated to recommendation systems. It is written in CUDA C++. As HugeCTR optimizes the training in CUDA++, we need to define the training pipeline and model architecture and execute it via the commandline. We will use the Python API, which is similar to Keras models.</p>
+<p>HugeCTR has three main components: * Solver: Specifies various details such as active GPU list, batchsize, and model_file * Optimizer: Specifies the type of optimizer and its hyperparameters * DataReader: Specifies the training/evaludation data * Model: Specifies embeddings, and dense layers. Note that embeddings must precede the dense layers</p>
+<p><strong>Solver</strong></p>
+<p>Let’s take a look on the parameter for the <code class="docutils literal notranslate"><span class="pre">Solver</span></code>. We should be familiar from other frameworks for the hyperparameter.</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>solver = hugectr.CreateSolver(
+- vvgpu: GPU indices used in the training process, which has two levels. For example: [[0,1],[1,2]] indicates that two nodes are used in the first node. GPUs 0 and 1 are used while GPUs 1 and 2 are used for the second node. It is also possible to specify non-continuous GPU indices such as [0, 2, 4, 7]
+- batchsize: Minibatch size used in training
+- max_eval_batches: Maximum number of batches used in evaluation. It is recommended that the number is equal to or bigger than the actual number of bathces in the evaluation dataset.
+If max_iter is used, the evaluation happens for max_eval_batches by repeating the evaluation dataset infinitely.
+On the other hand, with num_epochs, HugeCTR stops the evaluation if all the evaluation data is consumed
+- batchsize_eval: Maximum number of batches used in evaluation. It is recommended that the number is equal to or
+  bigger than the actual number of bathces in the evaluation dataset
+- mixed_precision: Enables mixed precision training with the scaler specified here. Only 128,256, 512, and 1024 scalers are supported
+)
+</pre></div>
+</div>
+<p><strong>Optimizer</strong></p>
+<p>The optimizer is the algorithm to update the model parameters. HugeCTR supports the common algorithms.</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>optimizer = CreateOptimizer(
+- optimizer_type: Optimizer algorithm - Adam, MomentumSGD, Nesterov, and SGD
+- learning_rate: Learning Rate for optimizer
+)
+</pre></div>
+</div>
+<p><strong>DataReader</strong></p>
+<p>The data reader defines the training and evaluation dataset.</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>reader = hugectr.DataReaderParams(
+- data_reader_type: Data format to read
+- source: The training dataset file list. IMPORTANT: This should be a list
+- eval_source: The evaluation dataset file list.
+- check_type: The data error detection mechanism (Sum: Checksum, None: no detection).
+- slot_size_array: The list of categorical feature cardinalities
+)
+</pre></div>
+</div>
+<p><strong>Model</strong></p>
+<p>We initialize the model with the solver, optimizer and data reader:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>model = hugectr.Model(solver, reader, optimizer)
+</pre></div>
+</div>
+<p>We can add multiple layers to the model with <code class="docutils literal notranslate"><span class="pre">model.add</span></code> function. We will focus on: - <code class="docutils literal notranslate"><span class="pre">Input</span></code> defines the input data - <code class="docutils literal notranslate"><span class="pre">SparseEmbedding</span></code> defines the embedding layer - <code class="docutils literal notranslate"><span class="pre">DenseLayer</span></code> defines dense layers, such as fully connected, ReLU, BatchNorm, etc.</p>
+<p><strong>HugeCTR organizes the layers by names. For each layer, we define the input and output names.</strong></p>
+<p>Input layer:</p>
+<p>This layer is required to define the input data.</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>hugectr.Input(
+    label_dim: Number of label columns
+    label_name: Name of label columns in network architecture
+    dense_dim: Number of continuous columns
+    dense_name: Name of contiunous columns in network architecture
+    data_reader_sparse_param_array: Configuration how to read sparse data and its names
+)
+</pre></div>
+</div>
+<p>SparseEmbedding:</p>
+<p>This layer defines embedding table</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>hugectr.SparseEmbedding(
+    embedding_type: Different embedding options to distribute embedding tables
+    workspace_size_per_gpu_in_mb: Maximum embedding table size in MB
+    embedding_vec_size: Embedding vector size
+    combiner: Intra-slot reduction op
+    sparse_embedding_name: Layer name
+    bottom_name: Input layer names
+    optimizer: Optimizer to use
+)
+</pre></div>
+</div>
+<p>DenseLayer:</p>
+<p>This layer is copied to each GPU and is normally used for the MLP tower.</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>hugectr.DenseLayer(
+    layer_type: Layer type, such as FullyConnected, Reshape, Concat, Loss, BatchNorm, etc.
+    bottom_names: Input layer names
+    top_names: Layer name
+    ...: Depending on the layer type additional parameter can be defined
+)
+</pre></div>
+</div>
+<p>This is only a short introduction in the API. You can read more in the official docs: <a class="reference external" href="https://github.com/NVIDIA/HugeCTR/blob/master/docs/python_interface.md">Python Interface</a> and <a class="reference external" href="https://github.com/NVIDIA/HugeCTR/blob/master/docs/hugectr_layer_book.md">Layer Book</a></p>
+</div>
+<div class="section" id="Let’s-define-our-model">
+<h1>Let’s define our model<a class="headerlink" href="#Let’s-define-our-model" title="Permalink to this headline"></a></h1>
+<p>We walked through the documentation, but it is useful to understand the API. Finally, we can define our model. We will write the model to <code class="docutils literal notranslate"><span class="pre">./model.py</span></code> and execute it afterwards.</p>
+<p>We need the cardinalities of each categorical feature to assign as <code class="docutils literal notranslate"><span class="pre">slot_size_array</span></code> in the model below.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">nvtabular.ops</span> <span class="kn">import</span> <span class="n">get_embedding_sizes</span>
+
+<span class="n">embeddings</span> <span class="o">=</span> <span class="n">get_embedding_sizes</span><span class="p">(</span><span class="n">workflow</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">embeddings</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{&#39;userId&#39;: (162542, 512), &#39;movieId&#39;: (56586, 512)}
+</pre></div></div>
+</div>
+<p>Let’s clear the directory and create the output folders</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>rm -r /model/movielens_hugectr
+<span class="o">!</span>mkdir -p /model/movielens_hugectr/1
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+rm: cannot remove &#39;/model/movielens_hugectr&#39;: No such file or directory
+</pre></div></div>
+</div>
+<p>We use <code class="docutils literal notranslate"><span class="pre">graph_to_json</span></code> to convert the model to a JSON configuration, required for the inference.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[22]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%writefile</span> &#39;./model.py&#39;
+
+<span class="kn">import</span> <span class="nn">hugectr</span>
+<span class="kn">from</span> <span class="nn">mpi4py</span> <span class="kn">import</span> <span class="n">MPI</span>  <span class="c1"># noqa</span>
+
+<span class="n">solver</span> <span class="o">=</span> <span class="n">hugectr</span><span class="o">.</span><span class="n">CreateSolver</span><span class="p">(</span>
+    <span class="n">vvgpu</span><span class="o">=</span><span class="p">[[</span><span class="mi">0</span><span class="p">]],</span>
+    <span class="n">batchsize</span><span class="o">=</span><span class="mi">2048</span><span class="p">,</span>
+    <span class="n">batchsize_eval</span><span class="o">=</span><span class="mi">2048</span><span class="p">,</span>
+    <span class="n">max_eval_batches</span><span class="o">=</span><span class="mi">160</span><span class="p">,</span>
+    <span class="n">i64_input_key</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">use_mixed_precision</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">repeat_dataset</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">optimizer</span> <span class="o">=</span> <span class="n">hugectr</span><span class="o">.</span><span class="n">CreateOptimizer</span><span class="p">(</span><span class="n">optimizer_type</span><span class="o">=</span><span class="n">hugectr</span><span class="o">.</span><span class="n">Optimizer_t</span><span class="o">.</span><span class="n">Adam</span><span class="p">)</span>
+<span class="n">reader</span> <span class="o">=</span> <span class="n">hugectr</span><span class="o">.</span><span class="n">DataReaderParams</span><span class="p">(</span>
+    <span class="n">data_reader_type</span><span class="o">=</span><span class="n">hugectr</span><span class="o">.</span><span class="n">DataReaderType_t</span><span class="o">.</span><span class="n">Parquet</span><span class="p">,</span>
+    <span class="n">source</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;/model/data/train/_file_list.txt&quot;</span><span class="p">],</span>
+    <span class="n">eval_source</span><span class="o">=</span><span class="s2">&quot;/model/data/valid/_file_list.txt&quot;</span><span class="p">,</span>
+    <span class="n">check_type</span><span class="o">=</span><span class="n">hugectr</span><span class="o">.</span><span class="n">Check_t</span><span class="o">.</span><span class="n">Non</span><span class="p">,</span>
+    <span class="n">slot_size_array</span><span class="o">=</span><span class="p">[</span><span class="mi">162542</span><span class="p">,</span> <span class="mi">56586</span><span class="p">],</span>
+<span class="p">)</span>
+
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">hugectr</span><span class="o">.</span><span class="n">Model</span><span class="p">(</span><span class="n">solver</span><span class="p">,</span> <span class="n">reader</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">)</span>
+
+<span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
+    <span class="n">hugectr</span><span class="o">.</span><span class="n">Input</span><span class="p">(</span>
+        <span class="n">label_dim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">label_name</span><span class="o">=</span><span class="s2">&quot;label&quot;</span><span class="p">,</span>
+        <span class="n">dense_dim</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="n">dense_name</span><span class="o">=</span><span class="s2">&quot;dense&quot;</span><span class="p">,</span>
+        <span class="n">data_reader_sparse_param_array</span><span class="o">=</span><span class="p">[</span>
+            <span class="n">hugectr</span><span class="o">.</span><span class="n">DataReaderSparseParam</span><span class="p">(</span><span class="s2">&quot;data1&quot;</span><span class="p">,</span> <span class="n">nnz_per_slot</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">is_fixed_length</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">slot_num</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="p">],</span>
+    <span class="p">)</span>
+<span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
+    <span class="n">hugectr</span><span class="o">.</span><span class="n">SparseEmbedding</span><span class="p">(</span>
+        <span class="n">embedding_type</span><span class="o">=</span><span class="n">hugectr</span><span class="o">.</span><span class="n">Embedding_t</span><span class="o">.</span><span class="n">LocalizedSlotSparseEmbeddingHash</span><span class="p">,</span>
+        <span class="n">workspace_size_per_gpu_in_mb</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+        <span class="n">embedding_vec_size</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span>
+        <span class="n">combiner</span><span class="o">=</span><span class="s2">&quot;sum&quot;</span><span class="p">,</span>
+        <span class="n">sparse_embedding_name</span><span class="o">=</span><span class="s2">&quot;sparse_embedding1&quot;</span><span class="p">,</span>
+        <span class="n">bottom_name</span><span class="o">=</span><span class="s2">&quot;data1&quot;</span><span class="p">,</span>
+        <span class="n">optimizer</span><span class="o">=</span><span class="n">optimizer</span><span class="p">,</span>
+    <span class="p">)</span>
+<span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
+    <span class="n">hugectr</span><span class="o">.</span><span class="n">DenseLayer</span><span class="p">(</span>
+        <span class="n">layer_type</span><span class="o">=</span><span class="n">hugectr</span><span class="o">.</span><span class="n">Layer_t</span><span class="o">.</span><span class="n">Reshape</span><span class="p">,</span>
+        <span class="n">bottom_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;sparse_embedding1&quot;</span><span class="p">],</span>
+        <span class="n">top_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;reshape1&quot;</span><span class="p">],</span>
+        <span class="n">leading_dim</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span>
+    <span class="p">)</span>
+<span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
+    <span class="n">hugectr</span><span class="o">.</span><span class="n">DenseLayer</span><span class="p">(</span>
+        <span class="n">layer_type</span><span class="o">=</span><span class="n">hugectr</span><span class="o">.</span><span class="n">Layer_t</span><span class="o">.</span><span class="n">InnerProduct</span><span class="p">,</span>
+        <span class="n">bottom_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;reshape1&quot;</span><span class="p">],</span>
+        <span class="n">top_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;fc1&quot;</span><span class="p">],</span>
+        <span class="n">num_output</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span>
+    <span class="p">)</span>
+<span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
+    <span class="n">hugectr</span><span class="o">.</span><span class="n">DenseLayer</span><span class="p">(</span>
+        <span class="n">layer_type</span><span class="o">=</span><span class="n">hugectr</span><span class="o">.</span><span class="n">Layer_t</span><span class="o">.</span><span class="n">ReLU</span><span class="p">,</span>
+        <span class="n">bottom_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;fc1&quot;</span><span class="p">],</span>
+        <span class="n">top_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;relu1&quot;</span><span class="p">],</span>
+    <span class="p">)</span>
+<span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
+    <span class="n">hugectr</span><span class="o">.</span><span class="n">DenseLayer</span><span class="p">(</span>
+        <span class="n">layer_type</span><span class="o">=</span><span class="n">hugectr</span><span class="o">.</span><span class="n">Layer_t</span><span class="o">.</span><span class="n">InnerProduct</span><span class="p">,</span>
+        <span class="n">bottom_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;relu1&quot;</span><span class="p">],</span>
+        <span class="n">top_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;fc2&quot;</span><span class="p">],</span>
+        <span class="n">num_output</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span>
+    <span class="p">)</span>
+<span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
+    <span class="n">hugectr</span><span class="o">.</span><span class="n">DenseLayer</span><span class="p">(</span>
+        <span class="n">layer_type</span><span class="o">=</span><span class="n">hugectr</span><span class="o">.</span><span class="n">Layer_t</span><span class="o">.</span><span class="n">ReLU</span><span class="p">,</span>
+        <span class="n">bottom_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;fc2&quot;</span><span class="p">],</span>
+        <span class="n">top_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;relu2&quot;</span><span class="p">],</span>
+    <span class="p">)</span>
+<span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
+    <span class="n">hugectr</span><span class="o">.</span><span class="n">DenseLayer</span><span class="p">(</span>
+        <span class="n">layer_type</span><span class="o">=</span><span class="n">hugectr</span><span class="o">.</span><span class="n">Layer_t</span><span class="o">.</span><span class="n">InnerProduct</span><span class="p">,</span>
+        <span class="n">bottom_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;relu2&quot;</span><span class="p">],</span>
+        <span class="n">top_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;fc3&quot;</span><span class="p">],</span>
+        <span class="n">num_output</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="p">)</span>
+<span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
+    <span class="n">hugectr</span><span class="o">.</span><span class="n">DenseLayer</span><span class="p">(</span>
+        <span class="n">layer_type</span><span class="o">=</span><span class="n">hugectr</span><span class="o">.</span><span class="n">Layer_t</span><span class="o">.</span><span class="n">BinaryCrossEntropyLoss</span><span class="p">,</span>
+        <span class="n">bottom_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;fc3&quot;</span><span class="p">,</span> <span class="s2">&quot;label&quot;</span><span class="p">],</span>
+        <span class="n">top_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;loss&quot;</span><span class="p">],</span>
+    <span class="p">)</span>
+<span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">compile</span><span class="p">()</span>
+<span class="n">model</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span>
+<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">max_iter</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">display</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">eval_interval</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">snapshot</span><span class="o">=</span><span class="mi">1900</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">graph_to_json</span><span class="p">(</span><span class="n">graph_config_file</span><span class="o">=</span><span class="s2">&quot;/model/movielens_hugectr/1/movielens.json&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Overwriting ./model.py
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[23]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>python model.py
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+====================================================Model Init=====================================================
+[26d18h35m13s][HUGECTR][INFO]: Global seed is 3848625588
+[26d18h35m15s][HUGECTR][INFO]: Peer-to-peer access cannot be fully enabled.
+Device 0: Tesla V100-SXM2-32GB
+[26d18h35m15s][HUGECTR][INFO]: num of DataReader workers: 1
+[26d18h35m15s][HUGECTR][INFO]: max_vocabulary_size_per_gpu_=1638400
+[26d18h35m15s][HUGECTR][INFO]: All2All Warmup Start
+[26d18h35m15s][HUGECTR][INFO]: All2All Warmup End
+===================================================Model Compile===================================================
+[26d18h35m17s][HUGECTR][INFO]: gpu0 start to init embedding
+[26d18h35m17s][HUGECTR][INFO]: gpu0 init embedding done
+===================================================Model Summary===================================================
+Label                                   Dense                         Sparse
+label                                   dense                          data1
+(None, 1)                               (None, 0)
+------------------------------------------------------------------------------------------------------------------
+Layer Type                              Input Name                    Output Name                   Output Shape
+------------------------------------------------------------------------------------------------------------------
+LocalizedSlotSparseEmbeddingHash        data1                         sparse_embedding1             (None, 2, 16)
+Reshape                                 sparse_embedding1             reshape1                      (None, 32)
+InnerProduct                            reshape1                      fc1                           (None, 128)
+ReLU                                    fc1                           relu1                         (None, 128)
+InnerProduct                            relu1                         fc2                           (None, 128)
+ReLU                                    fc2                           relu2                         (None, 128)
+InnerProduct                            relu2                         fc3                           (None, 1)
+BinaryCrossEntropyLoss                  fc3,label                     loss
+------------------------------------------------------------------------------------------------------------------
+=====================================================Model Fit=====================================================
+[26d18h35m17s][HUGECTR][INFO]: Use non-epoch mode with number of iterations: 2000
+[26d18h35m17s][HUGECTR][INFO]: Training batchsize: 2048, evaluation batchsize: 2048
+[26d18h35m17s][HUGECTR][INFO]: Evaluation interval: 200, snapshot interval: 1900
+[26d18h35m17s][HUGECTR][INFO]: Sparse embedding trainable: 1, dense network trainable: 1
+[26d18h35m17s][HUGECTR][INFO]: Use mixed precision: 0, scaler: 1.000000, use cuda graph: 1
+[26d18h35m17s][HUGECTR][INFO]: lr: 0.001000, warmup_steps: 1, decay_start: 0, decay_steps: 1, decay_power: 2.000000, end_lr: 0.000000
+[26d18h35m17s][HUGECTR][INFO]: Training source file: /model/data/train/_file_list.txt
+[26d18h35m17s][HUGECTR][INFO]: Evaluation source file: /model/data/valid/_file_list.txt
+[26d18h35m17s][HUGECTR][INFO]: Iter: 100 Time(100 iters): 0.136342s Loss: 0.579462 lr:0.001000
+[26d18h35m17s][HUGECTR][INFO]: Iter: 200 Time(100 iters): 0.135109s Loss: 0.554109 lr:0.001000
+[26d18h35m17s][HUGECTR][INFO]: Evaluation, AUC: 0.745997
+[26d18h35m17s][HUGECTR][INFO]: Eval Time for 160 iters: 0.073575s
+[26d18h35m17s][HUGECTR][INFO]: Iter: 300 Time(100 iters): 0.210037s Loss: 0.571327 lr:0.001000
+[26d18h35m17s][HUGECTR][INFO]: Iter: 400 Time(100 iters): 0.132709s Loss: 0.546585 lr:0.001000
+[26d18h35m18s][HUGECTR][INFO]: Evaluation, AUC: 0.764737
+[26d18h35m18s][HUGECTR][INFO]: Eval Time for 160 iters: 0.070747s
+[26d18h35m18s][HUGECTR][INFO]: Iter: 500 Time(100 iters): 0.216137s Loss: 0.552045 lr:0.001000
+[26d18h35m18s][HUGECTR][INFO]: Iter: 600 Time(100 iters): 0.133178s Loss: 0.541653 lr:0.001000
+[26d18h35m18s][HUGECTR][INFO]: Evaluation, AUC: 0.774266
+[26d18h35m18s][HUGECTR][INFO]: Eval Time for 160 iters: 0.069966s
+[26d18h35m18s][HUGECTR][INFO]: Iter: 700 Time(100 iters): 0.204785s Loss: 0.524283 lr:0.001000
+[26d18h35m18s][HUGECTR][INFO]: Iter: 800 Time(100 iters): 0.133213s Loss: 0.530550 lr:0.001000
+[26d18h35m18s][HUGECTR][INFO]: Evaluation, AUC: 0.780663
+[26d18h35m18s][HUGECTR][INFO]: Eval Time for 160 iters: 0.081221s
+[26d18h35m18s][HUGECTR][INFO]: Iter: 900 Time(100 iters): 0.216339s Loss: 0.541633 lr:0.001000
+[26d18h35m18s][HUGECTR][INFO]: Iter: 1000 Time(100 iters): 0.142290s Loss: 0.541528 lr:0.001000
+[26d18h35m19s][HUGECTR][INFO]: Evaluation, AUC: 0.786361
+[26d18h35m19s][HUGECTR][INFO]: Eval Time for 160 iters: 0.068574s
+[26d18h35m19s][HUGECTR][INFO]: Iter: 1100 Time(100 iters): 0.203976s Loss: 0.528578 lr:0.001000
+[26d18h35m19s][HUGECTR][INFO]: Iter: 1200 Time(100 iters): 0.133187s Loss: 0.522433 lr:0.001000
+[26d18h35m19s][HUGECTR][INFO]: Evaluation, AUC: 0.788285
+[26d18h35m19s][HUGECTR][INFO]: Eval Time for 160 iters: 0.076724s
+[26d18h35m19s][HUGECTR][INFO]: Iter: 1300 Time(100 iters): 0.213124s Loss: 0.524235 lr:0.001000
+[26d18h35m19s][HUGECTR][INFO]: Iter: 1400 Time(100 iters): 0.135103s Loss: 0.513423 lr:0.001000
+[26d18h35m19s][HUGECTR][INFO]: Evaluation, AUC: 0.793324
+[26d18h35m19s][HUGECTR][INFO]: Eval Time for 160 iters: 0.081245s
+[26d18h35m19s][HUGECTR][INFO]: Iter: 1500 Time(100 iters): 0.228339s Loss: 0.504689 lr:0.001000
+[26d18h35m20s][HUGECTR][INFO]: Iter: 1600 Time(100 iters): 0.133944s Loss: 0.515175 lr:0.001000
+[26d18h35m20s][HUGECTR][INFO]: Evaluation, AUC: 0.795201
+[26d18h35m20s][HUGECTR][INFO]: Eval Time for 160 iters: 0.071934s
+[26d18h35m20s][HUGECTR][INFO]: Iter: 1700 Time(100 iters): 0.207204s Loss: 0.515042 lr:0.001000
+[26d18h35m20s][HUGECTR][INFO]: Iter: 1800 Time(100 iters): 0.135032s Loss: 0.498440 lr:0.001000
+[26d18h35m20s][HUGECTR][INFO]: Evaluation, AUC: 0.795551
+[26d18h35m20s][HUGECTR][INFO]: Eval Time for 160 iters: 0.071047s
+[26d18h35m20s][HUGECTR][INFO]: Iter: 1900 Time(100 iters): 0.209134s Loss: 0.509593 lr:0.001000
+[26d18h35m20s][HUGECTR][INFO]: Rank0: Dump hash table from GPU0
+[26d18h35m20s][HUGECTR][INFO]: Rank0: Write hash table &lt;key,value&gt; pairs to file
+[26d18h35m20s][HUGECTR][INFO]: Done
+[26d18h35m20s][HUGECTR][INFO]: Dumping sparse weights to files, successful
+[26d18h35m20s][HUGECTR][INFO]: Rank0: Write optimzer state to file
+[26d18h35m20s][HUGECTR][INFO]: Done
+[26d18h35m20s][HUGECTR][INFO]: Rank0: Write optimzer state to file
+[26d18h35m20s][HUGECTR][INFO]: Done
+[26d18h35m21s][HUGECTR][INFO]: Dumping sparse optimzer states to files, successful
+[26d18h35m21s][HUGECTR][INFO]: Dumping dense weights to file, successful
+[26d18h35m21s][HUGECTR][INFO]: Dumping dense optimizer states to file, successful
+[26d18h35m21s][HUGECTR][INFO]: Dumping untrainable weights to file, successful
+[26d18h35m21s][HUGECTR][INFO]: Save the model graph to /model/movielens_hugectr/1/movielens.json, successful
+</pre></div></div>
+</div>
+<p>We trained our model.</p>
+<p>After training terminates, we can see that multiple <code class="docutils literal notranslate"><span class="pre">.model</span></code> files and folders are generated. We need to move them inside <code class="docutils literal notranslate"><span class="pre">1</span></code> folder under the <code class="docutils literal notranslate"><span class="pre">movielens_hugectr</span></code> folder. Let’s create these folders first.</p>
+<p>Now we move our saved <code class="docutils literal notranslate"><span class="pre">.model</span></code> files inside <code class="docutils literal notranslate"><span class="pre">1</span></code> folder.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[24]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>mv *.model /model/movielens_hugectr/1/
+</pre></div>
+</div>
+</div>
+<p>Now we can save our models to be deployed at the inference stage. To do so we will use <code class="docutils literal notranslate"><span class="pre">export_hugectr_ensemble</span></code> method below. With this method, we can generate the <code class="docutils literal notranslate"><span class="pre">config.pbtxt</span></code> files automatically for each model. In doing so, we should also create a <code class="docutils literal notranslate"><span class="pre">hugectr_params</span></code> dictionary, and define the parameters like where the <code class="docutils literal notranslate"><span class="pre">movielens.json</span></code> file will be read, <code class="docutils literal notranslate"><span class="pre">slots</span></code> which corresponds to number of categorical features, <code class="docutils literal notranslate"><span class="pre">embedding_vector_size</span></code>, <code class="docutils literal notranslate"><span class="pre">max_nnz</span></code>, and <code class="docutils literal notranslate"><span class="pre">n_outputs</span></code> which is
+number of outputs.</p>
+<p>The script below creates an ensemble triton server model where</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">workflow</span></code> is the the nvtabular workflow used in preprocessing,</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">hugectr_model_path</span></code> is the HugeCTR model that should be served. This path includes the <code class="docutils literal notranslate"><span class="pre">.model</span></code> files.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">name</span></code> is the base name of the various triton models</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">output_path</span></code> is the path where is model will be saved to.</p></li>
+</ul>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[25]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">nvtabular.inference.triton</span> <span class="kn">import</span> <span class="n">export_hugectr_ensemble</span>
+
+<span class="n">hugectr_params</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+<span class="n">hugectr_params</span><span class="p">[</span><span class="s2">&quot;config&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;/model/models/movielens/1/movielens.json&quot;</span>
+<span class="n">hugectr_params</span><span class="p">[</span><span class="s2">&quot;slots&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">hugectr_params</span><span class="p">[</span><span class="s2">&quot;max_nnz&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">hugectr_params</span><span class="p">[</span><span class="s2">&quot;embedding_vector_size&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">16</span>
+<span class="n">hugectr_params</span><span class="p">[</span><span class="s2">&quot;n_outputs&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">export_hugectr_ensemble</span><span class="p">(</span>
+    <span class="n">workflow</span><span class="o">=</span><span class="n">workflow</span><span class="p">,</span>
+    <span class="n">hugectr_model_path</span><span class="o">=</span><span class="s2">&quot;/model/movielens_hugectr/1/&quot;</span><span class="p">,</span>
+    <span class="n">hugectr_params</span><span class="o">=</span><span class="n">hugectr_params</span><span class="p">,</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;movielens&quot;</span><span class="p">,</span>
+    <span class="n">output_path</span><span class="o">=</span><span class="s2">&quot;/model/models/&quot;</span><span class="p">,</span>
+    <span class="n">label_columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;rating&quot;</span><span class="p">],</span>
+    <span class="n">cats</span><span class="o">=</span><span class="n">CATEGORICAL_COLUMNS</span><span class="p">,</span>
+    <span class="n">max_batch_size</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>After we run the script above, we will have three model folders saved as <code class="docutils literal notranslate"><span class="pre">movielens_nvt</span></code>, <code class="docutils literal notranslate"><span class="pre">movielens</span></code> and <code class="docutils literal notranslate"><span class="pre">movielens_ens</span></code>. Now we can move to the next notebook, <code class="docutils literal notranslate"><span class="pre">movielens-HugeCTR-inference</span></code>, to send request to the Triton Inference Server using the saved ensemble model.</p>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, NVIDIA.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  
+<div class="rst-versions" data-toggle="rst-versions" role="note" aria-label="versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    <span class="fa fa-book"> Other Versions</span>
+    v: main
+    <span class="fa fa-caret-down"></span>
+  </span>
+  <div class="rst-other-versions">
+    <dl>
+      <dt>Branches</dt>
+      <dd><a href="Training-with-HugeCTR.html">main</a></dd>
+    </dl>
+  </div>
+</div><script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
