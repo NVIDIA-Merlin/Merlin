@@ -375,7 +375,7 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
-<p><img alt="54a0ba12d8d8425683290a39382149e3" src="http://developer.download.nvidia.com/compute/machine-learning/frameworks/nvidia_logo.png" /></p>
+<p><img alt="24c71340a6464022be07b51f9c8db96e" src="http://developer.download.nvidia.com/compute/machine-learning/frameworks/nvidia_logo.png" /></p>
 <div class="section" id="Scaling-Criteo:-Download-and-Convert">
 <h1>Scaling Criteo: Download and Convert<a class="headerlink" href="#Scaling-Criteo:-Download-and-Convert" title="Permalink to this headline"></a></h1>
 <div class="section" id="Criteo-1TB-Click-Logs-dataset">
@@ -390,7 +390,7 @@ Competition</a>. We will use the dataset as an example how to scale ETL, Trainin
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
 
-<span class="kn">from</span> <span class="nn">nvtabular.utils</span> <span class="kn">import</span> <span class="n">download_file</span>
+<span class="kn">from</span> <span class="nn">merlin.core.utils</span> <span class="kn">import</span> <span class="n">download_file</span>
 
 <span class="n">download_criteo</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="n">BASE_DIR</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;BASE_DIR&quot;</span><span class="p">,</span> <span class="s2">&quot;/raid/data/criteo&quot;</span><span class="p">)</span>
@@ -465,7 +465,7 @@ Competition</a>. We will use the dataset as an example how to scale ETL, Trainin
 <span class="kn">from</span> <span class="nn">dask_cuda</span> <span class="kn">import</span> <span class="n">LocalCUDACluster</span>
 
 <span class="kn">import</span> <span class="nn">nvtabular</span> <span class="k">as</span> <span class="nn">nvt</span>
-<span class="kn">from</span> <span class="nn">nvtabular.utils</span> <span class="kn">import</span> <span class="n">device_mem_size</span><span class="p">,</span> <span class="n">get_rmm_size</span>
+<span class="kn">from</span> <span class="nn">merlin.core.utils</span> <span class="kn">import</span> <span class="n">device_mem_size</span><span class="p">,</span> <span class="n">get_rmm_size</span>
 </pre></div>
 </div>
 </div>
@@ -519,7 +519,7 @@ Competition</a>. We will use the dataset as an example how to scale ETL, Trainin
     <span class="n">dtypes</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;hex&quot;</span>
 
 <span class="c1"># Create an NVTabular Dataset from a CSV-file glob</span>
-<span class="n">file_list</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">INPUT_PATH</span><span class="p">,</span> <span class="s2">&quot;day_*&quot;</span><span class="p">))</span>
+<span class="n">file_list</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">INPUT_PATH</span><span class="p">,</span> <span class="s2">&quot;day_*[!.gz]&quot;</span><span class="p">))</span>
 <span class="n">dataset</span> <span class="o">=</span> <span class="n">nvt</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span>
     <span class="n">file_list</span><span class="p">,</span>
     <span class="n">engine</span><span class="o">=</span><span class="s2">&quot;csv&quot;</span><span class="p">,</span>

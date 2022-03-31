@@ -354,7 +354,7 @@ div.rendered_html tbody tr:hover {
 }
 </style>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Copyright 2021 NVIDIA Corporation. All Rights Reserved.</span>
@@ -374,7 +374,7 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
-<p><img alt="c4d7cd4f77a049088ff4c152dc5ec63f" src="http://developer.download.nvidia.com/compute/machine-learning/frameworks/nvidia_logo.png" /></p>
+<p><img alt="9dbdb62ab38b4ff896cc6903c16c30e2" src="http://developer.download.nvidia.com/compute/machine-learning/frameworks/nvidia_logo.png" /></p>
 <div class="section" id="Getting-Started-MovieLens:-ETL-with-NVTabular">
 <h1>Getting Started MovieLens: ETL with NVTabular<a class="headerlink" href="#Getting-Started-MovieLens:-ETL-with-NVTabular" title="Permalink to this headline"></a></h1>
 <div class="section" id="Overview">
@@ -411,7 +411,7 @@ div.rendered_html tbody tr:hover {
 <li><p><strong>Extensive repeated experimentation:</strong> The whole data engineering, training, and evaluation process is generally repeated many times, requiring significant time and computational resources.</p></li>
 </ul>
 <p><strong>NVTabular</strong> is a library for fast tabular data transformation and loading, manipulating terabyte-scale datasets quickly. It provides best practices for feature engineering and preprocessing and a high-level abstraction to simplify code accelerating computation on the GPU using the RAPIDS cuDF library.</p>
-<p><img alt="b3d760d16b424b5c8fd175f1be5af11c" src="https://developer.nvidia.com/blog/wp-content/uploads/2020/07/recommender-system-training-pipeline-1.png" /></p>
+<p><img alt="f95c2c80ce394bbf8efb6a635cd04f8a" src="https://developer.nvidia.com/blog/wp-content/uploads/2020/07/recommender-system-training-pipeline-1.png" /></p>
 </div>
 <div class="section" id="Why-use-NVTabular?">
 <h3>Why use NVTabular?<a class="headerlink" href="#Why-use-NVTabular?" title="Permalink to this headline"></a></h3>
@@ -439,7 +439,7 @@ div.rendered_html tbody tr:hover {
 <span class="kn">from</span> <span class="nn">os</span> <span class="kn">import</span> <span class="n">path</span>
 
 <span class="c1"># Get dataframe library - cudf or pandas</span>
-<span class="kn">from</span> <span class="nn">nvtabular.dispatch</span> <span class="kn">import</span> <span class="n">get_lib</span>
+<span class="kn">from</span> <span class="nn">merlin.core.dispatch</span> <span class="kn">import</span> <span class="n">get_lib</span>
 <span class="n">df_lib</span> <span class="o">=</span> <span class="n">get_lib</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -578,7 +578,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ratings</span> <span class="o">=</span> <span class="n">nvt</span><span class="o">.</span><span class="n">ColumnGroup</span><span class="p">([</span><span class="s2">&quot;rating&quot;</span><span class="p">])</span> <span class="o">&gt;&gt;</span> <span class="p">(</span><span class="k">lambda</span> <span class="n">col</span><span class="p">:</span> <span class="p">(</span><span class="n">col</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;int8&quot;</span><span class="p">))</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ratings</span> <span class="o">=</span> <span class="n">nvt</span><span class="o">.</span><span class="n">ColumnGroup</span><span class="p">([</span><span class="s2">&quot;rating&quot;</span><span class="p">])</span> <span class="o">&gt;&gt;</span> <span class="n">nvt</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">LambdaOp</span><span class="p">(</span><span class="k">lambda</span> <span class="n">col</span><span class="p">:</span> <span class="p">(</span><span class="n">col</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;int8&quot;</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
@@ -652,8 +652,8 @@ div.rendered_html tbody tr:hover {
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-CPU times: user 1.07 s, sys: 765 ms, total: 1.83 s
-Wall time: 1.99 s
+CPU times: user 699 ms, sys: 593 ms, total: 1.29 s
+Wall time: 1.45 s
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
@@ -662,7 +662,7 @@ Wall time: 1.99 s
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-&lt;nvtabular.workflow.workflow.Workflow at 0x7f562121e730&gt;
+&lt;nvtabular.workflow.workflow.Workflow at 0x7f901bd444c0&gt;
 </pre></div></div>
 </div>
 <p>We clear our output directories.</p>
@@ -700,8 +700,8 @@ Wall time: 1.99 s
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-CPU times: user 1 µs, sys: 1e+03 ns, total: 2 µs
-Wall time: 6.91 µs
+CPU times: user 3 µs, sys: 1 µs, total: 4 µs
+Wall time: 8.82 µs
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
@@ -725,8 +725,8 @@ Wall time: 6.91 µs
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-CPU times: user 2 µs, sys: 2 µs, total: 4 µs
-Wall time: 7.87 µs
+CPU times: user 1 µs, sys: 1 µs, total: 2 µs
+Wall time: 4.77 µs
 </pre></div></div>
 </div>
 <p>We can take a look in the output dir.</p>
@@ -807,38 +807,38 @@ Wall time: 7.87 µs
   <tbody>
     <tr>
       <th>0</th>
-      <td>30985</td>
-      <td>337</td>
-      <td>[3, 8, 11, 4]</td>
+      <td>8439</td>
+      <td>453</td>
+      <td>[5, 8, 1]</td>
       <td>1.0</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>16954</td>
-      <td>1966</td>
-      <td>[1, 6]</td>
-      <td>0.0</td>
+      <td>76585</td>
+      <td>28</td>
+      <td>[11, 7, 4]</td>
+      <td>1.0</td>
     </tr>
     <tr>
       <th>2</th>
-      <td>8415</td>
-      <td>1738</td>
-      <td>[2]</td>
-      <td>0.0</td>
+      <td>33474</td>
+      <td>1093</td>
+      <td>[2, 1]</td>
+      <td>1.0</td>
     </tr>
     <tr>
       <th>3</th>
-      <td>43640</td>
-      <td>6</td>
-      <td>[3, 5, 7]</td>
+      <td>2387</td>
+      <td>3754</td>
+      <td>[8, 12, 11, 4]</td>
       <td>0.0</td>
     </tr>
     <tr>
       <th>4</th>
-      <td>9430</td>
-      <td>633</td>
-      <td>[3, 5, 9, 12]</td>
-      <td>1.0</td>
+      <td>166</td>
+      <td>559</td>
+      <td>[3, 13, 2]</td>
+      <td>0.0</td>
     </tr>
   </tbody>
 </table>

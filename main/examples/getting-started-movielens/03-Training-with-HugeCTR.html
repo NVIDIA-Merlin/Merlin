@@ -354,7 +354,7 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
-<p><img alt="d17f3b0e6f6146769a0ae11e42fb98e7" src="http://developer.download.nvidia.com/compute/machine-learning/frameworks/nvidia_logo.png" /></p>
+<p><img alt="7e613fb18f254fd4924521caf3eec73a" src="http://developer.download.nvidia.com/compute/machine-learning/frameworks/nvidia_logo.png" /></p>
 <div class="section" id="Overview">
 <h1>Overview<a class="headerlink" href="#Overview" title="Permalink to this headline"></a></h1>
 <p>In this notebook, we want to provide an overview what HugeCTR framework is, its features and benefits. We will use HugeCTR to train a basic neural network architecture.</p>
@@ -421,9 +421,9 @@ Inference Server for deployment to production</p>
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-{&#39;genres&#39;: ListDtype(int64),
+{&#39;userId&#39;: dtype(&#39;int64&#39;),
  &#39;movieId&#39;: dtype(&#39;int64&#39;),
- &#39;userId&#39;: dtype(&#39;int64&#39;),
+ &#39;genres&#39;: ListDtype(int64),
  &#39;rating&#39;: dtype(&#39;int8&#39;)}
 </pre></div></div>
 </div>
@@ -434,8 +434,8 @@ Inference Server for deployment to production</p>
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">MODEL_DIR</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">INPUT_DATA_DIR</span><span class="p">,</span> <span class="s2">&quot;model/movielens_hugectr/&quot;</span><span class="p">)</span>
-<span class="o">!</span>rm -r MODEL_DIR
-<span class="o">!</span>mkdir MODEL_DIR + <span class="s2">&quot;1&quot;</span>
+<span class="o">!</span>rm -rf <span class="o">{</span>MODEL_DIR<span class="o">}</span>
+<span class="o">!</span>mkdir -p <span class="o">{</span>MODEL_DIR<span class="o">}</span><span class="s2">&quot;1&quot;</span>
 </pre></div>
 </div>
 </div>
@@ -444,17 +444,15 @@ Inference Server for deployment to production</p>
 <div class="section" id="Scaling-Accelerated-training-with-HugeCTR">
 <h1>Scaling Accelerated training with HugeCTR<a class="headerlink" href="#Scaling-Accelerated-training-with-HugeCTR" title="Permalink to this headline"></a></h1>
 <p>HugeCTR is a deep learning framework dedicated to recommendation systems. It is written in CUDA C++. As HugeCTR optimizes the training in CUDA++, we need to define the training pipeline and model architecture and execute it via the commandline. We will use the Python API, which is similar to Keras models.</p>
-<p>HugeCTR has three main components: * Solver: Specifies various details such as active GPU list, batchsize, and model_file * Optimizer: Specifies the type of optimizer and its hyperparameters * DataReader: Specifies the training/evaludation data * Model: Specifies embeddings, and dense layers. Note that embeddings must precede the dense layers</p>
+<p>HugeCTR has three main components: * Solver: Specifies various details such as active GPU list, batchsize, and model_file * Optimizer: Specifies the type of optimizer and its hyperparameters * DataReader: Specifies the training/evaluation data * Model: Specifies embeddings, and dense layers. Note that embeddings must precede the dense layers</p>
 <p><strong>Solver</strong></p>
 <p>Let’s take a look on the parameter for the <code class="docutils literal notranslate"><span class="pre">Solver</span></code>. We should be familiar from other frameworks for the hyperparameter.</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>solver = hugectr.CreateSolver(
-- vvgpu: GPU indices used in the training process, which has two levels. For example: [[0,1],[1,2]] indicates that two nodes are used in the first node. GPUs 0 and 1 are used while GPUs 1 and 2 are used for the second node. It is also possible to specify non-continuous GPU indices such as [0, 2, 4, 7]
+- vvgpu: GPU indices used in the training process, which has two levels. For example: [[0,1],[1,2]] indicates that two physical nodes (each physical node can have multiple NUMA nodes) are used. In the first node, GPUs 0 and 1 are used while GPUs 1 and 2 are used for the second node. It is also possible to specify non-continuous GPU indices such as [0, 2, 4, 7].
 - batchsize: Minibatch size used in training
 - max_eval_batches: Maximum number of batches used in evaluation. It is recommended that the number is equal to or bigger than the actual number of bathces in the evaluation dataset.
-If max_iter is used, the evaluation happens for max_eval_batches by repeating the evaluation dataset infinitely.
 On the other hand, with num_epochs, HugeCTR stops the evaluation if all the evaluation data is consumed
-- batchsize_eval: Maximum number of batches used in evaluation. It is recommended that the number is equal to or
-  bigger than the actual number of bathces in the evaluation dataset
+- batchsize_eval: Minibatch size used in evaluation. The default value is 2048. Note that batchsize here is the global batch size across gpus and nodes, not per worker batch size.
 - mixed_precision: Enables mixed precision training with the scaler specified here. Only 128,256, 512, and 1024 scalers are supported
 )
 </pre></div>
@@ -541,7 +539,7 @@ On the other hand, with num_epochs, HugeCTR stops the evaluation if all the eval
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-({&#39;movieId&#39;: (56586, 512), &#39;userId&#39;: (162542, 512)}, {&#39;genres&#39;: (21, 16)})
+({&#39;userId&#39;: (162542, 512), &#39;movieId&#39;: (56595, 512)}, {&#39;genres&#39;: (21, 16)})
 </pre></div></div>
 </div>
 <p>We use <code class="docutils literal notranslate"><span class="pre">graph_to_json</span></code> to convert the model to a JSON configuration, required for the inference.</p>
@@ -549,9 +547,7 @@ On the other hand, with num_epochs, HugeCTR stops the evaluation if all the eval
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%writefile</span> &#39;./model.py&#39;
-
-<span class="kn">import</span> <span class="nn">hugectr</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">hugectr</span>
 <span class="kn">from</span> <span class="nn">mpi4py</span> <span class="kn">import</span> <span class="n">MPI</span>  <span class="c1"># noqa</span>
 
 <span class="n">solver</span> <span class="o">=</span> <span class="n">hugectr</span><span class="o">.</span><span class="n">CreateSolver</span><span class="p">(</span>
@@ -582,7 +578,7 @@ On the other hand, with num_epochs, HugeCTR stops the evaluation if all the eval
         <span class="n">dense_dim</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
         <span class="n">dense_name</span><span class="o">=</span><span class="s2">&quot;dense&quot;</span><span class="p">,</span>
         <span class="n">data_reader_sparse_param_array</span><span class="o">=</span><span class="p">[</span>
-            <span class="n">hugectr</span><span class="o">.</span><span class="n">DataReaderSparseParam</span><span class="p">(</span><span class="s2">&quot;data1&quot;</span><span class="p">,</span> <span class="n">nnz_per_slot</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">is_fixed_length</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">slot_num</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+            <span class="n">hugectr</span><span class="o">.</span><span class="n">DataReaderSparseParam</span><span class="p">(</span><span class="s2">&quot;data1&quot;</span><span class="p">,</span> <span class="n">nnz_per_slot</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">is_fixed_length</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">slot_num</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
         <span class="p">],</span>
     <span class="p">)</span>
 <span class="p">)</span>
@@ -662,127 +658,121 @@ On the other hand, with num_epochs, HugeCTR stops the evaluation if all the eval
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Overwriting ./model.py
-</pre></div></div>
-</div>
-<p>We train our model.</p>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>python model.py
-</pre></div>
-</div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
+HugeCTR Version: 3.3
 ====================================================Model Init=====================================================
-[30d01h11m05s][HUGECTR][INFO]: Global seed is 2919760786
-[30d01h11m05s][HUGECTR][INFO]: Device to NUMA mapping:
+[HUGECTR][19:15:20][WARNING][RANK0]: The model name is not specified when creating the solver.
+[HUGECTR][19:15:20][INFO][RANK0]: Global seed is 1975903631
+[HUGECTR][19:15:20][INFO][RANK0]: Device to NUMA mapping:
   GPU 0 -&gt;  node 0
 
-[30d01h11m06s][HUGECTR][INFO]: Peer-to-peer access cannot be fully enabled.
-[30d01h11m06s][HUGECTR][INFO]: Start all2all warmup
-[30d01h11m06s][HUGECTR][INFO]: End all2all warmup
-[30d01h11m06s][HUGECTR][INFO]: Using All-reduce algorithm OneShot
-Device 0: Tesla V100-DGXS-16GB
-[30d01h11m06s][HUGECTR][INFO]: num of DataReader workers: 1
-[30d01h11m06s][HUGECTR][INFO]: Vocabulary size: 219149
-[30d01h11m06s][HUGECTR][INFO]: max_vocabulary_size_per_gpu_=3276800
-[30d01h11m06s][HUGECTR][INFO]: All2All Warmup Start
-[30d01h11m06s][HUGECTR][INFO]: All2All Warmup End
+[HUGECTR][19:15:21][WARNING][RANK0]: Peer-to-peer access cannot be fully enabled.
+[HUGECTR][19:15:21][INFO][RANK0]: Start all2all warmup
+[HUGECTR][19:15:21][INFO][RANK0]: End all2all warmup
+[HUGECTR][19:15:21][INFO][RANK0]: Using All-reduce algorithm: NCCL
+[HUGECTR][19:15:21][INFO][RANK0]: Device 0: Tesla V100-DGXS-16GB
+[HUGECTR][19:15:21][INFO][RANK0]: num of DataReader workers: 1
+[HUGECTR][19:15:21][INFO][RANK0]: Vocabulary size: 219149
+[HUGECTR][19:15:21][INFO][RANK0]: max_vocabulary_size_per_gpu_=3276800
+[HUGECTR][19:15:21][INFO][RANK0]: Graph analysis to resolve tensor dependency
 ===================================================Model Compile===================================================
-[30d01h11m08s][HUGECTR][INFO]: gpu0 start to init embedding
-[30d01h11m08s][HUGECTR][INFO]: gpu0 init embedding done
-[30d01h11m08s][HUGECTR][INFO]: Starting AUC NCCL warm-up
-[30d01h11m08s][HUGECTR][INFO]: Warm-up done
+[HUGECTR][19:15:22][INFO][RANK0]: gpu0 start to init embedding
+[HUGECTR][19:15:22][INFO][RANK0]: gpu0 init embedding done
+[HUGECTR][19:15:22][INFO][RANK0]: Starting AUC NCCL warm-up
+[HUGECTR][19:15:22][INFO][RANK0]: Warm-up done
 ===================================================Model Summary===================================================
-Label                                   Dense                         Sparse
+label                                   Dense                         Sparse
 label                                   dense                          data1
 (None, 1)                               (None, 0)
-------------------------------------------------------------------------------------------------------------------
+——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 Layer Type                              Input Name                    Output Name                   Output Shape
-------------------------------------------------------------------------------------------------------------------
+——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 LocalizedSlotSparseEmbeddingHash        data1                         sparse_embedding1             (None, 3, 16)
+------------------------------------------------------------------------------------------------------------------
 Reshape                                 sparse_embedding1             reshape1                      (None, 48)
+------------------------------------------------------------------------------------------------------------------
 InnerProduct                            reshape1                      fc1                           (None, 128)
+------------------------------------------------------------------------------------------------------------------
 ReLU                                    fc1                           relu1                         (None, 128)
+------------------------------------------------------------------------------------------------------------------
 InnerProduct                            relu1                         fc2                           (None, 128)
+------------------------------------------------------------------------------------------------------------------
 ReLU                                    fc2                           relu2                         (None, 128)
+------------------------------------------------------------------------------------------------------------------
 InnerProduct                            relu2                         fc3                           (None, 1)
-BinaryCrossEntropyLoss                  fc3,label                     loss
+------------------------------------------------------------------------------------------------------------------
+BinaryCrossEntropyLoss                  fc3                           loss
+                                        label
 ------------------------------------------------------------------------------------------------------------------
 =====================================================Model Fit=====================================================
-[30d10h11m80s][HUGECTR][INFO]: Use non-epoch mode with number of iterations: 2000
-[30d10h11m80s][HUGECTR][INFO]: Training batchsize: 2048, evaluation batchsize: 2048
-[30d10h11m80s][HUGECTR][INFO]: Evaluation interval: 200, snapshot interval: 1900
-[30d10h11m80s][HUGECTR][INFO]: Sparse embedding trainable: 1, dense network trainable: 1
-[30d10h11m80s][HUGECTR][INFO]: Use mixed precision: 0, scaler: 1.000000, use cuda graph: 1
-[30d10h11m80s][HUGECTR][INFO]: lr: 0.001000, warmup_steps: 1, decay_start: 0, decay_steps: 1, decay_power: 2.000000, end_lr: 0.000000
-[30d10h11m80s][HUGECTR][INFO]: Training source file: /root/nvt-examples/movielens/data/train/_file_list.txt
-[30d10h11m80s][HUGECTR][INFO]: Evaluation source file: /root/nvt-examples/movielens/data/valid/_file_list.txt
-[30d10h11m80s][HUGECTR][INFO]: Iter: 100 Time(100 iters): 0.221617s Loss: 0.601177 lr:0.001000
-[30d10h11m80s][HUGECTR][INFO]: Iter: 200 Time(100 iters): 0.218594s Loss: 0.562358 lr:0.001000
-[30d10h11m80s][HUGECTR][INFO]: Evaluation, AUC: 0.747171
-[30d10h11m80s][HUGECTR][INFO]: Eval Time for 160 iters: 0.035586s
-[30d10h11m90s][HUGECTR][INFO]: Iter: 300 Time(100 iters): 0.255790s Loss: 0.558368 lr:0.001000
-[30d10h11m90s][HUGECTR][INFO]: Iter: 400 Time(100 iters): 0.219147s Loss: 0.542835 lr:0.001000
-[30d10h11m90s][HUGECTR][INFO]: Evaluation, AUC: 0.766279
-[30d10h11m90s][HUGECTR][INFO]: Eval Time for 160 iters: 0.035058s
-[30d10h11m90s][HUGECTR][INFO]: Iter: 500 Time(100 iters): 0.281789s Loss: 0.535660 lr:0.001000
-[30d10h11m90s][HUGECTR][INFO]: Iter: 600 Time(100 iters): 0.219292s Loss: 0.536590 lr:0.001000
-[30d10h11m90s][HUGECTR][INFO]: Evaluation, AUC: 0.775542
-[30d10h11m90s][HUGECTR][INFO]: Eval Time for 160 iters: 0.034913s
-[30d10h11m10s][HUGECTR][INFO]: Iter: 700 Time(100 iters): 0.255189s Loss: 0.541284 lr:0.001000
-[30d10h11m10s][HUGECTR][INFO]: Iter: 800 Time(100 iters): 0.219360s Loss: 0.530490 lr:0.001000
-[30d10h11m10s][HUGECTR][INFO]: Evaluation, AUC: 0.782824
-[30d10h11m10s][HUGECTR][INFO]: Eval Time for 160 iters: 0.062139s
-[30d10h11m10s][HUGECTR][INFO]: Iter: 900 Time(100 iters): 0.282552s Loss: 0.529440 lr:0.001000
-[30d10h11m10s][HUGECTR][INFO]: Iter: 1000 Time(100 iters): 0.244506s Loss: 0.523832 lr:0.001000
-[30d10h11m10s][HUGECTR][INFO]: Evaluation, AUC: 0.787961
-[30d10h11m10s][HUGECTR][INFO]: Eval Time for 160 iters: 0.035205s
-[30d10h11m11s][HUGECTR][INFO]: Iter: 1100 Time(100 iters): 0.255605s Loss: 0.531827 lr:0.001000
-[30d10h11m11s][HUGECTR][INFO]: Iter: 1200 Time(100 iters): 0.219146s Loss: 0.540005 lr:0.001000
-[30d10h11m11s][HUGECTR][INFO]: Evaluation, AUC: 0.789803
-[30d10h11m11s][HUGECTR][INFO]: Eval Time for 160 iters: 0.034100s
-[30d10h11m11s][HUGECTR][INFO]: Iter: 1300 Time(100 iters): 0.254645s Loss: 0.533909 lr:0.001000
-[30d10h11m11s][HUGECTR][INFO]: Iter: 1400 Time(100 iters): 0.219378s Loss: 0.511975 lr:0.001000
-[30d10h11m11s][HUGECTR][INFO]: Evaluation, AUC: 0.793778
-[30d10h11m11s][HUGECTR][INFO]: Eval Time for 160 iters: 0.060744s
-[30d10h11m12s][HUGECTR][INFO]: Iter: 1500 Time(100 iters): 0.306601s Loss: 0.517142 lr:0.001000
-[30d10h11m12s][HUGECTR][INFO]: Iter: 1600 Time(100 iters): 0.219319s Loss: 0.519984 lr:0.001000
-[30d10h11m12s][HUGECTR][INFO]: Evaluation, AUC: 0.795280
-[30d10h11m12s][HUGECTR][INFO]: Eval Time for 160 iters: 0.034830s
-[30d10h11m12s][HUGECTR][INFO]: Iter: 1700 Time(100 iters): 0.255265s Loss: 0.500303 lr:0.001000
-[30d10h11m12s][HUGECTR][INFO]: Iter: 1800 Time(100 iters): 0.219257s Loss: 0.537229 lr:0.001000
-[30d10h11m12s][HUGECTR][INFO]: Evaluation, AUC: 0.796465
-[30d10h11m12s][HUGECTR][INFO]: Eval Time for 160 iters: 0.034618s
-[30d10h11m13s][HUGECTR][INFO]: Iter: 1900 Time(100 iters): 0.254921s Loss: 0.516836 lr:0.001000
-[30d10h11m13s][HUGECTR][INFO]: Rank0: Dump hash table from GPU0
-[30d10h11m13s][HUGECTR][INFO]: Rank0: Write hash table &lt;key,value&gt; pairs to file
-[30d10h11m13s][HUGECTR][INFO]: Done
-[30d10h11m13s][HUGECTR][INFO]: Dumping sparse weights to files, successful
-[30d10h11m13s][HUGECTR][INFO]: Rank0: Write optimzer state to file
-[30d10h11m13s][HUGECTR][INFO]: Done
-[30d10h11m13s][HUGECTR][INFO]: Rank0: Write optimzer state to file
-[30d10h11m13s][HUGECTR][INFO]: Done
-[30d10h11m13s][HUGECTR][INFO]: Dumping sparse optimzer states to files, successful
-[30d10h11m13s][HUGECTR][INFO]: Dumping dense weights to file, successful
-[30d10h11m13s][HUGECTR][INFO]: Dumping dense optimizer states to file, successful
-[30d10h11m13s][HUGECTR][INFO]: Dumping untrainable weights to file, successful
-Finish 2000 iterations with batchsize: 2048 in 5.65s
-[30d10h11m14s][HUGECTR][INFO]: Save the model graph to /root/nvt-examples/model/movielens_hugectr/1/movielens.json, successful
+[HUGECTR][19:15:22][INFO][RANK0]: Use non-epoch mode with number of iterations: 2000
+[HUGECTR][19:15:22][INFO][RANK0]: Training batchsize: 2048, evaluation batchsize: 2048
+[HUGECTR][19:15:22][INFO][RANK0]: Evaluation interval: 200, snapshot interval: 1900
+[HUGECTR][19:15:22][INFO][RANK0]: Dense network trainable: True
+[HUGECTR][19:15:22][INFO][RANK0]: Sparse embedding sparse_embedding1 trainable: True
+[HUGECTR][19:15:22][INFO][RANK0]: Use mixed precision: False, scaler: 1.000000, use cuda graph: True
+[HUGECTR][19:15:22][INFO][RANK0]: lr: 0.001000, warmup_steps: 1, end_lr: 0.000000
+[HUGECTR][19:15:22][INFO][RANK0]: decay_start: 0, decay_steps: 1, decay_power: 2.000000
+[HUGECTR][19:15:22][INFO][RANK0]: Training source file: /root/nvt-examples/movielens/data/train/_file_list.txt
+[HUGECTR][19:15:22][INFO][RANK0]: Evaluation source file: /root/nvt-examples/movielens/data/valid/_file_list.txt
+[HUGECTR][19:15:22][INFO][RANK0]: Iter: 100 Time(100 iters): 0.223968s Loss: 0.587505 lr:0.001000
+[HUGECTR][19:15:23][INFO][RANK0]: Iter: 200 Time(100 iters): 0.220862s Loss: 0.577032 lr:0.001000
+[HUGECTR][19:15:23][INFO][RANK0]: Evaluation, AUC: 0.748669
+[HUGECTR][19:15:23][INFO][RANK0]: Eval Time for 160 iters: 0.039598s
+[HUGECTR][19:15:23][INFO][RANK0]: Iter: 300 Time(100 iters): 0.262075s Loss: 0.563935 lr:0.001000
+[HUGECTR][19:15:23][INFO][RANK0]: Iter: 400 Time(100 iters): 0.220956s Loss: 0.533650 lr:0.001000
+[HUGECTR][19:15:23][INFO][RANK0]: Evaluation, AUC: 0.765075
+[HUGECTR][19:15:23][INFO][RANK0]: Eval Time for 160 iters: 0.038021s
+[HUGECTR][19:15:23][INFO][RANK0]: Iter: 500 Time(100 iters): 0.290587s Loss: 0.545377 lr:0.001000
+[HUGECTR][19:15:24][INFO][RANK0]: Iter: 600 Time(100 iters): 0.221455s Loss: 0.544951 lr:0.001000
+[HUGECTR][19:15:24][INFO][RANK0]: Evaluation, AUC: 0.775103
+[HUGECTR][19:15:24][INFO][RANK0]: Eval Time for 160 iters: 0.036293s
+[HUGECTR][19:15:24][INFO][RANK0]: Iter: 700 Time(100 iters): 0.259013s Loss: 0.538431 lr:0.001000
+[HUGECTR][19:15:24][INFO][RANK0]: Iter: 800 Time(100 iters): 0.221748s Loss: 0.539337 lr:0.001000
+[HUGECTR][19:15:24][INFO][RANK0]: Evaluation, AUC: 0.780380
+[HUGECTR][19:15:24][INFO][RANK0]: Eval Time for 160 iters: 0.065051s
+[HUGECTR][19:15:24][INFO][RANK0]: Iter: 900 Time(100 iters): 0.287830s Loss: 0.530380 lr:0.001000
+[HUGECTR][19:15:25][INFO][RANK0]: Iter: 1000 Time(100 iters): 0.247687s Loss: 0.530518 lr:0.001000
+[HUGECTR][19:15:25][INFO][RANK0]: Evaluation, AUC: 0.784759
+[HUGECTR][19:15:25][INFO][RANK0]: Eval Time for 160 iters: 0.036482s
+[HUGECTR][19:15:25][INFO][RANK0]: Iter: 1100 Time(100 iters): 0.258984s Loss: 0.525256 lr:0.001000
+[HUGECTR][19:15:25][INFO][RANK0]: Iter: 1200 Time(100 iters): 0.221740s Loss: 0.532820 lr:0.001000
+[HUGECTR][19:15:25][INFO][RANK0]: Evaluation, AUC: 0.787621
+[HUGECTR][19:15:25][INFO][RANK0]: Eval Time for 160 iters: 0.036467s
+[HUGECTR][19:15:25][INFO][RANK0]: Iter: 1300 Time(100 iters): 0.259424s Loss: 0.510621 lr:0.001000
+[HUGECTR][19:15:26][INFO][RANK0]: Iter: 1400 Time(100 iters): 0.221632s Loss: 0.530471 lr:0.001000
+[HUGECTR][19:15:26][INFO][RANK0]: Evaluation, AUC: 0.791757
+[HUGECTR][19:15:26][INFO][RANK0]: Eval Time for 160 iters: 0.066089s
+[HUGECTR][19:15:26][INFO][RANK0]: Iter: 1500 Time(100 iters): 0.316840s Loss: 0.539018 lr:0.001000
+[HUGECTR][19:15:26][INFO][RANK0]: Iter: 1600 Time(100 iters): 0.221609s Loss: 0.507900 lr:0.001000
+[HUGECTR][19:15:26][INFO][RANK0]: Evaluation, AUC: 0.793827
+[HUGECTR][19:15:26][INFO][RANK0]: Eval Time for 160 iters: 0.036891s
+[HUGECTR][19:15:26][INFO][RANK0]: Iter: 1700 Time(100 iters): 0.259825s Loss: 0.545857 lr:0.001000
+[HUGECTR][19:15:27][INFO][RANK0]: Iter: 1800 Time(100 iters): 0.221886s Loss: 0.523603 lr:0.001000
+[HUGECTR][19:15:27][INFO][RANK0]: Evaluation, AUC: 0.796364
+[HUGECTR][19:15:27][INFO][RANK0]: Eval Time for 160 iters: 0.036460s
+[HUGECTR][19:15:27][INFO][RANK0]: Iter: 1900 Time(100 iters): 0.259438s Loss: 0.522114 lr:0.001000
+[HUGECTR][19:15:27][INFO][RANK0]: Rank0: Dump hash table from GPU0
+[HUGECTR][19:15:27][INFO][RANK0]: Rank0: Write hash table &lt;key,value&gt; pairs to file
+[HUGECTR][19:15:27][INFO][RANK0]: Done
+[HUGECTR][19:15:27][INFO][RANK0]: Dumping sparse weights to files, successful
+[HUGECTR][19:15:27][INFO][RANK0]: Rank0: Write optimzer state to file
+[HUGECTR][19:15:27][INFO][RANK0]: Done
+[HUGECTR][19:15:27][INFO][RANK0]: Rank0: Write optimzer state to file
+[HUGECTR][19:15:28][INFO][RANK0]: Done
+[HUGECTR][19:15:28][INFO][RANK0]: Dumping sparse optimzer states to files, successful
+[HUGECTR][19:15:28][INFO][RANK0]: Dumping dense weights to file, successful
+[HUGECTR][19:15:28][INFO][RANK0]: Dumping dense optimizer states to file, successful
+[HUGECTR][19:15:28][INFO][RANK0]: Dumping untrainable weights to file, successful
+[HUGECTR][19:15:28][INFO][RANK0]: Finish 2000 iterations with batchsize: 2048 in 5.77s.
+[HUGECTR][19:15:28][INFO][RANK0]: Save the model graph to /root/nvt-examples/movielens/data/model/movielens_hugectr/1/movielens.json successfully
 </pre></div></div>
 </div>
 <p>After training terminates, we can see that multiple <code class="docutils literal notranslate"><span class="pre">.model</span></code> files and folders are generated. We need to move them inside <code class="docutils literal notranslate"><span class="pre">1</span></code> folder under the <code class="docutils literal notranslate"><span class="pre">movielens_hugectr</span></code> folder.</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>mv *.model MODEL_DIR
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>mv *.model <span class="o">{</span>MODEL_DIR<span class="o">}</span>
 </pre></div>
 </div>
 </div>
