@@ -13,6 +13,8 @@
 # limitations under the License.
 #
 
+# pylint: skip-file
+
 import argparse
 import contextlib
 
@@ -46,7 +48,7 @@ def get_pythonpkg_version(container, pkg):
             "bash -c 'pip list | grep " + pkg + "'", stderr=False
         )
         return output[1].decode("utf-8").split()[1]
-    except:
+    except:  # noqa
         return "N/A"
 
 
@@ -56,7 +58,7 @@ def create_pr(repo, branch, filename, content, token, version):
     r.create_git_ref(ref="refs/heads/" + branch, sha=r.get_branch("main").commit.sha)
     f = r.get_contents(filename, ref=branch)
     r.update_file(f.path, "release " + version, content, branch=branch, sha=f.sha)
-    pr = r.create_pull(
+    pr = r.create_pull(  # noqa
         title="Merlin Release " + version, body="", head=branch, base="main"
     )
 
