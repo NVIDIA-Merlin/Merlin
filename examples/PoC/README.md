@@ -12,7 +12,7 @@ Each example notebook is structured as follows:
 
 ## Running the Example Notebooks
 
-You can run the example notebooks by [installing NVTabular](https://github.com/NVIDIA/NVTabular#installation) and other required libraries. Alternatively, Docker conatiners are available on http://ngc.nvidia.com/catalog/containers/ with pre-installed versions. For the PoC example notebooks we used `merlin-tensorflow-inference:nightly` container.
+You can run the example notebooks by [installing NVTabular](https://github.com/NVIDIA/NVTabular#installation) and other required libraries. Alternatively, Docker containers are available on http://ngc.nvidia.com/catalog/containers/ with pre-installed versions. For the PoC example notebooks we used `merlin-tensorflow-inference:nightly` container.
 
 - merlin-tensorflow-inference contains NVTabular with TensorFlow and Triton Inference support
 
