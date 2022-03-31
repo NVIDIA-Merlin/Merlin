@@ -134,7 +134,7 @@ dataloading in Merlin Models and HugeCTR.
 Merlin leverages Triton Inference Server to provide GPU-accelerated serving for
 recommender system pipelines.
 
-## Feedback and Support
+### Feedback and Support
 
 To report bugs or get help, please
 [open an issue](https://github.com/NVIDIA-Merlin/Merlin/issues/new/choose).

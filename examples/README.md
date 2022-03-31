@@ -35,7 +35,7 @@ The MovieLens25M is a popular dataset for recommender systems and is used in aca
 
 ## Running the Example Notebooks
 
-You can run the example notebooks by [installing NVTabular](https://github.com/NVIDIA/NVTabular#installation) and other required libraries. Alternatively, Docker conatiners are available on http://ngc.nvidia.com/catalog/containers/ with pre-installed versions. Depending on which example you want to run, you should use any one of these Docker containers:
+You can run the example notebooks by [installing NVTabular](https://github.com/NVIDIA/NVTabular#installation) and other required libraries. Alternatively, Docker containers are available on http://ngc.nvidia.com/catalog/containers/ with pre-installed versions. Depending on which example you want to run, you should use any one of these Docker containers:
 - Merlin-Tensorflow-Training (contains NVTabular with TensorFlow)
 - Merlin-Pytorch-Training (contains NVTabular with PyTorch)
 - Merlin-Training (contains NVTabular with HugeCTR)
