@@ -55,7 +55,7 @@ RUN pip install numba --no-deps
 RUN pip install tritonclient[all] grpcio-channelz
 RUN pip install dask==2021.11.2 distributed==2021.11.2 dask[dataframe]==2021.11.2 dask-cuda
 RUN pip install git+https://github.com/rapidsai/asvdb.git@main
-RUN pip install cuda-python>=11.5,<12.0
+RUN pip install "cuda-python>=11.5,<12.0"
 
 # Triton Server
 WORKDIR /opt/tritonserver
