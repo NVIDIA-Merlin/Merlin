@@ -148,50 +148,6 @@ RUN git clone https://github.com/rapidsai/cudf.git build-env && cd build-env/ &&
     popd && \
     rm -rf build-env
 
-# Install Merlin Core
-RUN git clone https://github.com/NVIDIA-Merlin/core.git /core/ && \
-    cd /core/ && git checkout ${CORE_VER} && pip install -e . --no-deps
-ENV PYTHONPATH=/core:$PYTHONPATH
-
-# Install Merlin Systems
-RUN git clone https://github.com/NVIDIA-Merlin/systems.git /systems/ && \
-    cd /systems/ && git checkout ${SYSTEMS_VER} && pip install --no-deps -e .
-    ENV PYTHONPATH=/systems:$PYTHONPATH
-
-# Install NVTabular
-ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
-RUN git clone https://github.com/NVIDIA-Merlin/NVTabular.git /nvtabular/ && \
-    cd /nvtabular/ && git checkout ${NVTAB_VER} && pip install -e . --no-deps
-ENV PYTHONPATH=/nvtabular:$PYTHONPATH
-
-# Install Transformers4Rec
-RUN pip install transformers==4.12
-RUN git clone https://github.com/NVIDIA-Merlin/Transformers4Rec.git /transformers4rec && \
-    cd /transformers4rec/ && git checkout ${TF4REC_VER} && pip install -e . --no-deps
-ENV PYTHONPATH=/transformers4rec:$PYTHONPATH
-
-# Install Models
-RUN git clone https://github.com/NVIDIA-Merlin/Models.git /models/ && \
-    cd /models/ && git checkout ${MODELS_VER} && pip install -e . --no-deps;
-ENV PYTHONPATH=/models:$PYTHONPATH
-
-# Install NVTabular Triton Backend
-ARG TRITON_VERSION
-RUN git clone https://github.com/NVIDIA-Merlin/nvtabular_triton_backend.git build-env && \
-    cd build-env && git checkout ${NVTAB_BACKEND_VER} && cd .. && \
-    pushd build-env && \
-      mkdir build && \
-      cd build && \
-      cmake -Dpybind11_DIR=/usr/local/lib/python3.8/dist-packages/pybind11/share/cmake/pybind11 \
-        -D TRITON_COMMON_REPO_TAG="r$TRITON_VERSION"    \
-        -D TRITON_CORE_REPO_TAG="r$TRITON_VERSION"      \
-        -D TRITON_BACKEND_REPO_TAG="r$TRITON_VERSION" .. \
-      && make -j && \
-      mkdir -p /opt/tritonserver/backends/nvtabular && \
-      cp libtriton_nvtabular.so /opt/tritonserver/backends/nvtabular/ && \
-    popd && \
-    rm -rf build-env 
-
 # Install CUDA-Aware hwloc
 RUN cd /opt/hpcx/ompi/include/openmpi/opal/mca/hwloc/hwloc201 && rm -rfv hwloc201.h hwloc/include/hwloc.h
 RUN mkdir -p /var/tmp && wget -q -nc --no-check-certificate -P /var/tmp https://download.open-mpi.org/release/hwloc/v2.4/hwloc-${HWLOC_VER}.tar.gz && \
