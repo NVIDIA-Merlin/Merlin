@@ -2,7 +2,7 @@
 
 This folder contains the scripts necessary to build the repository
 documentation. You can view the documentation at
-<https://nvidia-merlin.github.io/Merlin/main/Introduction.html>.
+<https://nvidia-merlin.github.io/Merlin/main/README.html>.
 
 ## Contributing to Docs
 
