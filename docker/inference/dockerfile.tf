@@ -31,6 +31,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt update -y --fix-missing && \
     apt install -y --no-install-recommends \
         clang-format \
+	libarchive-dev \
         libboost-serialization-dev \
 	libexpat1-dev \
 	libsasl2-2 \
