@@ -1,4 +1,4 @@
-ARG IMAGE=nvcr.io/nvidia/pytorch:22.02-py3
+ARG IMAGE=nvcr.io/nvidia/pytorch:22.03-py3
 FROM ${IMAGE}
 
 # Args
@@ -32,7 +32,7 @@ RUN apt update -y --fix-missing && \
 # Install python packages
 RUN python -m pip install --upgrade pip
 RUN pip install --upgrade setuptools
-RUN pip install betterproto graphviz transformers==4.12 tensorflow-metadata torchmetrics
+RUN pip install betterproto graphviz pydot transformers==4.12 tensorflow-metadata torchmetrics
 RUN pip install --upgrade ipython
 RUN pip install --upgrade Pillow
 RUN pip install nvidia-pyindex
@@ -44,28 +44,31 @@ RUN CC=/usr/bin/gcc CXX=/usr/bin/g++ HOROVOD_CUDA_HOME=/usr/local/cuda/ HOROVOD_
 # Install Merlin Core
 RUN git clone https://github.com/NVIDIA-Merlin/core.git /core/ && \
     cd /core/ && git checkout ${CORE_VER} && pip install -e . --no-deps
-ENV PYTHONPATH=/core:$PYTHONPATH
+ENV PYTHONPATH=$PYTHONPATH:/core
 
 # Install Merlin Systems
 RUN git clone https://github.com/NVIDIA-Merlin/systems.git /systems/ && \
     cd /systems/ && git checkout ${SYSTEMS_VER} && pip install --no-deps -e .
-    ENV PYTHONPATH=/systems:$PYTHONPATH
+    ENV PYTHONPATH=$PYTHONPATH:/systems
 
 # Install NVTabular
 ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
 RUN git clone https://github.com/NVIDIA-Merlin/NVTabular.git /nvtabular/ && \
     cd /nvtabular/ && git checkout ${NVTAB_VER} && pip install -e . --no-deps
-ENV PYTHONPATH=/nvtabular:$PYTHONPATH
+ENV PYTHONPATH=$PYTHONPATH:/nvtabular
 
 # Install Transformers4Rec
 RUN git clone https://github.com/NVIDIA-Merlin/Transformers4Rec.git /transformers4rec && \
     cd /transformers4rec/ && git checkout ${TF4REC_VER} && pip install -e . --no-deps
-ENV PYTHONPATH=/transformers4rec:$PYTHONPATH
+ENV PYTHONPATH=$PYTHONPATH:/transformers4rec
 
 # Install Models
 RUN git clone https://github.com/NVIDIA-Merlin/Models.git /models/ && \
     cd /models/ && git checkout ${MODELS_VER} && pip install -e . --no-deps
-ENV PYTHONPATH=/models:$PYTHONPATH
+ENV PYTHONPATH=$PYTHONPATH:/models
+
+# Add Merlin Repo
+RUN git clone https://github.com/NVIDIA-Merlin/Merlin/ /Merlin
 
 # Clean up
 RUN rm -rf /repos

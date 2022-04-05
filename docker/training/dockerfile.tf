@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-ARG IMAGE=nvcr.io/nvidia/tensorflow:22.02-tf2-py3
+ARG IMAGE=nvcr.io/nvidia/tensorflow:22.03-tf2-py3
 FROM ${IMAGE}
 
 # Args
@@ -35,6 +35,7 @@ RUN apt update -y --fix-missing && \
 # Install multiple packages
 RUN pip install betterproto graphviz pybind11 pydot pytest mpi4py transformers==4.12
 RUN pip install --upgrade ipython
+RUN pip install --upgrade horovod
 RUN pip install nvidia-pyindex
 RUN pip install tritonclient[all] grpcio-channelz
 RUN pip install numba==0.55.1
@@ -43,12 +44,12 @@ RUN pip install git+https://github.com/rapidsai/asvdb.git@main
 # Install Merlin Core
 RUN git clone https://github.com/NVIDIA-Merlin/core.git /core/ && \
     cd /core/ && git checkout ${CORE_VER} && pip install --no-deps -e .
-ENV PYTHONPATH=/core:$PYTHONPATH
+ENV PYTHONPATH=$PYTHONPATH:/core
 
 # Install Merlin Systems
 RUN git clone https://github.com/NVIDIA-Merlin/systems.git /systems/ && \
     cd /systems/ && git checkout ${SYSTEMS_VER} && pip install --no-deps -e .
-    ENV PYTHONPATH=/systems:$PYTHONPATH
+    ENV PYTHONPATH=$PYTHONPATH:/systems
 
 ARG INSTALL_NVT=true
 # Install NVTabular
@@ -57,19 +58,22 @@ RUN if [ "$INSTALL_NVT" == "true" ]; then \
       git clone https://github.com/NVIDIA-Merlin/NVTabular.git /nvtabular/ && \
       cd /nvtabular/ && git checkout ${NVTAB_VER} && pip install --no-deps -e .; \
     fi
-ENV PYTHONPATH=/nvtabular:$PYTHONPATH
+ENV PYTHONPATH=$PYTHONPATH:/nvtabular
 
 # Install Transformers4Rec
 RUN if [ "$INSTALL_NVT" == "true" ]; then \
       git clone https://github.com/NVIDIA-Merlin/Transformers4Rec.git /transformers4rec && \
       cd /transformers4rec/ && git checkout ${TF4REC_VER} && pip install . --no-deps; \
     fi
-ENV PYTHONPATH=/transformers4rec:$PYTHONPATH
+ENV PYTHONPATH=$PYTHONPATH:/transformers4rec
 
 # Install Models
 RUN git clone https://github.com/NVIDIA-Merlin/Models.git /models/ && \
     cd /models/ && git checkout ${MODELS_VER} && pip install -e . --no-deps
-ENV PYTHONPATH=/models:$PYTHONPATH
+ENV PYTHONPATH=$PYTHONPATH:/models
+
+# Add Merlin Repo
+RUN git clone https://github.com/NVIDIA-Merlin/Merlin/ /Merlin
 
 # Install HugeCTR
 ENV LD_LIBRARY_PATH=/usr/local/hugectr/lib:$LD_LIBRARY_PATH \
