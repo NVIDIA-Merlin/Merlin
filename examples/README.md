@@ -60,10 +60,7 @@ To run the example notebooks using Docker containers, do the following:
    docker run --gpus all --rm -it -p 8888:8888 -p 8797:8787 -p 8796:8786 -p 8000:8000 -p 8001:8001 -p 8002:8002 --ipc=host --cap-add SYS_PTRACE <docker container> /bin/bash
    ```
 
-   The container will open a shell when the run command execution is completed. You will have to start JupyterLab on the Docker container. It should look similar to this:
-   ```
-   root@2efa5b50b909:
-   ```
+   The container will open a shell when the run command execution is completed. You will have to start JupyterLab on the Docker container.
    
 2. The container may require to install jupyter-lab with `conda` or `pip` by running the following command:
    ```
