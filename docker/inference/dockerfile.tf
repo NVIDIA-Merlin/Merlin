@@ -170,6 +170,9 @@ RUN git clone https://github.com/NVIDIA-Merlin/Models.git /models/ && \
     cd /models/ && git checkout ${MODELS_VER} && pip install -e . --no-deps;
 ENV PYTHONPATH=$PYTHONPATH:/models
 
+# Add Merlin Repo
+RUN git clone https://github.com/NVIDIA-Merlin/Merlin/ /Merlin
+
 # Install NVTabular Triton Backend
 ARG TRITON_VERSION
 RUN git clone https://github.com/NVIDIA-Merlin/nvtabular_triton_backend.git build-env && \

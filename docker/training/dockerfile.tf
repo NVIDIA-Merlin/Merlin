@@ -72,6 +72,9 @@ RUN git clone https://github.com/NVIDIA-Merlin/Models.git /models/ && \
     cd /models/ && git checkout ${MODELS_VER} && pip install -e . --no-deps
 ENV PYTHONPATH=$PYTHONPATH:/models
 
+# Add Merlin Repo
+RUN git clone https://github.com/NVIDIA-Merlin/Merlin/ /Merlin
+
 # Install HugeCTR
 ENV LD_LIBRARY_PATH=/usr/local/hugectr/lib:$LD_LIBRARY_PATH \
     LIBRARY_PATH=/usr/local/hugectr/lib:$LIBRARY_PATH \

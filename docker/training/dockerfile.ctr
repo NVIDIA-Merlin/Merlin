@@ -76,6 +76,9 @@ RUN git clone https://github.com/NVIDIA-Merlin/Models.git /models/ && \
     cd /models/ && git checkout ${MODELS_VER} && pip install -e . --no-deps
 ENV PYTHONPATH=$PYTHONPATH:/models
 
+# Add Merlin Repo
+RUN git clone https://github.com/NVIDIA-Merlin/Merlin/ /Merlin
+
 # Install CUDA-Aware hwloc
 RUN cd /opt/hpcx/ompi/include/openmpi/opal/mca/hwloc/hwloc201 && rm -rfv hwloc201.h hwloc/include/hwloc.h
 RUN mkdir -p /var/tmp && wget -q -nc --no-check-certificate -P /var/tmp https://download.open-mpi.org/release/hwloc/v2.4/hwloc-${HWLOC_VER}.tar.gz && \
