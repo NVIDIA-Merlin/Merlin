@@ -50,6 +50,7 @@ RUN apt update -y --fix-missing && \
 RUN ln -s /usr/bin/python3 /usr/bin/python
 
 # Install multiple packages
+RUN pip install pandas==1.3.5
 RUN pip install cupy-cuda115 nvidia-pyindex pybind11 pytest protobuf transformers==4.12 tensorflow-metadata 
 RUN pip install betterproto cachetools graphviz nvtx scipy sklearn
 RUN pip install numba --no-deps
