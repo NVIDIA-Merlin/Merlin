@@ -51,6 +51,10 @@ echo "Run unit tests for Models"
 pip install coverage
 /models/ci/test_unit.sh $container $devices
 
+## Test Systems
+echo "Run unit tests for Systems"
+pytest -rxs /systems/tests/unit
+
 ## Test HugeCTR
 if [ "$container" == "merlin-training" ]; then
     echo "Run unit tests for HugeCTR"
