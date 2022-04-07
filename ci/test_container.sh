@@ -17,7 +17,7 @@ fi
 
 if [ "$container" == "merlin-training" ]; then
     echo "Check HugeCTR for ctr-training container"
-    python -c "import hugectr; print(hugectr.__version.__)"
+    python -c "import hugectr; print(hugectr.__version__)"
 fi
 
 if [ "$container" == "merlin-tensorflow-training" ]; then
