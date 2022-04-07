@@ -55,7 +55,7 @@ RUN pip install cupy-cuda115 nvidia-pyindex pybind11 pytest protobuf transformer
 RUN pip install betterproto cachetools graphviz nvtx scipy sklearn
 RUN pip install numba --no-deps
 RUN pip install tritonclient[all] grpcio-channelz
-RUN pip install dask==2021.11.2 distributed==2021.11.2 dask[dataframe]==2021.11.2 dask-cuda
+RUN pip install dask==2021.11.2 distributed==2021.11.2 dask[dataframe]==2021.11.2 dask-cuda==22.2.0
 RUN pip install git+https://github.com/rapidsai/asvdb.git@main
 RUN pip install "cuda-python>=11.5,<12.0"
 
