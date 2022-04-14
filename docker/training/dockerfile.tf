@@ -9,6 +9,7 @@ ARG MODELS_VER=main
 ARG NVTAB_VER=main
 ARG SYSTEMS_VER=main
 ARG TF4REC_VER=main
+ARG TFDE_VER=main
 
 # Envs
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64:/usr/local/lib:/repos/dist/lib
@@ -100,6 +101,11 @@ RUN if [ "$HUGECTR_DEV_MODE" == "false" ]; then \
         popd && \
         rm -rf build-env; \
     fi
+
+# Install distributed-embeddings
+RUN git clone https://github.com/NVIDIA-Merlin/distributed-embeddings.git /distributed_embeddings/ && \
+    cd /distributed_embeddings && git checkout ${TFDE_VER} && \
+    make pip_pkg && pip install artifacts/*.whl && make clean
 
 # Clean up
 RUN rm -rf /repos
