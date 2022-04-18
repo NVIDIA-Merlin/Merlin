@@ -42,6 +42,52 @@ RUN pip install tritonclient[all] grpcio-channelz
 RUN pip install numba==0.55.1
 RUN pip install git+https://github.com/rapidsai/asvdb.git@main
 
+# Install arrow
+ENV ARROW_HOME=/usr/local
+RUN git clone --branch apache-arrow-5.0.0 --recurse-submodules https://github.com/apache/arrow.git build-env && \
+    pushd build-env && \
+      export PARQUET_TEST_DATA="${PWD}/cpp/submodules/parquet-testing/data" && \
+      export ARROW_TEST_DATA="${PWD}/testing/data" && \
+      pip install -r python/requirements-build.txt && \
+      mkdir cpp/release && \
+      pushd cpp/release && \
+        cmake -DCMAKE_INSTALL_PREFIX=${ARROW_HOME} \
+              -DCMAKE_INSTALL_LIBDIR=lib \
+              -DCMAKE_LIBRARY_PATH=${CUDA_CUDA_LIBRARY} \
+              -DARROW_FLIGHT=ON \
+              -DARROW_GANDIVA=OFF \
+              -DARROW_ORC=ON \
+              -DARROW_WITH_BZ2=ON \
+              -DARROW_WITH_ZLIB=ON \
+              -DARROW_WITH_ZSTD=ON \
+              -DARROW_WITH_LZ4=ON \
+              -DARROW_WITH_SNAPPY=ON \
+              -DARROW_WITH_BROTLI=ON \
+              -DARROW_PARQUET=ON \
+              -DARROW_PYTHON=ON \
+              -DARROW_PLASMA=ON \
+              -DARROW_BUILD_TESTS=ON \
+              -DARROW_CUDA=ON \
+              -DARROW_DATASET=ON \
+              -DARROW_HDFS=ON \
+              -DARROW_S3=ON \ 
+              .. && \
+        make -j$(nproc) && \
+        make install && \
+      popd && \
+      pushd python && \
+        export PYARROW_WITH_PARQUET=ON && \
+        export PYARROW_WITH_CUDA=ON && \
+        export PYARROW_WITH_ORC=ON && \
+        export PYARROW_WITH_DATASET=ON && \
+        export PYARROW_WITH_S3=ON && \
+        export PYARROW_WITH_HDFS=ON && \
+        python setup.py build_ext --build-type=release bdist_wheel && \
+        pip install dist/*.whl --no-deps --force-reinstall && \
+      popd && \
+    popd && \
+    rm -rf build-env
+
 # Install Merlin Core
 RUN git clone https://github.com/NVIDIA-Merlin/core.git /core/ && \
     cd /core/ && git checkout ${CORE_VER} && pip install --no-deps -e .
