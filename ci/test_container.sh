@@ -24,6 +24,8 @@ fi
 if [ "$container" == "merlin-tensorflow-training" ]; then
     echo "Check TensorFlow for tf-training container"
     python -c "import tensorflow; print(tensorflow.__version__)"
+    echo "Check distributed-embeddings for tf-training container"
+    python -c "import distributed_embeddings as tfde; print(tfde.__doc__)"
 fi
 
 if [ "$container" == "merlin-pytorch-training" ]; then
@@ -60,6 +62,12 @@ pytest -rxs /systems/tests/unit
 if [ "$container" == "merlin-training" ]; then
     echo "Run unit tests for HugeCTR"
     /hugectr/ci/test_unit.sh $container $devices
+fi
+
+## Test distributed-embeddings
+if [ "$container" == "merlin-tensorflow-training" ]; then
+    echo "Run unit tests for distributed-embeddings"
+    pytest -rxs /distributed_embeddings/tests
 fi
 
 echo "#####################"
