@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-ARG IMAGE=nvcr.io/nvidia/tensorflow:22.02-tf2-py3
+ARG IMAGE=nvcr.io/nvidia/tensorflow:22.03-tf2-py3
 FROM ${IMAGE}
 
 # Args
@@ -55,7 +55,7 @@ RUN apt update -y --fix-missing && \
     rm -rf /var/lib/apt/lists/*
 
 ENV JAVA_HOME=/usr/lib/jvm/default-java
-ENV LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib:${JAVA_HOME}/lib:${JAVA_HOME}/lib/server
+ENV LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${JAVA_HOME}/lib:${JAVA_HOME}/lib/server
 
 # Install cmake newer version
 RUN wget http://www.cmake.org/files/v3.21/cmake-3.21.1.tar.gz && \
@@ -63,36 +63,41 @@ RUN wget http://www.cmake.org/files/v3.21/cmake-3.21.1.tar.gz && \
 
 # Install multiple packages
 RUN pip install nvidia-pyindex mpi4py onnx onnxruntime
-RUN pip install betterproto graphviz pybind11 pytest transformers==4.12
+RUN pip install betterproto graphviz pybind11 pydot pytest transformers==4.12
+RUN pip install --upgrade notebook
 RUN pip install --upgrade ipython
+RUN pip install --upgrade horovod
 RUN pip install tritonclient[all] grpcio-channelz
 RUN pip install git+https://github.com/rapidsai/asvdb.git@main
 
 # Install Merlin Core
 RUN git clone https://github.com/NVIDIA-Merlin/core.git /core/ && \
     cd /core/ && git checkout ${CORE_VER} && pip install --no-deps -e .
-ENV PYTHONPATH=/core:$PYTHONPATH
+ENV PYTHONPATH=$PYTHONPATH:/core
 
 # Install Merlin Systems
 RUN git clone https://github.com/NVIDIA-Merlin/systems.git /systems/ && \
     cd /systems/ && git checkout ${SYSTEMS_VER} && pip install --no-deps -e .
-    ENV PYTHONPATH=/systems:$PYTHONPATH
+    ENV PYTHONPATH=$PYTHONPATH:/systems
 
 # Install NVTabular
 ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
 RUN git clone https://github.com/NVIDIA-Merlin/NVTabular.git /nvtabular/ && \
     cd /nvtabular/ && git checkout ${NVTAB_VER} && pip install -e . --no-deps
-ENV PYTHONPATH=/nvtabular:$PYTHONPATH
+ENV PYTHONPATH=$PYTHONPATH:/nvtabular
 
 # Install Transformers4Rec
 RUN git clone https://github.com/NVIDIA-Merlin/Transformers4Rec.git /transformers4rec && \
     cd /transformers4rec/ && git checkout ${TF4REC_VER} && pip install -e . --no-deps
-ENV PYTHONPATH=/transformers4rec:$PYTHONPATH
+ENV PYTHONPATH=$PYTHONPATH:/transformers4rec
 
 # Install Models
 RUN git clone https://github.com/NVIDIA-Merlin/Models.git /models/ && \
     cd /models/ && git checkout ${MODELS_VER} && pip install -e . --no-deps
-ENV PYTHONPATH=/models:$PYTHONPATH
+ENV PYTHONPATH=$PYTHONPATH:/models
+
+# Add Merlin Repo
+RUN git clone https://github.com/NVIDIA-Merlin/Merlin/ /Merlin
 
 # Install CUDA-Aware hwloc
 RUN cd /opt/hpcx/ompi/include/openmpi/opal/mca/hwloc/hwloc201 && rm -rfv hwloc201.h hwloc/include/hwloc.h
@@ -196,16 +201,6 @@ RUN if [[ "${INSTALL_HDFS}" == "true" || "${BUILD_HADOOP}" == "true" ]]; then \
         ./install-hadoop.sh "${HADOOP_VER}" \
     ; fi
 
-#RUN if [ "$INSTALL_HDFS" == "true" ]; then \
-#    mkdir -p /var/tmp && cd /var/tmp && wget https://download.java.net/java/GA/jdk16.0.2/d4a915d82b4c4fbb9bde534da945d746/7/GPL/openjdk-16.0.2_linux-x64_bin.tar.gz && \
-#    mkdir -p /usr/java && tar -zxvf ./openjdk-16.0.2_linux-x64_bin.tar.gz -C /usr/java &&  \
-#    rm -rf ./openjdk-16.0.2_linux-x64_bin.tar.gz && \
-#    mkdir -p /var/tmp && cd /var/tmp && wget https://archive.apache.org/dist/hadoop/common/hadoop-3.3.1/hadoop-3.3.1.tar.gz && \
-#    tar -zxvf ./hadoop-3.3.1.tar.gz && rm -rf hadoop-3.3.1.tar.gz && \
-#    cp ./hadoop-3.3.1/lib/native/libhdfs.so.0.0.0 /usr/local/lib/ && cp hadoop-3.3.1/include/hdfs.h /usr/local/include/ && \
-#    mv ./hadoop-3.3.1 /usr/local/hadoop && cd /usr/local/lib/ && ln -s libhdfs.so.0.0.0 libhdfs.so ; \
-#fi
-
 # HugeCTR itself.
 
 # Arguments "_XXXX" are only valid when $HUGECTR_DEV_MODE==false
@@ -236,8 +231,8 @@ RUN rm -rf /usr/lib/x86_64-linux-gnu/libibverbs.so && \
 # Install hugectr
 ARG HUGECTR_HOME=/usr/local/hugectr
 RUN if [[ "${HUGECTR_DEV_MODE}" == "false" ]]; then \
-        git clone --branch ${HUGECTR_VER} --depth 1 https://${_CI_JOB_TOKEN}${_HUGECTR_REPO} hugectr && \
-        cd hugectr && \
+        git clone --branch ${HUGECTR_VER} --depth 1 https://${_CI_JOB_TOKEN}${_HUGECTR_REPO} /hugectr && \
+        cd /hugectr && \
         git submodule update --init --recursive && \
         mkdir build && \
         cd build && \
@@ -250,12 +245,10 @@ RUN if [[ "${HUGECTR_DEV_MODE}" == "false" ]]; then \
         ; fi && \
         make -j$(nproc) && \
         make install && \
+        rm -rf ./* && \
         chmod +x ${HUGECTR_HOME}/bin/* ${HUGECTR_HOME}/lib/*.so && \
         cd ../onnx_converter && \
-        python setup.py install && \
-        cd ../.. && \
-        rm -rf hugectr \
-        # python -c 'import hugectr2onnx as h2o; print("HugeCTR-2-ONNX version:", h2o.__version__)' \
+        python setup.py install \
     ; fi
 
 ENV PATH=$PATH:${HUGECTR_HOME}/bin \

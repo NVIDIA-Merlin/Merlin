@@ -1,13 +1,13 @@
 # syntax=docker/dockerfile:1.2
-ARG TRITON_VERSION=22.02
+ARG TRITON_VERSION=22.03
 ARG FULL_IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-py3
 ARG BASE_IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-tf2-python-py3
 FROM ${FULL_IMAGE} as full
 FROM ${BASE_IMAGE} as bas
 
 # Args
-ARG CUDF_VER=v21.12.02
-ARG RMM_VER=v21.12.00
+ARG CUDF_VER=v22.02.00
+ARG RMM_VER=v22.02.00
 ARG CORE_VER=main
 ARG HUGECTR_VER=master
 ARG HUGECTR_BACKEND_VER=main
@@ -31,6 +31,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt update -y --fix-missing && \
     apt install -y --no-install-recommends \
         clang-format \
+	libarchive-dev \
         libboost-serialization-dev \
 	libexpat1-dev \
 	libsasl2-2 \
@@ -49,12 +50,14 @@ RUN apt update -y --fix-missing && \
 RUN ln -s /usr/bin/python3 /usr/bin/python
 
 # Install multiple packages
+RUN pip install pandas==1.3.5
 RUN pip install cupy-cuda115 nvidia-pyindex pybind11 pytest protobuf transformers==4.12 tensorflow-metadata 
 RUN pip install betterproto cachetools graphviz nvtx scipy sklearn
 RUN pip install numba --no-deps
 RUN pip install tritonclient[all] grpcio-channelz
-RUN pip install dask==2021.11.2 distributed==2021.11.2 dask[dataframe]==2021.11.2 dask-cuda
+RUN pip install dask==2021.11.2 distributed==2021.11.2 dask[dataframe]==2021.11.2 dask-cuda==22.2.0
 RUN pip install git+https://github.com/rapidsai/asvdb.git@main
+RUN pip install "cuda-python>=11.5,<12.0"
 
 # Triton Server
 WORKDIR /opt/tritonserver
@@ -145,28 +148,31 @@ RUN git clone https://github.com/rapidsai/cudf.git build-env && cd build-env/ &&
 # Install Merlin Core
 RUN git clone https://github.com/NVIDIA-Merlin/core.git /core/ && \
     cd /core/ && git checkout ${CORE_VER} && pip install -e . --no-deps
-ENV PYTHONPATH=/core:$PYTHONPATH
+ENV PYTHONPATH=$PYTHONPATH:/core
 
 # Install Merlin Systems
 RUN git clone https://github.com/NVIDIA-Merlin/systems.git /systems/ && \
     cd /systems/ && git checkout ${SYSTEMS_VER} && pip install --no-deps -e .
-    ENV PYTHONPATH=/systems:$PYTHONPATH
+    ENV PYTHONPATH=$PYTHONPATH:/systems
 
 # Install NVTabular
 ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
 RUN git clone https://github.com/NVIDIA-Merlin/NVTabular.git /nvtabular/ && \
     cd /nvtabular/ && git checkout ${NVTAB_VER} && pip install -e . --no-deps
-ENV PYTHONPATH=/nvtabular:$PYTHONPATH
+ENV PYTHONPATH=$PYTHONPATH:/nvtabular
 
 # Install Transformers4Rec
 RUN git clone https://github.com/NVIDIA-Merlin/Transformers4Rec.git /transformers4rec && \
     cd /transformers4rec/ && git checkout ${TF4REC_VER} && pip install -e . --no-deps
-ENV PYTHONPATH=/transformers4rec:$PYTHONPATH
+ENV PYTHONPATH=$PYTHONPATH:/transformers4rec
 
 # Install Models
 RUN git clone https://github.com/NVIDIA-Merlin/Models.git /models/ && \
     cd /models/ && git checkout ${MODELS_VER} && pip install -e . --no-deps;
-ENV PYTHONPATH=/models:$PYTHONPATH
+ENV PYTHONPATH=$PYTHONPATH:/models
+
+# Add Merlin Repo
+RUN git clone https://github.com/NVIDIA-Merlin/Merlin/ /Merlin
 
 # Install NVTabular Triton Backend
 ARG TRITON_VERSION
