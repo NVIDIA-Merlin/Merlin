@@ -30,10 +30,9 @@ ENV CUDA_PATH=$CUDA_HOME
 ENV CUDA_CUDA_LIBRARY=${CUDA_HOME}/lib64/stubs
 ENV PATH=${CUDA_HOME}/lib64/:${PATH}:${CUDA_HOME}/bin
 ENV PYTHONPATH=/usr/lib/python3.8/site-packages:$PYTHONPATH
-
-# Install packages
 ENV DEBIAN_FRONTEND=noninteractive
 
+# Set up NVIDIA package repository
 RUN apt update -y --fix-missing && \
     apt install -y --no-install-recommends software-properties-common && \
     wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-ubuntu2004.pin && \
@@ -41,9 +40,9 @@ RUN apt update -y --fix-missing && \
     apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/7fa2af80.pub && \
     add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/ /"
 
+# Install packages
 RUN apt update -y --fix-missing && \
     apt install -y --no-install-recommends \
-        software-properties-common \
         autoconf \
         automake \
         build-essential \
@@ -52,18 +51,18 @@ RUN apt update -y --fix-missing && \
         curl \
         datacenter-gpu-manager \
         git \
-	    libarchive-dev \
+        libarchive-dev \
         libb64-dev \
         libboost-serialization-dev \
         libcurl4-openssl-dev \
-	    libexpat1-dev \
+        libexpat1-dev \
         libre2-dev \
-	    libsasl2-2 \
+        libsasl2-2 \
         libssl-dev \
         libtbb-dev \
-	    openssl \
+        openssl \
         pkg-config \
-	    policykit-1 \
+        policykit-1 \
         protobuf-compiler \
         python3 \
         python3-pip \
@@ -79,7 +78,7 @@ RUN ln -s /usr/bin/python3 /usr/bin/python
 
 # Install multiple packages
 RUN pip install pandas==1.3.5
-RUN pip install cupy-cuda115 nvidia-pyindex pybind11 pytest protobuf transformers==4.12 tensorflow-metadata 
+RUN pip install cupy-cuda115 nvidia-pyindex pybind11 pytest protobuf transformers==4.12 tensorflow-metadata
 RUN pip install betterproto cachetools graphviz nvtx scipy sklearn
 RUN pip install tritonclient[all] grpcio-channelz
 RUN pip install dask==2021.11.2 distributed==2021.11.2 dask[dataframe]==2021.11.2 dask-cuda==22.2.0
@@ -110,7 +109,7 @@ RUN apt remove --purge cmake -y && wget http://www.cmake.org/files/v3.21/cmake-3
 # Install spdlog
 RUN git clone --branch v1.9.2 https://github.com/gabime/spdlog.git build-env && \
     pushd build-env && \
-      mkdir build && cd build && cmake .. && make -j && make install && \
+    mkdir build && cd build && cmake .. && make -j && make install && \
     popd && \
     rm -rf build-env
 
@@ -142,7 +141,7 @@ RUN git clone --branch apache-arrow-5.0.0 --recurse-submodules https://github.co
               -DARROW_CUDA=ON \
               -DARROW_DATASET=ON \
               -DARROW_HDFS=ON \
-              -DARROW_S3=ON \ 
+              -DARROW_S3=ON \
               .. && \
         make -j$(nproc) && \
         make install && \
@@ -193,14 +192,14 @@ RUN git clone https://github.com/NVIDIA-Merlin/nvtabular_triton_backend.git buil
       mkdir build && \
       cd build && \
       cmake -Dpybind11_DIR=/usr/local/lib/python3.8/dist-packages/pybind11/share/cmake/pybind11 \
-        -D TRITON_COMMON_REPO_TAG="r$TRITON_VERSION"    \
-        -D TRITON_CORE_REPO_TAG="r$TRITON_VERSION"      \
-        -D TRITON_BACKEND_REPO_TAG="r$TRITON_VERSION" .. \
+            -D TRITON_COMMON_REPO_TAG="r$TRITON_VERSION"    \
+            -D TRITON_CORE_REPO_TAG="r$TRITON_VERSION"      \
+            -D TRITON_BACKEND_REPO_TAG="r$TRITON_VERSION" .. \
       && make -j && \
       mkdir -p /opt/tritonserver/backends/nvtabular && \
       cp libtriton_nvtabular.so /opt/tritonserver/backends/nvtabular/ && \
     popd && \
-    rm -rf build-env 
+    rm -rf build-env
 
 # Clean up
 RUN rm -rf /repos
@@ -217,6 +216,14 @@ ENV CUDA_PATH=$CUDA_HOME
 ENV CUDA_CUDA_LIBRARY=${CUDA_HOME}/lib64/stubs
 ENV PATH=${CUDA_HOME}/lib64/:${PATH}:${CUDA_HOME}/bin
 
+# Set up NVIDIA package repository
+RUN apt update -y --fix-missing && \
+    apt install -y --no-install-recommends software-properties-common && \
+    wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-ubuntu2004.pin && \
+    mv cuda-ubuntu2004.pin /etc/apt/preferences.d/cuda-repository-pin-600 && \
+    apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/7fa2af80.pub && \
+    add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/ /"
+
 # Install packages
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt update -y --fix-missing && \
@@ -226,18 +233,17 @@ RUN apt update -y --fix-missing && \
         curl \
         datacenter-gpu-manager \
         git \
-	    libarchive-dev \
+        libarchive-dev \
         libboost-serialization-dev \
-	    libexpat1-dev \
-	    libsasl2-2 \
+        libexpat1-dev \
+        libsasl2-2 \
         libssl-dev \
         libtbb-dev \
-	    openssl \
-	    policykit-1 \
+        openssl \
+        policykit-1 \
         protobuf-compiler \
         python3 \
         rapidjson-dev \
-	    software-properties-common \
         wget \
         zlib1g-dev && \
     apt autoremove -y && \
@@ -280,7 +286,7 @@ COPY --chown=1000:1000 --from=build /usr/lib/python3.8/site-packages /usr/lib/py
 COPY --chown=1000:1000 --from=build /usr/local/lib/python3.8/dist-packages /usr/local/lib/python3.8/dist-packages/
 ENV PYTHONPATH=$PYTHONPATH:/usr/local/lib/python3.8/dist-packages/:/usr/lib/python3.8/site-packages/
 
-RUN pip install numpy==1.21.5 jupyter testbooks 
+RUN pip install numpy==1.21.5 jupyter testbooks
 
 # Add Merlin Repo
 RUN git clone https://github.com/NVIDIA-Merlin/Merlin/ /Merlin
@@ -299,7 +305,7 @@ ENV PYTHONPATH=$PYTHONPATH:/nvtabular
 # Install Merlin Systems
 RUN git clone https://github.com/NVIDIA-Merlin/systems.git /systems/ && \
     cd /systems/ && git checkout ${SYSTEMS_VER} && pip install --no-deps -e .
-    ENV PYTHONPATH=$PYTHONPATH:/systems
+ENV PYTHONPATH=$PYTHONPATH:/systems
 
 # Install Models
 RUN git clone https://github.com/NVIDIA-Merlin/Models.git /models/ && \
