@@ -1,7 +1,11 @@
 # syntax=docker/dockerfile:1.2
-ARG MERLIN_VERSION=22.03
+ARG MERLIN_VERSION=22.04
+ARG TENSORFLOW_VERSION=22.03
+
+ARG DLFW_IMAGE=nvcr.io/nvidia/tensorflow:${TENSORFLOW_VERSION}-tf2-py3
 ARG BASE_IMAGE=nvcr.io/nvidia/merlin/merlin-base:${MERLIN_VERSION}
 
+FROM ${DLFW_IMAGE} as dlfw
 FROM ${BASE_IMAGE} as base
 
 COPY --chown=1000:1000 --from=build /opt/tritonserver/backends/tensorflow2 backends/tensorflow2/
