@@ -280,10 +280,9 @@ ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/tritonserver/lib
 WORKDIR /opt/tritonserver/
 COPY --chown=1000:1000 --from=build /opt/tritonserver/backends/nvtabular backends/nvtabular/
 
-# Python Site Packages
-COPY --chown=1000:1000 --from=build /usr/lib/python3.8/site-packages /usr/lib/python3.8/site-packages
+# Python Packages
 COPY --chown=1000:1000 --from=build /usr/local/lib/python3.8/dist-packages /usr/local/lib/python3.8/dist-packages/
-ENV PYTHONPATH=$PYTHONPATH:/usr/local/lib/python3.8/dist-packages/:/usr/lib/python3.8/site-packages/
+ENV PYTHONPATH=$PYTHONPATH:/usr/local/lib/python3.8/dist-packages/
 
 RUN pip install numpy==1.21.5 jupyter testbooks
 
