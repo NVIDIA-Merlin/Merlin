@@ -20,19 +20,21 @@ RUN rm -r /opt/conda/lib/libtinfo*
 FROM ${BASE_IMAGE} as base
 
 # Torch (dependencies only)
-RUN pip install torch torchmetrics \
-    && rm -r /usr/local/lib/python3.8/dist-packages/torch
+RUN pip install torch && rm -r /usr/local/lib/python3.8/dist-packages/torch
 
 # Shared libraries
 COPY --chown=1000:1000 --from=build /opt/conda/lib/*.so* /usr/local/lib/
 
-# Triton TF backends
+# Triton Torch backend
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/pytorch backends/pytorch
 
 # DLFW Python packages
 COPY --chown=1000:1000 --from=dlfw /opt/conda/lib/python3.8/site-packages/numba /usr/local/lib/python3.8/dist-packages/numba
 COPY --chown=1000:1000 --from=dlfw /opt/conda/lib/python3.8/site-packages/numpy /usr/local/lib/python3.8/dist-packages/numpy
 COPY --chown=1000:1000 --from=dlfw /opt/conda/lib/python3.8/site-packages/torch /usr/local/lib/python3.8/dist-packages/torch
+
+# Additional Python packages
+RUN pip install torchmetrics
 
 HEALTHCHECK NONE
 CMD ["/bin/bash"]
