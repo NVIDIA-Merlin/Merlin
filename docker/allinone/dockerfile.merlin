@@ -1,12 +1,9 @@
 # syntax=docker/dockerfile:1.2
 ARG TRITON_VERSION=22.03
-ARG TENSORFLOW_VERSION=22.03
 
-ARG DLFW_IMAGE=nvcr.io/nvidia/tensorflow:${TENSORFLOW_VERSION}-tf2-py3
 ARG FULL_IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-py3
 ARG BASE_IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-py3-min
 
-FROM ${DLFW_IMAGE} as dlfw
 FROM ${FULL_IMAGE} as triton
 FROM ${BASE_IMAGE} as build
 
