@@ -14,8 +14,9 @@ FROM ${BASE_IMAGE} as build
 # Triton TF backends
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/tensorflow2 backends/tensorflow2/
 
-# Tensorflow dependencies
-RUN pip install tensorflow-gpu
+# Tensorflow dependencies (only)
+RUN pip install tensorflow-gpu \
+    && rm -r /usr/local/lib/python3.8/dist-packages/tensorflow
 
 # DLFW Tensorflow packages
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python3.8/dist-packages/tensorflow /usr/local/lib/python3.8/dist-packages/tensorflow/
