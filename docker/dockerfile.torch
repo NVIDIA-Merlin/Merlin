@@ -9,21 +9,21 @@ ARG BASE_IMAGE=merlin/base:${MERLIN_VERSION}
 
 FROM ${DLFW_IMAGE} as dlfw
 FROM ${FULL_IMAGE} as triton
-
-
-FROM ${DLFW_IMAGE} as build
-
-RUN rm -r /opt/conda/lib/libpython*
-RUN rm -r /opt/conda/lib/libtinfo* 
-
-
 FROM ${BASE_IMAGE} as base
 
-# Torch (dependencies only)
-RUN pip install torch && rm -r /usr/local/lib/python3.8/dist-packages/torch
+# Install packages
+RUN apt update -y --fix-missing && \
+    apt install -y --no-install-recommends \
+        libatlas-base-dev \
+        libmkl-dev && \
+    apt autoremove -y && \
+    apt clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Shared libraries
-COPY --chown=1000:1000 --from=build /opt/conda/lib/*.so* /usr/local/lib/
+# Torch Metrics (without torch)
+RUN pip install --no-cache-dir --no-deps torch torchmetrics \
+    && rm -r /usr/local/lib/python3.8/dist-packages/torch \
+    && rm -r /usr/local/lib/python3.8/dist-packages/caffe2
 
 # Triton Torch backend
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/pytorch backends/pytorch
@@ -32,9 +32,6 @@ COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/pytorch backends
 COPY --chown=1000:1000 --from=dlfw /opt/conda/lib/python3.8/site-packages/numba /usr/local/lib/python3.8/dist-packages/numba
 COPY --chown=1000:1000 --from=dlfw /opt/conda/lib/python3.8/site-packages/numpy /usr/local/lib/python3.8/dist-packages/numpy
 COPY --chown=1000:1000 --from=dlfw /opt/conda/lib/python3.8/site-packages/torch /usr/local/lib/python3.8/dist-packages/torch
-
-# Additional Python packages
-RUN pip install torchmetrics
 
 HEALTHCHECK NONE
 CMD ["/bin/bash"]
