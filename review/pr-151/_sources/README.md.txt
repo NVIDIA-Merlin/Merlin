@@ -30,18 +30,8 @@ build recommender systems from end to end. With NVIDIA Merlin, you can:
 
 NVIDIA Merlin consists of the following open source libraries:
 
-- NVTabular
-- HugeCTR
-- Models
-- Systems
-- Core
-
-<p align="center">
-<img src='https://developer.nvidia.com/sites/default/files/akamai/merlin/recommender-systems-dev-web-850.svg' width="65%">
-</p>
-
 **[NVTabular](https://github.com/NVIDIA-Merlin/NVTabular)**
-[![PyPI version shields.io](https://img.shields.io/pypi/v/merlin-core.svg)](https://pypi.python.org/pypi/merlin-core/)
+[![PyPI version shields.io](https://img.shields.io/pypi/v/nvtabular.svg)](https://pypi.python.org/pypi/nvtabular/)
 [![ Documentation](https://img.shields.io/badge/documentation-blue.svg)](https://nvidia-merlin.github.io/NVTabular/main/Introduction.html)
 <br> NVTabular is a feature engineering and preprocessing library for tabular
 data. The library can quickly and easily manipulate terabyte-size datasets that

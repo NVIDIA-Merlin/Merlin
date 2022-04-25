@@ -39,6 +39,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../README.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html">Example Notebooks</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../containers.html">Merlin Containers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../support_matrix/index.html">Support Matrix</a></li>
 </ul>
 
         </div>
@@ -355,20 +356,20 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
+<p><img alt="ef34e07198164f81bc1afaa659b7df48" src="http://developer.download.nvidia.com/compute/machine-learning/frameworks/nvidia_logo.png" /></p>
 <div class="section" id="Building-Intelligent-Recommender-Systems-with-Merlin">
 <h1>Building Intelligent Recommender Systems with Merlin<a class="headerlink" href="#Building-Intelligent-Recommender-Systems-with-Merlin" title="Permalink to this headline"></a></h1>
+<div class="section" id="Overview">
+<h2>Overview<a class="headerlink" href="#Overview" title="Permalink to this headline"></a></h2>
 <p>Recommender Systems (RecSys) are the engine of the modern internet and the catalyst for human decisions. Building a recommendation system is challenging because it requires multiple stages (data preprocessing, offline training, item retrieval, filtering, ranking, ordering, etc.) to work together seamlessly and efficiently. The biggest challenges for new practitioners are the lack of understanding around what RecSys look like in the real world, and the gap between examples of simple models and a
 production-ready end-to-end recommender systems.</p>
 <p>The figure below represents a four-stage recommender systems. This is more complex process than only training a single model and deploying it, and it is much more realistic and closer to what’s happening in the real-world recommender production systems.</p>
 <p><img alt="fourstage" src="../../_images/fourstages.png" /></p>
-<p>In these series of notebooks, we are going to showcase how we can deploy a four-stage recommender systems using Merlin Systems library easily on <a class="reference external" href="https://github.com/triton-inference-server/server">Triton Inference Server</a>. Let’s go over the concepts in the figure briefly. To learn more about the four-stage recommender systems, you can listen to Even Oldridge’s <a class="reference external" href="orondemand=1583520458947001NJiE&amp;search=oldridge#/session/1634769053862001L2XY">GTC 2022 talk</a> and read more <a class="reference external" href="https://eugeneyan.com/writing/system-design-for-discovery/">in this blog
-post</a>.</p>
-<ul class="simple">
-<li><p><strong>Retrieval:</strong> This is the step to narrow down millions of items into thousands of candidates. We are going to train a Two-Tower item retrieval model to retrieve the relevant top-K candidate items.</p></li>
-<li><p><strong>Filtering:</strong> This step is to exclude the already interacted or undesirable items from the candidate items set or to apply business logic rules. Although this is an important step, for this example we skip this step.</p></li>
-<li><p><strong>Scoring:</strong> This is also known as ranking. Here the retrieved and filtered candidate items are being scored. We are going to train a ranking model to be able to use at our scoring step.</p></li>
-<li><p><strong>Ordering:</strong> At his stage, we can order the final set of items that we want to recommend to the user. Here, we’re able to align the output of the model with business needs, constraints, or criteria.</p></li>
-</ul>
+<p>In these series of notebooks, we are going to showcase how we can deploy a four-stage recommender systems using Merlin Systems library easily on <a class="reference external" href="https://github.com/triton-inference-server/server">Triton Inference Server</a>. Let’s go over the concepts in the figure briefly. - <strong>Retrieval:</strong> This is the step to narrow down millions of items into thounds of candidates. We are going to train a Two-Tower item retrieval model to retrive the relevant top-K candidate items. - <strong>Filtering:</strong> This step
+is to exclude the already interacted or undesirable items from the candidate items set or to apply business logic rules. Although this is an important step, for this example we skip this step. - <strong>Scoring:</strong> This is also known as ranking. Here the retrieved and filtered candidate items are being scored. We are going to train a ranking model to be able to use at our scoring step. - <strong>Ordering:</strong> At this stage, we can order the final set of items that we want to recommend to the user. Here, we’re
+able to align the output of the model with business needs, constraints, or criteria.</p>
+<p>To learn more about the four-stage recommender systems, you can listen to Even Oldridge’s <a class="reference external" href="https://www.youtube.com/watch?v=5qjiY-kLwFY&amp;list=PL65MqKWg6XcrdN4TJV0K1PdLhF_Uq-b43&amp;index=7">Moving Beyond Recommender Models talk</a> at KDD’21 and read more <a class="reference external" href="https://eugeneyan.com/writing/system-design-for-discovery/">in this blog post</a>.</p>
+</div>
 <div class="section" id="Learning-objectives">
 <h2>Learning objectives<a class="headerlink" href="#Learning-objectives" title="Permalink to this headline"></a></h2>
 <ul class="simple">
@@ -377,7 +378,7 @@ post</a>.</p>
 <li><p>Setting up feature store and approximate nearest neighbours (ANN) search libraries</p></li>
 <li><p>Deploying trained models to Triton Inference Server with Merlin Systems</p></li>
 </ul>
-<p>In addition to NVIDIA Merlin libraries and <code class="docutils literal notranslate"><span class="pre">Triton</span></code> library, we are using two external libraries in these series of examples:</p>
+<p>In additon to NVIDIA Merlin libraries and <code class="docutils literal notranslate"><span class="pre">Triton</span></code> library, we are using two external libraries in these series of examples:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://docs.feast.dev/">Feast</a>: an end-to-end open source feature store library for machine learning</p></li>
 <li><p><a class="reference external" href="https://github.com/facebookresearch/faiss">Faiss</a>: a library for efficient similarity search and clustering of dense vectors</p></li>
@@ -386,18 +387,8 @@ post</a>.</p>
 </div>
 <div class="section" id="Import-required-libraries-and-functions">
 <h2>Import required libraries and functions<a class="headerlink" href="#Import-required-libraries-and-functions" title="Permalink to this headline"></a></h2>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># disable INFO and DEBUG logging everywhere</span>
-<span class="kn">import</span> <span class="nn">logging</span>
-<span class="n">logging</span><span class="o">.</span><span class="n">disable</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">WARNING</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
@@ -412,7 +403,6 @@ post</a>.</p>
 <span class="kn">from</span> <span class="nn">merlin.models.utils.example_utils</span> <span class="kn">import</span> <span class="n">workflow_fit_transform</span>
 
 <span class="kn">from</span> <span class="nn">merlin.schema.tags</span> <span class="kn">import</span> <span class="n">Tags</span>
-<span class="kn">from</span> <span class="nn">merlin.schema</span> <span class="kn">import</span> <span class="n">Schema</span>
 
 <span class="kn">import</span> <span class="nn">merlin.models.tf</span> <span class="k">as</span> <span class="nn">mm</span>
 <span class="kn">from</span> <span class="nn">merlin.io.dataset</span> <span class="kn">import</span> <span class="n">Dataset</span>
@@ -425,38 +415,52 @@ post</a>.</p>
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-/nvtabular/nvtabular/graph.py:23: FutureWarning: The `nvtabular.graph` module has moved to `merlin.dag`. Support for importing from `nvtabular.graph` is deprecated, and will be removed in a future version. Please update your imports to import from `merlin.dag`.
-  warnings.warn(
-/nvtabular/nvtabular/io.py:23: FutureWarning: The `nvtabular.io` module has moved to `merlin.io`. Support for importing from `nvtabular.io` is deprecated, and will be removed in a future version. Please update your imports to import from `merlin.io`.
-  warnings.warn(
-/nvtabular/nvtabular/utils.py:23: FutureWarning: The `nvtabular.utils` module has moved to `merlin.core.utils`. Support for importing from `nvtabular.utils` is deprecated, and will be removed in a future version. Please update your imports to import from `merlin.core.utils`.
-  warnings.warn(
-/nvtabular/nvtabular/dispatch.py:23: FutureWarning: The `nvtabular.dispatch` module has moved to `merlin.core.dispatch`. Support for importing from `nvtabular.dispatch` is deprecated, and will be removed in a future version. Please update your imports to import from `merlin.core.dispatch`.
-  warnings.warn(
-2022-03-29 23:42:55.288888: I tensorflow/core/platform/cpu_feature_guard.cc:151] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  AVX2 AVX512F FMA
+2022-04-05 18:55:54.740755: I tensorflow/core/platform/cpu_feature_guard.cc:151] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  AVX2 AVX512F FMA
 To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
-2022-03-29 23:42:56.473363: I tensorflow/core/common_runtime/gpu/gpu_process_state.cc:214] Using CUDA malloc Async allocator for GPU: 0
-2022-03-29 23:42:56.473496: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1525] Created device /job:localhost/replica:0/task:0/device:GPU:0 with 16254 MB memory:  -&gt; device: 0, name: Quadro GV100, pci bus id: 0000:15:00.0, compute capability: 7.0
+2022-04-05 18:55:55.858389: I tensorflow/core/common_runtime/gpu/gpu_process_state.cc:214] Using CUDA malloc Async allocator for GPU: 0
+2022-04-05 18:55:55.858513: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1525] Created device /job:localhost/replica:0/task:0/device:GPU:0 with 16254 MB memory:  -&gt; device: 0, name: Quadro GV100, pci bus id: 0000:15:00.0, compute capability: 7.0
 </pre></div></div>
 </div>
-<p>In this example notebook, we use the <a class="reference external" href="https://tianchi.aliyun.com/dataset/dataDetail?dataId=408#1">Ali-CCP: Alibaba Click and Conversion Prediction</a> dataset to build our recommender system models. Below, we will process input features with <a class="reference external" href="https://github.com/NVIDIA-Merlin/NVTabular">NVTabular</a>.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># disable INFO and DEBUG logging everywhere</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">disable</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">WARNING</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>In this example notebook, we will generate the synthetic train and test datasets mimicking the real <a class="reference external" href="https://tianchi.aliyun.com/dataset/dataDetail?dataId=408#1">Ali-CCP: Alibaba Click and Conversion Prediction</a> dataset to build our recommender system models.</p>
 <p>First, we define our input and output paths.</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">DATA_FOLDER</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;DATA_FOLDER&quot;</span><span class="p">,</span> <span class="s2">&quot;/workspace/data/&quot;</span><span class="p">)</span>
-<span class="n">train_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">DATA_FOLDER</span><span class="p">,</span> <span class="s1">&#39;train/&#39;</span> <span class="s1">&#39;*.parquet&#39;</span><span class="p">)</span>
-<span class="n">valid_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">DATA_FOLDER</span><span class="p">,</span> <span class="s1">&#39;test/&#39;</span><span class="p">,</span> <span class="s1">&#39;*.parquet&#39;</span><span class="p">)</span>
 <span class="n">output_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">DATA_FOLDER</span><span class="p">,</span> <span class="s1">&#39;processed/ranking&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
+<p>Then, we use <code class="docutils literal notranslate"><span class="pre">generate_data</span></code> utility function to generate synthetic dataset.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">merlin.datasets.synthetic</span> <span class="kn">import</span> <span class="n">generate_data</span>
+
+<span class="n">train</span> <span class="o">=</span> <span class="n">generate_data</span><span class="p">(</span><span class="s2">&quot;aliccp-raw&quot;</span><span class="p">,</span> <span class="mi">10000000</span><span class="p">)</span>
+<span class="n">valid</span> <span class="o">=</span> <span class="n">generate_data</span><span class="p">(</span><span class="s2">&quot;aliccp-raw&quot;</span><span class="p">,</span> <span class="mi">100000</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>If you would like to use the real ALI-CCP dataset, you can use <a class="reference external" href="https://github.com/NVIDIA-Merlin/models/blob/main/merlin/datasets/ecommerce/aliccp/dataset.py">get_aliccp()</a> function instead. This function takes the raw csv files, and generate parquet files that can be directly fed to NVTabular workflow above.</p>
 </div>
 <div class="section" id="Feature-Engineering-with-NVTabular">
 <h2>Feature Engineering with NVTabular<a class="headerlink" href="#Feature-Engineering-with-NVTabular" title="Permalink to this headline"></a></h2>
+<p>We are going to process our raw categorical features by encoding them using <code class="docutils literal notranslate"><span class="pre">Categorify()</span></code> operator and tag the features with <code class="docutils literal notranslate"><span class="pre">user</span></code> or <code class="docutils literal notranslate"><span class="pre">item</span></code> tags in the schema file. To learn more about <a class="reference external" href="https://github.com/NVIDIA-Merlin/NVTabular">NVTabular</a> and the schema object visit this example <a class="reference external" href="https://github.com/NVIDIA-Merlin/models/blob/main/examples/02-Merlin-Models-and-NVTabular-integration.ipynb">notebook</a> in the Merlin Models repo.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%time</span>
@@ -471,48 +475,48 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
        <span class="s1">&#39;user_geography&#39;</span><span class="p">,</span> <span class="s1">&#39;user_intentions&#39;</span><span class="p">,</span> <span class="s1">&#39;user_brands&#39;</span><span class="p">,</span> <span class="s1">&#39;user_categories&#39;</span><span class="p">]</span> \
     <span class="o">&gt;&gt;</span> <span class="n">Categorify</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;int32&#39;</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="n">TagAsUserFeatures</span><span class="p">()</span>
 
-<span class="n">targets</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;click&quot;</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">AddMetadata</span><span class="p">(</span><span class="n">tags</span><span class="o">=</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">Tags</span><span class="o">.</span><span class="n">BINARY_CLASSIFICATION</span><span class="p">),</span> <span class="s2">&quot;target&quot;</span><span class="p">])</span>
+<span class="n">targets</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;click&quot;</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">AddMetadata</span><span class="p">(</span><span class="n">tags</span><span class="o">=</span><span class="p">[</span><span class="n">Tags</span><span class="o">.</span><span class="n">BINARY_CLASSIFICATION</span><span class="p">,</span> <span class="s2">&quot;target&quot;</span><span class="p">])</span>
 
 <span class="n">outputs</span> <span class="o">=</span> <span class="n">user_id</span><span class="o">+</span><span class="n">item_id</span><span class="o">+</span><span class="n">item_features</span><span class="o">+</span><span class="n">user_features</span><span class="o">+</span><span class="n">targets</span>
-
-<span class="n">workflow_fit_transform</span><span class="p">(</span><span class="n">outputs</span><span class="p">,</span> <span class="n">train_path</span><span class="p">,</span> <span class="n">valid_path</span><span class="p">,</span> <span class="n">output_path</span><span class="p">,</span> <span class="s1">&#39;workflow_ranking&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="nboutput docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area stderr docutils container">
-<div class="highlight"><pre>
-/usr/lib/python3.8/site-packages/cudf/core/dataframe.py:1253: UserWarning: The deep parameter is ignored and is only included for pandas compatibility.
-  warnings.warn(
-/usr/lib/python3.8/site-packages/cudf/core/dataframe.py:1253: UserWarning: The deep parameter is ignored and is only included for pandas compatibility.
-  warnings.warn(
-/usr/lib/python3.8/site-packages/cudf/core/dataframe.py:1253: UserWarning: The deep parameter is ignored and is only included for pandas compatibility.
-  warnings.warn(
-/usr/lib/python3.8/site-packages/cudf/core/dataframe.py:1253: UserWarning: The deep parameter is ignored and is only included for pandas compatibility.
-  warnings.warn(
-/usr/lib/python3.8/site-packages/cudf/core/dataframe.py:1253: UserWarning: The deep parameter is ignored and is only included for pandas compatibility.
-  warnings.warn(
-</pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-CPU times: user 17 s, sys: 20.4 s, total: 37.4 s
-Wall time: 39.9 s
+CPU times: user 165 µs, sys: 27 µs, total: 192 µs
+Wall time: 195 µs
+</pre></div></div>
+</div>
+<p>Let’s call <code class="docutils literal notranslate"><span class="pre">transform_aliccp</span></code> utility function to be able to perform <code class="docutils literal notranslate"><span class="pre">fit</span></code> and <code class="docutils literal notranslate"><span class="pre">transform</span></code> steps on the raw dataset applying the operators defined in the NVTabular workflow pipeline below, and also save our workflow model. After fit and transform, the processed parquet files are saved to output_path.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">merlin.datasets.ecommerce</span> <span class="kn">import</span> <span class="n">transform_aliccp</span>
+
+<span class="n">transform_aliccp</span><span class="p">((</span><span class="n">train</span><span class="p">,</span> <span class="n">valid</span><span class="p">),</span> <span class="n">output_path</span><span class="p">,</span> <span class="n">nvt_workflow</span><span class="o">=</span><span class="n">outputs</span><span class="p">,</span> <span class="n">workflow_name</span><span class="o">=</span><span class="s1">&#39;workflow_ranking&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/usr/lib/python3.8/site-packages/cudf/core/dataframe.py:1253: UserWarning: The deep parameter is ignored and is only included for pandas compatibility.
+  warnings.warn(
 </pre></div></div>
 </div>
 </div>
-</div>
-<div class="section" id="Building-a-Ranking-Model-with-DLRM">
-<h1>Building a Ranking Model with DLRM<a class="headerlink" href="#Building-a-Ranking-Model-with-DLRM" title="Permalink to this headline"></a></h1>
-<p>NVTabular exported the schema file, <code class="docutils literal notranslate"><span class="pre">schema.pbtxt</span></code> a protobuf text file, of our processed dataset. To learn more about the schema object and schema file you can explore <a class="reference external" href="https://github.com/NVIDIA-Merlin/models/blob/main/examples/02-Merlin-Models-and-NVTabular-applying-to-your-own-dataset.ipynb">02-Merlin-Models-and-NVTabular-applying-to-your-own-dataset.ipynb</a> notebook.</p>
+<div class="section" id="Training-a-Ranking-Model-with-DLRM">
+<h2>Training a Ranking Model with DLRM<a class="headerlink" href="#Training-a-Ranking-Model-with-DLRM" title="Permalink to this headline"></a></h2>
+<p>NVTabular exported the schema file, <code class="docutils literal notranslate"><span class="pre">schema.pbtxt</span></code> a protobuf text file, of our processed dataset. To learn more about the schema object and schema file you can explore <a class="reference external" href="https://github.com/NVIDIA-Merlin/models/blob/main/examples/02-Merlin-Models-and-NVTabular-integration.ipynb">02-Merlin-Models-and-NVTabular-integration.ipynb</a> notebook.</p>
 <p>We use the <code class="docutils literal notranslate"><span class="pre">schema</span></code> object to define our model.</p>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># define train and valid dataset objects</span>
@@ -524,17 +528,8 @@ Wall time: 39.9 s
 </pre></div>
 </div>
 </div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area stderr docutils container">
-<div class="highlight"><pre>
-/usr/lib/python3.8/site-packages/cudf/core/dataframe.py:1253: UserWarning: The deep parameter is ignored and is only included for pandas compatibility.
-  warnings.warn(
-</pre></div></div>
-</div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">target_column</span> <span class="o">=</span> <span class="n">schema</span><span class="o">.</span><span class="n">select_by_tag</span><span class="p">(</span><span class="n">Tags</span><span class="o">.</span><span class="n">TARGET</span><span class="p">)</span><span class="o">.</span><span class="n">column_names</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -543,7 +538,7 @@ Wall time: 39.9 s
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
 <div class="output_area docutils container">
@@ -552,9 +547,9 @@ Wall time: 39.9 s
 </pre></div></div>
 </div>
 <p>Deep Learning Recommendation Model <a class="reference external" href="https://arxiv.org/abs/1906.00091">(DLRM)</a> architecture is a popular neural network model originally proposed by Facebook in 2019. The model was introduced as a personalization deep learning model that uses embeddings to process sparse features that represent categorical data and a multilayer perceptron (MLP) to process dense features, then interacts these features explicitly using the statistical techniques proposed in
-<a class="reference external" href="https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&amp;arnumber=5694074">here</a>. To learn more about DLRM architetcture please visit <code class="docutils literal notranslate"><span class="pre">Exploring-different-models</span></code> <a class="reference external" href="https://github.com/NVIDIA-Merlin/models/blob/main/examples/Exploring-different-models.ipynb">notebook</a> in the Merlin Models GH repo.</p>
+<a class="reference external" href="https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&amp;arnumber=5694074">here</a>. To learn more about DLRM architetcture please visit <code class="docutils literal notranslate"><span class="pre">Exploring-different-models</span></code> <a class="reference external" href="https://github.com/NVIDIA-Merlin/models/blob/main/examples/04-Exporting-ranking-models.ipynb">notebook</a> in the Merlin Models GH repo.</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">mm</span><span class="o">.</span><span class="n">DLRMModel</span><span class="p">(</span>
@@ -568,11 +563,10 @@ Wall time: 39.9 s
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">opt</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">optimizers</span><span class="o">.</span><span class="n">Adagrad</span><span class="p">(</span><span class="n">learning_rate</span><span class="o">=</span><span class="mf">0.003</span><span class="p">)</span>
-<span class="n">model</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">optimizer</span><span class="o">=</span><span class="n">opt</span><span class="p">,</span> <span class="n">run_eagerly</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">optimizer</span><span class="o">=</span><span class="s1">&#39;adam&#39;</span><span class="p">,</span> <span class="n">run_eagerly</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train</span><span class="p">,</span> <span class="n">validation_data</span><span class="o">=</span><span class="n">valid</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">16</span><span class="o">*</span><span class="mi">1024</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -582,11 +576,7 @@ Wall time: 39.9 s
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-2022-03-29 23:43:36.846224: W tensorflow/core/framework/cpu_allocator_impl.cc:82] Allocation of 383778816 exceeds 10% of free system memory.
-2022-03-29 23:43:37.267331: W tensorflow/python/util/util.cc:368] Sets are not currently considered sequences, but this may change in the future, so consider avoiding using them.
-2022-03-29 23:43:37.519839: W tensorflow/core/framework/cpu_allocator_impl.cc:82] Allocation of 383778816 exceeds 10% of free system memory.
-2022-03-29 23:43:38.404223: W tensorflow/core/framework/cpu_allocator_impl.cc:82] Allocation of 383778816 exceeds 10% of free system memory.
-2022-03-29 23:44:03.052781: W tensorflow/core/framework/cpu_allocator_impl.cc:82] Allocation of 383778816 exceeds 10% of free system memory.
+2022-04-05 18:56:11.250713: W tensorflow/python/util/util.cc:368] Sets are not currently considered sequences, but this may change in the future, so consider avoiding using them.
 </pre></div></div>
 </div>
 <div class="nboutput docutils container">
@@ -594,7 +584,7 @@ Wall time: 39.9 s
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-   1/2442 [..............................] - ETA: 16:36:16 - auc: 0.5057 - loss: 0.6707 - regularization_loss: 0.0000e+00 - total_loss: 0.6707
+610/611 [============================&gt;.] - ETA: 0s - auc: 0.5003 - loss: 0.6932 - regularization_loss: 0.0000e+00 - total_loss: 0.6932
 </pre></div></div>
 </div>
 <div class="nboutput docutils container">
@@ -602,7 +592,7 @@ Wall time: 39.9 s
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-2022-03-29 23:44:03.604666: W tensorflow/core/framework/cpu_allocator_impl.cc:82] Allocation of 383778816 exceeds 10% of free system memory.
+2022-04-05 18:57:02.828073: W tensorflow/core/grappler/optimizers/loop_optimizer.cc:907] Skipping loop optimization for Merge node with control input: cond/then/_0/cond/cond/branch_executed/_161
 </pre></div></div>
 </div>
 <div class="nboutput docutils container">
@@ -610,37 +600,21 @@ Wall time: 39.9 s
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-2442/2442 [==============================] - ETA: 0s - auc: 0.5246 - loss: 0.1893 - regularization_loss: 0.0000e+00 - total_loss: 0.1893
-</pre></div></div>
-</div>
-<div class="nboutput docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area stderr docutils container">
-<div class="highlight"><pre>
-2022-03-29 23:45:29.869725: W tensorflow/core/grappler/optimizers/loop_optimizer.cc:907] Skipping loop optimization for Merge node with control input: cond/then/_0/cond/cond/branch_executed/_161
-</pre></div></div>
-</div>
-<div class="nboutput docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-2442/2442 [==============================] - 160s 56ms/step - auc: 0.5246 - loss: 0.1893 - regularization_loss: 0.0000e+00 - total_loss: 0.1893 - val_auc: 0.4987 - val_loss: 0.1240 - val_regularization_loss: 0.0000e+00 - val_total_loss: 0.1240
+611/611 [==============================] - 51s 39ms/step - auc: 0.5003 - loss: 0.6932 - regularization_loss: 0.0000e+00 - total_loss: 0.6932 - val_auc: 0.5012 - val_loss: 0.6930 - val_regularization_loss: 0.0000e+00 - val_total_loss: 0.6930
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
 </pre></div>
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-&lt;keras.callbacks.History at 0x7fc87c607460&gt;
+&lt;keras.callbacks.History at 0x7f883c1cf820&gt;
 </pre></div></div>
 </div>
 <p>Let’s save our DLRM model to be able to load back at the deployment stage.</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s1">&#39;dlrm&#39;</span><span class="p">)</span>
@@ -648,20 +622,20 @@ Wall time: 39.9 s
 </div>
 </div>
 </div>
-<div class="section" id="Building-a-Retrieval-Model-with-Two-Tower-Model">
-<h1>Building a Retrieval Model with Two-Tower Model<a class="headerlink" href="#Building-a-Retrieval-Model-with-Two-Tower-Model" title="Permalink to this headline"></a></h1>
+<div class="section" id="Training-a-Retrieval-Model-with-Two-Tower-Model">
+<h2>Training a Retrieval Model with Two-Tower Model<a class="headerlink" href="#Training-a-Retrieval-Model-with-Two-Tower-Model" title="Permalink to this headline"></a></h2>
 <p>Now we move to the offline retrieval stage. We are going to train a Two-Tower model for item retrieval. To learn more about the Two-tower model you can visit <a class="reference external" href="https://github.com/NVIDIA-Merlin/models/blob/main/examples/05-Retrieval-Model.ipynb">05-Retrieval-Model.ipynb</a>.</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">output_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">DATA_FOLDER</span><span class="p">,</span> <span class="s1">&#39;processed/retrieval&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
-<p>We select only positive interaction rows therefore we remove rows where <code class="docutils literal notranslate"><span class="pre">click==0</span></code> from the dataset with <code class="docutils literal notranslate"><span class="pre">Filter()</span></code> op.</p>
+<p>We select only positive interaction rows where <code class="docutils literal notranslate"><span class="pre">click==1</span></code> in the dataset with <code class="docutils literal notranslate"><span class="pre">Filter()</span></code> operator.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">user_id</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;user_id&quot;</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">Categorify</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;int32&#39;</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="n">TagAsUserID</span><span class="p">()</span>
@@ -678,36 +652,7 @@ Wall time: 39.9 s
 
 <span class="n">outputs</span> <span class="o">=</span> <span class="n">inputs</span> <span class="o">&gt;&gt;</span> <span class="n">Filter</span><span class="p">(</span><span class="n">f</span><span class="o">=</span><span class="k">lambda</span> <span class="n">df</span><span class="p">:</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;click&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
 
-<span class="n">workflow_fit_transform</span><span class="p">(</span><span class="n">outputs</span><span class="p">,</span> <span class="n">train_path</span><span class="p">,</span> <span class="n">valid_path</span><span class="p">,</span> <span class="n">output_path</span><span class="p">,</span> <span class="s1">&#39;workflow_retrieval&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area stderr docutils container">
-<div class="highlight"><pre>
-/usr/lib/python3.8/site-packages/cudf/core/dataframe.py:1253: UserWarning: The deep parameter is ignored and is only included for pandas compatibility.
-  warnings.warn(
-/usr/lib/python3.8/site-packages/cudf/core/dataframe.py:1253: UserWarning: The deep parameter is ignored and is only included for pandas compatibility.
-  warnings.warn(
-/usr/lib/python3.8/site-packages/cudf/core/dataframe.py:1253: UserWarning: The deep parameter is ignored and is only included for pandas compatibility.
-  warnings.warn(
-/usr/lib/python3.8/site-packages/cudf/core/dataframe.py:1253: UserWarning: The deep parameter is ignored and is only included for pandas compatibility.
-  warnings.warn(
-/usr/lib/python3.8/site-packages/cudf/core/dataframe.py:1253: UserWarning: The deep parameter is ignored and is only included for pandas compatibility.
-  warnings.warn(
-</pre></div></div>
-</div>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">train_tt</span> <span class="o">=</span> <span class="n">Dataset</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="s1">&#39;train&#39;</span><span class="p">,</span> <span class="s1">&#39;*.parquet&#39;</span><span class="p">),</span> <span class="n">part_size</span><span class="o">=</span><span class="s2">&quot;500MB&quot;</span><span class="p">)</span>
-<span class="n">valid_tt</span> <span class="o">=</span> <span class="n">Dataset</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="s1">&#39;valid&#39;</span><span class="p">,</span> <span class="s1">&#39;*.parquet&#39;</span><span class="p">),</span> <span class="n">part_size</span><span class="o">=</span><span class="s2">&quot;500MB&quot;</span><span class="p">)</span>
-
-<span class="n">schema</span> <span class="o">=</span> <span class="n">train_tt</span><span class="o">.</span><span class="n">schema</span>
-<span class="n">schema</span> <span class="o">=</span> <span class="n">schema</span><span class="o">.</span><span class="n">select_by_tag</span><span class="p">([</span><span class="n">Tags</span><span class="o">.</span><span class="n">ITEM_ID</span><span class="p">,</span> <span class="n">Tags</span><span class="o">.</span><span class="n">USER_ID</span><span class="p">,</span> <span class="n">Tags</span><span class="o">.</span><span class="n">ITEM</span><span class="p">,</span> <span class="n">Tags</span><span class="o">.</span><span class="n">USER</span><span class="p">])</span>
+<span class="n">transform_aliccp</span><span class="p">((</span><span class="n">train</span><span class="p">,</span> <span class="n">valid</span><span class="p">),</span> <span class="n">output_path</span><span class="p">,</span> <span class="n">nvt_workflow</span><span class="o">=</span><span class="n">outputs</span><span class="p">,</span> <span class="n">workflow_name</span><span class="o">=</span><span class="s1">&#39;workflow_retrieval&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -721,7 +666,19 @@ Wall time: 39.9 s
 </pre></div></div>
 </div>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">train_tt</span> <span class="o">=</span> <span class="n">Dataset</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="s1">&#39;train&#39;</span><span class="p">,</span> <span class="s1">&#39;*.parquet&#39;</span><span class="p">))</span>
+<span class="n">valid_tt</span> <span class="o">=</span> <span class="n">Dataset</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="s1">&#39;valid&#39;</span><span class="p">,</span> <span class="s1">&#39;*.parquet&#39;</span><span class="p">))</span>
+
+<span class="n">schema</span> <span class="o">=</span> <span class="n">train_tt</span><span class="o">.</span><span class="n">schema</span>
+<span class="n">schema</span> <span class="o">=</span> <span class="n">schema</span><span class="o">.</span><span class="n">select_by_tag</span><span class="p">([</span><span class="n">Tags</span><span class="o">.</span><span class="n">ITEM_ID</span><span class="p">,</span> <span class="n">Tags</span><span class="o">.</span><span class="n">USER_ID</span><span class="p">,</span> <span class="n">Tags</span><span class="o">.</span><span class="n">ITEM</span><span class="p">,</span> <span class="n">Tags</span><span class="o">.</span><span class="n">USER</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">mm</span><span class="o">.</span><span class="n">TwoTowerModel</span><span class="p">(</span>
@@ -736,13 +693,13 @@ Wall time: 39.9 s
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">set_retrieval_candidates_for_evaluation</span><span class="p">(</span><span class="n">train_tt</span><span class="p">)</span>
-<span class="n">opt</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">optimizers</span><span class="o">.</span><span class="n">Adagrad</span><span class="p">(</span><span class="n">learning_rate</span><span class="o">=</span><span class="mf">0.003</span><span class="p">)</span>
-<span class="n">model</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">optimizer</span><span class="o">=</span><span class="n">opt</span><span class="p">,</span> <span class="n">run_eagerly</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train_tt</span><span class="p">,</span> <span class="n">validation_data</span><span class="o">=</span><span class="n">valid_tt</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">1024</span><span class="o">*</span><span class="mi">8</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="n">model</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">optimizer</span><span class="o">=</span><span class="s1">&#39;adam&#39;</span><span class="p">,</span> <span class="n">run_eagerly</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train_tt</span><span class="p">,</span> <span class="n">validation_data</span><span class="o">=</span><span class="n">valid_tt</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">1024</span><span class="o">*</span><span class="mi">8</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -751,8 +708,7 @@ Wall time: 39.9 s
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Epoch 1/2
-191/192 [============================&gt;.] - ETA: 0s - recall_at_10: 0.0012 - ndcg_10: 5.4275e-04 - loss: 9.0156 - regularization_loss: 0.0000e+00 - total_loss: 9.0156
+610/611 [============================&gt;.] - ETA: 0s - recall_at_10: 0.0337 - ndcg_10: 0.0331 - loss: 8.9147 - regularization_loss: 0.0000e+00 - total_loss: 8.9147
 </pre></div></div>
 </div>
 <div class="nboutput docutils container">
@@ -760,7 +716,7 @@ Epoch 1/2
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-2022-03-29 23:47:40.388242: W tensorflow/core/grappler/optimizers/loop_optimizer.cc:907] Skipping loop optimization for Merge node with control input: cond/then/_0/cond/cond/branch_executed/_184
+2022-04-05 18:58:03.440488: W tensorflow/core/grappler/optimizers/loop_optimizer.cc:907] Skipping loop optimization for Merge node with control input: cond/then/_0/cond/cond/branch_executed/_189
 </pre></div></div>
 </div>
 <div class="nboutput docutils container">
@@ -768,40 +724,66 @@ Epoch 1/2
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-192/192 [==============================] - 41s 191ms/step - recall_at_10: 0.0012 - ndcg_10: 5.4267e-04 - loss: 9.0130 - regularization_loss: 0.0000e+00 - total_loss: 9.0130 - val_recall_at_10: 0.0012 - val_ndcg_10: 5.5965e-04 - val_loss: 8.6606 - val_regularization_loss: 0.0000e+00 - val_total_loss: 8.6606
-Epoch 2/2
-192/192 [==============================] - 34s 177ms/step - recall_at_10: 0.0012 - ndcg_10: 5.4821e-04 - loss: 9.0126 - regularization_loss: 0.0000e+00 - total_loss: 9.0126 - val_recall_at_10: 0.0012 - val_ndcg_10: 5.5856e-04 - val_loss: 8.6603 - val_regularization_loss: 0.0000e+00 - val_total_loss: 8.6603
+611/611 [==============================] - 48s 70ms/step - recall_at_10: 0.0337 - ndcg_10: 0.0331 - loss: 8.9114 - regularization_loss: 0.0000e+00 - total_loss: 8.9114 - val_recall_at_10: 0.0038 - val_ndcg_10: 0.0015 - val_loss: 6.4472 - val_regularization_loss: 0.0000e+00 - val_total_loss: 6.4472
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
 </pre></div>
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-&lt;keras.callbacks.History at 0x7fc7db22bd30&gt;
+&lt;keras.callbacks.History at 0x7f87d1158130&gt;
 </pre></div></div>
 </div>
 <p>In the following cells we are going to export the required user and item features files, and save the query (user) tower model and item embeddings to disk. If you want to read more about exporting retrieval models, please visit <a class="reference external" href="https://github.com/NVIDIA-Merlin/models/blob/main/examples/05-Retrieval-Model.ipynb">05-Retrieval-Model.ipynb</a> notebook in Merlin Models library repo.</p>
+</div>
 <div class="section" id="Set-up-a-feature-store-with-Feast">
 <h2>Set up a feature store with Feast<a class="headerlink" href="#Set-up-a-feature-store-with-Feast" title="Permalink to this headline"></a></h2>
-<p>Before we move onto the next step, we need to create a Feast feature repository from the command line. You can open the terminal and run the commands below:</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>cd /Merlin/examples/PoC/
-feast init feature_repo
+<p>Before we move onto the next step, we need to create a Feast feature repository.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
 </pre></div>
 </div>
-<p>You should be seeing a message like Creating a new Feast repository in /Merlin/examples/PoC/feature_repo printed out in the terminal. Navigate to the <code class="docutils literal notranslate"><span class="pre">feature_repo</span></code> folder and remove the demo parquet file created by default, and <code class="docutils literal notranslate"><span class="pre">examples.py</span></code> file.</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>cd feature_repo
-rm example.py
-cd data
-rm driver_stats.parquet
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># set up the base dir to for feature store</span>
+<span class="n">BASE_DIR</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;BASE_DIR&quot;</span><span class="p">,</span> <span class="s2">&quot;/Merlin/examples/Deploying-multi-stage-RecSys/&quot;</span><span class="p">)</span>
 </pre></div>
+</div>
+</div>
+<p>This will create the feature repo in the current working directory, which is <code class="docutils literal notranslate"><span class="pre">BASE_DIR</span></code> for us.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>feast init feature_repo
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+Creating a new Feast repository in <span class="ansi-green-intense-fg ansi-bold">/Merlin/examples/Deploying-multi-stage-RecSys/feature_repo</span>.
+
+</pre></div></div>
+</div>
+<p>You should be seeing a message like Creating a new Feast repository in … printed out above. Now, navigate to the <code class="docutils literal notranslate"><span class="pre">feature_repo</span></code> folder and remove the demo parquet file created by default, and <code class="docutils literal notranslate"><span class="pre">examples.py</span></code> file.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s1">&#39;feature_repo&#39;</span><span class="p">,</span> <span class="s1">&#39;example.py&#39;</span><span class="p">))</span>
+<span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s1">&#39;feature_repo/data&#39;</span><span class="p">,</span> <span class="s1">&#39;driver_stats.parquet&#39;</span><span class="p">))</span>
+</pre></div>
+</div>
 </div>
 </div>
 <div class="section" id="Exporting-query-(user)-model">
 <h2>Exporting query (user) model<a class="headerlink" href="#Exporting-query-(user)-model" title="Permalink to this headline"></a></h2>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">query_tower</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">retrieval_block</span><span class="o">.</span><span class="n">query_block</span><span class="p">()</span>
@@ -813,7 +795,7 @@ rm driver_stats.parquet
 <div class="section" id="Exporting-user-and-item-features">
 <h2>Exporting user and item features<a class="headerlink" href="#Exporting-user-and-item-features" title="Permalink to this headline"></a></h2>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[22]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">merlin.models.utils.dataset</span> <span class="kn">import</span> <span class="n">unique_rows_by_features</span>
@@ -822,7 +804,7 @@ rm driver_stats.parquet
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[23]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">user_features</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
@@ -830,7 +812,7 @@ rm driver_stats.parquet
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[23]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -869,78 +851,78 @@ rm driver_stats.parquet
   <tbody>
     <tr>
       <th>0</th>
-      <td>0</td>
-      <td>0</td>
       <td>1</td>
-      <td>5</td>
-      <td>2</td>
-      <td>2</td>
-      <td>2</td>
       <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
     </tr>
     <tr>
       <th>1</th>
+      <td>2</td>
+      <td>2</td>
       <td>1</td>
-      <td>109</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>69</td>
-      <td>131</td>
-      <td>9</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
     </tr>
     <tr>
       <th>2</th>
-      <td>2</td>
-      <td>301</td>
+      <td>3</td>
+      <td>3</td>
       <td>1</td>
       <td>1</td>
       <td>1</td>
       <td>1</td>
       <td>1</td>
       <td>1</td>
-      <td>2</td>
-      <td>57</td>
-      <td>4709</td>
-      <td>57</td>
+      <td>1</td>
+      <td>3</td>
+      <td>3</td>
+      <td>3</td>
     </tr>
     <tr>
       <th>3</th>
-      <td>3</td>
-      <td>1876</td>
-      <td>23</td>
-      <td>7</td>
-      <td>2</td>
-      <td>3</td>
+      <td>4</td>
+      <td>4</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>4</td>
+      <td>4</td>
+      <td>4</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>5</td>
+      <td>5</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
       <td>1</td>
       <td>1</td>
       <td>1</td>
       <td>5</td>
-      <td>63</td>
-      <td>3</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>4</td>
-      <td>534</td>
-      <td>1</td>
-      <td>2</td>
-      <td>1</td>
-      <td>2</td>
-      <td>1</td>
-      <td>1</td>
-      <td>0</td>
-      <td>40</td>
-      <td>22</td>
-      <td>108</td>
+      <td>5</td>
+      <td>5</td>
     </tr>
   </tbody>
 </table>
@@ -948,7 +930,7 @@ rm driver_stats.parquet
 </div>
 <p>We will artificially add <code class="docutils literal notranslate"><span class="pre">datetime</span></code> and <code class="docutils literal notranslate"><span class="pre">created</span></code> timestamp columns to our user_features dataframe. This required by Feast to track the user-item features and their creation time and to determine which version to use when we query Feast.</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[24]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
@@ -960,7 +942,7 @@ rm driver_stats.parquet
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[25]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">user_features</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
@@ -968,7 +950,7 @@ rm driver_stats.parquet
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[25]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -1009,134 +991,103 @@ rm driver_stats.parquet
   <tbody>
     <tr>
       <th>0</th>
-      <td>0</td>
-      <td>0</td>
       <td>1</td>
-      <td>5</td>
-      <td>2</td>
-      <td>2</td>
-      <td>2</td>
       <td>1</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>2022-03-29 23:48:32.641878</td>
-      <td>2022-03-29 23:48:33.068569</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>2022-04-05 18:58:11.594310</td>
+      <td>2022-04-05 18:58:11.960006</td>
     </tr>
     <tr>
       <th>1</th>
+      <td>2</td>
+      <td>2</td>
       <td>1</td>
-      <td>109</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>69</td>
-      <td>131</td>
-      <td>9</td>
-      <td>2022-03-29 23:48:32.641878</td>
-      <td>2022-03-29 23:48:33.068569</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2022-04-05 18:58:11.594310</td>
+      <td>2022-04-05 18:58:11.960006</td>
     </tr>
     <tr>
       <th>2</th>
-      <td>2</td>
-      <td>301</td>
+      <td>3</td>
+      <td>3</td>
       <td>1</td>
       <td>1</td>
       <td>1</td>
       <td>1</td>
       <td>1</td>
       <td>1</td>
-      <td>2</td>
-      <td>57</td>
-      <td>4709</td>
-      <td>57</td>
-      <td>2022-03-29 23:48:32.641878</td>
-      <td>2022-03-29 23:48:33.068569</td>
+      <td>1</td>
+      <td>3</td>
+      <td>3</td>
+      <td>3</td>
+      <td>2022-04-05 18:58:11.594310</td>
+      <td>2022-04-05 18:58:11.960006</td>
     </tr>
     <tr>
       <th>3</th>
-      <td>3</td>
-      <td>1876</td>
-      <td>23</td>
-      <td>7</td>
-      <td>2</td>
-      <td>3</td>
+      <td>4</td>
+      <td>4</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>4</td>
+      <td>4</td>
+      <td>4</td>
+      <td>2022-04-05 18:58:11.594310</td>
+      <td>2022-04-05 18:58:11.960006</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>5</td>
+      <td>5</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
       <td>1</td>
       <td>1</td>
       <td>1</td>
       <td>5</td>
-      <td>63</td>
-      <td>3</td>
-      <td>2022-03-29 23:48:32.641878</td>
-      <td>2022-03-29 23:48:33.068569</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>4</td>
-      <td>534</td>
-      <td>1</td>
-      <td>2</td>
-      <td>1</td>
-      <td>2</td>
-      <td>1</td>
-      <td>1</td>
-      <td>0</td>
-      <td>40</td>
-      <td>22</td>
-      <td>108</td>
-      <td>2022-03-29 23:48:32.641878</td>
-      <td>2022-03-29 23:48:33.068569</td>
+      <td>5</td>
+      <td>5</td>
+      <td>2022-04-05 18:58:11.594310</td>
+      <td>2022-04-05 18:58:11.960006</td>
     </tr>
   </tbody>
 </table>
 </div></div>
 </div>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">user_features</span><span class="o">.</span><span class="n">dtypes</span>
-</pre></div>
-</div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
-</pre></div>
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-user_id                        int32
-user_shops                     int32
-user_profile                   int32
-user_group                     int32
-user_gender                    int32
-user_age                       int32
-user_consumption_2             int32
-user_is_occupied               int32
-user_geography                 int32
-user_intentions                int32
-user_brands                    int32
-user_categories                int32
-datetime              datetime64[ns]
-created               datetime64[ns]
-dtype: object
-</pre></div></div>
-</div>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[22]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[26]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">user_features</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span><span class="s1">&#39;./feature_repo/data/user_features.parquet&#39;</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">user_features</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s1">&#39;feature_repo/data&#39;</span><span class="p">,</span> <span class="s1">&#39;user_features.parquet&#39;</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[23]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[27]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">item_features</span> <span class="o">=</span> <span class="n">unique_rows_by_features</span><span class="p">(</span><span class="n">train</span><span class="p">,</span> <span class="n">Tags</span><span class="o">.</span><span class="n">ITEM</span><span class="p">,</span> <span class="n">Tags</span><span class="o">.</span><span class="n">ITEM_ID</span><span class="p">)</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -1144,84 +1095,7 @@ dtype: object
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[24]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">item_features</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
-</pre></div>
-</div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[24]:
-</pre></div>
-</div>
-<div class="output_area rendered_html docutils container">
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>item_id</th>
-      <th>item_category</th>
-      <th>item_shop</th>
-      <th>item_brand</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>1</td>
-      <td>441</td>
-      <td>432</td>
-      <td>474</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>2</td>
-      <td>193</td>
-      <td>1159</td>
-      <td>125</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>3</td>
-      <td>3</td>
-      <td>1463</td>
-      <td>872</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>4</td>
-      <td>282</td>
-      <td>2479</td>
-      <td>555</td>
-    </tr>
-  </tbody>
-</table>
-</div></div>
-</div>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[25]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[28]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">item_features</span><span class="o">.</span><span class="n">shape</span>
@@ -1229,16 +1103,16 @@ dtype: object
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[25]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[28]:
 </pre></div>
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-(3078306, 4)
+(1307, 4)
 </pre></div></div>
 </div>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[26]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[29]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">item_features</span><span class="p">[</span><span class="s2">&quot;datetime&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
@@ -1249,30 +1123,7 @@ dtype: object
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[27]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">item_features</span><span class="o">.</span><span class="n">dtypes</span>
-</pre></div>
-</div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[27]:
-</pre></div>
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-item_id                   int32
-item_category             int32
-item_shop                 int32
-item_brand                int32
-datetime         datetime64[ns]
-created          datetime64[ns]
-dtype: object
-</pre></div></div>
-</div>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[28]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[30]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">item_features</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
@@ -1280,7 +1131,7 @@ dtype: object
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[28]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[30]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -1313,59 +1164,59 @@ dtype: object
   <tbody>
     <tr>
       <th>0</th>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0</td>
-      <td>2022-03-29 23:48:34.033435</td>
-      <td>2022-03-29 23:48:34.035852</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>2022-04-05 18:58:12.165964</td>
+      <td>2022-04-05 18:58:12.167496</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>1</td>
-      <td>441</td>
-      <td>432</td>
-      <td>474</td>
-      <td>2022-03-29 23:48:34.033435</td>
-      <td>2022-03-29 23:48:34.035852</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2022-04-05 18:58:12.165964</td>
+      <td>2022-04-05 18:58:12.167496</td>
     </tr>
     <tr>
       <th>2</th>
-      <td>2</td>
-      <td>193</td>
-      <td>1159</td>
-      <td>125</td>
-      <td>2022-03-29 23:48:34.033435</td>
-      <td>2022-03-29 23:48:34.035852</td>
+      <td>3</td>
+      <td>3</td>
+      <td>3</td>
+      <td>3</td>
+      <td>2022-04-05 18:58:12.165964</td>
+      <td>2022-04-05 18:58:12.167496</td>
     </tr>
     <tr>
       <th>3</th>
-      <td>3</td>
-      <td>3</td>
-      <td>1463</td>
-      <td>872</td>
-      <td>2022-03-29 23:48:34.033435</td>
-      <td>2022-03-29 23:48:34.035852</td>
+      <td>4</td>
+      <td>4</td>
+      <td>4</td>
+      <td>4</td>
+      <td>2022-04-05 18:58:12.165964</td>
+      <td>2022-04-05 18:58:12.167496</td>
     </tr>
     <tr>
       <th>4</th>
-      <td>4</td>
-      <td>282</td>
-      <td>2479</td>
-      <td>555</td>
-      <td>2022-03-29 23:48:34.033435</td>
-      <td>2022-03-29 23:48:34.035852</td>
+      <td>5</td>
+      <td>5</td>
+      <td>5</td>
+      <td>5</td>
+      <td>2022-04-05 18:58:12.165964</td>
+      <td>2022-04-05 18:58:12.167496</td>
     </tr>
   </tbody>
 </table>
 </div></div>
 </div>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[29]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[31]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># save to disk</span>
-<span class="n">item_features</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span><span class="s1">&#39;./feature_repo/data/item_features.parquet&#39;</span><span class="p">)</span>
+<span class="n">item_features</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s1">&#39;feature_repo/data&#39;</span><span class="p">,</span> <span class="s1">&#39;item_features.parquet&#39;</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
@@ -1373,7 +1224,7 @@ dtype: object
 <div class="section" id="Extract-and-save-Item-embeddings">
 <h2>Extract and save Item embeddings<a class="headerlink" href="#Extract-and-save-Item-embeddings" title="Permalink to this headline"></a></h2>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[30]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[32]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">item_embs</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">item_embeddings</span><span class="p">(</span><span class="n">Dataset</span><span class="p">(</span><span class="n">item_features</span><span class="p">,</span> <span class="n">schema</span><span class="o">=</span><span class="n">schema</span><span class="p">),</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">1024</span><span class="p">)</span>
@@ -1382,16 +1233,16 @@ dtype: object
 </div>
 </div>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[31]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[34]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># select only embedding columns</span>
-<span class="n">item_embeddings</span> <span class="o">=</span> <span class="n">item_embs_df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="mi">4</span><span class="p">:]</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># select only item_id together with embedding columns</span>
+<span class="n">item_embeddings</span> <span class="o">=</span> <span class="n">item_embs_df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;item_category&#39;</span><span class="p">,</span> <span class="s1">&#39;item_shop&#39;</span><span class="p">,</span> <span class="s1">&#39;item_brand&#39;</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[32]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[35]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">item_embeddings</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
@@ -1399,7 +1250,7 @@ dtype: object
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[32]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[35]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -1421,6 +1272,7 @@ dtype: object
   <thead>
     <tr style="text-align: right;">
       <th></th>
+      <th>item_id</th>
       <th>0</th>
       <th>1</th>
       <th>2</th>
@@ -1430,7 +1282,6 @@ dtype: object
       <th>6</th>
       <th>7</th>
       <th>8</th>
-      <th>9</th>
       <th>...</th>
       <th>54</th>
       <th>55</th>
@@ -1447,131 +1298,131 @@ dtype: object
   <tbody>
     <tr>
       <th>0</th>
-      <td>0.087966</td>
-      <td>-0.095411</td>
-      <td>0.095909</td>
-      <td>0.146380</td>
-      <td>0.097243</td>
-      <td>0.109508</td>
-      <td>0.083107</td>
-      <td>0.104098</td>
-      <td>0.047606</td>
-      <td>-0.016557</td>
+      <td>1</td>
+      <td>-0.076915</td>
+      <td>0.072023</td>
+      <td>0.138205</td>
+      <td>0.122796</td>
+      <td>-0.002307</td>
+      <td>-0.160278</td>
+      <td>0.183420</td>
+      <td>-0.219937</td>
+      <td>-0.043195</td>
       <td>...</td>
-      <td>0.030678</td>
-      <td>0.047079</td>
-      <td>-0.154461</td>
-      <td>0.122583</td>
-      <td>0.311171</td>
-      <td>-0.120558</td>
-      <td>0.039577</td>
-      <td>-0.014079</td>
-      <td>-0.180747</td>
-      <td>-0.040095</td>
+      <td>0.133487</td>
+      <td>-0.181939</td>
+      <td>-0.129924</td>
+      <td>-0.025064</td>
+      <td>-0.007420</td>
+      <td>-0.160271</td>
+      <td>-0.118174</td>
+      <td>-0.166227</td>
+      <td>0.158589</td>
+      <td>-0.094942</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>0.134474</td>
-      <td>0.019899</td>
-      <td>0.086098</td>
-      <td>0.201980</td>
-      <td>0.185933</td>
-      <td>0.007520</td>
-      <td>-0.075239</td>
-      <td>-0.075921</td>
-      <td>0.059336</td>
-      <td>0.123993</td>
+      <td>2</td>
+      <td>0.082813</td>
+      <td>-0.074872</td>
+      <td>-0.135630</td>
+      <td>-0.116752</td>
+      <td>0.001305</td>
+      <td>0.156757</td>
+      <td>-0.191399</td>
+      <td>0.214292</td>
+      <td>0.044232</td>
       <td>...</td>
-      <td>0.200382</td>
-      <td>0.107429</td>
-      <td>0.017707</td>
-      <td>-0.019648</td>
-      <td>0.292447</td>
-      <td>-0.108777</td>
-      <td>-0.139637</td>
-      <td>-0.022911</td>
-      <td>-0.102338</td>
-      <td>0.358516</td>
+      <td>-0.130633</td>
+      <td>0.177906</td>
+      <td>0.123571</td>
+      <td>0.023416</td>
+      <td>0.007120</td>
+      <td>0.167303</td>
+      <td>0.115787</td>
+      <td>0.165574</td>
+      <td>-0.158438</td>
+      <td>0.093160</td>
     </tr>
     <tr>
       <th>2</th>
-      <td>0.046249</td>
-      <td>0.018888</td>
-      <td>0.071851</td>
-      <td>0.034601</td>
-      <td>0.190652</td>
-      <td>0.088418</td>
-      <td>-0.062084</td>
-      <td>0.102151</td>
-      <td>0.037121</td>
-      <td>0.028370</td>
+      <td>3</td>
+      <td>0.079956</td>
+      <td>-0.072920</td>
+      <td>-0.137390</td>
+      <td>-0.121113</td>
+      <td>0.005027</td>
+      <td>0.158485</td>
+      <td>-0.185455</td>
+      <td>0.219271</td>
+      <td>0.042939</td>
       <td>...</td>
-      <td>0.076869</td>
-      <td>0.052328</td>
-      <td>-0.009836</td>
-      <td>-0.106719</td>
-      <td>0.172230</td>
-      <td>0.134776</td>
-      <td>-0.194744</td>
-      <td>0.128883</td>
-      <td>-0.110976</td>
-      <td>0.239220</td>
+      <td>-0.127179</td>
+      <td>0.184853</td>
+      <td>0.134282</td>
+      <td>0.020782</td>
+      <td>0.005622</td>
+      <td>0.161732</td>
+      <td>0.120336</td>
+      <td>0.165003</td>
+      <td>-0.158491</td>
+      <td>0.096599</td>
     </tr>
     <tr>
       <th>3</th>
-      <td>0.084705</td>
-      <td>0.140259</td>
-      <td>0.082066</td>
-      <td>-0.004641</td>
-      <td>0.090330</td>
-      <td>0.013105</td>
-      <td>0.243955</td>
-      <td>0.053653</td>
-      <td>0.301302</td>
-      <td>0.028994</td>
+      <td>4</td>
+      <td>0.073565</td>
+      <td>-0.072655</td>
+      <td>-0.136048</td>
+      <td>-0.122305</td>
+      <td>0.002802</td>
+      <td>0.163697</td>
+      <td>-0.181483</td>
+      <td>0.221638</td>
+      <td>0.040415</td>
       <td>...</td>
-      <td>-0.081015</td>
-      <td>0.088210</td>
-      <td>-0.086933</td>
-      <td>0.086017</td>
-      <td>0.076796</td>
-      <td>0.117760</td>
-      <td>0.049366</td>
-      <td>0.068530</td>
-      <td>-0.189925</td>
-      <td>0.100747</td>
+      <td>-0.135436</td>
+      <td>0.185165</td>
+      <td>0.123064</td>
+      <td>0.028292</td>
+      <td>0.006705</td>
+      <td>0.163032</td>
+      <td>0.116881</td>
+      <td>0.168350</td>
+      <td>-0.160161</td>
+      <td>0.093206</td>
     </tr>
     <tr>
       <th>4</th>
-      <td>0.256753</td>
-      <td>0.087870</td>
-      <td>0.247346</td>
-      <td>-0.013136</td>
-      <td>0.082029</td>
-      <td>0.005857</td>
-      <td>-0.024048</td>
-      <td>-0.048067</td>
-      <td>-0.085008</td>
-      <td>0.023413</td>
+      <td>5</td>
+      <td>0.079179</td>
+      <td>-0.069680</td>
+      <td>-0.135506</td>
+      <td>-0.120732</td>
+      <td>0.003728</td>
+      <td>0.156643</td>
+      <td>-0.186335</td>
+      <td>0.216001</td>
+      <td>0.045899</td>
       <td>...</td>
-      <td>0.165265</td>
-      <td>-0.003999</td>
-      <td>0.193471</td>
-      <td>-0.005712</td>
-      <td>0.195031</td>
-      <td>-0.115037</td>
-      <td>-0.132177</td>
-      <td>0.033123</td>
-      <td>-0.158193</td>
-      <td>0.027308</td>
+      <td>-0.129166</td>
+      <td>0.178323</td>
+      <td>0.130659</td>
+      <td>0.028560</td>
+      <td>0.010816</td>
+      <td>0.160520</td>
+      <td>0.121017</td>
+      <td>0.168797</td>
+      <td>-0.160206</td>
+      <td>0.091859</td>
     </tr>
   </tbody>
 </table>
-<p>5 rows × 64 columns</p>
+<p>5 rows × 65 columns</p>
 </div></div>
 </div>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[33]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[36]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># save to disk</span>
@@ -1584,17 +1435,17 @@ dtype: object
 <h2>Create feature definitions<a class="headerlink" href="#Create-feature-definitions" title="Permalink to this headline"></a></h2>
 <p>Now we will create our user and item features definitions in the user_features.py and item_features.py files and save these files in the feature_repo.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[36]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[37]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%writefile</span> ./feature_repo/user_features.py
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%writefile</span> /Merlin/examples/Deploying-multi-stage-RecSys/feature_repo/user_features.py
 <span class="kn">from</span> <span class="nn">google.protobuf.duration_pb2</span> <span class="kn">import</span> <span class="n">Duration</span>
 <span class="kn">import</span> <span class="nn">datetime</span>
 <span class="kn">from</span> <span class="nn">feast</span> <span class="kn">import</span> <span class="n">Entity</span><span class="p">,</span> <span class="n">Feature</span><span class="p">,</span> <span class="n">FeatureView</span><span class="p">,</span> <span class="n">ValueType</span>
 <span class="kn">from</span> <span class="nn">feast.infra.offline_stores.file_source</span> <span class="kn">import</span> <span class="n">FileSource</span>
 
 <span class="n">user_features</span> <span class="o">=</span> <span class="n">FileSource</span><span class="p">(</span>
-    <span class="n">path</span><span class="o">=</span><span class="s2">&quot;/Merlin/examples/PoC/feature_repo/data/user_features.parquet&quot;</span><span class="p">,</span>
+    <span class="n">path</span><span class="o">=</span><span class="s2">&quot;/Merlin/examples/Deploying-multi-stage-RecSys/feature_repo/data/user_features.parquet&quot;</span><span class="p">,</span>
     <span class="n">event_timestamp_column</span><span class="o">=</span><span class="s2">&quot;datetime&quot;</span><span class="p">,</span>
     <span class="n">created_timestamp_column</span><span class="o">=</span><span class="s2">&quot;created&quot;</span><span class="p">,</span>
 <span class="p">)</span>
@@ -1630,21 +1481,21 @@ dtype: object
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Writing ./feature_repo/user_features.py
+Writing /Merlin/examples/Deploying-multi-stage-RecSys/feature_repo/user_features.py
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[37]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[38]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%writefile</span> ./feature_repo/item_features.py
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%writefile</span> /Merlin/examples/Deploying-multi-stage-RecSys/feature_repo/item_features.py
 <span class="kn">from</span> <span class="nn">google.protobuf.duration_pb2</span> <span class="kn">import</span> <span class="n">Duration</span>
 <span class="kn">import</span> <span class="nn">datetime</span>
 <span class="kn">from</span> <span class="nn">feast</span> <span class="kn">import</span> <span class="n">Entity</span><span class="p">,</span> <span class="n">Feature</span><span class="p">,</span> <span class="n">FeatureView</span><span class="p">,</span> <span class="n">ValueType</span>
 <span class="kn">from</span> <span class="nn">feast.infra.offline_stores.file_source</span> <span class="kn">import</span> <span class="n">FileSource</span>
 
 <span class="n">item_features</span> <span class="o">=</span> <span class="n">FileSource</span><span class="p">(</span>
-    <span class="n">path</span><span class="o">=</span><span class="s2">&quot;/Merlin/examples/PoC/feature_repo/data/item_features.parquet&quot;</span><span class="p">,</span>
+    <span class="n">path</span><span class="o">=</span><span class="s2">&quot;/Merlin/examples/Deploying-multi-stage-RecSys/feature_repo/data/item_features.parquet&quot;</span><span class="p">,</span>
     <span class="n">event_timestamp_column</span><span class="o">=</span><span class="s2">&quot;datetime&quot;</span><span class="p">,</span>
     <span class="n">created_timestamp_column</span><span class="o">=</span><span class="s2">&quot;created&quot;</span><span class="p">,</span>
 <span class="p">)</span>
@@ -1672,15 +1523,25 @@ Writing ./feature_repo/user_features.py
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Writing ./feature_repo/item_features.py
+Writing /Merlin/examples/Deploying-multi-stage-RecSys/feature_repo/item_features.py
 </pre></div></div>
 </div>
 <p>Let’s checkout our Feast feature repository structure.</p>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[38]:
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>tree ./feature_repo
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># install tree</span>
+<span class="o">!</span>apt-get install tree
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[40]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">feature_repo_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s1">&#39;feature_repo&#39;</span><span class="p">)</span>
+<span class="o">!</span>tree <span class="nv">$feature_repo_path</span>
 </pre></div>
 </div>
 </div>
@@ -1689,7 +1550,7 @@ Writing ./feature_repo/item_features.py
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-<span class="ansi-blue-intense-fg ansi-bold">./feature_repo</span>
+<span class="ansi-blue-intense-fg ansi-bold">/Merlin/examples/Deploying-multi-stage-RecSys/feature_repo</span>
 ├── __init__.py
 ├── <span class="ansi-blue-intense-fg ansi-bold">data</span>
 │   ├── item_features.parquet
@@ -1704,7 +1565,7 @@ Writing ./feature_repo/item_features.py
 </div>
 <div class="section" id="Next-Steps">
 <h2>Next Steps<a class="headerlink" href="#Next-Steps" title="Permalink to this headline"></a></h2>
-<p>We trained and exported our ranking and retrieval models and NVTabular workflows. In the next step, we will learn how to deploy our trained models into <a class="reference external" href="https://github.com/triton-inference-server/server">Triton Inference Server (TIS)</a> with Merlin Systems library.</p>
+<p>We trained and exported our ranking and retrieval models and NVTabular workflows. In the next step, we will learn how to deploy our trained models into <a class="reference external" href="https://github.com/triton-inference-server/server">Triton Inference Server (TIS)</a> with Merlin Sytems library.</p>
 <p>For the next step, move on to the <code class="docutils literal notranslate"><span class="pre">02-Deploying-multi-stage-Recsys-with-Merlin-Systems.ipynb</span></code> notebook to deploy our saved models as an ensemble to TIS and obtain prediction results for a qiven request.</p>
 </div>
 </div>
