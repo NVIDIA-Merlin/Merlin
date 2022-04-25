@@ -253,11 +253,15 @@ RUN apt update -y --fix-missing && \
 RUN ln -s /usr/bin/python3 /usr/bin/python
 
 # Includes
+COPY --chown=1000:1000 --from=build /usr/include /usr/include/
 COPY --chown=1000:1000 --from=build /usr/local/include /usr/local/include/
+
+# Libraries
 COPY --chown=1000:1000 --from=build /usr/local/lib/lib* /usr/local/lib/
-COPY --chown=1000:1000 --from=build /usr/local/include /usr/local/include/
-COPY --chown=1000:1000 --from=build /usr/local/bin /usr/local/bin/
 COPY --chown=1000:1000 --from=build /usr/lib/x86_64-linux-gnu/libcudf* /usr/lib/x86_64-linux-gnu/
+
+# Binaries
+COPY --chown=1000:1000 --from=build /usr/local/bin /usr/local/bin/
 
 # Triton Server
 WORKDIR /opt/tritonserver
