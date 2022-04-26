@@ -1,0 +1,38 @@
+schemaVersion: 2.0.0
+commandTests:
+  - name: "CuPy Python package"
+    command: "python"
+    args: ["-c", "import cupy"]
+    expectedOutput: [""]
+  - name: "CuDF Python package"
+    command: "python"
+    args: ["-c", "import cudf"]
+    expectedOutput: [""]
+  - name: "Tensorflow Python package"
+    command: "python"
+    args: ["-c", "import tensorflow"]
+    expectedOutput: [""]
+  - name: "Merlin Core tests"
+    command: "pytest"
+    args: ["/core/tests/unit/"]
+    exitCode: 0
+  - name: "NVT dataloader tests"
+    command: "pytest"
+    args: ["/nvtabular/tests/unit/loader/"]
+    exitCode: 0
+  - name: "NVT inference tests"
+    command: "pytest"
+    args: ["/nvtabular/tests/unit/test_triton_inference.py"]
+    exitCode: 0
+  - name: "NVT notebook tests"
+    command: "pytest"
+    args: ["/nvtabular/tests/unit/test_notebooks.py"]
+    exitCode: 0
+  - name: "Merlin Models tests"
+    command: "pytest"
+    args: ["/models/tests/tf/"]
+    exitCode: 0
+  - name: "Merlin Systems tests"
+    command: "pytest"
+    args: ["/systems/tests/unit/"]
+    exitCode: 0

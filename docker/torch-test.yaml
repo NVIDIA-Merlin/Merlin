@@ -1,0 +1,34 @@
+schemaVersion: 2.0.0
+commandTests:
+  - name: "CuPy Python package"
+    command: "python"
+    args: ["-c", "import cupy"]
+    expectedOutput: [""]
+  - name: "CuDF Python package"
+    command: "python"
+    args: ["-c", "import cudf"]
+    expectedOutput: [""]
+  - name: "Torch Python package"
+    command: "python"
+    args: ["-c", "import torch"]
+    expectedOutput: [""]
+  - name: "Merlin Core tests"
+    command: "pytest"
+    args: ["/core/tests/unit/"]
+    exitCode: 0
+  - name: "NVT dataloader tests"
+    command: "pytest"
+    args: ["/nvtabular/tests/unit/loader/"]
+    exitCode: 0
+  - name: "NVT inference tests"
+    command: "pytest"
+    args: ["/nvtabular/tests/unit/test_triton_inference.py"]
+    exitCode: 0
+  - name: "NVT notebook tests"
+    command: "pytest"
+    args: ["/nvtabular/tests/unit/test_notebooks.py"]
+    exitCode: 0
+  - name: "Transformers4Rec tests"
+    command: "pytest"
+    args: ["/transformers4rec/tests/torch/"]
+    exitCode: 0
