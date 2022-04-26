@@ -114,12 +114,12 @@ RUN mkdir -p /var/tmp && wget -q -nc --no-check-certificate -P /var/tmp https://
 #    HugeCTR + Dependencies
 
 ARG HIREDIS_VER=1.0.2 \
-    REDIS_PP_VER=1.3.3 \
-    ROCKSDB_VER=6.29.3 \
-    RDKAFKA_VER=1.8.2 \
-    # Optional.
-    PROTOC_VER=3.19.4 \
-    HADOOP_VER=3.3.2
+ARG REDIS_PP_VER=1.3.3 \
+ARG ROCKSDB_VER=6.29.3 \
+ARG RDKAFKA_VER=1.8.2 \
+# Optional.
+ARG PROTOC_VER=3.19.4 \
+ARG HADOOP_VER=3.3.2
     
 # Dependency: Build and install Redis native client.
 RUN git clone --branch v${HIREDIS_VER} --depth 1 https://github.com/redis/hiredis.git hiredis && \
@@ -158,8 +158,8 @@ RUN git clone --branch v${RDKAFKA_VER} --depth 1 https://github.com/edenhill/lib
     rm -rf rdkafka
     
 # Optional dependency: Build and install protocol buffers and Hadoop/HDFS.
-ARG INSTALL_HDFS=false \
-    BUILD_HADOOP=false
+ARG INSTALL_HDFS=false
+ARG BUILD_HADOOP=false
 
 RUN git clone --branch v${PROTOC_VER} --depth 1 https://github.com/protocolbuffers/protobuf.git protobuf && \
     cd protobuf && \
