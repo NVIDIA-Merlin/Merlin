@@ -4,7 +4,7 @@ We have created a collection of Jupyter example notebooks based on different dat
 
 ## Inventory
 
-### 1. [Deploying multi stage RecSys](https://github.com/NVIDIA-Merlin/Merlin/tree/main/examples/Deploying-multi-stage-RecSys)
+### 1. [Building and Deploying multi stage RecSys](https://github.com/NVIDIA-Merlin/Merlin/tree/main/examples/Building-and-deploying-multi-stage-RecSys)
 
 Recommender system pipelines are often based on multiple stages: Retrievel, Filtering, Scoring and Ordering. This example provides an end-to-end pipelines leveraging the Merlin framework by
 - Processing the dataset using NVTabular
