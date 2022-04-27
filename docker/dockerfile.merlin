@@ -229,6 +229,7 @@ RUN apt update -y --fix-missing && \
         curl \
         datacenter-gpu-manager \
         git \
+        graphviz \
         libarchive-dev \
         libb64-dev \
         libboost-serialization-dev \
@@ -244,6 +245,7 @@ RUN apt update -y --fix-missing && \
         python3-pip \
         python3-dev \
         rapidjson-dev \
+        tree \
         wget \
         zlib1g-dev && \
     apt autoremove -y && \
@@ -287,7 +289,7 @@ COPY --chown=1000:1000 --from=build /opt/tritonserver/backends/nvtabular backend
 COPY --chown=1000:1000 --from=build /usr/local/lib/python3.8/dist-packages /usr/local/lib/python3.8/dist-packages/
 ENV PYTHONPATH=$PYTHONPATH:/usr/local/lib/python3.8/dist-packages/
 
-RUN pip install --no-cache-dir numpy==1.21.5 jupyterlab testbook
+RUN pip install --no-cache-dir numpy==1.21.5 jupyterlab pydot testbook
 
 # Add Merlin Repo
 RUN git clone https://github.com/NVIDIA-Merlin/Merlin/ /Merlin
