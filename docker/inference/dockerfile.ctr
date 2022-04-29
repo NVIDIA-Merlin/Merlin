@@ -34,7 +34,7 @@ RUN apt update -y --fix-missing && \
     apt install -y --no-install-recommends software-properties-common && \
     wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-ubuntu2004.pin && \
     mv cuda-ubuntu2004.pin /etc/apt/preferences.d/cuda-repository-pin-600 && \
-    apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/7fa2af80.pub && \
+    apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/3bf863cc.pub && \
     add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/ /"
 
 RUN apt update -y --fix-missing && \
@@ -115,7 +115,7 @@ RUN git clone --branch v1.9.2 https://github.com/gabime/spdlog.git build-env && 
       mkdir build && cd build && cmake .. && make -j && make install && \
     popd && \
     rm -rf build-env
-   
+
 # Install arrow
 ENV ARROW_HOME=/usr/local
 RUN git clone --branch apache-arrow-5.0.0 --recurse-submodules https://github.com/apache/arrow.git build-env && \
@@ -195,7 +195,7 @@ ENV PYTHONPATH=$PYTHONPATH:/core
 # Install Merlin Systems
 RUN git clone https://github.com/NVIDIA-Merlin/systems.git /systems/ && \
     cd /systems/ && git checkout ${SYSTEMS_VER} && pip install --no-deps -e .
-    ENV PYTHONPATH=$PYTHONPATH:/systems
+ENV PYTHONPATH=$PYTHONPATH:/systems
 
 # Install NVTabular
 ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
@@ -281,7 +281,7 @@ RUN git clone --branch v${RDKAFKA_VER} --depth 1 https://github.com/edenhill/lib
     make install && \
     cd .. && \
     rm -rf rdkafka
-        
+
 # Optional dependency: Build and install protocol buffers and Hadoop/HDFS.
 ARG INSTALL_HDFS=false
 ARG BUILD_HADOOP=false
