@@ -23,6 +23,15 @@ RUN ln -s /usr/local/cuda/lib64/stubs/libcuda.so /usr/local/cuda/lib64/stubs/lib
 
 # Install system packages
 ENV DEBIAN_FRONTEND=noninteractive
+
+RUN [ $(uname -m) = 'x86_64' ] \
+    && curl -o /tmp/cuda-keyring.deb \
+        https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-keyring_1.0-1_all.deb \
+    || curl -o /tmp/cuda-keyring.deb \
+        https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/sbsa/cuda-keyring_1.0-1_all.deb; \
+    dpkg -i /tmp/cuda-keyring.deb \
+    && rm /tmp/cuda-keyring.deb
+
 RUN apt update -y --fix-missing && \
     apt install -y --no-install-recommends \
        graphviz \
@@ -78,7 +87,7 @@ ENV PYTHONPATH=$PYTHONPATH:/core
 # Install Merlin Systems
 RUN git clone https://github.com/NVIDIA-Merlin/systems.git /systems/ && \
     cd /systems/ && git checkout ${SYSTEMS_VER} && pip install --no-deps -e .
-    ENV PYTHONPATH=$PYTHONPATH:/systems
+ENV PYTHONPATH=$PYTHONPATH:/systems
 
 # Install NVTabular
 ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
@@ -120,7 +129,7 @@ ARG RDKAFKA_VER=1.8.2
 # Optional.
 ARG PROTOC_VER=3.19.4
 ARG HADOOP_VER=3.3.2
-    
+
 # Dependency: Build and install Redis native client.
 RUN git clone --branch v${HIREDIS_VER} --depth 1 https://github.com/redis/hiredis.git hiredis && \
     mkdir hiredis/build && \
@@ -156,7 +165,7 @@ RUN git clone --branch v${RDKAFKA_VER} --depth 1 https://github.com/edenhill/lib
     make install && \
     cd .. && \
     rm -rf rdkafka
-    
+
 # Optional dependency: Build and install protocol buffers and Hadoop/HDFS.
 ARG INSTALL_HDFS=false
 ARG BUILD_HADOOP=false

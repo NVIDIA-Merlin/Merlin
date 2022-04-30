@@ -26,6 +26,15 @@ ENV PYTHONPATH=/usr/lib/python3.8/site-packages:$PYTHONPATH
 
 # Install packages
 ENV DEBIAN_FRONTEND=noninteractive
+
+RUN [ $(uname -m) = 'x86_64' ] \
+    && curl -o /tmp/cuda-keyring.deb \
+        https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-keyring_1.0-1_all.deb \
+    || curl -o /tmp/cuda-keyring.deb \
+        https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/sbsa/cuda-keyring_1.0-1_all.deb; \
+    dpkg -i /tmp/cuda-keyring.deb \
+    && rm /tmp/cuda-keyring.deb
+
 RUN apt update -y --fix-missing && \
     apt install -y --no-install-recommends \
         clang-format \
@@ -67,7 +76,7 @@ RUN git clone --branch v1.9.2 https://github.com/gabime/spdlog.git build-env && 
       mkdir build && cd build && cmake .. && make -j && make install && \
     popd && \
     rm -rf build-env
-    
+
 # Install arrow
 ENV ARROW_HOME=/usr/local
 RUN git clone --branch apache-arrow-5.0.0 --recurse-submodules https://github.com/apache/arrow.git build-env && \
@@ -147,7 +156,7 @@ ENV PYTHONPATH=$PYTHONPATH:/core
 # Install Merlin Systems
 RUN git clone https://github.com/NVIDIA-Merlin/systems.git /systems/ && \
     cd /systems/ && git checkout ${SYSTEMS_VER} && pip install --no-deps -e .
-    ENV PYTHONPATH=$PYTHONPATH:/systems
+ENV PYTHONPATH=$PYTHONPATH:/systems
 
 # Install NVTabular
 ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
