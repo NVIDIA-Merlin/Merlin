@@ -205,3 +205,4 @@ RUN rm -rf /repos
 
 HEALTHCHECK NONE
 CMD ["/bin/bash"]
+ENTRYPOINT ["/bin/bash", "-c", "/opt/nvidia/nvidia_entrypoint.sh"]
