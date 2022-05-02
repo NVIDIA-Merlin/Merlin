@@ -123,3 +123,4 @@ RUN rm -rf /usr/local/share/jupyter/lab/staging/node_modules/node-fetch
 
 HEALTHCHECK NONE
 CMD ["/bin/bash"]
+ENTRYPOINT ["/bin/bash", "-c", "/opt/nvidia/nvidia_entrypoint.sh"]
