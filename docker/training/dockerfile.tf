@@ -46,7 +46,7 @@ RUN apt update -y --fix-missing && \
 RUN pip install betterproto graphviz pybind11 pydot pytest mpi4py transformers==4.12
 RUN pip install --upgrade notebook
 RUN pip install --upgrade ipython
-RUN pip install --upgrade horovod
+# RUN pip install --upgrade horovod
 RUN pip install nvidia-pyindex
 RUN pip install tritonclient[all] grpcio-channelz
 RUN pip install numba==0.55.1
@@ -115,6 +115,8 @@ RUN if [ "$HUGECTR_DEV_MODE" == "false" ]; then \
 RUN git clone https://github.com/NVIDIA-Merlin/distributed-embeddings.git /distributed_embeddings/ && \
     cd /distributed_embeddings && git checkout ${TFDE_VER} && \
     make pip_pkg && pip install artifacts/*.whl && make clean
+
+ENV PYTHONPATH=$PYTHONPATH:/usr/local/lib/python3.8/dist-packages:/usr/lib/python3.8/site-packages
 
 # Clean up
 RUN rm -rf /repos
