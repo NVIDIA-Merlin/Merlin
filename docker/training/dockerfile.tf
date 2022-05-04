@@ -111,10 +111,10 @@ RUN if [ "$HUGECTR_DEV_MODE" == "false" ]; then \
         rm -rf build-env; \
     fi
 
-# Install distributed-embeddings
-RUN git clone https://github.com/NVIDIA-Merlin/distributed-embeddings.git /distributed_embeddings/ && \
-    cd /distributed_embeddings && git checkout ${TFDE_VER} && \
-    make pip_pkg && pip install artifacts/*.whl && make clean
+# # Install distributed-embeddings
+# RUN git clone https://github.com/NVIDIA-Merlin/distributed-embeddings.git /distributed_embeddings/ && \
+#     cd /distributed_embeddings && git checkout ${TFDE_VER} && \
+#     make pip_pkg && pip install artifacts/*.whl && make clean
 
 # Clean up
 RUN rm -rf /repos

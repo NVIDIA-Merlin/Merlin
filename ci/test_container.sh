@@ -64,11 +64,11 @@ if [ "$container" == "merlin-training" ]; then
     /hugectr/ci/test_unit.sh $container $devices
 fi
 
-## Test distributed-embeddings
-if [ "$container" == "merlin-tensorflow-training" ]; then
-    echo "Run unit tests for distributed-embeddings"
-    pytest -rxs /distributed_embeddings/tests
-fi
+# ## Test distributed-embeddings
+# if [ "$container" == "merlin-tensorflow-training" ]; then
+#     echo "Run unit tests for distributed-embeddings"
+#     pytest -rxs /distributed_embeddings/tests
+# fi
 
 echo "#####################"
 echo "# Integration tests #"
