@@ -1,18 +1,20 @@
-# NVIDIA Merlin Example Notebooks
+# Deploying a Multi-Stage Recommender System
 
-We created two jupyter notebook examples based on different stages of a Recommender Systems to demonstrate how to deploy a multi-stage Recommender Systems on Triton Inference Server. The notebooks demonstrate how to use NVTabular, Merlin Models and Merlin Systems libraries for ETL, training, and inference, respectively.
+We created two Jupyter notebooks that demonstrate two different stages of a Recommender Systems.
+The goal of the notebooks is to show how to deploy a multi-stage Recommender System and serve recommendations with Triton Inference Server.
+The notebooks demonstrate how to use the NVTabular, Merlin Models, and Merlin Systems libraries for feature engineering, training, and then inference.
 
-## Structure
+The two example notebooks are structured as follows:
 
-Two example notebooks are structured as follows:
-- 01-Building-Recommender-Systems-with-Merlin: 
-    - Execute the preprocessing and feature engineering pipeline (ETL) with NVTabular on the GPU
-    - train a ranking and retrieval model with TensorFlow based on the ETL output
-    - export saved models, user and item features and item embeddings.
-- 02-Deploying-multi-stage-RecSys-with-Merlin-Systems: 
-    - set up Feast feature store for feature storing and Faiss index for similarity search
-    - build multi-stage recommender systems ensemble pipeline with Merlin Systems operators
-    - perform Inference with the Triton Inference Server using Merlin Systems library.
+- [Building the Recommender System](01-Building-Recommender-Systems-with-Merlin.ipynb): 
+  - Execute the preprocessing and feature engineering pipeline (ETL) with NVTabular on the GPU.
+  - Train a ranking and retrieval model with TensorFlow based on the ETL output.
+  - Export the saved models, user and item features, and item embeddings.
+
+- [Deploying the Recommender System with Triton](02-Deploying-multi-stage-RecSys-with-Merlin-Systems.ipynb): 
+  - Set up a Feast feature store for feature storing and a Faiss index for similarity search.
+  - Build a multi-stage recommender system ensemble pipeline with Merlin Systems operators.
+  - Perform inference with the Triton Inference Server using the Merlin Systems library.
 
 ## Running the Example Notebooks
 
