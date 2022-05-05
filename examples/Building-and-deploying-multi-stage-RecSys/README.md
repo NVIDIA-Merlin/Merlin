@@ -16,8 +16,7 @@ Two example notebooks are structured as follows:
 
 ## Running the Example Notebooks
 
-Merlin docker containers are available on http://ngc.nvidia.com/catalog/containers/ with pre-installed versions. For `
-Deploying-multi-stage-RecSys` example notebooks we used `merlin-tensorflow-inference` container that has NVTabular with TensorFlow and Triton Inference support.
+Merlin docker containers are available on http://ngc.nvidia.com/catalog/containers/ with pre-installed versions. For `Building-and-deploying-multi-stage-RecSys` example notebooks we used `merlin-tensorflow-inference` container that has NVTabular with TensorFlow and Triton Inference support.
 
 To run the example notebooks using Docker containers, do the following:
 
@@ -26,32 +25,19 @@ To run the example notebooks using Docker containers, do the following:
    docker run -it --gpus all -p 8000:8000 -p 8001:8001 -p 8002:8002 -p 8888:8888 -v <path to your data>:/workspace/data/ --ipc=host <docker container> /bin/bash
    ```
 The container will open a shell when the run command execution is completed.
-  
-2. Install Tensorflow
 
-    ```
-    pip install tensorflow-gpu
-    ```
-
-3. Install feast and faiss libraries
-
-    ```
-    pip install feast
-    pip install faiss-gpu
-    ```
-
-4. You will have to start JupyterLab on the Docker container. First, install jupyter-lab with the following command:
+1. You will have to start JupyterLab on the Docker container. First, install jupyter-lab with the following command if it is missing:
    ```
    pip install jupyterlab
    ```
    
    For more information, see [Installation Guide](https://jupyterlab.readthedocs.io/en/stable/getting_started/installation.html).
 
-5. Start the jupyter-lab server by running the following command:
+2. Start the jupyter-lab server by running the following command:
    ```
    jupyter-lab --allow-root --ip='0.0.0.0' --NotebookApp.token='<password>'
    ```
 
-4. Open any browser to access the jupyter-lab server using `localhost:8888`.
+3. Open any browser to access the jupyter-lab server using `localhost:8888`.
 
-5. Once in the server, navigate to the ```/Merlin/examples/Deploying-multi-stage-RecSys``` directory and execute the example notebooks.
+4. Once in the server, navigate to the ```/Merlin/examples/Building-and-deploying-multi-stage-RecSys/``` directory and execute the example notebooks.
