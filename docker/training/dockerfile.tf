@@ -80,7 +80,7 @@ ENV PYTHONPATH=$PYTHONPATH:/transformers4rec
 
 # Install Models
 RUN git clone https://github.com/NVIDIA-Merlin/Models.git /models/ && \
-    cd /models/ && git checkout ${MODELS_VER} && pip install -e . --no-deps
+    cd /models/ && git checkout ${MODELS_VER} && pip install . --no-deps
 ENV PYTHONPATH=$PYTHONPATH:/models
 
 # Add Merlin Repo

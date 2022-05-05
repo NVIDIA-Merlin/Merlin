@@ -79,7 +79,7 @@ RUN git clone --branch v1.9.2 https://github.com/gabime/spdlog.git build-env && 
 
 # Install arrow
 ENV ARROW_HOME=/usr/local
-RUN git clone --branch apache-arrow-5.0.0 --recurse-submodules https://github.com/apache/arrow.git build-env && \
+RUN git clone --branch apache-arrow-6.0.1 --recurse-submodules https://github.com/apache/arrow.git build-env && \
     pushd build-env && \
       export PARQUET_TEST_DATA="${PWD}/cpp/submodules/parquet-testing/data" && \
       export ARROW_TEST_DATA="${PWD}/testing/data" && \
@@ -150,7 +150,7 @@ RUN git clone https://github.com/rapidsai/cudf.git build-env && cd build-env/ &&
 
 # Install Merlin Core
 RUN git clone https://github.com/NVIDIA-Merlin/core.git /core/ && \
-    cd /core/ && git checkout ${CORE_VER} && pip install -e . --no-deps
+    cd /core/ && git checkout ${CORE_VER} && pip install . --no-deps
 ENV PYTHONPATH=$PYTHONPATH:/core
 
 # Install Merlin Systems
@@ -161,17 +161,17 @@ ENV PYTHONPATH=$PYTHONPATH:/systems
 # Install NVTabular
 ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
 RUN git clone https://github.com/NVIDIA-Merlin/NVTabular.git /nvtabular/ && \
-    cd /nvtabular/ && git checkout ${NVTAB_VER} && pip install -e . --no-deps
+    cd /nvtabular/ && git checkout ${NVTAB_VER} && pip install . --no-deps
 ENV PYTHONPATH=$PYTHONPATH:/nvtabular
 
 # Install Transformers4Rec
 RUN git clone https://github.com/NVIDIA-Merlin/Transformers4Rec.git /transformers4rec && \
-    cd /transformers4rec/ && git checkout ${TF4REC_VER} && pip install -e . --no-deps
+    cd /transformers4rec/ && git checkout ${TF4REC_VER} && pip install . --no-deps
 ENV PYTHONPATH=$PYTHONPATH:/transformers4rec
 
 # Install Models
 RUN git clone https://github.com/NVIDIA-Merlin/Models.git /models/ && \
-    cd /models/ && git checkout ${MODELS_VER} && pip install -e . --no-deps;
+    cd /models/ && git checkout ${MODELS_VER} && pip install . --no-deps;
 ENV PYTHONPATH=$PYTHONPATH:/models
 
 # Add Merlin Repo
