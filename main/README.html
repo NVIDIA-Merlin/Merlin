@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>NVIDIA Merlin &mdash; Merlin  documentation</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/togglebutton.css" type="text/css" />
+      <link rel="stylesheet" href="_static/mystnb.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
@@ -12,11 +14,15 @@
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
-        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script >let toggleHintShow = 'Click to show';</script>
+        <script >let toggleHintHide = 'Click to hide';</script>
+        <script >let toggleOpenOnPrint = 'true';</script>
+        <script src="_static/togglebutton.js"></script>
+        <script >var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Example Notebooks" href="examples/index.html" />
+    <link rel="next" title="NVIDIA Merlin Example Notebooks" href="examples/index.html" />
     <link rel="prev" title="Merlin" href="index.html" /> 
 </head>
 
@@ -35,7 +41,8 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <ul class="current">
+              <p class="caption"><span class="caption-text">Contents</span></p>
+<ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Introduction</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#benefits">Benefits</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#components-of-nvidia-merlin">Components of NVIDIA Merlin</a></li>
@@ -46,7 +53,7 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="examples/index.html">Example Notebooks</a></li>
 <li class="toctree-l1"><a class="reference internal" href="containers.html">Merlin Containers</a></li>
-<li class="toctree-l1"><a class="reference internal" href="support_matrix/index.html">Support Matrix</a></li>
+<li class="toctree-l1"><a class="reference internal" href="support_matrix/index.html">Merlin Support Matrix</a></li>
 </ul>
 
         </div>
@@ -72,31 +79,7 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  
-<style>
-/* CSS overrides for sphinx_rtd_theme */
-
-/* 24px margin */
-.nbinput.nblast.container,
-.nboutput.nblast.container {
-    margin-bottom: 19px;  /* padding has already 5px */
-}
-
-/* ... except between code cells! */
-.nblast.container + .nbinput.container {
-    margin-top: -19px;
-}
-
-.admonition > p:before {
-    margin-right: 4px;  /* make room for the exclamation icon */
-}
-
-/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
-.math {
-    text-align: unset;
-}
-</style>
-<div class="section" id="nvidia-merlin">
+  <div class="tex2jax_ignore mathjax_ignore section" id="nvidia-merlin">
 <h1><a class="reference external" href="https://github.com/NVIDIA-Merlin">NVIDIA Merlin</a><a class="headerlink" href="#nvidia-merlin" title="Permalink to this headline"></a></h1>
 <p><img alt="GitHub tag (latest SemVer)" src="https://img.shields.io/github/v/tag/NVIDIA-Merlin/Merlin?sort=semver" />
 <img alt="GitHub License" src="https://img.shields.io/github/license/NVIDIA-Merlin/Merlin" />
@@ -196,15 +179,13 @@ transformation operators.</p></li>
 </div>
 <div class="section" id="example-notebooks-and-tutorials">
 <h2>Example Notebooks and Tutorials<a class="headerlink" href="#example-notebooks-and-tutorials" title="Permalink to this headline"></a></h2>
-<p>A collection of <a class="reference external" href="./examples/">end-to-end examples</a> is available within this
-repository in the form of Jupyter notebooks. The example notebooks demonstrate
-how to:</p>
+<p>A collection of <a class="reference internal" href="examples/index.html"><span class="xref myst">end-to-end examples</span></a> are available in the form of Jupyter notebooks.
+The example notebooks demonstrate how to:</p>
 <ul class="simple">
-<li><p>download and prepare the dataset.</p></li>
-<li><p>use preprocessing and engineering features.</p></li>
-<li><p>train deep learning recommendation models with TensorFlow, PyTorch, FastAI, or
-HugeCTR.</p></li>
-<li><p>deploy the models to production.</p></li>
+<li><p>Download and prepare a dataset.</p></li>
+<li><p>Use preprocessing and engineering features.</p></li>
+<li><p>Train deep-learning recommendation models with TensorFlow, PyTorch, FastAI, or HugeCTR.</p></li>
+<li><p>Deploy the models to production with Triton Inference Server.</p></li>
 </ul>
 <p>These examples are based on different datasets and provide a wide range of
 real-world use cases.</p>
@@ -232,7 +213,7 @@ recommender system pipelines.</p>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="index.html" class="btn btn-neutral float-left" title="Merlin" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="examples/index.html" class="btn btn-neutral float-right" title="Example Notebooks" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="examples/index.html" class="btn btn-neutral float-right" title="NVIDIA Merlin Example Notebooks" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
