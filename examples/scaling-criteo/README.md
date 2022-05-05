@@ -1,5 +1,4 @@
-Scaling Large Datasets with Criteo
-==================================
+# Scaling Large Datasets with Criteo
 
 Criteo provides the largest publicly available dataset for recommender systems with a size of 1TB of uncompressed click logs that contain 4 billion examples.
 We demonstrate how to scale NVTabular, as well as:
@@ -15,13 +14,10 @@ The compose files enable you to run a pair of training and inference containers.
 
 Explore the following notebooks:
 
-.. toctree::
-   :maxdepth: 1
-
-   Download and Convert <01-Download-Convert.ipynb>
-   Feature Engineering with NVTabular <02-ETL-with-NVTabular.ipynb>
-   Training with FastAI <03-Training-with-FastAI.ipynb>
-   Training with HugeCTR <03-Training-with-HugeCTR.ipynb>
-   Training with TensorFlow <03-Training-with-TF.ipynb>
-   Deploy the HugeCTR Model with Triton Inference Server <04-Triton-Inference-with-HugeCTR.ipynb>
-   Deploy the TensorFlow Model with Triton Inference Server <04-Triton-Inference-with-TF.ipynb>
+- [Download and Convert](01-Download-Convert.ipynb)
+- [Feature Engineering with NVTabular](02-ETL-with-NVTabular.ipynb)
+- [Training with FastAI](03-Training-with-FastAI.ipynb)
+- [Training with HugeCTR](03-Training-with-HugeCTR.ipynb)
+- [Training with TensorFlow](03-Training-with-TF.ipynb)
+- [Deploy the HugeCTR Model with Triton Inference Server](04-Triton-Inference-with-HugeCTR.ipynb)
+- [Deploy the TensorFlow Model with Triton Inference Server](04-Triton-Inference-with-TF.ipynb)
