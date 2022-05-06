@@ -3,8 +3,10 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NVIDIA Merlin Example Notebooks &mdash; Merlin  documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <title>Deploying a Multi-Stage Recommender System &mdash; Merlin  documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/togglebutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/mystnb.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
@@ -12,10 +14,16 @@
         <script src="../../_static/jquery.js"></script>
         <script src="../../_static/underscore.js"></script>
         <script src="../../_static/doctools.js"></script>
-        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script >let toggleHintShow = 'Click to show';</script>
+        <script >let toggleHintHide = 'Click to hide';</script>
+        <script >let toggleOpenOnPrint = 'true';</script>
+        <script src="../../_static/togglebutton.js"></script>
+        <script >var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
-    <link rel="search" title="Search" href="../../search.html" /> 
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Building Intelligent Recommender Systems with Merlin" href="01-Building-Recommender-Systems-with-Merlin.html" />
+    <link rel="prev" title="Serve Recommendations from the TensorFlow Model" href="../getting-started-movielens/04-Triton-Inference-with-TF.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -33,11 +41,24 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <ul>
+              <p class="caption"><span class="caption-text">Contents</span></p>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../../README.html">Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../index.html">Example Notebooks</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">Example Notebooks</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../index.html#inventory">Inventory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#running-the-example-notebooks">Running the Example Notebooks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../getting-started-movielens/index.html">Getting Started using the MovieLens Dataset</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Deploying a Multi-Stage Recommender System</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#running-the-example-notebooks">Running the Example Notebooks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="01-Building-Recommender-Systems-with-Merlin.html">Building the Recommender System</a></li>
+<li class="toctree-l3"><a class="reference internal" href="02-Deploying-multi-stage-RecSys-with-Merlin-Systems.html">Deploying the Recommender System with Triton</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../scaling-criteo/index.html">Scaling Large Datasets with Criteo</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="../../containers.html">Merlin Containers</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../support_matrix/index.html">Support Matrix</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../support_matrix/index.html">Merlin Support Matrix</a></li>
 </ul>
 
         </div>
@@ -54,7 +75,8 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>NVIDIA Merlin Example Notebooks</li>
+          <li><a href="../index.html">NVIDIA Merlin Example Notebooks</a> &raquo;</li>
+      <li>Deploying a Multi-Stage Recommender System</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -63,56 +85,31 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  
-<style>
-/* CSS overrides for sphinx_rtd_theme */
-
-/* 24px margin */
-.nbinput.nblast.container,
-.nboutput.nblast.container {
-    margin-bottom: 19px;  /* padding has already 5px */
-}
-
-/* ... except between code cells! */
-.nblast.container + .nbinput.container {
-    margin-top: -19px;
-}
-
-.admonition > p:before {
-    margin-right: 4px;  /* make room for the exclamation icon */
-}
-
-/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
-.math {
-    text-align: unset;
-}
-</style>
-<div class="section" id="nvidia-merlin-example-notebooks">
-<h1>NVIDIA Merlin Example Notebooks<a class="headerlink" href="#nvidia-merlin-example-notebooks" title="Permalink to this headline"></a></h1>
-<p>We created two jupyter notebook examples based on different stages of a Recommender Systems to demonstrate how to deploy a multi-stage Recommender Systems on Triton Inference Server. The notebooks demonstrate how to use NVTabular, Merlin Models and Merlin Systems libraries for ETL, training, and inference, respectively.</p>
-<div class="section" id="structure">
-<h2>Structure<a class="headerlink" href="#structure" title="Permalink to this headline"></a></h2>
-<p>Two example notebooks are structured as follows:</p>
+  <div class="tex2jax_ignore mathjax_ignore section" id="deploying-a-multi-stage-recommender-system">
+<h1>Deploying a Multi-Stage Recommender System<a class="headerlink" href="#deploying-a-multi-stage-recommender-system" title="Permalink to this headline"></a></h1>
+<p>We created two Jupyter notebooks that demonstrate two different stages of a Recommender Systems.
+The goal of the notebooks is to show how to deploy a multi-stage Recommender System and serve recommendations with Triton Inference Server.
+The notebooks demonstrate how to use the NVTabular, Merlin Models, and Merlin Systems libraries for feature engineering, training, and then inference.</p>
+<p>The two example notebooks are structured as follows:</p>
 <ul class="simple">
-<li><p>01-Building-Recommender-Systems-with-Merlin:</p>
+<li><p><a class="reference internal" href="01-Building-Recommender-Systems-with-Merlin.html"><span class="doc std std-doc">Building the Recommender System</span></a>:</p>
 <ul>
-<li><p>Execute the preprocessing and feature engineering pipeline (ETL) with NVTabular on the GPU</p></li>
-<li><p>train a ranking and retrieval model with TensorFlow based on the ETL output</p></li>
-<li><p>export saved models, user and item features and item embeddings.</p></li>
+<li><p>Execute the preprocessing and feature engineering pipeline (ETL) with NVTabular on the GPU.</p></li>
+<li><p>Train a ranking and retrieval model with TensorFlow based on the ETL output.</p></li>
+<li><p>Export the saved models, user and item features, and item embeddings.</p></li>
 </ul>
 </li>
-<li><p>02-Deploying-multi-stage-RecSys-with-Merlin-Systems:</p>
+<li><p><a class="reference internal" href="02-Deploying-multi-stage-RecSys-with-Merlin-Systems.html"><span class="doc std std-doc">Deploying the Recommender System with Triton</span></a>:</p>
 <ul>
-<li><p>set up Feast feature store for feature storing and Faiss index for similarity search</p></li>
-<li><p>build multi-stage recommender systems ensemble pipeline with Merlin Systems operators</p></li>
-<li><p>perform Inference with the Triton Inference Server using Merlin Systems library.</p></li>
+<li><p>Set up a Feast feature store for feature storing and a Faiss index for similarity search.</p></li>
+<li><p>Build a multi-stage recommender system ensemble pipeline with Merlin Systems operators.</p></li>
+<li><p>Perform inference with the Triton Inference Server using the Merlin Systems library.</p></li>
 </ul>
 </li>
 </ul>
-</div>
 <div class="section" id="running-the-example-notebooks">
 <h2>Running the Example Notebooks<a class="headerlink" href="#running-the-example-notebooks" title="Permalink to this headline"></a></h2>
-<p>Merlin docker containers are available on http://ngc.nvidia.com/catalog/containers/ with pre-installed versions. For <code class="docutils literal notranslate"><span class="pre">Building-and-deploying-multi-stage-RecSys</span></code> example notebooks we used <code class="docutils literal notranslate"><span class="pre">merlin-tensorflow-inference</span></code> container that has NVTabular with TensorFlow and Triton Inference support.</p>
+<p>Merlin docker containers are available on <a class="reference external" href="http://ngc.nvidia.com/catalog/containers/">http://ngc.nvidia.com/catalog/containers/</a> with pre-installed versions. For <code class="docutils literal notranslate"><span class="pre">Building-and-deploying-multi-stage-RecSys</span></code> example notebooks we used <code class="docutils literal notranslate"><span class="pre">merlin-tensorflow-inference</span></code> container that has NVTabular with TensorFlow and Triton Inference support.</p>
 <p>To run the example notebooks using Docker containers, do the following:</p>
 <ol>
 <li><p>Once you pull the inference container, launch it by running the following command:</p>
@@ -138,12 +135,17 @@
 <li><p>Once in the server, navigate to the <code class="docutils literal notranslate"><span class="pre">/Merlin/examples/Building-and-deploying-multi-stage-RecSys/</span></code> directory and execute the example notebooks.</p></li>
 </ol>
 </div>
+<div class="toctree-wrapper compound">
+</div>
 </div>
 
 
            </div>
           </div>
-          <footer>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../getting-started-movielens/04-Triton-Inference-with-TF.html" class="btn btn-neutral float-left" title="Serve Recommendations from the TensorFlow Model" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="01-Building-Recommender-Systems-with-Merlin.html" class="btn btn-neutral float-right" title="Building Intelligent Recommender Systems with Merlin" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
 
   <hr/>
 
