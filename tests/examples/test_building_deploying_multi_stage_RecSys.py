@@ -16,7 +16,7 @@ def test_func(tb1):
         import os
         os.environ["DATA_FOLDER"] = "/tmp/data/"
         os.environ["NUM_ROWS"] = "10000"
-        os.system('mkdir -p /tmp/examples')
+        os.system("mkdir -p /tmp/examples")
         os.environ["BASE_DIR"] = "/tmp/examples/"
         """
     )
