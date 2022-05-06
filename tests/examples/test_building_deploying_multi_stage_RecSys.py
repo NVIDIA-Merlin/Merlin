@@ -1,6 +1,7 @@
 import os
 
 from testbook import testbook
+
 from tests.conftest import REPO_ROOT
 
 
@@ -28,7 +29,8 @@ def test_func(tb1):
     assert os.path.isfile("/tmp/examples/feature_repo/item_features.py")
 
     with testbook(
-        "/Merlin/examples/Building-and-deploying-multi-stage-RecSys/02-Deploying-multi-stage-RecSys-with-Merlin-Systems.ipynb",
+        REPO_ROOT
+        / "examples/Building-and-deploying-multi-stage-RecSys/02-Deploying-multi-stage-RecSys-with-Merlin-Systems.ipynb",
         execute=False,
     ) as tb2:
         tb2.inject(
