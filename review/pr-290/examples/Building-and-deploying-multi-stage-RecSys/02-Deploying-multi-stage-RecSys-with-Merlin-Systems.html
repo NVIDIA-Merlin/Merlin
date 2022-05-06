@@ -115,12 +115,9 @@
 <p>Merlin Systems library have the set of operators to be able to serve multi-stage recommender systems built with Tensorflow on <a class="reference external" href="https://github.com/triton-inference-server/server">Triton Inference Server</a>(TIS) easily and efficiently. Below, we will go through these operators and demonstrate their usage in serving a multi-stage system on Triton.</p>
 <div class="section" id="import-required-libraries-and-functions">
 <h2>Import required libraries and functions<a class="headerlink" href="#import-required-libraries-and-functions" title="Permalink to this headline"></a></h2>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">#%pip install tensorflow &quot;feast&lt;0.20&quot; faiss-gpu</span>
+<p>At this step, we assume you already installed the tensorflow-gpu, feast and faiss-gpu libraries when running the first notebook <code class="docutils literal notranslate"><span class="pre">01-Building-Recommender-Systems-with-Merlin.ipynb</span></code>. In case you need to install them, execute the following script in a cell.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="n">pip</span> <span class="n">install</span> <span class="n">tensorflow</span> <span class="s2">&quot;feast&lt;0.20&quot;</span> <span class="n">faiss</span><span class="o">-</span><span class="n">gpu</span>
 </pre></div>
-</div>
-</div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -129,6 +126,7 @@
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">import</span> <span class="nn">feast</span>
 <span class="kn">import</span> <span class="nn">faiss</span>
+<span class="kn">import</span> <span class="nn">seedir</span> <span class="k">as</span> <span class="nn">sd</span>
 <span class="kn">from</span> <span class="nn">nvtabular</span> <span class="kn">import</span> <span class="n">ColumnSchema</span><span class="p">,</span> <span class="n">Schema</span>
 
 <span class="kn">from</span> <span class="nn">merlin.systems.dag.ensemble</span> <span class="kn">import</span> <span class="n">Ensemble</span>
@@ -137,41 +135,6 @@
 <span class="kn">from</span> <span class="nn">merlin.systems.dag.ops.tensorflow</span> <span class="kn">import</span> <span class="n">PredictTensorflow</span>
 <span class="kn">from</span> <span class="nn">merlin.systems.dag.ops.unroll_features</span> <span class="kn">import</span> <span class="n">UnrollFeatures</span>
 <span class="kn">from</span> <span class="nn">merlin.systems.triton.utils</span> <span class="kn">import</span> <span class="n">run_triton_server</span><span class="p">,</span> <span class="n">run_ensemble_on_tritonserver</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/usr/local/lib/python3.8/dist-packages/faiss/loader.py:28: DeprecationWarning: distutils Version classes are deprecated. Use packaging.version instead.
-  if LooseVersion(numpy.__version__) &gt;= &quot;1.19&quot;:
-/usr/local/lib/python3.8/dist-packages/setuptools/_distutils/version.py:351: DeprecationWarning: distutils Version classes are deprecated. Use packaging.version instead.
-  other = LooseVersion(other)
-05/04/2022 01:28:59 PM INFO:Loading faiss with AVX2 support.
-05/04/2022 01:28:59 PM INFO:Could not load library with AVX2 support due to:
-ModuleNotFoundError(&quot;No module named &#39;faiss.swigfaiss_avx2&#39;&quot;)
-05/04/2022 01:28:59 PM INFO:Loading faiss.
-05/04/2022 01:28:59 PM INFO:Successfully loaded faiss.
-/usr/lib/python3.8/site-packages/cudf/utils/metadata/orc_column_statistics_pb2.py:19: DeprecationWarning: Call to deprecated create function FileDescriptor(). Note: Create unlinked descriptors is going to go away. Please use get/find descriptors from generated code or query the descriptor_pool.
-  DESCRIPTOR = _descriptor.FileDescriptor(
-/usr/lib/python3.8/site-packages/cudf/utils/metadata/orc_column_statistics_pb2.py:37: DeprecationWarning: Call to deprecated create function FieldDescriptor(). Note: Create unlinked descriptors is going to go away. Please use get/find descriptors from generated code or query the descriptor_pool.
-  _descriptor.FieldDescriptor(
-/usr/lib/python3.8/site-packages/cudf/utils/metadata/orc_column_statistics_pb2.py:30: DeprecationWarning: Call to deprecated create function Descriptor(). Note: Create unlinked descriptors is going to go away. Please use get/find descriptors from generated code or query the descriptor_pool.
-  _INTEGERSTATISTICS = _descriptor.Descriptor(
-/usr/lib/python3.8/site-packages/dask_cudf/core.py:32: DeprecationWarning: distutils Version classes are deprecated. Use packaging.version instead.
-  DASK_VERSION = LooseVersion(dask.__version__)
-/usr/local/lib/python3.8/dist-packages/setuptools/_distutils/version.py:351: DeprecationWarning: distutils Version classes are deprecated. Use packaging.version instead.
-  other = LooseVersion(other)
-/usr/local/lib/python3.8/dist-packages/tritonclient/grpc/model_config_pb2.py:19: DeprecationWarning: Call to deprecated create function FileDescriptor(). Note: Create unlinked descriptors is going to go away. Please use get/find descriptors from generated code or query the descriptor_pool.
-  DESCRIPTOR = _descriptor.FileDescriptor(
-/usr/local/lib/python3.8/dist-packages/tritonclient/grpc/model_config_pb2.py:33: DeprecationWarning: Call to deprecated create function EnumValueDescriptor(). Note: Create unlinked descriptors is going to go away. Please use get/find descriptors from generated code or query the descriptor_pool.
-  _descriptor.EnumValueDescriptor(
-/usr/local/lib/python3.8/dist-packages/tritonclient/grpc/model_config_pb2.py:27: DeprecationWarning: Call to deprecated create function EnumDescriptor(). Note: Create unlinked descriptors is going to go away. Please use get/find descriptors from generated code or query the descriptor_pool.
-  _DATATYPE = _descriptor.EnumDescriptor(
-/usr/local/lib/python3.8/dist-packages/tritonclient/grpc/model_config_pb2.py:330: DeprecationWarning: Call to deprecated create function FieldDescriptor(). Note: Create unlinked descriptors is going to go away. Please use get/find descriptors from generated code or query the descriptor_pool.
-  _descriptor.FieldDescriptor(
-/usr/local/lib/python3.8/dist-packages/tritonclient/grpc/model_config_pb2.py:323: DeprecationWarning: Call to deprecated create function Descriptor(). Note: Create unlinked descriptors is going to go away. Please use get/find descriptors from generated code or query the descriptor_pool.
-  _MODELRATELIMITER_RESOURCE = _descriptor.Descriptor(
-/usr/local/lib/python3.8/dist-packages/flatbuffers/compat.py:19: DeprecationWarning: the imp module is deprecated in favour of importlib; see the module&#39;s documentation for alternative uses
-  import imp
 </pre></div>
 </div>
 </div>
@@ -199,11 +162,11 @@ ModuleNotFoundError(&quot;No module named &#39;faiss.swigfaiss_avx2&#39;&quot;)
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/tmp/examples/feature_repo
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/Merlin/examples/Building-and-deploying-multi-stage-RecSys/feature_repo
 /usr/local/lib/python3.8/dist-packages/feast/feature_view.py:100: DeprecationWarning: The argument &#39;input&#39; is being deprecated. Please use &#39;batch_source&#39; instead. Feast 0.13 and onwards will not support the argument &#39;input&#39;.
   warnings.warn(
-Created entity <span class=" -Color -Color-Bold -Color-Bold-Green">user_id</span>
 Created entity <span class=" -Color -Color-Bold -Color-Bold-Green">item_id</span>
+Created entity <span class=" -Color -Color-Bold -Color-Bold-Green">user_id</span>
 Created feature view <span class=" -Color -Color-Bold -Color-Bold-Green">item_features</span>
 Created feature view <span class=" -Color -Color-Bold -Color-Bold-Green">user_features</span>
 
@@ -229,9 +192,9 @@ Created sqlite table <span class=" -Color -Color-Bold -Color-Bold-Green">feature
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Materializing <span class=" -Color -Color-Bold -Color-Bold-Green">2</span> feature views from <span class=" -Color -Color-Bold -Color-Bold-Green">1995-01-01 01:01:01+00:00</span> to <span class=" -Color -Color-Bold -Color-Bold-Green">2025-01-01 01:01:01+00:00</span> into the <span class=" -Color -Color-Bold -Color-Bold-Green">sqlite</span> online store.
 
 <span class=" -Color -Color-Bold -Color-Bold-Green">item_features</span>:
-100%|███████████████████████████████████████████████████████████| 448/448 [00:00&lt;00:00, 4483.47it/s]
+100%|███████████████████████████████████████████████████████████| 448/448 [00:00&lt;00:00, 4689.41it/s]
 <span class=" -Color -Color-Bold -Color-Bold-Green">user_features</span>:
-100%|███████████████████████████████████████████████████████████| 453/453 [00:00&lt;00:00, 1797.21it/s]
+100%|███████████████████████████████████████████████████████████| 458/458 [00:00&lt;00:00, 1477.71it/s]
 </pre></div>
 </div>
 </div>
@@ -241,23 +204,21 @@ Created sqlite table <span class=" -Color -Color-Bold -Color-Bold-Green">feature
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># set up the base dir to for feature store</span>
 <span class="n">feature_repo_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s1">&#39;feature_repo&#39;</span><span class="p">)</span>
-<span class="o">!</span>tree <span class="nv">$feature_repo_path</span>
+<span class="n">sd</span><span class="o">.</span><span class="n">seedir</span><span class="p">(</span><span class="n">feature_repo_path</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s1">&#39;lines&#39;</span><span class="p">,</span> <span class="n">itemlimit</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">depthlimit</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">exclude_folders</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;.ipynb_checkpoints&#39;</span><span class="p">,</span> <span class="s1">&#39;__pycache__&#39;</span><span class="p">],</span> <span class="n">sort</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span class=" -Color -Color-Bold -Color-Bold-Blue">/tmp/examples/feature_repo</span>
-├── __init__.py
-├── <span class=" -Color -Color-Bold -Color-Bold-Blue">data</span>
-│   ├── item_features.parquet
-│   ├── online_store.db
-│   ├── registry.db
-│   └── user_features.parquet
-├── feature_store.yaml
-├── item_features.py
-└── user_features.py
-
-1 directory, 8 files
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>feature_repo/
+├─__init__.py
+├─data/
+│ ├─item_features.parquet
+│ ├─online_store.db
+│ ├─registry.db
+│ └─user_features.parquet
+├─feature_store.yaml
+├─item_features.py
+└─user_features.py
 </pre></div>
 </div>
 </div>
@@ -356,9 +317,6 @@ Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdo
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>05/04/2022 01:29:23 PM INFO:init
-</pre></div>
-</div>
 <div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;function tensorflow.python.dlpack.dlpack.from_dlpack(dlcapsule)&gt;
 </pre></div>
 </div>
@@ -376,11 +334,11 @@ Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdo
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2022-05-04 13:29:26.767925: I tensorflow/core/platform/cpu_feature_guard.cc:151] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  AVX2 AVX512F FMA
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2022-05-05 14:38:32.696154: I tensorflow/core/platform/cpu_feature_guard.cc:151] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  AVX2 AVX512F FMA
 To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
-2022-05-04 13:29:28.857665: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1525] Created device /job:localhost/replica:0/task:0/device:GPU:0 with 16254 MB memory:  -&gt; device: 0, name: Quadro GV100, pci bus id: 0000:15:00.0, compute capability: 7.0
-2022-05-04 13:29:28.858387: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1525] Created device /job:localhost/replica:0/task:0/device:GPU:1 with 30338 MB memory:  -&gt; device: 1, name: Quadro GV100, pci bus id: 0000:2d:00.0, compute capability: 7.0
-05/04/2022 01:29:30 PM WARNING:No training configuration found in save file, so the model was *not* compiled. Compile it manually.
+2022-05-05 14:38:34.750160: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1525] Created device /job:localhost/replica:0/task:0/device:GPU:0 with 30667 MB memory:  -&gt; device: 0, name: Quadro GV100, pci bus id: 0000:15:00.0, compute capability: 7.0
+2022-05-05 14:38:34.750858: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1525] Created device /job:localhost/replica:0/task:0/device:GPU:1 with 30315 MB memory:  -&gt; device: 1, name: Quadro GV100, pci bus id: 0000:2d:00.0, compute capability: 7.0
+05/05/2022 02:38:36 PM WARNING:No training configuration found in save file, so the model was *not* compiled. Compile it manually.
 </pre></div>
 </div>
 </div>
@@ -471,59 +429,57 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 <p>Let’s check our export_path structure</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>tree <span class="nv">$export_path</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sd</span><span class="o">.</span><span class="n">seedir</span><span class="p">(</span><span class="n">export_path</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s1">&#39;lines&#39;</span><span class="p">,</span> <span class="n">itemlimit</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">depthlimit</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">exclude_folders</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;.ipynb_checkpoints&#39;</span><span class="p">,</span> <span class="s1">&#39;__pycache__&#39;</span><span class="p">],</span> <span class="n">sort</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span class=" -Color -Color-Bold -Color-Bold-Blue">/tmp/examples/poc_ensemble</span>
-├── <span class=" -Color -Color-Bold -Color-Bold-Blue">0_queryfeast</span>
-│   ├── <span class=" -Color -Color-Bold -Color-Bold-Blue">1</span>
-│   │   └── model.py
-│   └── config.pbtxt
-├── <span class=" -Color -Color-Bold -Color-Bold-Blue">1_predicttensorflow</span>
-│   ├── <span class=" -Color -Color-Bold -Color-Bold-Blue">1</span>
-│   │   └── <span class=" -Color -Color-Bold -Color-Bold-Blue">model.savedmodel</span>
-│   │       ├── <span class=" -Color -Color-Bold -Color-Bold-Blue">assets</span>
-│   │       ├── keras_metadata.pb
-│   │       ├── saved_model.pb
-│   │       └── <span class=" -Color -Color-Bold -Color-Bold-Blue">variables</span>
-│   │           ├── variables.data-00000-of-00001
-│   │           └── variables.index
-│   └── config.pbtxt
-├── <span class=" -Color -Color-Bold -Color-Bold-Blue">2_queryfaiss</span>
-│   ├── <span class=" -Color -Color-Bold -Color-Bold-Blue">1</span>
-│   │   ├── <span class=" -Color -Color-Bold -Color-Bold-Blue">index.faiss</span>
-│   │   │   └── index.faiss
-│   │   └── model.py
-│   └── config.pbtxt
-├── <span class=" -Color -Color-Bold -Color-Bold-Blue">3_queryfeast</span>
-│   ├── <span class=" -Color -Color-Bold -Color-Bold-Blue">1</span>
-│   │   └── model.py
-│   └── config.pbtxt
-├── <span class=" -Color -Color-Bold -Color-Bold-Blue">4_unrollfeatures</span>
-│   ├── <span class=" -Color -Color-Bold -Color-Bold-Blue">1</span>
-│   │   └── model.py
-│   └── config.pbtxt
-├── <span class=" -Color -Color-Bold -Color-Bold-Blue">5_predicttensorflow</span>
-│   ├── <span class=" -Color -Color-Bold -Color-Bold-Blue">1</span>
-│   │   └── <span class=" -Color -Color-Bold -Color-Bold-Blue">model.savedmodel</span>
-│   │       ├── <span class=" -Color -Color-Bold -Color-Bold-Blue">assets</span>
-│   │       ├── keras_metadata.pb
-│   │       ├── saved_model.pb
-│   │       └── <span class=" -Color -Color-Bold -Color-Bold-Blue">variables</span>
-│   │           ├── variables.data-00000-of-00001
-│   │           └── variables.index
-│   └── config.pbtxt
-├── <span class=" -Color -Color-Bold -Color-Bold-Blue">6_softmaxsampling</span>
-│   ├── <span class=" -Color -Color-Bold -Color-Bold-Blue">1</span>
-│   │   └── model.py
-│   └── config.pbtxt
-└── <span class=" -Color -Color-Bold -Color-Bold-Blue">ensemble_model</span>
-    ├── <span class=" -Color -Color-Bold -Color-Bold-Blue">1</span>
-    └── config.pbtxt
-
-23 directories, 22 files
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>poc_ensemble/
+├─0_queryfeast/
+│ ├─1/
+│ │ └─model.py
+│ └─config.pbtxt
+├─1_predicttensorflow/
+│ ├─1/
+│ │ └─model.savedmodel/
+│ │   ├─assets/
+│ │   ├─keras_metadata.pb
+│ │   ├─saved_model.pb
+│ │   └─variables/
+│ │     ├─variables.data-00000-of-00001
+│ │     └─variables.index
+│ └─config.pbtxt
+├─2_queryfaiss/
+│ ├─1/
+│ │ ├─index.faiss/
+│ │ │ └─index.faiss
+│ │ └─model.py
+│ └─config.pbtxt
+├─3_queryfeast/
+│ ├─1/
+│ │ └─model.py
+│ └─config.pbtxt
+├─4_unrollfeatures/
+│ ├─1/
+│ │ └─model.py
+│ └─config.pbtxt
+├─5_predicttensorflow/
+│ ├─1/
+│ │ └─model.savedmodel/
+│ │   ├─assets/
+│ │   ├─keras_metadata.pb
+│ │   ├─saved_model.pb
+│ │   └─variables/
+│ │     ├─variables.data-00000-of-00001
+│ │     └─variables.index
+│ └─config.pbtxt
+├─6_softmaxsampling/
+│ ├─1/
+│ │ └─model.py
+│ └─config.pbtxt
+└─ensemble_model/
+  ├─1/
+  └─config.pbtxt
 </pre></div>
 </div>
 </div>
@@ -556,30 +512,22 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># from merlin.systems.triton.utils import run_ensemble_on_tritonserver</span>
-<span class="c1"># run_ensemble_on_tritonserver(export_path, [&#39;ordered_ids&#39;], request, &#39;ensemble_model&#39;)</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">response</span> <span class="o">=</span> <span class="n">send_triton_request</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">outputs</span><span class="p">)</span>
 <span class="n">response</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>{&#39;ordered_ids&#39;: array([[ 59],
-        [102],
-        [223],
-        [ 72],
-        [156],
-        [ 16],
-        [412],
-        [446],
-        [225],
-        [149]], dtype=int32)}
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>{&#39;ordered_ids&#39;: array([[309],
+        [169],
+        [ 82],
+        [343],
+        [193],
+        [205],
+        [334],
+        [437],
+        [157],
+        [ 98]], dtype=int32)}
 </pre></div>
 </div>
 </div>

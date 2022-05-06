@@ -153,7 +153,6 @@
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
 <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;TF_GPU_ALLOCATOR&quot;</span><span class="p">]</span><span class="o">=</span><span class="s2">&quot;cuda_malloc_async&quot;</span>
-<span class="kn">import</span> <span class="nn">cudf</span>
 <span class="kn">import</span> <span class="nn">glob</span>
 <span class="kn">import</span> <span class="nn">gc</span>
 
@@ -171,12 +170,12 @@
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2022-05-04 13:26:59.541865: I tensorflow/core/platform/cpu_feature_guard.cc:151] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  AVX2 AVX512F FMA
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2022-05-05 14:34:58.341639: I tensorflow/core/platform/cpu_feature_guard.cc:151] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  AVX2 AVX512F FMA
 To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
-2022-05-04 13:27:01.553019: I tensorflow/core/common_runtime/gpu/gpu_process_state.cc:214] Using CUDA malloc Async allocator for GPU: 0
-2022-05-04 13:27:01.553153: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1525] Created device /job:localhost/replica:0/task:0/device:GPU:0 with 16254 MB memory:  -&gt; device: 0, name: Quadro GV100, pci bus id: 0000:15:00.0, compute capability: 7.0
-2022-05-04 13:27:01.553841: I tensorflow/core/common_runtime/gpu/gpu_process_state.cc:214] Using CUDA malloc Async allocator for GPU: 1
-2022-05-04 13:27:01.553903: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1525] Created device /job:localhost/replica:0/task:0/device:GPU:1 with 30338 MB memory:  -&gt; device: 1, name: Quadro GV100, pci bus id: 0000:2d:00.0, compute capability: 7.0
+2022-05-05 14:35:00.407290: I tensorflow/core/common_runtime/gpu/gpu_process_state.cc:214] Using CUDA malloc Async allocator for GPU: 0
+2022-05-05 14:35:00.407448: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1525] Created device /job:localhost/replica:0/task:0/device:GPU:0 with 30667 MB memory:  -&gt; device: 0, name: Quadro GV100, pci bus id: 0000:15:00.0, compute capability: 7.0
+2022-05-05 14:35:00.408163: I tensorflow/core/common_runtime/gpu/gpu_process_state.cc:214] Using CUDA malloc Async allocator for GPU: 1
+2022-05-05 14:35:00.408224: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1525] Created device /job:localhost/replica:0/task:0/device:GPU:1 with 30315 MB memory:  -&gt; device: 1, name: Quadro GV100, pci bus id: 0000:2d:00.0, compute capability: 7.0
 </pre></div>
 </div>
 </div>
@@ -210,6 +209,12 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 </pre></div>
 </div>
 </div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/core/merlin/io/dataset.py:251: UserWarning: Initializing an NVTabular Dataset in CPU mode.This is an experimental feature with extremely limited support!
+  warnings.warn(
+</pre></div>
+</div>
+</div>
 </div>
 <p>If you would like to use the real ALI-CCP dataset, you can use <a class="reference external" href="https://github.com/NVIDIA-Merlin/models/blob/main/merlin/datasets/ecommerce/aliccp/dataset.py">get_aliccp()</a> function instead. This function takes the raw csv files, and generate parquet files that can be directly fed to NVTabular workflow above.</p>
 </div>
@@ -237,8 +242,8 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>CPU times: user 145 µs, sys: 46 µs, total: 191 µs
-Wall time: 195 µs
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>CPU times: user 151 µs, sys: 45 µs, total: 196 µs
+Wall time: 200 µs
 </pre></div>
 </div>
 </div>
@@ -253,7 +258,7 @@ Wall time: 195 µs
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/usr/lib/python3.8/site-packages/cudf/core/dataframe.py:1292: UserWarning: The deep parameter is ignored and is only included for pandas compatibility.
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/core/merlin/io/dataset.py:251: UserWarning: Initializing an NVTabular Dataset in CPU mode.This is an experimental feature with extremely limited support!
   warnings.warn(
 </pre></div>
 </div>
@@ -311,16 +316,16 @@ Wall time: 195 µs
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2022-05-04 13:27:04.217413: W tensorflow/python/util/util.cc:368] Sets are not currently considered sequences, but this may change in the future, so consider avoiding using them.
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2022-05-05 14:35:03.403519: W tensorflow/python/util/util.cc:368] Sets are not currently considered sequences, but this may change in the future, so consider avoiding using them.
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>5/5 [==============================] - 6s 224ms/step - auc: 0.4997 - loss: 0.6932 - regularization_loss: 0.0000e+00 - total_loss: 0.6932 - val_auc: 0.5000 - val_loss: 0.6931 - val_regularization_loss: 0.0000e+00 - val_total_loss: 0.6931
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>5/5 [==============================] - 6s 217ms/step - auc: 0.4983 - loss: 0.6931 - regularization_loss: 0.0000e+00 - total_loss: 0.6931 - val_auc: 0.4995 - val_loss: 0.6932 - val_regularization_loss: 0.0000e+00 - val_total_loss: 0.6932
 </pre></div>
 </div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2022-05-04 13:27:10.905074: W tensorflow/core/grappler/optimizers/loop_optimizer.cc:907] Skipping loop optimization for Merge node with control input: cond/branch_executed/_13
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2022-05-05 14:35:10.085952: W tensorflow/core/grappler/optimizers/loop_optimizer.cc:907] Skipping loop optimization for Merge node with control input: cond/branch_executed/_13
 </pre></div>
 </div>
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;keras.callbacks.History at 0x7ff430cca370&gt;
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;keras.callbacks.History at 0x7fa0bab07520&gt;
 </pre></div>
 </div>
 </div>
@@ -375,7 +380,7 @@ Wall time: 195 µs
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/usr/lib/python3.8/site-packages/cudf/core/dataframe.py:1292: UserWarning: The deep parameter is ignored and is only included for pandas compatibility.
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/core/merlin/io/dataset.py:251: UserWarning: Initializing an NVTabular Dataset in CPU mode.This is an experimental feature with extremely limited support!
   warnings.warn(
 </pre></div>
 </div>
@@ -414,16 +419,16 @@ Wall time: 195 µs
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>4/5 [=======================&gt;......] - ETA: 0s - recall_at_10: 0.0107 - ndcg_10: 0.0091 - loss: 8.9768 - regularization_loss: 0.0000e+00 - total_loss: 8.9768
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>4/5 [=======================&gt;......] - ETA: 0s - recall_at_10: 0.0199 - ndcg_10: 0.0175 - loss: 8.9784 - regularization_loss: 0.0000e+00 - total_loss: 8.9784
 </pre></div>
 </div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2022-05-04 13:27:26.542717: W tensorflow/core/grappler/optimizers/loop_optimizer.cc:907] Skipping loop optimization for Merge node with control input: cond/branch_executed/_24
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2022-05-05 14:35:25.929977: W tensorflow/core/grappler/optimizers/loop_optimizer.cc:907] Skipping loop optimization for Merge node with control input: cond/branch_executed/_24
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>5/5 [==============================] - 6s 332ms/step - recall_at_10: 0.0125 - ndcg_10: 0.0109 - loss: 8.5304 - regularization_loss: 0.0000e+00 - total_loss: 8.5304 - val_recall_at_10: 0.0410 - val_ndcg_10: 0.0387 - val_loss: 8.7822 - val_regularization_loss: 0.0000e+00 - val_total_loss: 8.7822
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>5/5 [==============================] - 6s 326ms/step - recall_at_10: 0.0209 - ndcg_10: 0.0185 - loss: 8.5198 - regularization_loss: 0.0000e+00 - total_loss: 8.5198 - val_recall_at_10: 0.0419 - val_ndcg_10: 0.0394 - val_loss: 8.8001 - val_regularization_loss: 0.0000e+00 - val_total_loss: 8.8001
 </pre></div>
 </div>
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;keras.callbacks.History at 0x7ff3ba7dbeb0&gt;
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;keras.callbacks.History at 0x7fa052dd8310&gt;
 </pre></div>
 </div>
 </div>
@@ -440,7 +445,7 @@ Wall time: 195 µs
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Creating a new Feast repository in <span class=" -Color -Color-Bold -Color-Bold-Green">/tmp/examples/feature_repo</span>.
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Creating a new Feast repository in <span class=" -Color -Color-Bold -Color-Bold-Green">/Merlin/examples/Building-and-deploying-multi-stage-RecSys/feature_repo</span>.
 </pre></div>
 </div>
 </div>
@@ -472,6 +477,12 @@ Wall time: 195 µs
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">merlin.models.utils.dataset</span> <span class="kn">import</span> <span class="n">unique_rows_by_features</span>
 <span class="n">user_features</span> <span class="o">=</span> <span class="n">unique_rows_by_features</span><span class="p">(</span><span class="n">train</span><span class="p">,</span> <span class="n">Tags</span><span class="o">.</span><span class="n">USER</span><span class="p">,</span> <span class="n">Tags</span><span class="o">.</span><span class="n">USER_ID</span><span class="p">)</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/core/merlin/io/dataset.py:251: UserWarning: Initializing an NVTabular Dataset in CPU mode.This is an experimental feature with extremely limited support!
+  warnings.warn(
 </pre></div>
 </div>
 </div>
@@ -518,6 +529,8 @@ Wall time: 195 µs
   <tbody>
     <tr>
       <th>0</th>
+      <td>14</td>
+      <td>14</td>
       <td>1</td>
       <td>1</td>
       <td>1</td>
@@ -525,31 +538,29 @@ Wall time: 195 µs
       <td>1</td>
       <td>1</td>
       <td>1</td>
-      <td>1</td>
-      <td>1</td>
-      <td>1</td>
-      <td>1</td>
-      <td>1</td>
+      <td>14</td>
+      <td>14</td>
+      <td>14</td>
     </tr>
     <tr>
       <th>1</th>
+      <td>38</td>
+      <td>38</td>
       <td>2</td>
-      <td>2</td>
       <td>1</td>
       <td>1</td>
       <td>1</td>
       <td>1</td>
       <td>1</td>
       <td>1</td>
-      <td>1</td>
-      <td>2</td>
-      <td>2</td>
-      <td>2</td>
+      <td>38</td>
+      <td>38</td>
+      <td>38</td>
     </tr>
     <tr>
       <th>2</th>
-      <td>3</td>
-      <td>3</td>
+      <td>8</td>
+      <td>8</td>
       <td>1</td>
       <td>1</td>
       <td>1</td>
@@ -557,14 +568,14 @@ Wall time: 195 µs
       <td>1</td>
       <td>1</td>
       <td>1</td>
-      <td>3</td>
-      <td>3</td>
-      <td>3</td>
+      <td>8</td>
+      <td>8</td>
+      <td>8</td>
     </tr>
     <tr>
       <th>3</th>
-      <td>4</td>
-      <td>4</td>
+      <td>5</td>
+      <td>5</td>
       <td>1</td>
       <td>1</td>
       <td>1</td>
@@ -572,24 +583,24 @@ Wall time: 195 µs
       <td>1</td>
       <td>1</td>
       <td>1</td>
-      <td>4</td>
-      <td>4</td>
-      <td>4</td>
+      <td>5</td>
+      <td>5</td>
+      <td>5</td>
     </tr>
     <tr>
       <th>4</th>
-      <td>5</td>
-      <td>5</td>
+      <td>31</td>
+      <td>31</td>
+      <td>2</td>
       <td>1</td>
       <td>1</td>
       <td>1</td>
       <td>1</td>
       <td>1</td>
       <td>1</td>
-      <td>1</td>
-      <td>5</td>
-      <td>5</td>
-      <td>5</td>
+      <td>31</td>
+      <td>31</td>
+      <td>31</td>
     </tr>
   </tbody>
 </table>
@@ -651,6 +662,8 @@ Wall time: 195 µs
   <tbody>
     <tr>
       <th>0</th>
+      <td>14</td>
+      <td>14</td>
       <td>1</td>
       <td>1</td>
       <td>1</td>
@@ -658,35 +671,33 @@ Wall time: 195 µs
       <td>1</td>
       <td>1</td>
       <td>1</td>
-      <td>1</td>
-      <td>1</td>
-      <td>1</td>
-      <td>1</td>
-      <td>1</td>
-      <td>2022-05-04 13:27:33.635692</td>
-      <td>2022-05-04 13:27:34.000771</td>
+      <td>14</td>
+      <td>14</td>
+      <td>14</td>
+      <td>2022-05-05 14:35:32.971809</td>
+      <td>2022-05-05 14:35:32.973595</td>
     </tr>
     <tr>
       <th>1</th>
+      <td>38</td>
+      <td>38</td>
       <td>2</td>
-      <td>2</td>
       <td>1</td>
       <td>1</td>
       <td>1</td>
       <td>1</td>
       <td>1</td>
       <td>1</td>
-      <td>1</td>
-      <td>2</td>
-      <td>2</td>
-      <td>2</td>
-      <td>2022-05-04 13:27:33.635692</td>
-      <td>2022-05-04 13:27:34.000771</td>
+      <td>38</td>
+      <td>38</td>
+      <td>38</td>
+      <td>2022-05-05 14:35:32.971809</td>
+      <td>2022-05-05 14:35:32.973595</td>
     </tr>
     <tr>
       <th>2</th>
-      <td>3</td>
-      <td>3</td>
+      <td>8</td>
+      <td>8</td>
       <td>1</td>
       <td>1</td>
       <td>1</td>
@@ -694,16 +705,16 @@ Wall time: 195 µs
       <td>1</td>
       <td>1</td>
       <td>1</td>
-      <td>3</td>
-      <td>3</td>
-      <td>3</td>
-      <td>2022-05-04 13:27:33.635692</td>
-      <td>2022-05-04 13:27:34.000771</td>
+      <td>8</td>
+      <td>8</td>
+      <td>8</td>
+      <td>2022-05-05 14:35:32.971809</td>
+      <td>2022-05-05 14:35:32.973595</td>
     </tr>
     <tr>
       <th>3</th>
-      <td>4</td>
-      <td>4</td>
+      <td>5</td>
+      <td>5</td>
       <td>1</td>
       <td>1</td>
       <td>1</td>
@@ -711,28 +722,28 @@ Wall time: 195 µs
       <td>1</td>
       <td>1</td>
       <td>1</td>
-      <td>4</td>
-      <td>4</td>
-      <td>4</td>
-      <td>2022-05-04 13:27:33.635692</td>
-      <td>2022-05-04 13:27:34.000771</td>
+      <td>5</td>
+      <td>5</td>
+      <td>5</td>
+      <td>2022-05-05 14:35:32.971809</td>
+      <td>2022-05-05 14:35:32.973595</td>
     </tr>
     <tr>
       <th>4</th>
-      <td>5</td>
-      <td>5</td>
+      <td>31</td>
+      <td>31</td>
+      <td>2</td>
       <td>1</td>
       <td>1</td>
       <td>1</td>
       <td>1</td>
       <td>1</td>
       <td>1</td>
-      <td>1</td>
-      <td>5</td>
-      <td>5</td>
-      <td>5</td>
-      <td>2022-05-04 13:27:33.635692</td>
-      <td>2022-05-04 13:27:34.000771</td>
+      <td>31</td>
+      <td>31</td>
+      <td>31</td>
+      <td>2022-05-05 14:35:32.971809</td>
+      <td>2022-05-05 14:35:32.973595</td>
     </tr>
   </tbody>
 </table>
@@ -748,6 +759,12 @@ Wall time: 195 µs
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">item_features</span> <span class="o">=</span> <span class="n">unique_rows_by_features</span><span class="p">(</span><span class="n">train</span><span class="p">,</span> <span class="n">Tags</span><span class="o">.</span><span class="n">ITEM</span><span class="p">,</span> <span class="n">Tags</span><span class="o">.</span><span class="n">ITEM_ID</span><span class="p">)</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/core/merlin/io/dataset.py:251: UserWarning: Initializing an NVTabular Dataset in CPU mode.This is an experimental feature with extremely limited support!
+  warnings.warn(
 </pre></div>
 </div>
 </div>
@@ -810,12 +827,12 @@ Wall time: 195 µs
   <tbody>
     <tr>
       <th>0</th>
-      <td>1</td>
-      <td>1</td>
-      <td>1</td>
-      <td>1</td>
-      <td>2022-05-04 13:27:34.097313</td>
-      <td>2022-05-04 13:27:34.101176</td>
+      <td>15</td>
+      <td>15</td>
+      <td>15</td>
+      <td>15</td>
+      <td>2022-05-05 14:35:33.084300</td>
+      <td>2022-05-05 14:35:33.086938</td>
     </tr>
     <tr>
       <th>1</th>
@@ -823,35 +840,35 @@ Wall time: 195 µs
       <td>2</td>
       <td>2</td>
       <td>2</td>
-      <td>2022-05-04 13:27:34.097313</td>
-      <td>2022-05-04 13:27:34.101176</td>
+      <td>2022-05-05 14:35:33.084300</td>
+      <td>2022-05-05 14:35:33.086938</td>
     </tr>
     <tr>
       <th>2</th>
-      <td>3</td>
-      <td>3</td>
-      <td>3</td>
-      <td>3</td>
-      <td>2022-05-04 13:27:34.097313</td>
-      <td>2022-05-04 13:27:34.101176</td>
+      <td>59</td>
+      <td>59</td>
+      <td>59</td>
+      <td>59</td>
+      <td>2022-05-05 14:35:33.084300</td>
+      <td>2022-05-05 14:35:33.086938</td>
     </tr>
     <tr>
       <th>3</th>
-      <td>4</td>
-      <td>4</td>
-      <td>4</td>
-      <td>4</td>
-      <td>2022-05-04 13:27:34.097313</td>
-      <td>2022-05-04 13:27:34.101176</td>
+      <td>149</td>
+      <td>149</td>
+      <td>149</td>
+      <td>149</td>
+      <td>2022-05-05 14:35:33.084300</td>
+      <td>2022-05-05 14:35:33.086938</td>
     </tr>
     <tr>
       <th>4</th>
-      <td>5</td>
-      <td>5</td>
-      <td>5</td>
-      <td>5</td>
-      <td>2022-05-04 13:27:34.097313</td>
-      <td>2022-05-04 13:27:34.101176</td>
+      <td>63</td>
+      <td>63</td>
+      <td>63</td>
+      <td>63</td>
+      <td>2022-05-05 14:35:33.084300</td>
+      <td>2022-05-05 14:35:33.086938</td>
     </tr>
   </tbody>
 </table>
@@ -872,6 +889,14 @@ Wall time: 195 µs
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">item_embs</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">item_embeddings</span><span class="p">(</span><span class="n">Dataset</span><span class="p">(</span><span class="n">item_features</span><span class="p">,</span> <span class="n">schema</span><span class="o">=</span><span class="n">schema</span><span class="p">),</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">1024</span><span class="p">)</span>
 <span class="n">item_embs_df</span> <span class="o">=</span> <span class="n">item_embs</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">scheduler</span><span class="o">=</span><span class="s2">&quot;synchronous&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/core/merlin/io/dataset.py:251: UserWarning: Initializing an NVTabular Dataset in CPU mode.This is an experimental feature with extremely limited support!
+  warnings.warn(
+/core/merlin/io/dataset.py:251: UserWarning: Initializing an NVTabular Dataset in CPU mode.This is an experimental feature with extremely limited support!
+  warnings.warn(
 </pre></div>
 </div>
 </div>
@@ -935,123 +960,123 @@ Wall time: 195 µs
   <tbody>
     <tr>
       <th>0</th>
-      <td>1</td>
-      <td>-0.023812</td>
-      <td>0.049087</td>
-      <td>-0.006011</td>
-      <td>-0.018138</td>
-      <td>0.076004</td>
-      <td>-0.047629</td>
-      <td>-0.016437</td>
-      <td>-0.011316</td>
-      <td>-0.010015</td>
+      <td>15</td>
+      <td>0.009764</td>
+      <td>0.008560</td>
+      <td>-0.008236</td>
+      <td>0.001079</td>
+      <td>0.006261</td>
+      <td>0.009971</td>
+      <td>0.009541</td>
+      <td>-0.019058</td>
+      <td>0.036954</td>
       <td>...</td>
-      <td>-0.023935</td>
-      <td>-0.002843</td>
-      <td>0.027594</td>
-      <td>-0.002276</td>
-      <td>-0.011821</td>
-      <td>0.011062</td>
-      <td>0.005805</td>
-      <td>-0.014591</td>
-      <td>-0.013899</td>
-      <td>0.030367</td>
+      <td>0.003188</td>
+      <td>0.025160</td>
+      <td>0.003522</td>
+      <td>0.024247</td>
+      <td>0.023871</td>
+      <td>-0.017902</td>
+      <td>0.007299</td>
+      <td>-0.013606</td>
+      <td>0.003823</td>
+      <td>0.013440</td>
     </tr>
     <tr>
       <th>1</th>
       <td>2</td>
-      <td>-0.026561</td>
-      <td>-0.025152</td>
-      <td>-0.057405</td>
-      <td>-0.000327</td>
-      <td>0.028478</td>
-      <td>-0.010988</td>
-      <td>-0.009221</td>
-      <td>0.001220</td>
-      <td>-0.013272</td>
+      <td>0.014012</td>
+      <td>0.019497</td>
+      <td>-0.015541</td>
+      <td>-0.006398</td>
+      <td>0.004327</td>
+      <td>0.077202</td>
+      <td>0.033808</td>
+      <td>-0.008815</td>
+      <td>0.062406</td>
       <td>...</td>
-      <td>-0.015662</td>
-      <td>-0.002456</td>
-      <td>-0.043615</td>
-      <td>0.043939</td>
-      <td>-0.025433</td>
-      <td>-0.007775</td>
-      <td>0.029884</td>
-      <td>-0.058831</td>
-      <td>-0.011239</td>
-      <td>-0.000120</td>
+      <td>0.011110</td>
+      <td>0.010548</td>
+      <td>-0.021843</td>
+      <td>0.044792</td>
+      <td>0.043012</td>
+      <td>-0.014118</td>
+      <td>0.028639</td>
+      <td>0.021822</td>
+      <td>-0.008754</td>
+      <td>-0.021522</td>
     </tr>
     <tr>
       <th>2</th>
-      <td>3</td>
-      <td>0.003156</td>
-      <td>0.002400</td>
-      <td>-0.020462</td>
-      <td>-0.004567</td>
-      <td>0.022638</td>
-      <td>-0.007897</td>
-      <td>0.011588</td>
-      <td>0.002444</td>
-      <td>-0.052003</td>
+      <td>59</td>
+      <td>0.019117</td>
+      <td>0.004479</td>
+      <td>-0.031548</td>
+      <td>-0.020642</td>
+      <td>0.035912</td>
+      <td>0.015081</td>
+      <td>0.001050</td>
+      <td>-0.005041</td>
+      <td>0.014927</td>
       <td>...</td>
-      <td>0.008699</td>
-      <td>-0.032143</td>
-      <td>0.013315</td>
-      <td>-0.033496</td>
-      <td>-0.003374</td>
-      <td>0.009305</td>
-      <td>-0.002533</td>
-      <td>-0.011182</td>
-      <td>-0.022575</td>
-      <td>0.002656</td>
+      <td>-0.012306</td>
+      <td>0.012168</td>
+      <td>-0.012633</td>
+      <td>0.017448</td>
+      <td>0.016328</td>
+      <td>-0.022380</td>
+      <td>-0.008413</td>
+      <td>0.028804</td>
+      <td>0.009847</td>
+      <td>-0.018740</td>
     </tr>
     <tr>
       <th>3</th>
-      <td>4</td>
-      <td>0.015630</td>
-      <td>-0.026810</td>
-      <td>-0.038625</td>
-      <td>-0.009386</td>
-      <td>0.070407</td>
-      <td>-0.002853</td>
-      <td>-0.044986</td>
-      <td>-0.026715</td>
-      <td>0.029586</td>
+      <td>149</td>
+      <td>0.022785</td>
+      <td>0.018213</td>
+      <td>-0.035266</td>
+      <td>0.002669</td>
+      <td>0.004770</td>
+      <td>0.023919</td>
+      <td>0.004185</td>
+      <td>-0.048692</td>
+      <td>0.013208</td>
       <td>...</td>
-      <td>0.038602</td>
-      <td>0.005720</td>
-      <td>-0.027890</td>
-      <td>0.029849</td>
-      <td>-0.024938</td>
-      <td>-0.041847</td>
-      <td>-0.003418</td>
-      <td>-0.057658</td>
-      <td>0.015824</td>
-      <td>-0.025491</td>
+      <td>-0.002208</td>
+      <td>0.023864</td>
+      <td>-0.019109</td>
+      <td>-0.006574</td>
+      <td>0.012167</td>
+      <td>0.009672</td>
+      <td>-0.016330</td>
+      <td>0.005729</td>
+      <td>0.025929</td>
+      <td>-0.008024</td>
     </tr>
     <tr>
       <th>4</th>
-      <td>5</td>
-      <td>-0.029692</td>
-      <td>-0.009475</td>
-      <td>-0.058727</td>
-      <td>0.000272</td>
-      <td>0.045521</td>
-      <td>0.018626</td>
-      <td>-0.003292</td>
-      <td>-0.022988</td>
-      <td>-0.009460</td>
+      <td>63</td>
+      <td>-0.012254</td>
+      <td>-0.016057</td>
+      <td>-0.017900</td>
+      <td>-0.017911</td>
+      <td>-0.037520</td>
+      <td>0.012523</td>
+      <td>-0.007489</td>
+      <td>-0.005636</td>
+      <td>0.017751</td>
       <td>...</td>
-      <td>0.023875</td>
-      <td>0.024851</td>
-      <td>-0.022909</td>
-      <td>0.022784</td>
-      <td>0.001589</td>
-      <td>0.024690</td>
-      <td>0.047870</td>
-      <td>-0.045683</td>
-      <td>-0.041048</td>
-      <td>0.019730</td>
+      <td>0.009128</td>
+      <td>0.032535</td>
+      <td>-0.020749</td>
+      <td>0.038132</td>
+      <td>0.032030</td>
+      <td>-0.052667</td>
+      <td>-0.014624</td>
+      <td>-0.009040</td>
+      <td>-0.029470</td>
+      <td>-0.004175</td>
     </tr>
   </tbody>
 </table>
@@ -1072,47 +1097,6 @@ Wall time: 195 µs
 <p>Now we will create our user and item features definitions in the user_features.py and item_features.py files and save these files in the feature_repo.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># %%writefile /Merlin/examples/Building-and-deploying-multi-stage-RecSys/feature_repo/user_features.py</span>
-<span class="c1"># from google.protobuf.duration_pb2 import Duration</span>
-<span class="c1"># import datetime </span>
-<span class="c1"># from feast import Entity, Feature, FeatureView, ValueType</span>
-<span class="c1"># from feast.infra.offline_stores.file_source import FileSource</span>
-
-<span class="c1"># user_features = FileSource(</span>
-<span class="c1">#     path=&quot;/Merlin/examples/Building-and-deploying-multi-stage-RecSys/feature_repo/data/user_features.parquet&quot;,</span>
-<span class="c1">#     event_timestamp_column=&quot;datetime&quot;,</span>
-<span class="c1">#     created_timestamp_column=&quot;created&quot;,</span>
-<span class="c1"># )</span>
-
-<span class="c1"># user = Entity(name=&quot;user_id&quot;, value_type=ValueType.INT32, description=&quot;user id&quot;,)</span>
-
-<span class="c1"># user_features_view = FeatureView(</span>
-<span class="c1">#     name=&quot;user_features&quot;,</span>
-<span class="c1">#     entities=[&quot;user_id&quot;],</span>
-<span class="c1">#     ttl=Duration(seconds=86400 * 7),</span>
-<span class="c1">#     features=[</span>
-<span class="c1">#         Feature(name=&quot;user_shops&quot;, dtype=ValueType.INT32),</span>
-<span class="c1">#         Feature(name=&quot;user_profile&quot;, dtype=ValueType.INT32),</span>
-<span class="c1">#         Feature(name=&quot;user_group&quot;, dtype=ValueType.INT32),</span>
-<span class="c1">#         Feature(name=&quot;user_gender&quot;, dtype=ValueType.INT32),</span>
-<span class="c1">#         Feature(name=&quot;user_age&quot;, dtype=ValueType.INT32),</span>
-<span class="c1">#         Feature(name=&quot;user_consumption_2&quot;, dtype=ValueType.INT32),</span>
-<span class="c1">#         Feature(name=&quot;user_is_occupied&quot;, dtype=ValueType.INT32),</span>
-<span class="c1">#         Feature(name=&quot;user_geography&quot;, dtype=ValueType.INT32),</span>
-<span class="c1">#         Feature(name=&quot;user_intentions&quot;, dtype=ValueType.INT32),</span>
-<span class="c1">#         Feature(name=&quot;user_brands&quot;, dtype=ValueType.INT32),</span>
-<span class="c1">#         Feature(name=&quot;user_categories&quot;, dtype=ValueType.INT32),</span>
-<span class="c1">#     ],</span>
-<span class="c1">#     online=True,</span>
-<span class="c1">#     input=user_features,</span>
-<span class="c1">#     tags={},</span>
-<span class="c1"># )</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s1">&#39;feature_repo/&#39;</span><span class="p">,</span><span class="s1">&#39;user_features.py&#39;</span><span class="p">),</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span>
 <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
 <span class="sd">&#39;&#39;&#39;</span>
@@ -1122,7 +1106,7 @@ Wall time: 195 µs
 <span class="sd">from feast.infra.offline_stores.file_source import FileSource</span>
 
 <span class="sd">user_features = FileSource(</span>
-<span class="sd">    path=&quot;/tmp/examples/feature_repo/data/user_features.parquet&quot;,</span>
+<span class="sd">    path=&quot;{}&quot;,</span>
 <span class="sd">    event_timestamp_column=&quot;datetime&quot;,</span>
 <span class="sd">    created_timestamp_column=&quot;created&quot;,</span>
 <span class="sd">)</span>
@@ -1148,44 +1132,11 @@ Wall time: 195 µs
 <span class="sd">    ],</span>
 <span class="sd">    online=True,</span>
 <span class="sd">    input=user_features,</span>
-<span class="sd">    tags={},</span>
+<span class="sd">    tags=dict(),</span>
 <span class="sd">)</span>
-<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">&#39;&#39;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s1">&#39;feature_repo/data/&#39;</span><span class="p">,</span><span class="s1">&#39;user_features.parquet&#39;</span><span class="p">))</span>
 <span class="p">)</span>
 <span class="n">file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># %%writefile /Merlin/examples/Building-and-deploying-multi-stage-RecSys/feature_repo/item_features.py</span>
-<span class="c1">#from google.protobuf.duration_pb2 import Duration</span>
-<span class="c1"># import datetime </span>
-<span class="c1"># from feast import Entity, Feature, FeatureView, ValueType</span>
-<span class="c1"># from feast.infra.offline_stores.file_source import FileSource</span>
-
-<span class="c1"># item_features = FileSource(</span>
-<span class="c1">#     path=&quot;/Merlin/examples/Building-and-deploying-multi-stage-RecSys/feature_repo/data/item_features.parquet&quot;,</span>
-<span class="c1">#     event_timestamp_column=&quot;datetime&quot;,</span>
-<span class="c1">#     created_timestamp_column=&quot;created&quot;,</span>
-<span class="c1"># )</span>
-
-<span class="c1"># item = Entity(name=&quot;item_id&quot;, value_type=ValueType.INT32, description=&quot;item id&quot;,)</span>
-
-<span class="c1"># item_features_view = FeatureView(</span>
-<span class="c1">#     name=&quot;item_features&quot;,</span>
-<span class="c1">#     entities=[&quot;item_id&quot;],</span>
-<span class="c1">#     ttl=Duration(seconds=86400 * 7),</span>
-<span class="c1">#     features=[</span>
-<span class="c1">#         Feature(name=&quot;item_category&quot;, dtype=ValueType.INT32),</span>
-<span class="c1">#         Feature(name=&quot;item_shop&quot;, dtype=ValueType.INT32),</span>
-<span class="c1">#         Feature(name=&quot;item_brand&quot;, dtype=ValueType.INT32),</span>
-<span class="c1">#     ],</span>
-<span class="c1">#     online=True,</span>
-<span class="c1">#     input=item_features,</span>
-<span class="c1">#     tags={},</span>
-<span class="c1"># )</span>
 </pre></div>
 </div>
 </div>
@@ -1201,7 +1152,7 @@ Wall time: 195 µs
 <span class="sd">from feast.infra.offline_stores.file_source import FileSource</span>
 
 <span class="sd">item_features = FileSource(</span>
-<span class="sd">    path=&quot;/tmp/examples/feature_repo/data/item_features.parquet&quot;,</span>
+<span class="sd">    path=&quot;{}&quot;,</span>
 <span class="sd">    event_timestamp_column=&quot;datetime&quot;,</span>
 <span class="sd">    created_timestamp_column=&quot;created&quot;,</span>
 <span class="sd">)</span>
@@ -1219,9 +1170,9 @@ Wall time: 195 µs
 <span class="sd">    ],</span>
 <span class="sd">    online=True,</span>
 <span class="sd">    input=item_features,</span>
-<span class="sd">    tags={},</span>
+<span class="sd">    tags=dict(),</span>
 <span class="sd">)</span>
-<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">&#39;&#39;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s1">&#39;feature_repo/data/&#39;</span><span class="p">,</span><span class="s1">&#39;item_features.parquet&#39;</span><span class="p">))</span>
     <span class="p">)</span>
 <span class="n">file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span> 
 </pre></div>
@@ -1231,31 +1182,29 @@ Wall time: 195 µs
 <p>Let’s checkout our Feast feature repository structure.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># install tree</span>
-<span class="c1"># !apt-get update</span>
-<span class="c1"># !apt-get install tree</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># install seedir</span>
+<span class="o">!</span>pip install seedir
 </pre></div>
 </div>
 </div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">feature_repo_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s1">&#39;feature_repo&#39;</span><span class="p">)</span>
-<span class="o">!</span>tree <span class="nv">$feature_repo_path</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">seedir</span> <span class="k">as</span> <span class="nn">sd</span>
+<span class="n">feature_repo_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s1">&#39;feature_repo&#39;</span><span class="p">)</span>
+<span class="n">sd</span><span class="o">.</span><span class="n">seedir</span><span class="p">(</span><span class="n">feature_repo_path</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s1">&#39;lines&#39;</span><span class="p">,</span> <span class="n">itemlimit</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">depthlimit</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">exclude_folders</span><span class="o">=</span><span class="s1">&#39;.ipynb_checkpoints&#39;</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span class=" -Color -Color-Bold -Color-Bold-Blue">/tmp/examples/feature_repo</span>
-├── __init__.py
-├── <span class=" -Color -Color-Bold -Color-Bold-Blue">data</span>
-│   ├── item_features.parquet
-│   └── user_features.parquet
-├── feature_store.yaml
-├── item_features.py
-└── user_features.py
-
-1 directory, 6 files
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>feature_repo/
+├─__init__.py
+├─data/
+│ ├─item_features.parquet
+│ └─user_features.parquet
+├─feature_store.yaml
+├─item_features.py
+└─user_features.py
 </pre></div>
 </div>
 </div>
@@ -1265,25 +1214,6 @@ Wall time: 195 µs
 <h2>Next Steps<a class="headerlink" href="#next-steps" title="Permalink to this headline"></a></h2>
 <p>We trained and exported our ranking and retrieval models and NVTabular workflows. In the next step, we will learn how to deploy our trained models into <a class="reference external" href="https://github.com/triton-inference-server/server">Triton Inference Server (TIS)</a> with Merlin Systems library.</p>
 <p>For the next step, move on to the <code class="docutils literal notranslate"><span class="pre">02-Deploying-multi-stage-Recsys-with-Merlin-Systems.ipynb</span></code> notebook to deploy our saved models as an ensemble to TIS and obtain prediction results for a given request.</p>
-<p>string_items = ‘{“ordered_ids”: array([[137],\n       [311],\n       [292],\n       [332],\n       [383],\n       [233],\n       [445],\n       [297],\n       [ 93],\n       [284]], dtype=int32)}’</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">Test this is our file</span>
-<span class="sd">wahat can we do</span>
-<span class="sd">path = {}</span>
-<span class="sd">asdasd</span>
-<span class="sd">how does it look</span>
-<span class="sd">&#39;&#39;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39;test&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&#39;\nTest this is our file\nwahat can we do\npath = test\nasdasd\nhow does it look\n&#39;
-</pre></div>
-</div>
-</div>
-</div>
 </div>
 </div>
 
