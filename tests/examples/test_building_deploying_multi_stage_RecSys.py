@@ -52,12 +52,11 @@ def test_func(tb1):
             from merlin.models.loader.tf_utils import configure_tensorflow
             configure_tensorflow()
             from merlin.systems.triton.utils import run_ensemble_on_tritonserver
-            response = run_ensemble_on_tritonserver('/tmp/examples/poc_ensemble',
-                                                    outputs,
-                                                    request,
-                                                    'ensemble_model')
-            response = [x.tolist()[0] for x in response['ordered_ids']]
-            shutil.rmtree('/tmp/examples/', ignore_errors=True)
+            response = run_ensemble_on_tritonserver(
+                "/tmp/examples/poc_ensemble", outputs, request, "ensemble_model"
+            )
+            response = [x.tolist()[0] for x in response["ordered_ids"]]
+            shutil.rmtree("/tmp/examples/", ignore_errors=True)
             """
         )
         tb2.execute_cell(NUM_OF_CELLS - 2)
