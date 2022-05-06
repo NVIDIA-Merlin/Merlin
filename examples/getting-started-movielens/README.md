@@ -1,5 +1,4 @@
-Getting Started with Merlin and the MovieLens Dataset
-=====================================================
+# Getting Started with Merlin and the MovieLens Dataset
 
 The MovieLens25M is a popular dataset for recommender systems and is used in academic publications.
 Most users are familiar with the dataset and we will teach the basic concepts of Merlin:
@@ -12,10 +11,8 @@ Most users are familiar with the dataset and we will teach the basic concepts of
 
 Explore the following notebooks:
 
-.. toctree:: :maxdepth: 1
-
-   Download and Convert <01-Download-Convert.ipynb>
-   Feature Engineering with NVTabular <02-ETL-with-NVTabular.ipynb>
-   Training with TensorFlow <03-Training-with-TF.ipynb>
-   Training with PyTorch <03-Training-with-PyTorch.ipynb>
-   Serve Recommendations with Triton Inference Server <04-Triton-Inference-with-TF.ipynb>
+- [Download and Convert](01-Download-Convert.ipynb)
+- [Feature Engineering with NVTabular](02-ETL-with-NVTabular.ipynb)
+- [Training with TensorFlow](03-Training-with-TF.ipynb)
+- [Training with PyTorch](03-Training-with-PyTorch.ipynb)
+- [Serve Recommendations with Triton Inference Server](04-Triton-Inference-with-TF.ipynb)

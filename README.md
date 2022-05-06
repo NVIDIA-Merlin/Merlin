@@ -1,4 +1,4 @@
-## [NVIDIA Merlin](https://github.com/NVIDIA-Merlin)
+# [NVIDIA Merlin](https://github.com/NVIDIA-Merlin)
 
 ![GitHub tag (latest SemVer)](https://img.shields.io/github/v/tag/NVIDIA-Merlin/Merlin?sort=semver)
 ![GitHub License](https://img.shields.io/github/license/NVIDIA-Merlin/Merlin)
@@ -13,7 +13,7 @@ of data, which is all accessible through easy-to-use APIs. For more information,
 see [NVIDIA Merlin](https://developer.nvidia.com/nvidia-merlin) on the NVIDIA
 developer web site.
 
-### Benefits
+## Benefits
 
 NVIDIA Merlin is a scalable and GPU-accelerated solution, making it easy to
 build recommender systems from end to end. With NVIDIA Merlin, you can:
@@ -26,7 +26,7 @@ build recommender systems from end to end. With NVIDIA Merlin, you can:
 - Deploy data transformations and trained models to production with only a few
   lines of code.
 
-### Components of NVIDIA Merlin
+## Components of NVIDIA Merlin
 
 NVIDIA Merlin consists of the following open source libraries:
 
@@ -97,22 +97,20 @@ With Merlin Core, you can:
 - Simplify your code by using a shared API for constructing graphs of data
   transformation operators.
 
-### Example Notebooks and Tutorials
+## Example Notebooks and Tutorials
 
-A collection of [end-to-end examples](./examples/) is available within this
-repository in the form of Jupyter notebooks. The example notebooks demonstrate
-how to:
+A collection of [end-to-end examples](./examples/) are available in the form of Jupyter notebooks.
+The example notebooks demonstrate how to:
 
-- download and prepare the dataset.
-- use preprocessing and engineering features.
-- train deep learning recommendation models with TensorFlow, PyTorch, FastAI, or
-  HugeCTR.
-- deploy the models to production.
+- Download and prepare a dataset.
+- Use preprocessing and engineering features.
+- Train deep-learning recommendation models with TensorFlow, PyTorch, FastAI, or HugeCTR.
+- Deploy the models to production with Triton Inference Server.
 
 These examples are based on different datasets and provide a wide range of
 real-world use cases.
 
-### Merlin Is Built On
+## Merlin Is Built On
 
 **[cuDF](https://github.com/rapidsai/cudf)**<br> Merlin relies on cuDF for
 GPU-accelerated DataFrame operations used in feature engineering.
@@ -125,7 +123,7 @@ dataloading in Merlin Models and HugeCTR.
 Merlin leverages Triton Inference Server to provide GPU-accelerated serving for
 recommender system pipelines.
 
-### Feedback and Support
+## Feedback and Support
 
 To report bugs or get help, please
 [open an issue](https://github.com/NVIDIA-Merlin/Merlin/issues/new/choose).
