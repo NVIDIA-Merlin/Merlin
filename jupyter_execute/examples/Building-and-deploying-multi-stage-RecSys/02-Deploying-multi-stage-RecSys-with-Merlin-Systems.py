@@ -34,13 +34,12 @@
 
 # ### Import required libraries and functions
 
-# In[2]:
+# At this step, we assume you already installed the tensorflow-gpu, feast and faiss-gpu libraries when running the first notebook `01-Building-Recommender-Systems-with-Merlin.ipynb`. In case you need to install them, execute the following script in a cell.
+# ```
+# %pip install tensorflow "feast<0.20" faiss-gpu
+# ```
 
-
-#%pip install tensorflow "feast<0.20" faiss-gpu
-
-
-# In[2]:
+# In[ ]:
 
 
 import os
@@ -48,6 +47,7 @@ import numpy as np
 import pandas as pd
 import feast
 import faiss
+import seedir as sd
 from nvtabular import ColumnSchema, Schema
 
 from merlin.systems.dag.ensemble import Ensemble
@@ -73,7 +73,7 @@ BASE_DIR = os.environ.get("BASE_DIR", "/Merlin/examples/Building-and-deploying-m
 feast_repo_path = BASE_DIR + "feature_repo/"
 
 
-# In[4]:
+# In[5]:
 
 
 get_ipython().run_line_magic('cd', '$feast_repo_path')
@@ -88,7 +88,7 @@ get_ipython().system('feast apply')
 # 
 # Note that materialization step takes some time.. 
 
-# In[5]:
+# In[6]:
 
 
 get_ipython().system('feast materialize 1995-01-01T01:01:01 2025-01-01T01:01:01')
@@ -96,19 +96,19 @@ get_ipython().system('feast materialize 1995-01-01T01:01:01 2025-01-01T01:01:01'
 
 # Now, let's check our feature_repo structure again after we ran `apply` and `materialize` commands.
 
-# In[6]:
+# In[4]:
 
 
 # set up the base dir to for feature store
 feature_repo_path = os.path.join(BASE_DIR, 'feature_repo')
-get_ipython().system('tree $feature_repo_path')
+sd.seedir(feature_repo_path, style='lines', itemlimit=10, depthlimit=5, exclude_folders=['.ipynb_checkpoints', '__pycache__'], sort=True)
 
 
 # ### Set up Faiss index, create feature store client and objects for the Triton ensemble
 
 # Create a folder for faiss index path
 
-# In[7]:
+# In[8]:
 
 
 if not os.path.isdir(os.path.join(BASE_DIR + 'faiss_index')):
@@ -117,7 +117,7 @@ if not os.path.isdir(os.path.join(BASE_DIR + 'faiss_index')):
 
 # Define paths for ranking model, retrieval model, and faiss index path
 
-# In[8]:
+# In[9]:
 
 
 faiss_index_path = BASE_DIR + 'faiss_index' + "/index.faiss"
@@ -127,7 +127,7 @@ ranking_model_path = BASE_DIR + "dlrm/"
 
 # Create a request schema that we are going to use when sending a request to Triton Infrence Server (TIS).
 
-# In[9]:
+# In[10]:
 
 
 request_schema = Schema(
@@ -141,7 +141,7 @@ request_schema = Schema(
 # 
 # `setup_faiss` is  a utility function that will create a Faiss index from an embedding vector with using L2 distance.
 
-# In[10]:
+# In[11]:
 
 
 from merlin.systems.dag.ops.faiss import QueryFaiss, setup_faiss 
@@ -154,7 +154,7 @@ setup_faiss(item_embeddings, faiss_index_path)
 
 # Create feature store client.
 
-# In[11]:
+# In[12]:
 
 
 feature_store = feast.FeatureStore(feast_repo_path)
@@ -162,7 +162,7 @@ feature_store = feast.FeatureStore(feast_repo_path)
 
 # Fetch user features with `QueryFeast` operator from the feature store. `QueryFeast` operator is responsible for ensuring that our feast feature store can communicate correctly with tritonserver for the ensemble feast feature look ups.
 
-# In[12]:
+# In[13]:
 
 
 from merlin.systems.dag.ops.feast import QueryFeast 
@@ -177,7 +177,7 @@ user_features = ["user_id"] >> QueryFeast.from_feature_view(
 
 # Retrieve top-K candidate items using `retrieval model` that are relevant for a given user. We use `PredictTensorflow()` operator that takes a tensorflow model and packages it correctly for TIS to run with the tensorflow backend.
 
-# In[13]:
+# In[14]:
 
 
 # prevent TF to claim all GPU memory
@@ -186,7 +186,7 @@ from merlin.models.loader.tf_utils import configure_tensorflow
 configure_tensorflow()
 
 
-# In[14]:
+# In[15]:
 
 
 topk_retrieval = 100
@@ -199,7 +199,7 @@ retrieval = (
 
 # Fetch item features for the candidate items that are retrieved from the retrieval step above from the feature store.
 
-# In[15]:
+# In[16]:
 
 
 item_features = retrieval["candidate_ids"] >> QueryFeast.from_feature_view(
@@ -213,7 +213,7 @@ item_features = retrieval["candidate_ids"] >> QueryFeast.from_feature_view(
 
 # Merge the user features and items features to create the all set of combined features that were used in model training using `UnrollFeatures` operator which takes a target column and joins the "unroll" columns to the target. This helps when broadcasting a series of user features to a set of items.
 
-# In[16]:
+# In[17]:
 
 
 user_features_to_unroll = [
@@ -238,7 +238,7 @@ combined_features = item_features >> UnrollFeatures(
 
 # Rank the combined features using the trained ranking model, which is a DLRM model for this example. We feed the path of the ranking model to `PredictTensorflow()` operator.
 
-# In[17]:
+# In[18]:
 
 
 ranking = combined_features >> PredictTensorflow(ranking_model_path)
@@ -246,7 +246,7 @@ ranking = combined_features >> PredictTensorflow(ranking_model_path)
 
 # For the ordering we use `SoftmaxSampling()` operator. This operator sorts all inputs in descending order given the input ids and prediction introducing some randomization into the ordering by sampling items from the softmax of the predicted relevance scores, and finally returns top-k ordered items.
 
-# In[18]:
+# In[19]:
 
 
 top_k=10
@@ -262,14 +262,14 @@ ordering = combined_features["item_id"] >> SoftmaxSampling(
 
 # Create the folder to export the models and config files.
 
-# In[19]:
+# In[20]:
 
 
 if not os.path.isdir(os.path.join(BASE_DIR + 'poc_ensemble')):
     os.makedirs(os.path.join(BASE_DIR + 'poc_ensemble'))
 
 
-# In[20]:
+# In[21]:
 
 
 # define the path where all the models and config files exported to
@@ -281,10 +281,10 @@ ens_config, node_configs = ensemble.export(export_path)
 
 # Let's check our export_path structure
 
-# In[21]:
+# In[32]:
 
 
-get_ipython().system('tree $export_path')
+sd.seedir(export_path, style='lines', itemlimit=10, depthlimit=5, exclude_folders=['.ipynb_checkpoints', '__pycache__'], sort=True)
 
 
 # ### Starting Triton Server
@@ -301,7 +301,7 @@ get_ipython().system('tree $export_path')
 
 # Once our models are successfully loaded to the TIS, we can now easily send a request to TIS and get a response for our query with `send_triton_request` utility function.
 
-# In[22]:
+# In[23]:
 
 
 from merlin.systems.triton.utils import send_triton_request
@@ -314,14 +314,7 @@ request["user_id"] = request["user_id"].astype(np.int32)
 outputs = ensemble.graph.output_schema.column_names
 
 
-# In[24]:
-
-
-# from merlin.systems.triton.utils import run_ensemble_on_tritonserver
-# run_ensemble_on_tritonserver(export_path, ['ordered_ids'], request, 'ensemble_model')
-
-
-# In[25]:
+# In[26]:
 
 
 response = send_triton_request(request, outputs)

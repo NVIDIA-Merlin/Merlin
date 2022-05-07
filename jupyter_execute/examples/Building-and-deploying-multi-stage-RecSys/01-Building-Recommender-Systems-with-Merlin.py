@@ -59,18 +59,17 @@
 # 
 # These notebooks are developed and tested using our latest inference container on [NVIDIA's docker registry](https://catalog.ngc.nvidia.com/containers?filters=&orderBy=dateModifiedDESC&query=merlin).
 
-# In[3]:
+# In[2]:
 
 
 get_ipython().run_line_magic('pip', 'install tensorflow "feast<0.20" faiss-gpu')
 
 
-# In[4]:
+# In[3]:
 
 
 import os
 os.environ["TF_GPU_ALLOCATOR"]="cuda_malloc_async"
-import cudf
 import glob
 import gc
 
@@ -86,7 +85,7 @@ from merlin.io.dataset import Dataset
 import tensorflow as tf
 
 
-# In[5]:
+# In[4]:
 
 
 # disable INFO and DEBUG logging everywhere
@@ -98,7 +97,7 @@ logging.disable(logging.WARNING)
 # 
 # First, we define our input and output paths.
 
-# In[6]:
+# In[5]:
 
 
 DATA_FOLDER = os.environ.get("DATA_FOLDER", "/workspace/data/")
@@ -107,7 +106,7 @@ output_path = os.path.join(DATA_FOLDER, 'processed/ranking')
 
 # Then, we use `generate_data` utility function to generate synthetic dataset. 
 
-# In[7]:
+# In[6]:
 
 
 from merlin.datasets.synthetic import generate_data
@@ -122,7 +121,7 @@ train, valid = generate_data("aliccp-raw", int(NUM_ROWS), set_sizes=(0.7, 0.3))
 
 # We are going to process our raw categorical features by encoding them using `Categorify()` operator and tag the features with `user` or `item` tags in the schema file. To learn more about [NVTabular](https://github.com/NVIDIA-Merlin/NVTabular) and the schema object visit this example [notebook](https://github.com/NVIDIA-Merlin/models/blob/main/examples/02-Merlin-Models-and-NVTabular-integration.ipynb) in the Merlin Models repo.
 
-# In[8]:
+# In[7]:
 
 
 get_ipython().run_cell_magic('time', '', '\nuser_id = ["user_id"] >> Categorify(dtype=\'int32\') >> TagAsUserID()\nitem_id = ["item_id"] >> Categorify(dtype=\'int32\') >> TagAsItemID()\n\nitem_features = ["item_category", "item_shop", "item_brand"] >> Categorify(dtype=\'int32\') >> TagAsItemFeatures() \n\nuser_features = [\'user_shops\', \'user_profile\', \'user_group\', \n       \'user_gender\', \'user_age\', \'user_consumption_2\', \'user_is_occupied\',\n       \'user_geography\', \'user_intentions\', \'user_brands\', \'user_categories\'] \\\n    >> Categorify(dtype=\'int32\') >> TagAsUserFeatures() \n\ntargets = ["click"] >> AddMetadata(tags=[Tags.BINARY_CLASSIFICATION, "target"])\n\noutputs = user_id+item_id+item_features+user_features+targets\n')
@@ -130,7 +129,7 @@ get_ipython().run_cell_magic('time', '', '\nuser_id = ["user_id"] >> Categorify(
 
 # Let's call `transform_aliccp` utility function to be able to perform `fit` and `transform` steps on the raw dataset applying the operators defined in the NVTabular workflow pipeline below, and also save our workflow model. After fit and transform, the processed parquet files are saved to output_path.
 
-# In[9]:
+# In[8]:
 
 
 from merlin.datasets.ecommerce import transform_aliccp
@@ -144,7 +143,7 @@ transform_aliccp((train, valid), output_path, nvt_workflow=outputs, workflow_nam
 # 
 # We use the `schema` object to define our model.
 
-# In[10]:
+# In[9]:
 
 
 # define train and valid dataset objects
@@ -155,7 +154,7 @@ valid = Dataset(os.path.join(output_path, 'valid', '*.parquet'), part_size="500M
 schema = train.schema
 
 
-# In[11]:
+# In[10]:
 
 
 target_column = schema.select_by_tag(Tags.TARGET).column_names[0]
@@ -164,7 +163,7 @@ target_column
 
 # Deep Learning Recommendation Model [(DLRM)](https://arxiv.org/abs/1906.00091) architecture is a popular neural network model originally proposed by Facebook in 2019. The model was introduced as a personalization deep learning model that uses embeddings to process sparse features that represent categorical data and a multilayer perceptron (MLP) to process dense features, then interacts these features explicitly using the statistical techniques proposed in [here](https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=5694074). To learn more about DLRM architetcture please visit `Exploring-different-models` [notebook](https://github.com/NVIDIA-Merlin/models/blob/main/examples/04-Exporting-ranking-models.ipynb) in the Merlin Models GH repo.
 
-# In[12]:
+# In[11]:
 
 
 model = mm.DLRMModel(
@@ -176,7 +175,7 @@ model = mm.DLRMModel(
 )
 
 
-# In[13]:
+# In[12]:
 
 
 model.compile(optimizer='adam', run_eagerly=False)
@@ -185,7 +184,7 @@ model.fit(train, validation_data=valid, batch_size=16*1024)
 
 # We will create the feature repo in the current working directory, which is `BASE_DIR` for us.
 
-# In[14]:
+# In[13]:
 
 
 # set up the base dir to for feature store
@@ -194,7 +193,7 @@ BASE_DIR = os.environ.get("BASE_DIR", "/Merlin/examples/Building-and-deploying-m
 
 # Let's save our DLRM model to be able to load back at the deployment stage. 
 
-# In[15]:
+# In[14]:
 
 
 model.save(os.path.join(BASE_DIR, 'dlrm'))
@@ -204,7 +203,7 @@ model.save(os.path.join(BASE_DIR, 'dlrm'))
 
 # Now we move to the offline retrieval stage. We are going to train a Two-Tower model for item retrieval. To learn more about the Two-tower model you can visit [05-Retrieval-Model.ipynb](https://github.com/NVIDIA-Merlin/models/blob/main/examples/05-Retrieval-Model.ipynb).
 
-# In[16]:
+# In[15]:
 
 
 output_path = os.path.join(DATA_FOLDER, 'processed/retrieval')
@@ -212,7 +211,7 @@ output_path = os.path.join(DATA_FOLDER, 'processed/retrieval')
 
 # We select only positive interaction rows where `click==1` in the dataset with `Filter()` operator.
 
-# In[17]:
+# In[16]:
 
 
 user_id = ["user_id"] >> Categorify(dtype='int32') >> TagAsUserID()
@@ -232,7 +231,7 @@ outputs = inputs >> Filter(f=lambda df: df["click"] == 1)
 transform_aliccp((train, valid), output_path, nvt_workflow=outputs, workflow_name='workflow_retrieval')
 
 
-# In[18]:
+# In[17]:
 
 
 train_tt = Dataset(os.path.join(output_path, 'train', '*.parquet'))
@@ -242,7 +241,7 @@ schema = train_tt.schema
 schema = schema.select_by_tag([Tags.ITEM_ID, Tags.USER_ID, Tags.ITEM, Tags.USER])
 
 
-# In[19]:
+# In[18]:
 
 
 model = mm.TwoTowerModel(
@@ -255,7 +254,7 @@ model = mm.TwoTowerModel(
 )
 
 
-# In[20]:
+# In[19]:
 
 
 model.compile(optimizer='adam', run_eagerly=False)
@@ -268,7 +267,7 @@ model.fit(train_tt, validation_data=valid_tt, batch_size=1024*8, epochs=1)
 
 # Before we move onto the next step, we need to create a Feast feature repository.
 
-# In[21]:
+# In[20]:
 
 
 get_ipython().system('cd $BASE_DIR && feast init feature_repo')
@@ -276,7 +275,7 @@ get_ipython().system('cd $BASE_DIR && feast init feature_repo')
 
 # You should be seeing a message like <i>Creating a new Feast repository in ... </i> printed out above. Now, navigate to the `feature_repo` folder and remove the demo parquet file created by default, and `examples.py` file.
 
-# In[22]:
+# In[21]:
 
 
 os.remove(os.path.join(BASE_DIR, 'feature_repo', 'example.py'))
@@ -285,7 +284,7 @@ os.remove(os.path.join(BASE_DIR, 'feature_repo/data', 'driver_stats.parquet'))
 
 # ### Exporting query (user) model
 
-# In[23]:
+# In[22]:
 
 
 query_tower = model.retrieval_block.query_block()
@@ -294,14 +293,14 @@ query_tower.save(os.path.join(BASE_DIR, 'query_tower'))
 
 # ### Exporting user and item features
 
-# In[24]:
+# In[23]:
 
 
 from merlin.models.utils.dataset import unique_rows_by_features
 user_features = unique_rows_by_features(train, Tags.USER, Tags.USER_ID).compute().reset_index(drop=True)
 
 
-# In[25]:
+# In[24]:
 
 
 user_features.head()
@@ -309,7 +308,7 @@ user_features.head()
 
 # We will artificially add `datetime` and `created` timestamp columns to our user_features dataframe. This required by Feast to track the user-item features and their creation time and to determine which version to use when we query Feast.
 
-# In[26]:
+# In[25]:
 
 
 from datetime import datetime
@@ -319,31 +318,31 @@ user_features["created"] = datetime.now()
 user_features["created"] = user_features["created"].astype("datetime64[ns]")
 
 
-# In[27]:
+# In[26]:
 
 
 user_features.head()
 
 
-# In[28]:
+# In[27]:
 
 
 user_features.to_parquet(os.path.join(BASE_DIR, 'feature_repo/data', 'user_features.parquet'))
 
 
-# In[29]:
+# In[28]:
 
 
 item_features = unique_rows_by_features(train, Tags.ITEM, Tags.ITEM_ID).compute().reset_index(drop=True)
 
 
-# In[30]:
+# In[29]:
 
 
 item_features.shape
 
 
-# In[31]:
+# In[30]:
 
 
 item_features["datetime"] = datetime.now()
@@ -352,13 +351,13 @@ item_features["created"] = datetime.now()
 item_features["created"] = item_features["created"].astype("datetime64[ns]")
 
 
-# In[32]:
+# In[31]:
 
 
 item_features.head()
 
 
-# In[33]:
+# In[32]:
 
 
 # save to disk
@@ -367,27 +366,27 @@ item_features.to_parquet(os.path.join(BASE_DIR, 'feature_repo/data', 'item_featu
 
 # ### Extract and save Item embeddings
 
-# In[34]:
+# In[33]:
 
 
 item_embs = model.item_embeddings(Dataset(item_features, schema=schema), batch_size=1024)
 item_embs_df = item_embs.compute(scheduler="synchronous")
 
 
-# In[35]:
+# In[34]:
 
 
 # select only item_id together with embedding columns 
 item_embeddings = item_embs_df.drop(columns=['item_category', 'item_shop', 'item_brand'])
 
 
-# In[36]:
+# In[35]:
 
 
 item_embeddings.head()
 
 
-# In[37]:
+# In[36]:
 
 
 # save to disk
@@ -398,47 +397,7 @@ item_embeddings.to_parquet(os.path.join(BASE_DIR,'item_embeddings.parquet'))
 
 # Now we will create our user and item features definitions in the user_features.py and item_features.py files and save these files in the feature_repo.
 
-# In[38]:
-
-
-# %%writefile /Merlin/examples/Building-and-deploying-multi-stage-RecSys/feature_repo/user_features.py
-# from google.protobuf.duration_pb2 import Duration
-# import datetime 
-# from feast import Entity, Feature, FeatureView, ValueType
-# from feast.infra.offline_stores.file_source import FileSource
-
-# user_features = FileSource(
-#     path="/Merlin/examples/Building-and-deploying-multi-stage-RecSys/feature_repo/data/user_features.parquet",
-#     event_timestamp_column="datetime",
-#     created_timestamp_column="created",
-# )
-
-# user = Entity(name="user_id", value_type=ValueType.INT32, description="user id",)
-
-# user_features_view = FeatureView(
-#     name="user_features",
-#     entities=["user_id"],
-#     ttl=Duration(seconds=86400 * 7),
-#     features=[
-#         Feature(name="user_shops", dtype=ValueType.INT32),
-#         Feature(name="user_profile", dtype=ValueType.INT32),
-#         Feature(name="user_group", dtype=ValueType.INT32),
-#         Feature(name="user_gender", dtype=ValueType.INT32),
-#         Feature(name="user_age", dtype=ValueType.INT32),
-#         Feature(name="user_consumption_2", dtype=ValueType.INT32),
-#         Feature(name="user_is_occupied", dtype=ValueType.INT32),
-#         Feature(name="user_geography", dtype=ValueType.INT32),
-#         Feature(name="user_intentions", dtype=ValueType.INT32),
-#         Feature(name="user_brands", dtype=ValueType.INT32),
-#         Feature(name="user_categories", dtype=ValueType.INT32),
-#     ],
-#     online=True,
-#     input=user_features,
-#     tags={},
-# )
-
-
-# In[39]:
+# In[37]:
 
 
 file = open(os.path.join(BASE_DIR, 'feature_repo/','user_features.py'), "w")
@@ -450,7 +409,7 @@ from feast import Entity, Feature, FeatureView, ValueType
 from feast.infra.offline_stores.file_source import FileSource
 
 user_features = FileSource(
-    path="/tmp/examples/feature_repo/data/user_features.parquet",
+    path="{}",
     event_timestamp_column="datetime",
     created_timestamp_column="created",
 )
@@ -476,46 +435,14 @@ user_features_view = FeatureView(
     ],
     online=True,
     input=user_features,
-    tags={},
+    tags=dict(),
 )
-'''
+'''.format(os.path.join(BASE_DIR, 'feature_repo/data/','user_features.parquet'))
 )
 file.close()
 
 
-# In[40]:
-
-
-# %%writefile /Merlin/examples/Building-and-deploying-multi-stage-RecSys/feature_repo/item_features.py
-#from google.protobuf.duration_pb2 import Duration
-# import datetime 
-# from feast import Entity, Feature, FeatureView, ValueType
-# from feast.infra.offline_stores.file_source import FileSource
-
-# item_features = FileSource(
-#     path="/Merlin/examples/Building-and-deploying-multi-stage-RecSys/feature_repo/data/item_features.parquet",
-#     event_timestamp_column="datetime",
-#     created_timestamp_column="created",
-# )
-
-# item = Entity(name="item_id", value_type=ValueType.INT32, description="item id",)
-
-# item_features_view = FeatureView(
-#     name="item_features",
-#     entities=["item_id"],
-#     ttl=Duration(seconds=86400 * 7),
-#     features=[
-#         Feature(name="item_category", dtype=ValueType.INT32),
-#         Feature(name="item_shop", dtype=ValueType.INT32),
-#         Feature(name="item_brand", dtype=ValueType.INT32),
-#     ],
-#     online=True,
-#     input=item_features,
-#     tags={},
-# )
-
-
-# In[41]:
+# In[38]:
 
 
 with open(os.path.join(BASE_DIR, 'feature_repo/','item_features.py'), "w") as f:
@@ -527,7 +454,7 @@ from feast import Entity, Feature, FeatureView, ValueType
 from feast.infra.offline_stores.file_source import FileSource
 
 item_features = FileSource(
-    path="/tmp/examples/feature_repo/data/item_features.parquet",
+    path="{}",
     event_timestamp_column="datetime",
     created_timestamp_column="created",
 )
@@ -545,51 +472,31 @@ item_features_view = FeatureView(
     ],
     online=True,
     input=item_features,
-    tags={},
+    tags=dict(),
 )
-'''
+'''.format(os.path.join(BASE_DIR, 'feature_repo/data/','item_features.parquet'))
     )
 file.close() 
 
 
 # Let's checkout our Feast feature repository structure.
 
-# In[42]:
+# In[ ]:
 
 
-# install tree
-# !apt-get update
-# !apt-get install tree
+# install seedir
+get_ipython().system('pip install seedir')
 
 
-# In[43]:
+# In[41]:
 
 
+import seedir as sd
 feature_repo_path = os.path.join(BASE_DIR, 'feature_repo')
-get_ipython().system('tree $feature_repo_path')
+sd.seedir(feature_repo_path, style='lines', itemlimit=10, depthlimit=3, exclude_folders='.ipynb_checkpoints', sort=True)
 
 
 # ### Next Steps
 # We trained and exported our ranking and retrieval models and NVTabular workflows. In the next step, we will learn how to deploy our trained models into [Triton Inference Server (TIS)](https://github.com/triton-inference-server/server) with Merlin Sytems library.
 # 
 # For the next step, move on to the `02-Deploying-multi-stage-Recsys-with-Merlin-Systems.ipynb` notebook to deploy our saved models as an ensemble to TIS and obtain prediction results for a qiven request.
-
-# string_items = '{"ordered_ids": array([[137],\n       [311],\n       [292],\n       [332],\n       [383],\n       [233],\n       [445],\n       [297],\n       [ 93],\n       [284]], dtype=int32)}'
-
-# In[19]:
-
-
-'''
-Test this is our file
-wahat can we do
-path = {}
-asdasd
-how does it look
-'''.format('test')
-
-
-# In[ ]:
-
-
-
-
