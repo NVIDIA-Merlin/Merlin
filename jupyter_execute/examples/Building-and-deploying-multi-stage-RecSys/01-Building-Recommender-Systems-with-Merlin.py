@@ -33,7 +33,7 @@
 # ![fourstage](../images/fourstages.png)
 
 # In these series of notebooks, we are going to showcase how we can deploy a four-stage recommender systems using Merlin Systems library easily on [Triton Inference Server](https://github.com/triton-inference-server/server). Let's go over the concepts in the figure briefly. 
-# - **Retrieval:** This is the step to narrow down millions of items into thounds of candidates. We are going to train a Two-Tower item retrieval model to retrive the relevant top-K candidate items.
+# - **Retrieval:** This is the step to narrow down millions of items into thousands of candidates. We are going to train a Two-Tower item retrieval model to retrieve the relevant top-K candidate items.
 # - **Filtering:** This step is to exclude the already interacted  or undesirable items from the candidate items set or to apply business logic rules. Although this is an important step, for this example we skip this step.
 # - **Scoring:** This is also known as ranking. Here the retrieved and filtered candidate items are being scored. We are going to train a ranking model to be able to use at our scoring step. 
 # - **Ordering:** At this stage, we can order the final set of items that we want to recommend to the user. Here, we’re able to align the output of the model with business needs, constraints, or criteria.
@@ -46,7 +46,7 @@
 # - Setting up feature store and approximate nearest neighbours (ANN) search libraries
 # - Deploying trained models to Triton Inference Server with Merlin Systems
 
-# In additon to NVIDIA Merlin libraries and `Triton` library, we are using two external libraries in these series of examples:
+# In addition to NVIDIA Merlin libraries and the Triton Inference Server client library, we use two external libraries in these series of examples:
 # 
 # - [Feast](https://docs.feast.dev/): an end-to-end open source feature store library for machine learning
 # - [Faiss](https://github.com/facebookresearch/faiss): a library for efficient similarity search and clustering of dense vectors
@@ -497,6 +497,6 @@ sd.seedir(feature_repo_path, style='lines', itemlimit=10, depthlimit=3, exclude_
 
 
 # ### Next Steps
-# We trained and exported our ranking and retrieval models and NVTabular workflows. In the next step, we will learn how to deploy our trained models into [Triton Inference Server (TIS)](https://github.com/triton-inference-server/server) with Merlin Sytems library.
+# We trained and exported our ranking and retrieval models and NVTabular workflows. In the next step, we will learn how to deploy our trained models into [Triton Inference Server (TIS)](https://github.com/triton-inference-server/server) with Merlin Systems library.
 # 
-# For the next step, move on to the `02-Deploying-multi-stage-Recsys-with-Merlin-Systems.ipynb` notebook to deploy our saved models as an ensemble to TIS and obtain prediction results for a qiven request.
+# For the next step, move on to the `02-Deploying-multi-stage-Recsys-with-Merlin-Systems.ipynb` notebook to deploy our saved models as an ensemble to TIS and obtain prediction results for a given request.

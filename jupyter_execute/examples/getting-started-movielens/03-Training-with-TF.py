@@ -285,12 +285,16 @@ model = tf.keras.Model(inputs=inputs, outputs=x)
 model.compile("sgd", "binary_crossentropy")
 
 
-# In[19]:
+# In[ ]:
 
 
 # You need to install the dependencies
 tf.keras.utils.plot_model(model)
 
+
+# The plot is similar to the following figure:
+# 
+# ![Keras model](./imgs/gs-keras-model-plot.png)
 
 # ### Training the deep learning model
 
