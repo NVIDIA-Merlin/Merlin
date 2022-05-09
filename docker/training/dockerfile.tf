@@ -120,7 +120,7 @@ RUN if [ "$INSTALL_DISTRIBUTED_EMBEDDINGS" == "true" ]; then \
     fi
 
 # Clean up
-RUN rm -rf /repos /usr/local/nvm/
+RUN rm -rf /repos
 RUN rm -rf /usr/local/share/jupyter/lab/staging/node_modules/marked
 RUN rm -rf /usr/local/share/jupyter/lab/staging/node_modules/node-fetch
 
