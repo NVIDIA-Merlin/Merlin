@@ -1,6 +1,7 @@
 # Configuration file for the Sphinx documentation builder.
 import os
 import subprocess
+import sys
 
 from natsort import natsorted
 
@@ -11,7 +12,7 @@ gitdir = os.path.join(repodir, r".git")
 # -- Project information -----------------------------------------------------
 
 project = "Merlin"
-copyright = "2022, NVIDIA"
+copyright = "2022, NVIDIA"  # pylint: disable=redefined-builtin
 author = "NVIDIA"
 
 # -- General configuration ---------------------------------------------------
@@ -61,9 +62,7 @@ templates_path = ["_templates"]
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = [
-    "generated",
-]
+exclude_patterns = []
 
 # -- Options for HTML output -------------------------------------------------
 
@@ -121,3 +120,9 @@ copydirs_additional_dirs = ["../../examples/", "../../README.md"]
 copydirs_file_rename = {
     "README.md": "index.md",
 }
+
+# Generate the support matrix tables.
+proc = subprocess.run(["python", "docs/smx2rst.py"], cwd=repodir, check=True)
+if proc.returncode != 0:
+    print("Failed to generate support matrix table snippets.", file=sys.stderr)
+    sys.exit(1)
