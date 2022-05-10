@@ -54,12 +54,12 @@ RUN pip install git+https://github.com/rapidsai/asvdb.git@main
 
 # Install Merlin Core
 RUN git clone https://github.com/NVIDIA-Merlin/core.git /core/ && \
-    cd /core/ && git checkout ${CORE_VER} && pip install --no-deps -e .
+    cd /core/ && git checkout ${CORE_VER} && pip install --no-deps .
 ENV PYTHONPATH=$PYTHONPATH:/core
 
 # Install Merlin Systems
 RUN git clone https://github.com/NVIDIA-Merlin/systems.git /systems/ && \
-    cd /systems/ && git checkout ${SYSTEMS_VER} && pip install --no-deps -e .
+    cd /systems/ && git checkout ${SYSTEMS_VER} && pip install --no-deps .
 ENV PYTHONPATH=$PYTHONPATH:/systems
 
 ARG INSTALL_NVT=true
@@ -67,7 +67,7 @@ ARG INSTALL_NVT=true
 ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
 RUN if [ "$INSTALL_NVT" == "true" ]; then \
       git clone https://github.com/NVIDIA-Merlin/NVTabular.git /nvtabular/ && \
-      cd /nvtabular/ && git checkout ${NVTAB_VER} && pip install --no-deps -e .; \
+      cd /nvtabular/ && git checkout ${NVTAB_VER} && pip install --no-deps .; \
     fi
 ENV PYTHONPATH=$PYTHONPATH:/nvtabular
 
