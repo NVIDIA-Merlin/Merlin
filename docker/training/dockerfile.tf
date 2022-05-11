@@ -46,7 +46,6 @@ RUN apt update -y --fix-missing && \
 RUN pip install betterproto graphviz pybind11 pydot pytest mpi4py transformers==4.12
 RUN pip install --upgrade notebook
 RUN pip install --upgrade ipython
-RUN pip install --upgrade horovod
 RUN pip install nvidia-pyindex
 RUN pip install tritonclient[all] grpcio-channelz
 RUN pip install numba==0.55.1
