@@ -46,7 +46,6 @@ RUN apt update -y --fix-missing && \
 RUN pip install betterproto graphviz pybind11 pydot pytest mpi4py transformers==4.12
 RUN pip install --upgrade notebook
 RUN pip install --upgrade ipython
-RUN pip install --upgrade horovod
 RUN pip install nvidia-pyindex
 RUN pip install tritonclient[all] grpcio-channelz
 RUN pip install numba==0.55.1
@@ -54,12 +53,12 @@ RUN pip install git+https://github.com/rapidsai/asvdb.git@main
 
 # Install Merlin Core
 RUN git clone https://github.com/NVIDIA-Merlin/core.git /core/ && \
-    cd /core/ && git checkout ${CORE_VER} && pip install --no-deps -e .
+    cd /core/ && git checkout ${CORE_VER} && pip install --no-deps .
 ENV PYTHONPATH=$PYTHONPATH:/core
 
 # Install Merlin Systems
 RUN git clone https://github.com/NVIDIA-Merlin/systems.git /systems/ && \
-    cd /systems/ && git checkout ${SYSTEMS_VER} && pip install --no-deps -e .
+    cd /systems/ && git checkout ${SYSTEMS_VER} && pip install --no-deps .
 ENV PYTHONPATH=$PYTHONPATH:/systems
 
 ARG INSTALL_NVT=true
@@ -67,7 +66,7 @@ ARG INSTALL_NVT=true
 ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
 RUN if [ "$INSTALL_NVT" == "true" ]; then \
       git clone https://github.com/NVIDIA-Merlin/NVTabular.git /nvtabular/ && \
-      cd /nvtabular/ && git checkout ${NVTAB_VER} && pip install --no-deps -e .; \
+      cd /nvtabular/ && git checkout ${NVTAB_VER} && pip install --no-deps .; \
     fi
 ENV PYTHONPATH=$PYTHONPATH:/nvtabular
 
@@ -120,7 +119,7 @@ RUN if [ "$INSTALL_DISTRIBUTED_EMBEDDINGS" == "true" ]; then \
     fi
 
 # Clean up
-RUN rm -rf /repos /usr/local/nvm/
+RUN rm -rf /repos
 RUN rm -rf /usr/local/share/jupyter/lab/staging/node_modules/marked
 RUN rm -rf /usr/local/share/jupyter/lab/staging/node_modules/node-fetch
 
