@@ -155,7 +155,7 @@ RUN git clone --branch ${REDIS_PP_VER} --depth 1 https://github.com/sewenew/redi
 # Dependency: Build and install RocksDB.
 RUN git clone --branch v${ROCKSDB_VER} --depth 1 https://github.com/facebook/rocksdb.git rocksdb && \
     cd rocksdb && \
-    USE_SSE=1 make -j$(nproc) shared_lib && \
+    PORTABLE=1 make -j$(nproc) shared_lib && \
     make install-shared && \
     cd .. && \
     rm -rf rocksdb
