@@ -22,6 +22,8 @@
 
 # # Scaling Criteo: Training with HugeCTR
 # 
+# This notebook is created using the latest stable [merlin-training](https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-training/tags) container.
+# 
 # ## Overview
 # 
 # HugeCTR is an open-source framework to accelerate the training of CTR estimation models on NVIDIA GPUs. It is written in CUDA C++ and highly exploits GPU-accelerated libraries such as cuBLAS, cuDNN, and NCCL.<br><br>

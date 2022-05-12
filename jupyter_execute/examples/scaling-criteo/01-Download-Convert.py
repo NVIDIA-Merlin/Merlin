@@ -24,6 +24,8 @@
 # 
 # # Scaling Criteo: Download and Convert
 # 
+# This notebook is created using the latest stable [merlin-training](https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-training/tags), [merlin-tensorflow-training](https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-tensorflow-training/tags) or [merlin-pytorch-training](https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-pytorch-training/tags) container. 
+# 
 # ## Criteo 1TB Click Logs dataset
 # 
 # The [Criteo 1TB Click Logs dataset](https://ailab.criteo.com/download-criteo-1tb-click-logs-dataset/) is the largest public available dataset for recommender system. It contains ~1.3 TB of uncompressed click logs containing over four billion samples spanning 24 days. Each record contains 40 features: one label indicating a click or no click, 13 numerical figures, and 26 categorical features. The dataset is provided by CriteoLabs. A subset of 7 days was used in this [Kaggle Competition](https://www.kaggle.com/c/criteo-display-ad-challenge/overview). We will use the dataset as an example how to scale ETL, Training and Inference.

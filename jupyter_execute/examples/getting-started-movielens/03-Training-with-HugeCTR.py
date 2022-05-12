@@ -24,6 +24,8 @@
 # 
 # # Getting Started MovieLens: Training with HugeCTR
 # 
+# This notebook is created using the latest stable [merlin-training](https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-training/tags) container.
+# 
 # ## Overview
 # 
 # In this notebook, we want to provide an overview what HugeCTR framework is, its features and benefits. We will use HugeCTR to train a basic neural network architecture.

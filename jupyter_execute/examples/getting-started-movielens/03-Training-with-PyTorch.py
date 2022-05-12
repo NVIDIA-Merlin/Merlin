@@ -24,6 +24,8 @@
 # 
 # # Getting Started MovieLens: Training with PyTorch
 # 
+# This notebook is created using the latest stable [merlin-pytorch-training](https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-pytorch-training/tags) container.
+# 
 # ## Overview
 # 
 # We observed that PyTorch training pipelines can be slow as the dataloader is a bottleneck. The native dataloader in PyTorch randomly sample each item from the dataset, which is very slow. In our experiments, we are able to speed-up existing PyTorch pipelines using a highly optimized dataloader.<br><br>

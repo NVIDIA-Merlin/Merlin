@@ -24,6 +24,8 @@
 # 
 # # Serve Recommendations from the HugeCTR Model
 # 
+# This notebook is created using the latest stable [merlin-inference](https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-inference/tags) container. 
+# 
 # ## Overview
 # 
 # In this notebook, we will show how we do inference with our trained deep learning recommender model using Triton Inference Server. In this example, we deploy the NVTabular workflow and HugeCTR model with Triton Inference Server. We deploy them as an ensemble. For each request, Triton Inference Server will feed the input data through the NVTabular workflow and its output through the HugeCR model.

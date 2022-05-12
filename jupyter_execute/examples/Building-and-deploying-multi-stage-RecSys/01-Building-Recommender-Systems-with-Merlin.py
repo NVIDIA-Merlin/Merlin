@@ -24,6 +24,8 @@
 # 
 # ## Building Intelligent Recommender Systems with Merlin
 # 
+# This notebook is created using the latest stable [merlin-tensorflow-inference](https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-tensorflow-inference/tags) container. 
+# 
 # ### Overview
 
 # Recommender Systems (RecSys) are the engine of the modern internet and the catalyst for human decisions. Building a recommendation system is challenging because it requires multiple stages (data preprocessing, offline training, item retrieval, filtering, ranking, ordering, etc.) to work together seamlessly and efficiently. The biggest challenges for new practitioners are the lack of understanding around what RecSys look like in the real world, and the gap between examples of simple models and a production-ready end-to-end recommender systems.
