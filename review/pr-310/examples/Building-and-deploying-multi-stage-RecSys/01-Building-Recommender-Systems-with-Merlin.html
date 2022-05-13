@@ -1,0 +1,1342 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Building Intelligent Recommender Systems with Merlin &mdash; Merlin  documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/togglebutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/mystnb.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script >let toggleHintShow = 'Click to show';</script>
+        <script >let toggleHintHide = 'Click to hide';</script>
+        <script >let toggleOpenOnPrint = 'true';</script>
+        <script src="../../_static/togglebutton.js"></script>
+        <script >var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Deploying a Multi-Stage RecSys into Production with Merlin Systems and Triton Inference Server" href="02-Deploying-multi-stage-RecSys-with-Merlin-Systems.html" />
+    <link rel="prev" title="Deploying a Multi-Stage Recommender System" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Merlin
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../README.html">Introduction</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">Example Notebooks</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../index.html#inventory">Inventory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#running-the-example-notebooks">Running the Example Notebooks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../getting-started-movielens/index.html">Getting Started using the MovieLens Dataset</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">Deploying a Multi-Stage Recommender System</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="index.html#running-the-example-notebooks">Running the Example Notebooks</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Building the Recommender System</a></li>
+<li class="toctree-l3"><a class="reference internal" href="02-Deploying-multi-stage-RecSys-with-Merlin-Systems.html">Deploying the Recommender System with Triton</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../scaling-criteo/index.html">Scaling Large Datasets with Criteo</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../containers.html">Merlin Containers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../support_matrix/index.html">Merlin Support Matrix</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Merlin</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">NVIDIA Merlin Example Notebooks</a> &raquo;</li>
+          <li><a href="index.html">Deploying a Multi-Stage Recommender System</a> &raquo;</li>
+      <li>Building Intelligent Recommender Systems with Merlin</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Copyright 2021 NVIDIA Corporation. All Rights Reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+<span class="c1"># ================================</span>
+</pre></div>
+</div>
+</div>
+</div>
+<img alt="http://developer.download.nvidia.com/compute/machine-learning/frameworks/nvidia_logo.png" src="http://developer.download.nvidia.com/compute/machine-learning/frameworks/nvidia_logo.png" />
+<div class="section" id="building-intelligent-recommender-systems-with-merlin">
+<h1>Building Intelligent Recommender Systems with Merlin<a class="headerlink" href="#building-intelligent-recommender-systems-with-merlin" title="Permalink to this headline"></a></h1>
+<p>This notebook is created using the latest stable <a class="reference external" href="https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-tensorflow-inference/tags">merlin-tensorflow-inference</a> container.</p>
+<div class="section" id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline"></a></h2>
+<p>Recommender Systems (RecSys) are the engine of the modern internet and the catalyst for human decisions. Building a recommendation system is challenging because it requires multiple stages (data preprocessing, offline training, item retrieval, filtering, ranking, ordering, etc.) to work together seamlessly and efficiently. The biggest challenges for new practitioners are the lack of understanding around what RecSys look like in the real world, and the gap between examples of simple models and a production-ready end-to-end recommender systems.</p>
+<p>The figure below represents a four-stage recommender systems. This is more complex process than only training a single model and deploying it, and it is much more realistic and closer to what’s happening in the real-world recommender production systems.</p>
+<p><img alt="fourstage" src="../../_images/fourstages.png" /></p>
+<p>In these series of notebooks, we are going to showcase how we can deploy a four-stage recommender systems using Merlin Systems library easily on <a class="reference external" href="https://github.com/triton-inference-server/server">Triton Inference Server</a>. Let’s go over the concepts in the figure briefly.</p>
+<ul class="simple">
+<li><p><strong>Retrieval:</strong> This is the step to narrow down millions of items into thousands of candidates. We are going to train a Two-Tower item retrieval model to retrieve the relevant top-K candidate items.</p></li>
+<li><p><strong>Filtering:</strong> This step is to exclude the already interacted  or undesirable items from the candidate items set or to apply business logic rules. Although this is an important step, for this example we skip this step.</p></li>
+<li><p><strong>Scoring:</strong> This is also known as ranking. Here the retrieved and filtered candidate items are being scored. We are going to train a ranking model to be able to use at our scoring step.</p></li>
+<li><p><strong>Ordering:</strong> At this stage, we can order the final set of items that we want to recommend to the user. Here, we’re able to align the output of the model with business needs, constraints, or criteria.</p></li>
+</ul>
+<p>To learn more about the four-stage recommender systems, you can listen to Even Oldridge’s <a class="reference external" href="https://www.youtube.com/watch?v=5qjiY-kLwFY&amp;list=PL65MqKWg6XcrdN4TJV0K1PdLhF_Uq-b43&amp;index=7">Moving Beyond Recommender Models talk</a> at KDD’21 and read more <a class="reference external" href="https://eugeneyan.com/writing/system-design-for-discovery/">in this blog post</a>.</p>
+</div>
+<div class="section" id="learning-objectives">
+<h2>Learning objectives<a class="headerlink" href="#learning-objectives" title="Permalink to this headline"></a></h2>
+<ul class="simple">
+<li><p>Understanding four stages of recommender systems</p></li>
+<li><p>Training retrieval and ranking models with Merlin Models</p></li>
+<li><p>Setting up feature store and approximate nearest neighbours (ANN) search libraries</p></li>
+<li><p>Deploying trained models to Triton Inference Server with Merlin Systems</p></li>
+</ul>
+<p>In addition to NVIDIA Merlin libraries and the Triton Inference Server client library, we use two external libraries in these series of examples:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://docs.feast.dev/">Feast</a>: an end-to-end open source feature store library for machine learning</p></li>
+<li><p><a class="reference external" href="https://github.com/facebookresearch/faiss">Faiss</a>: a library for efficient similarity search and clustering of dense vectors</p></li>
+</ul>
+<p>You can find more information about <code class="docutils literal notranslate"><span class="pre">Feast</span> <span class="pre">feature</span> <span class="pre">store</span></code> and <code class="docutils literal notranslate"><span class="pre">Faiss</span></code> libraries in the next notebook. Please follow the instructions in the <a class="reference external" href="http://README.md">README.md</a> file to install these libraries.</p>
+</div>
+<div class="section" id="import-required-libraries-and-functions">
+<h2>Import required libraries and functions<a class="headerlink" href="#import-required-libraries-and-functions" title="Permalink to this headline"></a></h2>
+<p><strong>Compatibility:</strong></p>
+<p>These notebooks are developed and tested using our latest inference container on <a class="reference external" href="https://catalog.ngc.nvidia.com/containers?filters=&amp;orderBy=dateModifiedDESC&amp;query=merlin">NVIDIA’s docker registry</a>.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">pip</span> install tensorflow &quot;feast&lt;0.20&quot; faiss-gpu
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Looking in indexes: https://pypi.org/simple, https://pypi.ngc.nvidia.com
+Requirement already satisfied: tensorflow in /usr/local/lib/python3.8/dist-packages (2.8.0)
+Requirement already satisfied: feast&lt;0.20 in /usr/local/lib/python3.8/dist-packages (0.19.4)
+Requirement already satisfied: faiss-gpu in /usr/local/lib/python3.8/dist-packages (1.7.2)
+Requirement already satisfied: wrapt&gt;=1.11.0 in /usr/local/lib/python3.8/dist-packages (from tensorflow) (1.14.1)
+Requirement already satisfied: tensorboard&lt;2.9,&gt;=2.8 in /usr/local/lib/python3.8/dist-packages (from tensorflow) (2.8.0)
+Requirement already satisfied: six&gt;=1.12.0 in /usr/lib/python3/dist-packages (from tensorflow) (1.14.0)
+Requirement already satisfied: tensorflow-io-gcs-filesystem&gt;=0.23.1 in /usr/local/lib/python3.8/dist-packages (from tensorflow) (0.25.0)
+Requirement already satisfied: flatbuffers&gt;=1.12 in /usr/local/lib/python3.8/dist-packages (from tensorflow) (2.0)
+Requirement already satisfied: protobuf&gt;=3.9.2 in /usr/local/lib/python3.8/dist-packages (from tensorflow) (3.19.4)
+Requirement already satisfied: typing-extensions&gt;=3.6.6 in /usr/local/lib/python3.8/dist-packages (from tensorflow) (4.1.1)
+Requirement already satisfied: grpcio&lt;2.0,&gt;=1.24.3 in /usr/local/lib/python3.8/dist-packages (from tensorflow) (1.46.1)
+Requirement already satisfied: setuptools in /usr/local/lib/python3.8/dist-packages (from tensorflow) (61.0.0)
+Requirement already satisfied: absl-py&gt;=0.4.0 in /usr/local/lib/python3.8/dist-packages (from tensorflow) (1.0.0)
+Requirement already satisfied: h5py&gt;=2.9.0 in /usr/local/lib/python3.8/dist-packages (from tensorflow) (3.6.0)
+Requirement already satisfied: keras&lt;2.9,&gt;=2.8.0rc0 in /usr/local/lib/python3.8/dist-packages (from tensorflow) (2.8.0)
+Requirement already satisfied: opt-einsum&gt;=2.3.2 in /usr/local/lib/python3.8/dist-packages (from tensorflow) (3.3.0)
+Requirement already satisfied: astunparse&gt;=1.6.0 in /usr/local/lib/python3.8/dist-packages (from tensorflow) (1.6.3)
+Requirement already satisfied: termcolor&gt;=1.1.0 in /usr/local/lib/python3.8/dist-packages (from tensorflow) (1.1.0)
+Requirement already satisfied: libclang&gt;=9.0.1 in /usr/local/lib/python3.8/dist-packages (from tensorflow) (14.0.1)
+Requirement already satisfied: gast&gt;=0.2.1 in /usr/local/lib/python3.8/dist-packages (from tensorflow) (0.5.3)
+Requirement already satisfied: tf-estimator-nightly==2.8.0.dev2021122109 in /usr/local/lib/python3.8/dist-packages (from tensorflow) (2.8.0.dev2021122109)
+Requirement already satisfied: numpy&gt;=1.20 in /usr/local/lib/python3.8/dist-packages (from tensorflow) (1.21.5)
+Requirement already satisfied: keras-preprocessing&gt;=1.1.1 in /usr/local/lib/python3.8/dist-packages (from tensorflow) (1.1.2)
+Requirement already satisfied: google-pasta&gt;=0.1.1 in /usr/local/lib/python3.8/dist-packages (from tensorflow) (0.2.0)
+Requirement already satisfied: toml==0.10.* in /usr/local/lib/python3.8/dist-packages (from feast&lt;0.20) (0.10.2)
+Requirement already satisfied: tqdm==4.* in /usr/local/lib/python3.8/dist-packages (from feast&lt;0.20) (4.64.0)
+Requirement already satisfied: fastavro&gt;=1.1.0 in /usr/local/lib/python3.8/dist-packages (from feast&lt;0.20) (1.4.11)
+Requirement already satisfied: tenacity&gt;=7.* in /usr/local/lib/python3.8/dist-packages (from feast&lt;0.20) (8.0.1)
+Requirement already satisfied: tensorflow-metadata&lt;2.0.0,&gt;=1.0.0 in /usr/local/lib/python3.8/dist-packages (from feast&lt;0.20) (1.7.0)
+Requirement already satisfied: Jinja2&gt;=2.0.0 in /usr/local/lib/python3.8/dist-packages (from feast&lt;0.20) (3.1.1)
+Requirement already satisfied: colorama&gt;=0.3.9 in /usr/local/lib/python3.8/dist-packages (from feast&lt;0.20) (0.4.4)
+Requirement already satisfied: jsonschema in /usr/local/lib/python3.8/dist-packages (from feast&lt;0.20) (4.5.1)
+Requirement already satisfied: pandavro==1.5.* in /usr/local/lib/python3.8/dist-packages (from feast&lt;0.20) (1.5.2)
+Requirement already satisfied: uvicorn[standard]&gt;=0.14.0 in /usr/local/lib/python3.8/dist-packages (from feast&lt;0.20) (0.17.6)
+Requirement already satisfied: PyYAML&gt;=5.4.* in /usr/local/lib/python3.8/dist-packages (from feast&lt;0.20) (6.0)
+Requirement already satisfied: mmh3 in /usr/local/lib/python3.8/dist-packages (from feast&lt;0.20) (3.0.0)
+Requirement already satisfied: grpcio-reflection&gt;=1.34.0 in /usr/local/lib/python3.8/dist-packages (from feast&lt;0.20) (1.46.1)
+Requirement already satisfied: fastapi&gt;=0.68.0 in /usr/local/lib/python3.8/dist-packages (from feast&lt;0.20) (0.77.1)
+Requirement already satisfied: proto-plus&lt;1.19.7 in /usr/local/lib/python3.8/dist-packages (from feast&lt;0.20) (1.19.6)
+Requirement already satisfied: pydantic&gt;=1.0.0 in /usr/local/lib/python3.8/dist-packages (from feast&lt;0.20) (1.9.0)
+Requirement already satisfied: dask&lt;2022.02.0,&gt;=2021.* in /usr/local/lib/python3.8/dist-packages (from feast&lt;0.20) (2021.11.2)
+Requirement already satisfied: tabulate==0.8.* in /usr/local/lib/python3.8/dist-packages (from feast&lt;0.20) (0.8.9)
+Requirement already satisfied: googleapis-common-protos==1.52.* in /usr/local/lib/python3.8/dist-packages (from feast&lt;0.20) (1.52.0)
+Requirement already satisfied: google-api-core&gt;=1.23.0 in /usr/local/lib/python3.8/dist-packages (from feast&lt;0.20) (2.7.3)
+Requirement already satisfied: Click&gt;=7.* in /usr/local/lib/python3.8/dist-packages (from feast&lt;0.20) (8.1.2)
+Requirement already satisfied: pyarrow&gt;=4.0.0 in /usr/local/lib/python3.8/dist-packages (from feast&lt;0.20) (5.0.0)
+Requirement already satisfied: pandas&gt;=1.0.0 in /usr/local/lib/python3.8/dist-packages (from feast&lt;0.20) (1.3.5)
+Requirement already satisfied: dill==0.3.* in /usr/local/lib/python3.8/dist-packages (from feast&lt;0.20) (0.3.4)
+Requirement already satisfied: wheel&lt;1.0,&gt;=0.23.0 in /usr/local/lib/python3.8/dist-packages (from astunparse&gt;=1.6.0-&gt;tensorflow) (0.37.1)
+Requirement already satisfied: packaging&gt;=20.0 in /usr/local/lib/python3.8/dist-packages (from dask&lt;2022.02.0,&gt;=2021.*-&gt;feast&lt;0.20) (21.3)
+Requirement already satisfied: toolz&gt;=0.8.2 in /usr/local/lib/python3.8/dist-packages (from dask&lt;2022.02.0,&gt;=2021.*-&gt;feast&lt;0.20) (0.11.2)
+Requirement already satisfied: fsspec&gt;=0.6.0 in /usr/local/lib/python3.8/dist-packages (from dask&lt;2022.02.0,&gt;=2021.*-&gt;feast&lt;0.20) (2022.3.0)
+Requirement already satisfied: cloudpickle&gt;=1.1.1 in /usr/local/lib/python3.8/dist-packages (from dask&lt;2022.02.0,&gt;=2021.*-&gt;feast&lt;0.20) (2.0.0)
+Requirement already satisfied: partd&gt;=0.3.10 in /usr/local/lib/python3.8/dist-packages (from dask&lt;2022.02.0,&gt;=2021.*-&gt;feast&lt;0.20) (1.2.0)
+Requirement already satisfied: starlette==0.19.1 in /usr/local/lib/python3.8/dist-packages (from fastapi&gt;=0.68.0-&gt;feast&lt;0.20) (0.19.1)
+Requirement already satisfied: anyio&lt;5,&gt;=3.4.0 in /usr/local/lib/python3.8/dist-packages (from starlette==0.19.1-&gt;fastapi&gt;=0.68.0-&gt;feast&lt;0.20) (3.5.0)
+Requirement already satisfied: requests&lt;3.0.0dev,&gt;=2.18.0 in /usr/lib/python3/dist-packages (from google-api-core&gt;=1.23.0-&gt;feast&lt;0.20) (2.22.0)
+Requirement already satisfied: google-auth&lt;3.0dev,&gt;=1.25.0 in /usr/local/lib/python3.8/dist-packages (from google-api-core&gt;=1.23.0-&gt;feast&lt;0.20) (2.6.6)
+Requirement already satisfied: MarkupSafe&gt;=2.0 in /usr/local/lib/python3.8/dist-packages (from Jinja2&gt;=2.0.0-&gt;feast&lt;0.20) (2.1.1)
+Requirement already satisfied: pytz&gt;=2017.3 in /usr/local/lib/python3.8/dist-packages (from pandas&gt;=1.0.0-&gt;feast&lt;0.20) (2022.1)
+Requirement already satisfied: python-dateutil&gt;=2.7.3 in /usr/local/lib/python3.8/dist-packages (from pandas&gt;=1.0.0-&gt;feast&lt;0.20) (2.8.2)
+Requirement already satisfied: werkzeug&gt;=0.11.15 in /usr/local/lib/python3.8/dist-packages (from tensorboard&lt;2.9,&gt;=2.8-&gt;tensorflow) (2.1.2)
+Requirement already satisfied: google-auth-oauthlib&lt;0.5,&gt;=0.4.1 in /usr/local/lib/python3.8/dist-packages (from tensorboard&lt;2.9,&gt;=2.8-&gt;tensorflow) (0.4.6)
+Requirement already satisfied: tensorboard-plugin-wit&gt;=1.6.0 in /usr/local/lib/python3.8/dist-packages (from tensorboard&lt;2.9,&gt;=2.8-&gt;tensorflow) (1.8.1)
+Requirement already satisfied: markdown&gt;=2.6.8 in /usr/local/lib/python3.8/dist-packages (from tensorboard&lt;2.9,&gt;=2.8-&gt;tensorflow) (3.3.7)
+Requirement already satisfied: tensorboard-data-server&lt;0.7.0,&gt;=0.6.0 in /usr/local/lib/python3.8/dist-packages (from tensorboard&lt;2.9,&gt;=2.8-&gt;tensorflow) (0.6.1)
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Requirement already satisfied: h11&gt;=0.8 in /usr/local/lib/python3.8/dist-packages (from uvicorn[standard]&gt;=0.14.0-&gt;feast&lt;0.20) (0.13.0)
+Requirement already satisfied: asgiref&gt;=3.4.0 in /usr/local/lib/python3.8/dist-packages (from uvicorn[standard]&gt;=0.14.0-&gt;feast&lt;0.20) (3.5.1)
+Requirement already satisfied: websockets&gt;=10.0 in /usr/local/lib/python3.8/dist-packages (from uvicorn[standard]&gt;=0.14.0-&gt;feast&lt;0.20) (10.3)
+Requirement already satisfied: uvloop!=0.15.0,!=0.15.1,&gt;=0.14.0 in /usr/local/lib/python3.8/dist-packages (from uvicorn[standard]&gt;=0.14.0-&gt;feast&lt;0.20) (0.16.0)
+Requirement already satisfied: httptools&gt;=0.4.0 in /usr/local/lib/python3.8/dist-packages (from uvicorn[standard]&gt;=0.14.0-&gt;feast&lt;0.20) (0.4.0)
+Requirement already satisfied: watchgod&gt;=0.6 in /usr/local/lib/python3.8/dist-packages (from uvicorn[standard]&gt;=0.14.0-&gt;feast&lt;0.20) (0.8.2)
+Requirement already satisfied: python-dotenv&gt;=0.13 in /usr/local/lib/python3.8/dist-packages (from uvicorn[standard]&gt;=0.14.0-&gt;feast&lt;0.20) (0.20.0)
+Requirement already satisfied: importlib-resources&gt;=1.4.0 in /usr/local/lib/python3.8/dist-packages (from jsonschema-&gt;feast&lt;0.20) (5.7.1)
+Requirement already satisfied: attrs&gt;=17.4.0 in /usr/local/lib/python3.8/dist-packages (from jsonschema-&gt;feast&lt;0.20) (21.4.0)
+Requirement already satisfied: pyrsistent!=0.17.0,!=0.17.1,!=0.17.2,&gt;=0.14.0 in /usr/local/lib/python3.8/dist-packages (from jsonschema-&gt;feast&lt;0.20) (0.18.1)
+Requirement already satisfied: cachetools&lt;6.0,&gt;=2.0.0 in /usr/local/lib/python3.8/dist-packages (from google-auth&lt;3.0dev,&gt;=1.25.0-&gt;google-api-core&gt;=1.23.0-&gt;feast&lt;0.20) (5.0.0)
+Requirement already satisfied: pyasn1-modules&gt;=0.2.1 in /usr/local/lib/python3.8/dist-packages (from google-auth&lt;3.0dev,&gt;=1.25.0-&gt;google-api-core&gt;=1.23.0-&gt;feast&lt;0.20) (0.2.8)
+Requirement already satisfied: rsa&lt;5,&gt;=3.1.4 in /usr/local/lib/python3.8/dist-packages (from google-auth&lt;3.0dev,&gt;=1.25.0-&gt;google-api-core&gt;=1.23.0-&gt;feast&lt;0.20) (4.8)
+Requirement already satisfied: requests-oauthlib&gt;=0.7.0 in /usr/local/lib/python3.8/dist-packages (from google-auth-oauthlib&lt;0.5,&gt;=0.4.1-&gt;tensorboard&lt;2.9,&gt;=2.8-&gt;tensorflow) (1.3.1)
+Requirement already satisfied: zipp&gt;=3.1.0 in /usr/local/lib/python3.8/dist-packages (from importlib-resources&gt;=1.4.0-&gt;jsonschema-&gt;feast&lt;0.20) (3.8.0)
+Requirement already satisfied: importlib-metadata&gt;=4.4 in /usr/local/lib/python3.8/dist-packages (from markdown&gt;=2.6.8-&gt;tensorboard&lt;2.9,&gt;=2.8-&gt;tensorflow) (4.11.3)
+Requirement already satisfied: pyparsing!=3.0.5,&gt;=2.0.2 in /usr/local/lib/python3.8/dist-packages (from packaging&gt;=20.0-&gt;dask&lt;2022.02.0,&gt;=2021.*-&gt;feast&lt;0.20) (3.0.7)
+Requirement already satisfied: locket in /usr/local/lib/python3.8/dist-packages (from partd&gt;=0.3.10-&gt;dask&lt;2022.02.0,&gt;=2021.*-&gt;feast&lt;0.20) (0.2.1)
+Requirement already satisfied: idna&gt;=2.8 in /usr/lib/python3/dist-packages (from anyio&lt;5,&gt;=3.4.0-&gt;starlette==0.19.1-&gt;fastapi&gt;=0.68.0-&gt;feast&lt;0.20) (2.8)
+Requirement already satisfied: sniffio&gt;=1.1 in /usr/local/lib/python3.8/dist-packages (from anyio&lt;5,&gt;=3.4.0-&gt;starlette==0.19.1-&gt;fastapi&gt;=0.68.0-&gt;feast&lt;0.20) (1.2.0)
+Requirement already satisfied: pyasn1&lt;0.5.0,&gt;=0.4.6 in /usr/local/lib/python3.8/dist-packages (from pyasn1-modules&gt;=0.2.1-&gt;google-auth&lt;3.0dev,&gt;=1.25.0-&gt;google-api-core&gt;=1.23.0-&gt;feast&lt;0.20) (0.4.8)
+Requirement already satisfied: oauthlib&gt;=3.0.0 in /usr/local/lib/python3.8/dist-packages (from requests-oauthlib&gt;=0.7.0-&gt;google-auth-oauthlib&lt;0.5,&gt;=0.4.1-&gt;tensorboard&lt;2.9,&gt;=2.8-&gt;tensorflow) (3.2.0)
+<span class=" -Color -Color-Yellow">WARNING: Running pip as the &#39;root&#39; user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv</span>
+<span class=" -Color -Color-Yellow">WARNING: You are using pip version 22.0.4; however, version 22.1 is available.</span>
+<span class=" -Color -Color-Yellow">You should consider upgrading via the &#39;/usr/bin/python3 -m pip install --upgrade pip&#39; command.</span>
+Note: you may need to restart the kernel to use updated packages.
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;TF_GPU_ALLOCATOR&quot;</span><span class="p">]</span><span class="o">=</span><span class="s2">&quot;cuda_malloc_async&quot;</span>
+<span class="kn">import</span> <span class="nn">glob</span>
+<span class="kn">import</span> <span class="nn">gc</span>
+
+<span class="kn">import</span> <span class="nn">nvtabular</span> <span class="k">as</span> <span class="nn">nvt</span>
+<span class="kn">from</span> <span class="nn">nvtabular.ops</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="kn">from</span> <span class="nn">merlin.models.utils.example_utils</span> <span class="kn">import</span> <span class="n">workflow_fit_transform</span>
+
+<span class="kn">from</span> <span class="nn">merlin.schema.tags</span> <span class="kn">import</span> <span class="n">Tags</span>
+
+<span class="kn">import</span> <span class="nn">merlin.models.tf</span> <span class="k">as</span> <span class="nn">mm</span>
+<span class="kn">from</span> <span class="nn">merlin.io.dataset</span> <span class="kn">import</span> <span class="n">Dataset</span>
+<span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2022-05-13 05:05:20.155250: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:936] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2022-05-13 05:05:20.155752: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:936] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2022-05-13 05:05:20.155904: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:936] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2022-05-13 05:05:20.184146: I tensorflow/core/platform/cpu_feature_guard.cc:151] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  AVX2 FMA
+To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2022-05-13 05:05:20.185178: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:936] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2022-05-13 05:05:20.185360: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:936] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2022-05-13 05:05:20.185489: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:936] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2022-05-13 05:05:20.911906: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:936] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2022-05-13 05:05:20.912088: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:936] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2022-05-13 05:05:20.912226: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:936] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2022-05-13 05:05:20.912338: I tensorflow/core/common_runtime/gpu/gpu_process_state.cc:214] Using CUDA malloc Async allocator for GPU: 0
+2022-05-13 05:05:20.912458: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1525] Created device /job:localhost/replica:0/task:0/device:GPU:0 with 24576 MB memory:  -&gt; device: 0, name: Quadro RTX 8000, pci bus id: 0000:08:00.0, compute capability: 7.5
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># disable INFO and DEBUG logging everywhere</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">disable</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">WARNING</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>In this example notebook, we will generate the synthetic train and test datasets mimicking the real <a class="reference external" href="https://tianchi.aliyun.com/dataset/dataDetail?dataId=408#1">Ali-CCP: Alibaba Click and Conversion Prediction</a> dataset to build our recommender system models.</p>
+<p>First, we define our input and output paths.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">DATA_FOLDER</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;DATA_FOLDER&quot;</span><span class="p">,</span> <span class="s2">&quot;/workspace/data/&quot;</span><span class="p">)</span>
+<span class="n">output_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">DATA_FOLDER</span><span class="p">,</span> <span class="s1">&#39;processed/ranking&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Then, we use <code class="docutils literal notranslate"><span class="pre">generate_data</span></code> utility function to generate synthetic dataset.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">merlin.datasets.synthetic</span> <span class="kn">import</span> <span class="n">generate_data</span>
+
+<span class="n">NUM_ROWS</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;NUM_ROWS&quot;</span><span class="p">,</span> <span class="mi">100_000</span><span class="p">)</span>
+<span class="n">train</span><span class="p">,</span> <span class="n">valid</span> <span class="o">=</span> <span class="n">generate_data</span><span class="p">(</span><span class="s2">&quot;aliccp-raw&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">NUM_ROWS</span><span class="p">),</span> <span class="n">set_sizes</span><span class="o">=</span><span class="p">(</span><span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>If you would like to use the real ALI-CCP dataset, you can use <a class="reference external" href="https://github.com/NVIDIA-Merlin/models/blob/main/merlin/datasets/ecommerce/aliccp/dataset.py">get_aliccp()</a> function instead. This function takes the raw csv files, and generate parquet files that can be directly fed to NVTabular workflow above.</p>
+</div>
+<div class="section" id="feature-engineering-with-nvtabular">
+<h2>Feature Engineering with NVTabular<a class="headerlink" href="#feature-engineering-with-nvtabular" title="Permalink to this headline"></a></h2>
+<p>We are going to process our raw categorical features by encoding them using <code class="docutils literal notranslate"><span class="pre">Categorify()</span></code> operator and tag the features with <code class="docutils literal notranslate"><span class="pre">user</span></code> or <code class="docutils literal notranslate"><span class="pre">item</span></code> tags in the schema file. To learn more about <a class="reference external" href="https://github.com/NVIDIA-Merlin/NVTabular">NVTabular</a> and the schema object visit this example <a class="reference external" href="https://github.com/NVIDIA-Merlin/models/blob/main/examples/02-Merlin-Models-and-NVTabular-integration.ipynb">notebook</a> in the Merlin Models repo.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%time</span>
+
+<span class="n">user_id</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;user_id&quot;</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">Categorify</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;int32&#39;</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="n">TagAsUserID</span><span class="p">()</span>
+<span class="n">item_id</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;item_id&quot;</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">Categorify</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;int32&#39;</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="n">TagAsItemID</span><span class="p">()</span>
+
+<span class="n">item_features</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;item_category&quot;</span><span class="p">,</span> <span class="s2">&quot;item_shop&quot;</span><span class="p">,</span> <span class="s2">&quot;item_brand&quot;</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">Categorify</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;int32&#39;</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="n">TagAsItemFeatures</span><span class="p">()</span> 
+
+<span class="n">user_features</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;user_shops&#39;</span><span class="p">,</span> <span class="s1">&#39;user_profile&#39;</span><span class="p">,</span> <span class="s1">&#39;user_group&#39;</span><span class="p">,</span> 
+       <span class="s1">&#39;user_gender&#39;</span><span class="p">,</span> <span class="s1">&#39;user_age&#39;</span><span class="p">,</span> <span class="s1">&#39;user_consumption_2&#39;</span><span class="p">,</span> <span class="s1">&#39;user_is_occupied&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;user_geography&#39;</span><span class="p">,</span> <span class="s1">&#39;user_intentions&#39;</span><span class="p">,</span> <span class="s1">&#39;user_brands&#39;</span><span class="p">,</span> <span class="s1">&#39;user_categories&#39;</span><span class="p">]</span> \
+    <span class="o">&gt;&gt;</span> <span class="n">Categorify</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;int32&#39;</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="n">TagAsUserFeatures</span><span class="p">()</span> 
+
+<span class="n">targets</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;click&quot;</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">AddMetadata</span><span class="p">(</span><span class="n">tags</span><span class="o">=</span><span class="p">[</span><span class="n">Tags</span><span class="o">.</span><span class="n">BINARY_CLASSIFICATION</span><span class="p">,</span> <span class="s2">&quot;target&quot;</span><span class="p">])</span>
+
+<span class="n">outputs</span> <span class="o">=</span> <span class="n">user_id</span><span class="o">+</span><span class="n">item_id</span><span class="o">+</span><span class="n">item_features</span><span class="o">+</span><span class="n">user_features</span><span class="o">+</span><span class="n">targets</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>CPU times: user 71 µs, sys: 60 µs, total: 131 µs
+Wall time: 134 µs
+</pre></div>
+</div>
+</div>
+</div>
+<p>Let’s call <code class="docutils literal notranslate"><span class="pre">transform_aliccp</span></code> utility function to be able to perform <code class="docutils literal notranslate"><span class="pre">fit</span></code> and <code class="docutils literal notranslate"><span class="pre">transform</span></code> steps on the raw dataset applying the operators defined in the NVTabular workflow pipeline below, and also save our workflow model. After fit and transform, the processed parquet files are saved to output_path.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">merlin.datasets.ecommerce</span> <span class="kn">import</span> <span class="n">transform_aliccp</span>
+
+<span class="n">transform_aliccp</span><span class="p">((</span><span class="n">train</span><span class="p">,</span> <span class="n">valid</span><span class="p">),</span> <span class="n">output_path</span><span class="p">,</span> <span class="n">nvt_workflow</span><span class="o">=</span><span class="n">outputs</span><span class="p">,</span> <span class="n">workflow_name</span><span class="o">=</span><span class="s1">&#39;workflow_ranking&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/usr/lib/python3.8/site-packages/cudf/core/dataframe.py:1292: UserWarning: The deep parameter is ignored and is only included for pandas compatibility.
+  warnings.warn(
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="training-a-ranking-model-with-dlrm">
+<h2>Training a Ranking Model with DLRM<a class="headerlink" href="#training-a-ranking-model-with-dlrm" title="Permalink to this headline"></a></h2>
+<p>NVTabular exported the schema file, <code class="docutils literal notranslate"><span class="pre">schema.pbtxt</span></code> a protobuf text file, of our processed dataset. To learn more about the schema object and schema file you can explore <a class="reference external" href="https://github.com/NVIDIA-Merlin/models/blob/main/examples/02-Merlin-Models-and-NVTabular-integration.ipynb">02-Merlin-Models-and-NVTabular-integration.ipynb</a> notebook.</p>
+<p>We use the <code class="docutils literal notranslate"><span class="pre">schema</span></code> object to define our model.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># define train and valid dataset objects</span>
+<span class="n">train</span> <span class="o">=</span> <span class="n">Dataset</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="s1">&#39;train&#39;</span><span class="p">,</span> <span class="s1">&#39;*.parquet&#39;</span><span class="p">),</span> <span class="n">part_size</span><span class="o">=</span><span class="s2">&quot;500MB&quot;</span><span class="p">)</span>
+<span class="n">valid</span> <span class="o">=</span> <span class="n">Dataset</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="s1">&#39;valid&#39;</span><span class="p">,</span> <span class="s1">&#39;*.parquet&#39;</span><span class="p">),</span> <span class="n">part_size</span><span class="o">=</span><span class="s2">&quot;500MB&quot;</span><span class="p">)</span>
+
+<span class="c1"># define schema object</span>
+<span class="n">schema</span> <span class="o">=</span> <span class="n">train</span><span class="o">.</span><span class="n">schema</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">target_column</span> <span class="o">=</span> <span class="n">schema</span><span class="o">.</span><span class="n">select_by_tag</span><span class="p">(</span><span class="n">Tags</span><span class="o">.</span><span class="n">TARGET</span><span class="p">)</span><span class="o">.</span><span class="n">column_names</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">target_column</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&#39;click&#39;
+</pre></div>
+</div>
+</div>
+</div>
+<p>Deep Learning Recommendation Model <a class="reference external" href="https://arxiv.org/abs/1906.00091">(DLRM)</a> architecture is a popular neural network model originally proposed by Facebook in 2019. The model was introduced as a personalization deep learning model that uses embeddings to process sparse features that represent categorical data and a multilayer perceptron (MLP) to process dense features, then interacts these features explicitly using the statistical techniques proposed in <a class="reference external" href="https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&amp;arnumber=5694074">here</a>. To learn more about DLRM architetcture please visit <code class="docutils literal notranslate"><span class="pre">Exploring-different-models</span></code> <a class="reference external" href="https://github.com/NVIDIA-Merlin/models/blob/main/examples/04-Exporting-ranking-models.ipynb">notebook</a> in the Merlin Models GH repo.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">mm</span><span class="o">.</span><span class="n">DLRMModel</span><span class="p">(</span>
+    <span class="n">schema</span><span class="p">,</span>
+    <span class="n">embedding_dim</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span>
+    <span class="n">bottom_block</span><span class="o">=</span><span class="n">mm</span><span class="o">.</span><span class="n">MLPBlock</span><span class="p">([</span><span class="mi">128</span><span class="p">,</span> <span class="mi">64</span><span class="p">]),</span>
+    <span class="n">top_block</span><span class="o">=</span><span class="n">mm</span><span class="o">.</span><span class="n">MLPBlock</span><span class="p">([</span><span class="mi">128</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">32</span><span class="p">]),</span>
+    <span class="n">prediction_tasks</span><span class="o">=</span><span class="n">mm</span><span class="o">.</span><span class="n">BinaryClassificationTask</span><span class="p">(</span><span class="n">target_column</span><span class="p">,</span> <span class="n">metrics</span><span class="o">=</span><span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">AUC</span><span class="p">()])</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">optimizer</span><span class="o">=</span><span class="s1">&#39;adam&#39;</span><span class="p">,</span> <span class="n">run_eagerly</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train</span><span class="p">,</span> <span class="n">validation_data</span><span class="o">=</span><span class="n">valid</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">16</span><span class="o">*</span><span class="mi">1024</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2022-05-13 05:05:22.404065: W tensorflow/python/util/util.cc:368] Sets are not currently considered sequences, but this may change in the future, so consider avoiding using them.
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>1/1 [==============================] - 4s 4s/step - auc: 0.4923 - loss: 0.6931 - regularization_loss: 0.0000e+00 - total_loss: 0.6931 - val_auc: 0.4925 - val_loss: 0.6934 - val_regularization_loss: 0.0000e+00 - val_total_loss: 0.6934
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2022-05-13 05:05:26.540780: W tensorflow/core/grappler/optimizers/loop_optimizer.cc:907] Skipping loop optimization for Merge node with control input: cond/branch_executed/_13
+</pre></div>
+</div>
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;keras.callbacks.History at 0x7f0a1d51b220&gt;
+</pre></div>
+</div>
+</div>
+</div>
+<p>We will create the feature repo in the current working directory, which is <code class="docutils literal notranslate"><span class="pre">BASE_DIR</span></code> for us.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># set up the base dir to for feature store</span>
+<span class="n">BASE_DIR</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;BASE_DIR&quot;</span><span class="p">,</span> <span class="s2">&quot;/Merlin/examples/Building-and-deploying-multi-stage-RecSys/&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Let’s save our DLRM model to be able to load back at the deployment stage.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s1">&#39;dlrm&#39;</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="training-a-retrieval-model-with-two-tower-model">
+<h2>Training a Retrieval Model with Two-Tower Model<a class="headerlink" href="#training-a-retrieval-model-with-two-tower-model" title="Permalink to this headline"></a></h2>
+<p>Now we move to the offline retrieval stage. We are going to train a Two-Tower model for item retrieval. To learn more about the Two-tower model you can visit <a class="reference external" href="https://github.com/NVIDIA-Merlin/models/blob/main/examples/05-Retrieval-Model.ipynb">05-Retrieval-Model.ipynb</a>.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">output_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">DATA_FOLDER</span><span class="p">,</span> <span class="s1">&#39;processed/retrieval&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>We select only positive interaction rows where <code class="docutils literal notranslate"><span class="pre">click==1</span></code> in the dataset with <code class="docutils literal notranslate"><span class="pre">Filter()</span></code> operator.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">user_id</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;user_id&quot;</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">Categorify</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;int32&#39;</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="n">TagAsUserID</span><span class="p">()</span>
+<span class="n">item_id</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;item_id&quot;</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">Categorify</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;int32&#39;</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="n">TagAsItemID</span><span class="p">()</span>
+
+<span class="n">item_features</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;item_category&quot;</span><span class="p">,</span> <span class="s2">&quot;item_shop&quot;</span><span class="p">,</span> <span class="s2">&quot;item_brand&quot;</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">Categorify</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;int32&#39;</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="n">TagAsItemFeatures</span><span class="p">()</span>
+
+<span class="n">user_features</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;user_shops&#39;</span><span class="p">,</span> <span class="s1">&#39;user_profile&#39;</span><span class="p">,</span> <span class="s1">&#39;user_group&#39;</span><span class="p">,</span> 
+       <span class="s1">&#39;user_gender&#39;</span><span class="p">,</span> <span class="s1">&#39;user_age&#39;</span><span class="p">,</span> <span class="s1">&#39;user_consumption_2&#39;</span><span class="p">,</span> <span class="s1">&#39;user_is_occupied&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;user_geography&#39;</span><span class="p">,</span> <span class="s1">&#39;user_intentions&#39;</span><span class="p">,</span> <span class="s1">&#39;user_brands&#39;</span><span class="p">,</span> <span class="s1">&#39;user_categories&#39;</span><span class="p">]</span> \
+        <span class="o">&gt;&gt;</span> <span class="n">Categorify</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;int32&#39;</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="n">TagAsUserFeatures</span><span class="p">()</span> 
+
+<span class="n">inputs</span> <span class="o">=</span> <span class="n">user_id</span> <span class="o">+</span> <span class="n">item_id</span> <span class="o">+</span> <span class="n">item_features</span> <span class="o">+</span> <span class="n">user_features</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;click&#39;</span><span class="p">]</span> 
+
+<span class="n">outputs</span> <span class="o">=</span> <span class="n">inputs</span> <span class="o">&gt;&gt;</span> <span class="n">Filter</span><span class="p">(</span><span class="n">f</span><span class="o">=</span><span class="k">lambda</span> <span class="n">df</span><span class="p">:</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;click&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
+
+<span class="n">transform_aliccp</span><span class="p">((</span><span class="n">train</span><span class="p">,</span> <span class="n">valid</span><span class="p">),</span> <span class="n">output_path</span><span class="p">,</span> <span class="n">nvt_workflow</span><span class="o">=</span><span class="n">outputs</span><span class="p">,</span> <span class="n">workflow_name</span><span class="o">=</span><span class="s1">&#39;workflow_retrieval&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/usr/lib/python3.8/site-packages/cudf/core/dataframe.py:1292: UserWarning: The deep parameter is ignored and is only included for pandas compatibility.
+  warnings.warn(
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">train_tt</span> <span class="o">=</span> <span class="n">Dataset</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="s1">&#39;train&#39;</span><span class="p">,</span> <span class="s1">&#39;*.parquet&#39;</span><span class="p">))</span>
+<span class="n">valid_tt</span> <span class="o">=</span> <span class="n">Dataset</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="s1">&#39;valid&#39;</span><span class="p">,</span> <span class="s1">&#39;*.parquet&#39;</span><span class="p">))</span>
+
+<span class="n">schema</span> <span class="o">=</span> <span class="n">train_tt</span><span class="o">.</span><span class="n">schema</span>
+<span class="n">schema</span> <span class="o">=</span> <span class="n">schema</span><span class="o">.</span><span class="n">select_by_tag</span><span class="p">([</span><span class="n">Tags</span><span class="o">.</span><span class="n">ITEM_ID</span><span class="p">,</span> <span class="n">Tags</span><span class="o">.</span><span class="n">USER_ID</span><span class="p">,</span> <span class="n">Tags</span><span class="o">.</span><span class="n">ITEM</span><span class="p">,</span> <span class="n">Tags</span><span class="o">.</span><span class="n">USER</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">mm</span><span class="o">.</span><span class="n">TwoTowerModel</span><span class="p">(</span>
+    <span class="n">schema</span><span class="p">,</span>
+    <span class="n">query_tower</span><span class="o">=</span><span class="n">mm</span><span class="o">.</span><span class="n">MLPBlock</span><span class="p">([</span><span class="mi">128</span><span class="p">,</span> <span class="mi">64</span><span class="p">],</span> <span class="n">no_activation_last_layer</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>        
+    <span class="n">loss</span><span class="o">=</span><span class="s2">&quot;categorical_crossentropy&quot;</span><span class="p">,</span>  
+    <span class="n">samplers</span><span class="o">=</span><span class="p">[</span><span class="n">mm</span><span class="o">.</span><span class="n">InBatchSampler</span><span class="p">()],</span>
+    <span class="n">embedding_options</span> <span class="o">=</span> <span class="n">mm</span><span class="o">.</span><span class="n">EmbeddingOptions</span><span class="p">(</span><span class="n">infer_embedding_sizes</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="n">metrics</span><span class="o">=</span><span class="p">[</span><span class="n">mm</span><span class="o">.</span><span class="n">RecallAt</span><span class="p">(</span><span class="mi">10</span><span class="p">),</span> <span class="n">mm</span><span class="o">.</span><span class="n">NDCGAt</span><span class="p">(</span><span class="mi">10</span><span class="p">)]</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">optimizer</span><span class="o">=</span><span class="s1">&#39;adam&#39;</span><span class="p">,</span> <span class="n">run_eagerly</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train_tt</span><span class="p">,</span> <span class="n">validation_data</span><span class="o">=</span><span class="n">valid_tt</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">1024</span><span class="o">*</span><span class="mi">8</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>1/1 [==============================] - 4s 4s/step - recall_at_10: 0.0044 - ndcg_10: 0.0023 - loss: 8.6446 - regularization_loss: 0.0000e+00 - total_loss: 8.6446 - val_recall_at_10: 0.0195 - val_ndcg_10: 0.0157 - val_loss: 7.8369 - val_regularization_loss: 0.0000e+00 - val_total_loss: 7.8369
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2022-05-13 05:05:36.207971: W tensorflow/core/grappler/optimizers/loop_optimizer.cc:907] Skipping loop optimization for Merge node with control input: cond/branch_executed/_24
+</pre></div>
+</div>
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;keras.callbacks.History at 0x7f09c84674f0&gt;
+</pre></div>
+</div>
+</div>
+</div>
+<p>In the following cells we are going to export the required user and item features files, and save the query (user) tower model and item embeddings to disk. If you want to read more about exporting retrieval models, please visit <a class="reference external" href="https://github.com/NVIDIA-Merlin/models/blob/main/examples/05-Retrieval-Model.ipynb">05-Retrieval-Model.ipynb</a> notebook in Merlin Models library repo.</p>
+</div>
+<div class="section" id="set-up-a-feature-store-with-feast">
+<h2>Set up a feature store with Feast<a class="headerlink" href="#set-up-a-feature-store-with-feast" title="Permalink to this headline"></a></h2>
+<p>Before we move onto the next step, we need to create a Feast feature repository.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>rm -rf <span class="nv">$BASE_DIR</span>/feature_repo
+<span class="o">!</span><span class="nb">cd</span> <span class="nv">$BASE_DIR</span> <span class="o">&amp;&amp;</span> feast init feature_repo
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Creating a new Feast repository in <span class=" -Color -Color-Bold -Color-Bold-Green">/Merlin/examples/Building-and-deploying-multi-stage-RecSys/feature_repo</span>.
+</pre></div>
+</div>
+</div>
+</div>
+<p>You should be seeing a message like <i>Creating a new Feast repository in … </i> printed out above. Now, navigate to the <code class="docutils literal notranslate"><span class="pre">feature_repo</span></code> folder and remove the demo parquet file created by default, and <code class="docutils literal notranslate"><span class="pre">examples.py</span></code> file.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s1">&#39;feature_repo&#39;</span><span class="p">,</span> <span class="s1">&#39;example.py&#39;</span><span class="p">))</span>
+<span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s1">&#39;feature_repo/data&#39;</span><span class="p">,</span> <span class="s1">&#39;driver_stats.parquet&#39;</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="exporting-query-user-model">
+<h2>Exporting query (user) model<a class="headerlink" href="#exporting-query-user-model" title="Permalink to this headline"></a></h2>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">query_tower</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">retrieval_block</span><span class="o">.</span><span class="n">query_block</span><span class="p">()</span>
+<span class="n">query_tower</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s1">&#39;query_tower&#39;</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="exporting-user-and-item-features">
+<h2>Exporting user and item features<a class="headerlink" href="#exporting-user-and-item-features" title="Permalink to this headline"></a></h2>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">merlin.models.utils.dataset</span> <span class="kn">import</span> <span class="n">unique_rows_by_features</span>
+<span class="n">user_features</span> <span class="o">=</span> <span class="n">unique_rows_by_features</span><span class="p">(</span><span class="n">train</span><span class="p">,</span> <span class="n">Tags</span><span class="o">.</span><span class="n">USER</span><span class="p">,</span> <span class="n">Tags</span><span class="o">.</span><span class="n">USER_ID</span><span class="p">)</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">user_features</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>user_id</th>
+      <th>user_shops</th>
+      <th>user_profile</th>
+      <th>user_group</th>
+      <th>user_gender</th>
+      <th>user_age</th>
+      <th>user_consumption_2</th>
+      <th>user_is_occupied</th>
+      <th>user_geography</th>
+      <th>user_intentions</th>
+      <th>user_brands</th>
+      <th>user_categories</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2</td>
+      <td>2</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>3</td>
+      <td>3</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>3</td>
+      <td>3</td>
+      <td>3</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>4</td>
+      <td>4</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>4</td>
+      <td>4</td>
+      <td>4</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>5</td>
+      <td>5</td>
+      <td>2</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>5</td>
+      <td>5</td>
+      <td>5</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+<p>We will artificially add <code class="docutils literal notranslate"><span class="pre">datetime</span></code> and <code class="docutils literal notranslate"><span class="pre">created</span></code> timestamp columns to our user_features dataframe. This required by Feast to track the user-item features and their creation time and to determine which version to use when we query Feast.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+<span class="n">user_features</span><span class="p">[</span><span class="s2">&quot;datetime&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+<span class="n">user_features</span><span class="p">[</span><span class="s2">&quot;datetime&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">user_features</span><span class="p">[</span><span class="s2">&quot;datetime&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;datetime64[ns]&quot;</span><span class="p">)</span>
+<span class="n">user_features</span><span class="p">[</span><span class="s2">&quot;created&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+<span class="n">user_features</span><span class="p">[</span><span class="s2">&quot;created&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">user_features</span><span class="p">[</span><span class="s2">&quot;created&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;datetime64[ns]&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">user_features</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>user_id</th>
+      <th>user_shops</th>
+      <th>user_profile</th>
+      <th>user_group</th>
+      <th>user_gender</th>
+      <th>user_age</th>
+      <th>user_consumption_2</th>
+      <th>user_is_occupied</th>
+      <th>user_geography</th>
+      <th>user_intentions</th>
+      <th>user_brands</th>
+      <th>user_categories</th>
+      <th>datetime</th>
+      <th>created</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>2022-05-13 05:05:41.174520</td>
+      <td>2022-05-13 05:05:41.405488</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2</td>
+      <td>2</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2022-05-13 05:05:41.174520</td>
+      <td>2022-05-13 05:05:41.405488</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>3</td>
+      <td>3</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>3</td>
+      <td>3</td>
+      <td>3</td>
+      <td>2022-05-13 05:05:41.174520</td>
+      <td>2022-05-13 05:05:41.405488</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>4</td>
+      <td>4</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>4</td>
+      <td>4</td>
+      <td>4</td>
+      <td>2022-05-13 05:05:41.174520</td>
+      <td>2022-05-13 05:05:41.405488</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>5</td>
+      <td>5</td>
+      <td>2</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>5</td>
+      <td>5</td>
+      <td>5</td>
+      <td>2022-05-13 05:05:41.174520</td>
+      <td>2022-05-13 05:05:41.405488</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">user_features</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s1">&#39;feature_repo/data&#39;</span><span class="p">,</span> <span class="s1">&#39;user_features.parquet&#39;</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">item_features</span> <span class="o">=</span> <span class="n">unique_rows_by_features</span><span class="p">(</span><span class="n">train</span><span class="p">,</span> <span class="n">Tags</span><span class="o">.</span><span class="n">ITEM</span><span class="p">,</span> <span class="n">Tags</span><span class="o">.</span><span class="n">ITEM_ID</span><span class="p">)</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">item_features</span><span class="o">.</span><span class="n">shape</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(288, 4)
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">item_features</span><span class="p">[</span><span class="s2">&quot;datetime&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+<span class="n">item_features</span><span class="p">[</span><span class="s2">&quot;datetime&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">item_features</span><span class="p">[</span><span class="s2">&quot;datetime&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;datetime64[ns]&quot;</span><span class="p">)</span>
+<span class="n">item_features</span><span class="p">[</span><span class="s2">&quot;created&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+<span class="n">item_features</span><span class="p">[</span><span class="s2">&quot;created&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">item_features</span><span class="p">[</span><span class="s2">&quot;created&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;datetime64[ns]&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">item_features</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>item_id</th>
+      <th>item_category</th>
+      <th>item_shop</th>
+      <th>item_brand</th>
+      <th>datetime</th>
+      <th>created</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>2022-05-13 05:05:41.461657</td>
+      <td>2022-05-13 05:05:41.462728</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2022-05-13 05:05:41.461657</td>
+      <td>2022-05-13 05:05:41.462728</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>3</td>
+      <td>3</td>
+      <td>3</td>
+      <td>3</td>
+      <td>2022-05-13 05:05:41.461657</td>
+      <td>2022-05-13 05:05:41.462728</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>4</td>
+      <td>4</td>
+      <td>4</td>
+      <td>4</td>
+      <td>2022-05-13 05:05:41.461657</td>
+      <td>2022-05-13 05:05:41.462728</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>5</td>
+      <td>5</td>
+      <td>5</td>
+      <td>5</td>
+      <td>2022-05-13 05:05:41.461657</td>
+      <td>2022-05-13 05:05:41.462728</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># save to disk</span>
+<span class="n">item_features</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s1">&#39;feature_repo/data&#39;</span><span class="p">,</span> <span class="s1">&#39;item_features.parquet&#39;</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="extract-and-save-item-embeddings">
+<h2>Extract and save Item embeddings<a class="headerlink" href="#extract-and-save-item-embeddings" title="Permalink to this headline"></a></h2>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">item_embs</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">item_embeddings</span><span class="p">(</span><span class="n">Dataset</span><span class="p">(</span><span class="n">item_features</span><span class="p">,</span> <span class="n">schema</span><span class="o">=</span><span class="n">schema</span><span class="p">),</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">1024</span><span class="p">)</span>
+<span class="n">item_embs_df</span> <span class="o">=</span> <span class="n">item_embs</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">scheduler</span><span class="o">=</span><span class="s2">&quot;synchronous&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># select only item_id together with embedding columns </span>
+<span class="n">item_embeddings</span> <span class="o">=</span> <span class="n">item_embs_df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;item_category&#39;</span><span class="p">,</span> <span class="s1">&#39;item_shop&#39;</span><span class="p">,</span> <span class="s1">&#39;item_brand&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">item_embeddings</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>item_id</th>
+      <th>0</th>
+      <th>1</th>
+      <th>2</th>
+      <th>3</th>
+      <th>4</th>
+      <th>5</th>
+      <th>6</th>
+      <th>7</th>
+      <th>8</th>
+      <th>...</th>
+      <th>54</th>
+      <th>55</th>
+      <th>56</th>
+      <th>57</th>
+      <th>58</th>
+      <th>59</th>
+      <th>60</th>
+      <th>61</th>
+      <th>62</th>
+      <th>63</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1</td>
+      <td>-0.036093</td>
+      <td>-0.009565</td>
+      <td>-0.012503</td>
+      <td>-0.007734</td>
+      <td>0.023629</td>
+      <td>-0.014002</td>
+      <td>-0.006029</td>
+      <td>0.040088</td>
+      <td>-0.015902</td>
+      <td>...</td>
+      <td>0.035563</td>
+      <td>-0.068939</td>
+      <td>-0.016315</td>
+      <td>0.014175</td>
+      <td>-0.033716</td>
+      <td>-0.015874</td>
+      <td>-0.018918</td>
+      <td>0.010925</td>
+      <td>-0.063575</td>
+      <td>0.009035</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2</td>
+      <td>-0.022504</td>
+      <td>-0.011822</td>
+      <td>0.004332</td>
+      <td>-0.023232</td>
+      <td>-0.015615</td>
+      <td>0.023071</td>
+      <td>-0.035916</td>
+      <td>-0.001758</td>
+      <td>0.005837</td>
+      <td>...</td>
+      <td>0.029090</td>
+      <td>-0.007072</td>
+      <td>-0.010224</td>
+      <td>0.001452</td>
+      <td>-0.022393</td>
+      <td>-0.009858</td>
+      <td>-0.034096</td>
+      <td>0.043060</td>
+      <td>-0.059634</td>
+      <td>0.025757</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>3</td>
+      <td>0.025350</td>
+      <td>-0.025639</td>
+      <td>0.004433</td>
+      <td>-0.013922</td>
+      <td>0.011171</td>
+      <td>-0.010930</td>
+      <td>-0.021219</td>
+      <td>-0.006252</td>
+      <td>-0.001559</td>
+      <td>...</td>
+      <td>0.033636</td>
+      <td>-0.012912</td>
+      <td>0.006572</td>
+      <td>-0.025899</td>
+      <td>-0.000171</td>
+      <td>0.003842</td>
+      <td>-0.022592</td>
+      <td>0.006499</td>
+      <td>-0.021269</td>
+      <td>0.011934</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>4</td>
+      <td>0.016039</td>
+      <td>-0.026762</td>
+      <td>0.027716</td>
+      <td>0.015925</td>
+      <td>0.016512</td>
+      <td>0.000967</td>
+      <td>-0.005151</td>
+      <td>0.045444</td>
+      <td>-0.001235</td>
+      <td>...</td>
+      <td>0.023222</td>
+      <td>-0.011232</td>
+      <td>0.004542</td>
+      <td>-0.014078</td>
+      <td>-0.023827</td>
+      <td>-0.018675</td>
+      <td>-0.003482</td>
+      <td>0.016900</td>
+      <td>-0.047285</td>
+      <td>0.014240</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>5</td>
+      <td>0.024456</td>
+      <td>-0.026480</td>
+      <td>-0.000111</td>
+      <td>0.006407</td>
+      <td>0.012714</td>
+      <td>-0.030801</td>
+      <td>0.008527</td>
+      <td>0.043447</td>
+      <td>-0.007526</td>
+      <td>...</td>
+      <td>0.001209</td>
+      <td>-0.013783</td>
+      <td>-0.001773</td>
+      <td>-0.023180</td>
+      <td>-0.019709</td>
+      <td>-0.006395</td>
+      <td>0.016993</td>
+      <td>0.002749</td>
+      <td>-0.042560</td>
+      <td>0.033123</td>
+    </tr>
+  </tbody>
+</table>
+<p>5 rows × 65 columns</p>
+</div></div></div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># save to disk</span>
+<span class="n">item_embeddings</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span><span class="s1">&#39;item_embeddings.parquet&#39;</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="create-feature-definitions">
+<h2>Create feature definitions<a class="headerlink" href="#create-feature-definitions" title="Permalink to this headline"></a></h2>
+<p>Now we will create our user and item features definitions in the user_features.py and item_features.py files and save these files in the feature_repo.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s1">&#39;feature_repo/&#39;</span><span class="p">,</span><span class="s1">&#39;user_features.py&#39;</span><span class="p">),</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span>
+<span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">from google.protobuf.duration_pb2 import Duration</span>
+<span class="sd">import datetime </span>
+<span class="sd">from feast import Entity, Feature, FeatureView, ValueType</span>
+<span class="sd">from feast.infra.offline_stores.file_source import FileSource</span>
+
+<span class="sd">user_features = FileSource(</span>
+<span class="sd">    path=&quot;{}&quot;,</span>
+<span class="sd">    event_timestamp_column=&quot;datetime&quot;,</span>
+<span class="sd">    created_timestamp_column=&quot;created&quot;,</span>
+<span class="sd">)</span>
+
+<span class="sd">user = Entity(name=&quot;user_id&quot;, value_type=ValueType.INT32, description=&quot;user id&quot;,)</span>
+
+<span class="sd">user_features_view = FeatureView(</span>
+<span class="sd">    name=&quot;user_features&quot;,</span>
+<span class="sd">    entities=[&quot;user_id&quot;],</span>
+<span class="sd">    ttl=Duration(seconds=86400 * 7),</span>
+<span class="sd">    features=[</span>
+<span class="sd">        Feature(name=&quot;user_shops&quot;, dtype=ValueType.INT32),</span>
+<span class="sd">        Feature(name=&quot;user_profile&quot;, dtype=ValueType.INT32),</span>
+<span class="sd">        Feature(name=&quot;user_group&quot;, dtype=ValueType.INT32),</span>
+<span class="sd">        Feature(name=&quot;user_gender&quot;, dtype=ValueType.INT32),</span>
+<span class="sd">        Feature(name=&quot;user_age&quot;, dtype=ValueType.INT32),</span>
+<span class="sd">        Feature(name=&quot;user_consumption_2&quot;, dtype=ValueType.INT32),</span>
+<span class="sd">        Feature(name=&quot;user_is_occupied&quot;, dtype=ValueType.INT32),</span>
+<span class="sd">        Feature(name=&quot;user_geography&quot;, dtype=ValueType.INT32),</span>
+<span class="sd">        Feature(name=&quot;user_intentions&quot;, dtype=ValueType.INT32),</span>
+<span class="sd">        Feature(name=&quot;user_brands&quot;, dtype=ValueType.INT32),</span>
+<span class="sd">        Feature(name=&quot;user_categories&quot;, dtype=ValueType.INT32),</span>
+<span class="sd">    ],</span>
+<span class="sd">    online=True,</span>
+<span class="sd">    input=user_features,</span>
+<span class="sd">    tags=dict(),</span>
+<span class="sd">)</span>
+<span class="sd">&#39;&#39;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s1">&#39;feature_repo/data/&#39;</span><span class="p">,</span><span class="s1">&#39;user_features.parquet&#39;</span><span class="p">))</span>
+<span class="p">)</span>
+<span class="n">file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s1">&#39;feature_repo/&#39;</span><span class="p">,</span><span class="s1">&#39;item_features.py&#39;</span><span class="p">),</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">from google.protobuf.duration_pb2 import Duration</span>
+<span class="sd">import datetime </span>
+<span class="sd">from feast import Entity, Feature, FeatureView, ValueType</span>
+<span class="sd">from feast.infra.offline_stores.file_source import FileSource</span>
+
+<span class="sd">item_features = FileSource(</span>
+<span class="sd">    path=&quot;{}&quot;,</span>
+<span class="sd">    event_timestamp_column=&quot;datetime&quot;,</span>
+<span class="sd">    created_timestamp_column=&quot;created&quot;,</span>
+<span class="sd">)</span>
+
+<span class="sd">item = Entity(name=&quot;item_id&quot;, value_type=ValueType.INT32, description=&quot;item id&quot;,)</span>
+
+<span class="sd">item_features_view = FeatureView(</span>
+<span class="sd">    name=&quot;item_features&quot;,</span>
+<span class="sd">    entities=[&quot;item_id&quot;],</span>
+<span class="sd">    ttl=Duration(seconds=86400 * 7),</span>
+<span class="sd">    features=[</span>
+<span class="sd">        Feature(name=&quot;item_category&quot;, dtype=ValueType.INT32),</span>
+<span class="sd">        Feature(name=&quot;item_shop&quot;, dtype=ValueType.INT32),</span>
+<span class="sd">        Feature(name=&quot;item_brand&quot;, dtype=ValueType.INT32),</span>
+<span class="sd">    ],</span>
+<span class="sd">    online=True,</span>
+<span class="sd">    input=item_features,</span>
+<span class="sd">    tags=dict(),</span>
+<span class="sd">)</span>
+<span class="sd">&#39;&#39;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s1">&#39;feature_repo/data/&#39;</span><span class="p">,</span><span class="s1">&#39;item_features.parquet&#39;</span><span class="p">))</span>
+    <span class="p">)</span>
+<span class="n">file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span> 
+</pre></div>
+</div>
+</div>
+</div>
+<p>Let’s checkout our Feast feature repository structure.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># install seedir</span>
+<span class="o">!</span>pip install seedir
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Looking in indexes: https://pypi.org/simple, https://pypi.ngc.nvidia.com
+Requirement already satisfied: seedir in /usr/local/lib/python3.8/dist-packages (0.3.0)
+Requirement already satisfied: emoji in /usr/local/lib/python3.8/dist-packages (from seedir) (1.7.0)
+Requirement already satisfied: natsort in /usr/local/lib/python3.8/dist-packages (from seedir) (8.1.0)
+<span class=" -Color -Color-Yellow">WARNING: Running pip as the &#39;root&#39; user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv</span>
+<span class=" -Color -Color-Yellow">WARNING: You are using pip version 22.0.4; however, version 22.1 is available.</span>
+<span class=" -Color -Color-Yellow">You should consider upgrading via the &#39;/usr/bin/python3 -m pip install --upgrade pip&#39; command.</span>
+
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">seedir</span> <span class="k">as</span> <span class="nn">sd</span>
+<span class="n">feature_repo_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s1">&#39;feature_repo&#39;</span><span class="p">)</span>
+<span class="n">sd</span><span class="o">.</span><span class="n">seedir</span><span class="p">(</span><span class="n">feature_repo_path</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s1">&#39;lines&#39;</span><span class="p">,</span> <span class="n">itemlimit</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">depthlimit</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">exclude_folders</span><span class="o">=</span><span class="s1">&#39;.ipynb_checkpoints&#39;</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>feature_repo/
+├─__init__.py
+├─data/
+│ ├─item_features.parquet
+│ └─user_features.parquet
+├─feature_store.yaml
+├─item_features.py
+└─user_features.py
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="next-steps">
+<h2>Next Steps<a class="headerlink" href="#next-steps" title="Permalink to this headline"></a></h2>
+<p>We trained and exported our ranking and retrieval models and NVTabular workflows. In the next step, we will learn how to deploy our trained models into <a class="reference external" href="https://github.com/triton-inference-server/server">Triton Inference Server (TIS)</a> with Merlin Systems library.</p>
+<p>For the next step, move on to the <code class="docutils literal notranslate"><span class="pre">02-Deploying-multi-stage-Recsys-with-Merlin-Systems.ipynb</span></code> notebook to deploy our saved models as an ensemble to TIS and obtain prediction results for a given request.</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Deploying a Multi-Stage Recommender System" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="02-Deploying-multi-stage-RecSys-with-Merlin-Systems.html" class="btn btn-neutral float-right" title="Deploying a Multi-Stage RecSys into Production with Merlin Systems and Triton Inference Server" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, NVIDIA.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
