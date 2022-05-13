@@ -54,12 +54,10 @@ RUN pip install git+https://github.com/rapidsai/asvdb.git@main
 # Install Merlin Core
 RUN git clone https://github.com/NVIDIA-Merlin/core.git /core/ && \
     cd /core/ && git checkout ${CORE_VER} && pip install --no-deps .
-ENV PYTHONPATH=$PYTHONPATH:/core
 
 # Install Merlin Systems
 RUN git clone https://github.com/NVIDIA-Merlin/systems.git /systems/ && \
     cd /systems/ && git checkout ${SYSTEMS_VER} && pip install --no-deps .
-ENV PYTHONPATH=$PYTHONPATH:/systems
 
 ARG INSTALL_NVT=true
 # Install NVTabular
@@ -68,19 +66,16 @@ RUN if [ "$INSTALL_NVT" == "true" ]; then \
       git clone https://github.com/NVIDIA-Merlin/NVTabular.git /nvtabular/ && \
       cd /nvtabular/ && git checkout ${NVTAB_VER} && pip install --no-deps .; \
     fi
-ENV PYTHONPATH=$PYTHONPATH:/nvtabular
 
 # Install Transformers4Rec
 RUN if [ "$INSTALL_NVT" == "true" ]; then \
       git clone https://github.com/NVIDIA-Merlin/Transformers4Rec.git /transformers4rec && \
       cd /transformers4rec/ && git checkout ${TF4REC_VER} && pip install . --no-deps; \
     fi
-ENV PYTHONPATH=$PYTHONPATH:/transformers4rec
 
 # Install Models
 RUN git clone https://github.com/NVIDIA-Merlin/Models.git /models/ && \
     cd /models/ && git checkout ${MODELS_VER} && pip install . --no-deps
-ENV PYTHONPATH=$PYTHONPATH:/models
 
 # Add Merlin Repo
 RUN git clone https://github.com/NVIDIA-Merlin/Merlin/ /Merlin
