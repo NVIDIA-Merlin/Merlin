@@ -28,6 +28,15 @@ ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/cuda/extra
 ENV PATH=${CUDA_HOME}/lib64/:${PATH}:${CUDA_HOME}/bin
 ENV PYTHONPATH=/usr/lib/python3.8/site-packages:$PYTHONPATH
 
+
+RUN [ $(uname -m) = 'x86_64' ] \
+    && curl -o /tmp/cuda-keyring.deb \
+        https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-keyring_1.0-1_all.deb \
+    || curl -o /tmp/cuda-keyring.deb \
+        https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/sbsa/cuda-keyring_1.0-1_all.deb; \
+    dpkg -i /tmp/cuda-keyring.deb \
+    && rm /tmp/cuda-keyring.deb
+
 # Set up NVIDIA package repository
 RUN apt update -y --fix-missing && \
     apt install -y --no-install-recommends software-properties-common && \
