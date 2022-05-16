@@ -106,8 +106,8 @@ def test_from_json():
     with tempfile.NamedTemporaryFile() as f, managed_container(IMG) as c:
         shutil.copyfile(DATAJSON, f.name)
         xtr = SupportMatrixExtractor("x", "22.02", f.name)
-        xtr.use_container(c)
         xtr.from_json()
+        xtr.use_container(c)
         print(f"{xtr.data}")
         assert "first" in xtr.data.keys()
         assert "one" in xtr.data["first"]
@@ -118,20 +118,83 @@ def test_from_json():
         assert "x" in xtr.data.keys()
         assert "22.02" in xtr.data["x"]
 
+    with tempfile.NamedTemporaryFile() as f, managed_container(IMG) as c:
+        shutil.copyfile(DATAJSON, f.name)
+        xtr = SupportMatrixExtractor("first", "one", f.name)
+        xtr.from_json()
+        xtr.use_container(c)
+        print(f"{xtr.data}")
+        assert "first" in xtr.data.keys()
+        assert "one" in xtr.data["first"]
+        assert xtr.data["first"]["one"] == "1"
+        assert "two" in xtr.data["first"]
+        assert xtr.data["first"]["two"] == "2"
+
 
 def test_to_json_file():
     with tempfile.NamedTemporaryFile() as f, managed_container(IMG) as c:
         shutil.copyfile(SAMPLEJSON, f.name)
         xtr = SupportMatrixExtractor("x", "22.02", f.name)
+        xtr.from_json()
         xtr.use_container(c)
         xtr.get_from_pip("pip")
-        xtr.from_json()
         xtr.to_json_file()
         a, b = "", ""
         with open(SAMPLEAFTERJSON) as fa, open(f.name) as fb:
             a = json.load(fa)
             b = json.load(fb)
             assert a == b
+
+    with tempfile.NamedTemporaryFile() as f, managed_container(IMG) as c:
+        shutil.copyfile(SAMPLEJSON, f.name)
+        xtr = SupportMatrixExtractor("x", "22.02", f.name, force=True)
+        xtr.from_json()
+        xtr.use_container(c)
+        xtr.get_from_pip("pip")
+        xtr.to_json_file()
+        a, b = "", ""
+        with open(SAMPLEAFTERJSON) as fa, open(f.name) as fb:
+            a = json.load(fa)
+            b = json.load(fb)
+            assert a == b
+
+
+def test_already_present():
+    # First test intentionally does not copy a data.json file.
+    xtr = SupportMatrixExtractor("merlin-training", "22.02", "blah")
+    assert xtr.already_present() is False
+
+    with tempfile.NamedTemporaryFile() as f:
+        shutil.copyfile(SAMPLEJSON, f.name)
+        xtr = SupportMatrixExtractor("merlin-training", "22.02", f.name)
+        xtr.from_json()
+        assert xtr.already_present() is True
+
+    with tempfile.NamedTemporaryFile() as f:
+        shutil.copyfile(SAMPLEJSON, f.name)
+        xtr = SupportMatrixExtractor("merlin-training", "22.02", f.name, force=True)
+        xtr.from_json()
+        assert xtr.already_present() is False
+
+    with tempfile.NamedTemporaryFile() as f:
+        shutil.copyfile(SAMPLEJSON, f.name)
+        xtr = SupportMatrixExtractor("x", "22.02", f.name)
+        xtr.from_json()
+        assert xtr.already_present() is False
+
+    with tempfile.NamedTemporaryFile() as f, managed_container(IMG) as c:
+        shutil.copyfile(DATAJSON, f.name)
+        xtr = SupportMatrixExtractor("x", "22.02", f.name)
+        xtr.from_json()
+        xtr.use_container(c)
+        assert "first" in xtr.data.keys()
+        assert "one" in xtr.data["first"]
+
+        xtr.get_from_env("SHELL", "first")
+        assert "first" in xtr.data.keys()
+        assert "one" in xtr.data["first"].keys()
+        assert "x" in xtr.data.keys()
+        assert "22.02" in xtr.data["x"]
 
 
 def test_managed_container():
