@@ -41,7 +41,7 @@ def test_nb1(tb):
     REPO_ROOT
     / "examples/Building-and-deploying-multi-stage-RecSys/02-Deploying-multi-stage-RecSys-with-Merlin-Systems.ipynb",
     execute=False,
-    timeout=1550 # this is 2x the time it takes to execute the longest running cell on my home rig
+    timeout=2400 # bumping it up -- writes to drive on ngc are really slow as I test this
 )
 def test_nb2(tb):
     tb.inject(
