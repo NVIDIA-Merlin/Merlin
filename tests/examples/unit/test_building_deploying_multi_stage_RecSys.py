@@ -15,7 +15,7 @@ def test_nb1(tb):
         """
         import os
         os.environ["DATA_FOLDER"] = "/tmp/data/"
-        os.environ["NUM_ROWS"] = "10000"
+        os.environ["NUM_ROWS"] = "40_000"
         os.system("mkdir -p /tmp/examples")
         os.environ["BASE_DIR"] = "/tmp/examples/"
         """
