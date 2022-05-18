@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.2
-ARG TRITON_VERSION=22.03
+ARG TRITON_VERSION=22.04
 
 ARG FULL_IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-py3
 ARG BASE_IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-py3-min
@@ -42,9 +42,8 @@ RUN apt update -y --fix-missing && \
     apt install -y --no-install-recommends software-properties-common && \
     wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-ubuntu2004.pin && \
     mv cuda-ubuntu2004.pin /etc/apt/preferences.d/cuda-repository-pin-600 && \
-    apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/7fa2af80.pub && \
+    apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/3bf863cc.pub && \
     add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/ /"
-
 # Install packages
 RUN apt update -y --fix-missing && \
     apt install -y --no-install-recommends \
@@ -227,8 +226,10 @@ RUN apt update -y --fix-missing && \
     apt install -y --no-install-recommends software-properties-common && \
     wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-ubuntu2004.pin && \
     mv cuda-ubuntu2004.pin /etc/apt/preferences.d/cuda-repository-pin-600 && \
-    apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/7fa2af80.pub && \
+    apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/3bf863cc.pub && \
     add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/ /"
+
+
 
 # Install packages
 RUN apt update -y --fix-missing && \
@@ -305,29 +306,24 @@ RUN git clone https://github.com/NVIDIA-Merlin/Merlin/ /Merlin
 
 # Install Merlin Core
 RUN git clone https://github.com/NVIDIA-Merlin/core.git /core/ && \
-    cd /core/ && git checkout ${CORE_VER} && pip install -e . --no-deps
-ENV PYTHONPATH=$PYTHONPATH:/core
+    cd /core/ && git checkout ${CORE_VER} && pip install . --no-deps
 
 # Install NVTabular
 ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
 RUN git clone https://github.com/NVIDIA-Merlin/NVTabular.git /nvtabular/ && \
-    cd /nvtabular/ && git checkout ${NVTAB_VER} && pip install -e . --no-deps
-ENV PYTHONPATH=$PYTHONPATH:/nvtabular
+    cd /nvtabular/ && git checkout ${NVTAB_VER} && pip install . --no-deps
 
 # Install Merlin Systems
 RUN git clone https://github.com/NVIDIA-Merlin/systems.git /systems/ && \
-    cd /systems/ && git checkout ${SYSTEMS_VER} && pip install --no-deps -e .
-ENV PYTHONPATH=$PYTHONPATH:/systems
+    cd /systems/ && git checkout ${SYSTEMS_VER} && pip install --no-deps .
 
 # Install Models
 RUN git clone https://github.com/NVIDIA-Merlin/Models.git /models/ && \
-    cd /models/ && git checkout ${MODELS_VER} && pip install -e . --no-deps;
-ENV PYTHONPATH=$PYTHONPATH:/models
+    cd /models/ && git checkout ${MODELS_VER} && pip install . --no-deps;
 
 # Install Transformers4Rec
 RUN git clone https://github.com/NVIDIA-Merlin/Transformers4Rec.git /transformers4rec && \
-    cd /transformers4rec/ && git checkout ${TF4REC_VER} && pip install -e . --no-deps
-ENV PYTHONPATH=$PYTHONPATH:/transformers4rec
+    cd /transformers4rec/ && git checkout ${TF4REC_VER} && pip install . --no-deps
 
 HEALTHCHECK NONE
 CMD ["/bin/bash"]

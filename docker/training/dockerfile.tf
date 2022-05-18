@@ -104,6 +104,7 @@ RUN if [ "$HUGECTR_DEV_MODE" == "false" ]; then \
         popd && \
         rm -rf build-env; \
     fi
+ENV PYTHONPATH=$PYTHONPATH:/usr/lib/python3.8/site-packages/merlin_sok-1.1.3-py3.8-linux-x86_64.egg
 
 # Install distributed-embeddings
 ARG INSTALL_DISTRIBUTED_EMBEDDINGS=true
