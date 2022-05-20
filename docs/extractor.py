@@ -50,7 +50,9 @@ from datetime import date
 from pathlib import Path
 
 import yaml
-from mergedeep import merge
+from github import Github
+from github.GithubException import GithubException
+from github.GitRef import GitRef
 
 import docker
 
@@ -64,7 +66,7 @@ def managed_container(img):
     client = docker.from_env()
     container = None
     try:
-        # runtime="nvidia", # the runtime is not installed on GH runners.
+        # runtime="nvidia",
         container = client.containers.run(
             img,
             command="bash",
@@ -87,6 +89,64 @@ def get_yymm() -> str:
     return date.today().strftime("%y.%m")
 
 
+# pylint: disable=too-many-locals
+def open_pr(repo: str, path: str, release: str):
+    token = os.environ.get("GH_TOKEN")
+    if token is None:
+        logger.info("Env var GH_TOKEN is not found. Cannot open PR.")
+        return
+
+    msg = "Updates from containers"
+    pr_branch = "docs-smx-" + release.replace(".", "")
+
+    content: str
+    with open(path, "r") as f:
+        content = f.read()
+
+    g = Github(token)
+    r = g.get_repo(repo)
+    remote_ref: GitRef
+    counter = 1
+    while True:
+        remote_branch = f"refs/heads/{pr_branch}-{counter}"
+        try:
+            remote_ref = r.create_git_ref(
+                ref=remote_branch,
+                sha=r.get_branch("main").commit.sha,
+            )
+        except GithubException:
+            logger.info(
+                "PR branch '%s' already exists. Incrementing the counter.",
+                remote_branch,
+            )
+            counter += 1
+            if counter > 25:
+                logger.info("Failed to create a unique branch name. Giving up.")
+                raise
+        else:
+            logger.info("Remote ref created: '%s'", remote_ref.ref)
+            break
+
+    f = r.get_contents(path, ref=remote_ref.ref)
+    result = r.update_file(f.path, msg, content, branch=remote_ref.ref, sha=f.sha)
+    diff = r.compare(r.get_branch("main").commit.sha, result["commit"].sha)
+    if len(diff.files) == 0:
+        logger.info("No changes to commit.")
+        remote_ref.delete()
+        return
+
+    try:
+        pr = r.create_pull(  # noqa
+            title="Support matrix updates for " + release,
+            body=msg,
+            head=remote_ref.ref,
+            base="main",
+        )
+        logger.info("Opened PR: '%s'", pr.html_url)
+    except Exception as e:  # pylint: disable=broad-except
+        logger.info("Failed to open PR: %s", e)
+
+
 class SupportMatrixExtractor:
 
     contdata = {}
@@ -96,8 +156,9 @@ class SupportMatrixExtractor:
     container_name: str
     release: str
     standard_snippets = ["dgx_system", "nvidia_driver", "gpu_model"]
+    force = False
 
-    def __init__(self, name: str, release: str, datafile: str):
+    def __init__(self, name: str, release: str, datafile: str, force: bool = False):
         self.container_name = name
         self.release = release
         self.contdata = {}
@@ -105,6 +166,7 @@ class SupportMatrixExtractor:
         self.data = defaultdict(dict)
         self.data[self.container_name][self.release] = self.contdata
         self.datafile = datafile
+        self.force = force
 
     def use_container(self, container: docker.models.containers.Container):
         self.container = container
@@ -199,20 +261,34 @@ class SupportMatrixExtractor:
             return
 
         with open(self.datafile) as f:
-            _data = json.load(f)
-            if self.container_name not in _data:
-                _data[self.container_name] = {}
-            if self.release not in _data[self.container_name]:
-                _data[self.container_name][self.release] = {}
-        self.data = merge({}, _data, self.data)
-        self.data[self.container_name][self.release] = self.contdata
+            self.data = json.load(f)
+
+            if self.container_name not in self.data:
+                self.data[self.container_name] = {}
+            if self.release not in self.data[self.container_name] or self.force is True:
+                self.data[self.container_name][self.release] = {}
+
+        self.contdata = self.data[self.container_name][self.release]
 
     def to_json_file(self):
+        logger.debug("Storing data to file: '%s'", self.datafile)
         with open(self.datafile, "w") as f:
             json.dump(self.data, f, sort_keys=True, indent=2)
+        logger.debug("...done.")
+
+    def already_present(self) -> bool:
+        if not os.path.exists(self.datafile):
+            return False
+        if self.container_name not in self.data.keys():
+            return False
+        if self.release not in self.data[self.container_name]:
+            return False
+        if len(self.data[self.container_name][self.release]) < 1:
+            return False
+        return True
 
 
-# pylint: disable=too-many-locals, too-many-statements
+# pylint: disable=too-many-locals, too-many-statements, too-many-branches
 def main(args):
     # Images information
     ngc_base = "nvcr.io/nvidia/merlin/"
@@ -230,11 +306,18 @@ def main(args):
     jsonfile = scriptdir / "data.json"
     snippetsfile = scriptdir / "snippets.yaml"
     version = args.version
+    force = False
+
+    jsonfile_start_mtime = jsonfile.stat().st_mtime
 
     if args.file:
         jsonfile = os.path.abspath(args.file)
     if args.snippets:
         snippetsfile = os.path.abspath(args.snippets)
+    if args.container:
+        containers = [args.container]
+    if args.force is True:
+        force = True
     if not version:
         version = get_yymm()
 
@@ -247,7 +330,15 @@ def main(args):
     # Iterate through the images and get information
     for cont in containers:
         img = ngc_base + cont + ":" + version
+
         logger.info("Extracting information from: %s", img)
+        xtr = SupportMatrixExtractor(ngc_base + cont, version, jsonfile, force)
+        xtr.from_json()
+
+        if xtr.already_present() and force is False:
+            logger.info("...skipping because container is already in data.")
+            continue
+
         with managed_container(img) as container:
             if isinstance(container, Exception):
                 logger.info("...image is not found.")
@@ -255,9 +346,7 @@ def main(args):
 
             logger.info("...container is running.")
 
-            xtr = SupportMatrixExtractor(ngc_base + cont, version, jsonfile)
             xtr.use_container(container)
-            xtr.from_json()
 
             for k in xtr.standard_snippets:
                 xtr.insert_snippet(k, sniptext[k])
@@ -327,6 +416,15 @@ def main(args):
 
             logger.info(xtr.contdata)
 
+    logger.info(xtr.data)
+
+    if (
+        jsonfile.stat().st_mtime != jsonfile_start_mtime
+        and os.environ.get("SKIP_PR", False) is False
+    ):
+        repo = os.environ.get("REPO", r"NVIDIA-Merlin/Merlin")
+        open_pr(repo, str(jsonfile), version)
+
 
 def parse_args():
     """
@@ -354,6 +452,20 @@ def parse_args():
         "--snippets",
         type=str,
         help="YAML snippets file",
+    )
+
+    parser.add_argument(
+        "-c",
+        "--container",
+        type=str,
+        help="Single container name",
+    )
+
+    parser.add_argument(
+        "--force",
+        type=bool,
+        default=False,
+        help="When True, specifies to get data for a container that is already in data.json",
     )
 
     args = parser.parse_args()
