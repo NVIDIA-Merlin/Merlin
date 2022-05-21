@@ -77,3 +77,32 @@ jq '.["nvcr.io/nvidia/merlin/merlin-inference"]["22.03"]' < ../docs/source/data.
 ```shell
 jq '. | map_values(keys) ' < docs/source/data.json
 ```
+
+## About the support matrix
+
+Documenting the support matrix is a three part process:
+
+* Extract the data from the containers.
+* Convert the data into RST.
+* Build the docs, as normal.
+
+The first part is handled by the `docs/extractor.py` script.
+Unless you have all the containers downloaded, it's best to run
+this script on a machine with high bandwidth and with automation, such as Blossom.
+Check in the team's Blossom instance for a `docs-smx-data` job.
+
+By default, the script pulls each container (the containers are listed in the
+script itself) and uses the YY.MM label based on the current data.
+The script attempts to extract information from `Pip`, the environment for
+the container, environment variables in the container, and so on.
+After the data is extracted, the script updates the `data.json` file.
+
+At the start of the documentation build, Sphinx runs the `docs/smx2rst.py` script.
+This script reads the `data.json` file and creates an RST file in
+`docs/source/generated` for each container.
+Each file includes tables, by year, that are based on the data in the JSON file.
+
+The `docs/source/support_matrix` directory has an RST that corresponds to one of
+the generated files.
+You can add text into those files to indicate information like TensorFlow is
+not installed in the inference container for TensorFlow models.
