@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-ARG IMAGE=nvcr.io/nvidia/tensorflow:22.03-tf2-py3
+ARG IMAGE=nvcr.io/nvidia/tensorflow:22.04-tf2-py3
 FROM ${IMAGE}
 
 # Args
@@ -120,6 +120,7 @@ ENV PYTHONPATH=$PYTHONPATH:/usr/lib/python3.8/site-packages/merlin_sok-1.1.3-py3
 RUN rm -rf /repos
 RUN rm -rf /usr/local/share/jupyter/lab/staging/node_modules/marked
 RUN rm -rf /usr/local/share/jupyter/lab/staging/node_modules/node-fetch
+RUN rm /usr/local/nvm/versions/node/v16.6.1/lib/node_modules/npm/node_modules/cli-table3/node_modules/ansi-regex/package.json
 
 HEALTHCHECK NONE
 CMD ["/bin/bash"]
