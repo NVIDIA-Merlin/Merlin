@@ -39,7 +39,7 @@ echo "##############"
 
 ## Test Core
 echo "Run unit tests for Core"
-cd /core && /ci/test_unit.sh $container $devices
+cd /core && ci/test_unit.sh $container $devices
 
 ## Test NVTabular
 echo "Run unit tests for NVTabular"
