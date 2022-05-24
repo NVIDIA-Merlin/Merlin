@@ -39,24 +39,24 @@ echo "##############"
 
 ## Test Core
 echo "Run unit tests for Core"
-/core/ci/test_unit.sh $container $devices
+cd /core && /ci/test_unit.sh $container $devices
 
 ## Test NVTabular
 echo "Run unit tests for NVTabular"
-/nvtabular/ci/test_unit.sh $container $devices
+cd /nvtabular && ci/test_unit.sh $container $devices
 
 ## Test Transformers4Rec
 echo "Run unit tests for Transformers4Rec"
-/transformers4rec/ci/test_unit.sh $container $devices
+cd /transformers4rec/ && ci/test_unit.sh $container $devices
 
 ## Test Models
 echo "Run unit tests for Models"
 pip install coverage
-/models/ci/test_unit.sh $container $devices
+cd /models/ && ci/test_unit.sh $container $devices
 
 ## Test Systems
 echo "Run unit tests for Systems"
-pytest -rxs /systems/tests/unit
+cd /systems && pytest -rxs /tests/unit
 
 ## Test HugeCTR
 if [ "$container" == "merlin-training" ]; then
