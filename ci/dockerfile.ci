@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.2
-ARG TRITON_VERSION=22.03
+ARG TRITON_VERSION=22.04
 ARG IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-py3
 FROM ${IMAGE}
 
@@ -30,6 +30,13 @@ RUN ln -s /usr/local/cuda/lib64/stubs/libcuda.so /usr/local/cuda/lib64/stubs/lib
 
 # Install packages
 ENV DEBIAN_FRONTEND=noninteractive
+RUN [ $(uname -m) = 'x86_64' ] \
+    && curl -o /tmp/cuda-keyring.deb \
+        https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-keyring_1.0-1_all.deb \
+    || curl -o /tmp/cuda-keyring.deb \
+        https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/sbsa/cuda-keyring_1.0-1_all.deb; \
+    dpkg -i /tmp/cuda-keyring.deb \
+    && rm /tmp/cuda-keyring.deb
 
 RUN apt update -y --fix-missing && \
     apt install -y --no-install-recommends software-properties-common && \
