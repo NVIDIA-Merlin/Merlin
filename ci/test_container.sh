@@ -24,6 +24,8 @@ fi
 if [ "$container" == "merlin-tensorflow-training" ]; then
     echo "Check TensorFlow for tf-training container"
     python -c "import tensorflow; print(tensorflow.__version__)"
+    echo "Check merlin-sok for tf-training container"
+    python -c "import sparse_operation_kit; print(sparse_operation_kit.__version__)"
     echo "Check distributed-embeddings for tf-training container"
     python -c "import distributed_embeddings as tfde; print(tfde.__doc__)"
 fi
@@ -66,6 +68,8 @@ fi
 
 ## Test distributed-embeddings
 if [ "$container" == "merlin-tensorflow-training" ]; then
+    echo "Run unit tests for merlin-sok"
+    /hugectr/ci/test_unit.sh $container $devices
     echo "Run unit tests for distributed-embeddings"
     pytest -rxs /distributed_embeddings/tests
 fi
