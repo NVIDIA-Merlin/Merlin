@@ -124,4 +124,3 @@ RUN rm /usr/local/nvm/versions/node/v16.6.1/lib/node_modules/npm/node_modules/cl
 
 HEALTHCHECK NONE
 CMD ["/bin/bash"]
-ENTRYPOINT ["/bin/bash", "-c", "/opt/nvidia/nvidia_entrypoint.sh"]
