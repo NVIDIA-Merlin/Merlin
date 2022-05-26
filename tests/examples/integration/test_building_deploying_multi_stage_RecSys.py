@@ -11,8 +11,8 @@ from tests.conftest import REPO_ROOT
     execute=False,
     timeout=450 # this is 2x the time it takes to run the longest running cell (training) on a Quadro 8000
 )
-def test_nb1(tb):
-    tb.inject(
+def test_func(tb1):
+    tb1.inject(
         """
         import os
         os.environ["DATA_FOLDER"] = "/tmp/data/"
@@ -20,15 +20,15 @@ def test_nb1(tb):
         os.environ["BASE_DIR"] = "/tmp/examples/"
         """
     )
-    tb.execute_cell(list(range(0, 16)))
-    tb.execute_cell(list(range(17, 22)))
-    tb.inject("""
+    tb1.execute_cell(list(range(0, 16)))
+    tb1.execute_cell(list(range(17, 22)))
+    tb1.inject("""
             from pathlib import Path
             from merlin.datasets.ecommerce import transform_aliccp
 
             transform_aliccp(Path('/raid/data/aliccp/raw'), output_path, nvt_workflow=outputs, workflow_name='workflow_ranking')
     """)
-    tb.execute_cell(list(range(23, len(tb.cells))))
+    tb1.execute_cell(list(range(23, len(tb1.cells))))
 
     assert os.path.isdir("/tmp/examples/dlrm")
     assert os.path.isdir("/tmp/examples/feature_repo")
@@ -37,39 +37,38 @@ def test_nb1(tb):
     assert os.path.isfile("/tmp/examples/feature_repo/user_features.py")
     assert os.path.isfile("/tmp/examples/feature_repo/item_features.py")
 
-@testbook(
-    REPO_ROOT
-    / "examples/Building-and-deploying-multi-stage-RecSys/02-Deploying-multi-stage-RecSys-with-Merlin-Systems.ipynb",
-    execute=False,
-    timeout=2400 # bumping it up -- writes to drive on ngc are really slow as I test this
-)
-def test_nb2(tb):
-    tb.inject(
-        """
-        import os
-        os.environ["DATA_FOLDER"] = "/tmp/data/"
-        os.environ["BASE_DIR"] = "/tmp/examples/"
-        """
-    )
-    NUM_OF_CELLS = len(tb.cells)
-    tb.execute_cell(list(range(0, NUM_OF_CELLS - 3)))
-    top_k = tb.ref("top_k")
-    outputs = tb.ref("outputs")
-    request = tb.ref("request")
-    assert outputs[0] == "ordered_ids"
-    tb.inject(
-        """
-        import shutil
-        from merlin.models.loader.tf_utils import configure_tensorflow
-        configure_tensorflow()
-        from merlin.systems.triton.utils import run_ensemble_on_tritonserver
-        response = run_ensemble_on_tritonserver(
-            "/tmp/examples/poc_ensemble", outputs, request, "ensemble_model"
+    with testbook(
+        REPO_ROOT
+        / "examples/Building-and-deploying-multi-stage-RecSys/02-Deploying-multi-stage-RecSys-with-Merlin-Systems.ipynb",
+        execute=False,
+        timeout=2400 # bumping it up -- writes to drive on ngc are really slow as I test this
+    ) as tb2:
+        tb2.inject(
+            """
+            import os
+            os.environ["DATA_FOLDER"] = "/tmp/data/"
+            os.environ["BASE_DIR"] = "/tmp/examples/"
+            """
         )
-        response = [x.tolist()[0] for x in response["ordered_ids"]]
-        shutil.rmtree("/tmp/examples/", ignore_errors=True)
-        """
-    )
-    tb.execute_cell(NUM_OF_CELLS - 2)
-    response = tb.ref("response")
-    assert len(response) == top_k
+        NUM_OF_CELLS = len(tb2.cells)
+        tb2.execute_cell(list(range(0, NUM_OF_CELLS - 3)))
+        top_k = tb2.ref("top_k")
+        outputs = tb2.ref("outputs")
+        request = tb2.ref("request")
+        assert outputs[0] == "ordered_ids"
+        tb2.inject(
+            """
+            import shutil
+            from merlin.models.loader.tf_utils import configure_tensorflow
+            configure_tensorflow()
+            from merlin.systems.triton.utils import run_ensemble_on_tritonserver
+            response = run_ensemble_on_tritonserver(
+                "/tmp/examples/poc_ensemble", outputs, request, "ensemble_model"
+            )
+            response = [x.tolist()[0] for x in response["ordered_ids"]]
+            shutil.rmtree("/tmp/examples/", ignore_errors=True)
+            """
+        )
+        tb2.execute_cell(NUM_OF_CELLS - 2)
+        response = tb2.ref("response")
+        assert len(response) == top_k
