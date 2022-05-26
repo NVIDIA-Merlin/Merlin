@@ -41,10 +41,11 @@
 # | CUDA  |  11.6 |  11.5 |
 
 import argparse
-import contextlib
 import json
 import logging
 import os
+import subprocess
+import sys
 from collections import defaultdict
 from datetime import date
 from pathlib import Path
@@ -54,35 +55,9 @@ from github import Github
 from github.GithubException import GithubException
 from github.GitRef import GitRef
 
-import docker
-
 level = logging.DEBUG if os.environ.get("DEBUG") else logging.INFO
 logging.basicConfig(level=level)
 logger = logging.getLogger("extractor")
-
-
-@contextlib.contextmanager
-def managed_container(img):
-    client = docker.from_env()
-    container = None
-    try:
-        # runtime="nvidia",
-        container = client.containers.run(
-            img,
-            command="bash",
-            detach=True,
-            ipc_mode="host",
-            tty=True,
-        )
-        yield container
-    except docker.errors.ImageNotFound as nf:
-        yield nf
-    except Exception as e:  # pylint: disable=broad-except
-        yield e
-    finally:
-        if container:
-            container.stop()
-            container.remove()
 
 
 def get_yymm() -> str:
@@ -152,7 +127,6 @@ class SupportMatrixExtractor:
     contdata = {}
     data: defaultdict(dict)
     ERROR = "Not applicable"
-    container: docker.models.containers.Container
     container_name: str
     release: str
     standard_snippets = ["dgx_system", "nvidia_driver", "gpu_model"]
@@ -168,18 +142,18 @@ class SupportMatrixExtractor:
         self.datafile = datafile
         self.force = force
 
-    def use_container(self, container: docker.models.containers.Container):
-        self.container = container
-
     def get_from_envfile(self, path: str, lookup: str, key=None):
         if key is None:
             key = lookup
         self.contdata[key] = self.ERROR
-        (err, output) = self.container.exec_run(
-            "bash -c 'source {0}; echo ${{{1}}}'".format(path, lookup)
+        p = subprocess.run(  # nosec B602
+            "bash -c 'source {0}; echo ${{{1}}}'".format(path, lookup),
+            shell=True,
+            capture_output=True,
+            check=False,
         )
-        result = output.decode("utf-8")
-        if err != 1 and not result.isspace():
+        result = p.stdout.decode("utf-8")
+        if p.returncode != 1 and not result.isspace():
             self.contdata[key] = result.replace('"', "").strip()
         else:
             logger.info("Failed to get env var '%s' from file '%s'", lookup, path)
@@ -188,12 +162,19 @@ class SupportMatrixExtractor:
         if key is None:
             key = lookup
         self.contdata[key] = self.ERROR
-        (err, output) = self.container.exec_run(
-            "bash -c 'echo ${{{0}}}'".format(lookup)
+        p = subprocess.run(  # nosec B602
+            "bash -c 'echo ${{{0}}}'".format(lookup),
+            shell=True,
+            capture_output=True,
+            check=False,
         )
-        result = output.decode("utf-8")
-        if err != 1 and not result.isspace():
+        result = p.stdout.decode("utf-8")
+        if p.returncode != 1 and not result.isspace():
             self.contdata[key] = result.replace('"', "").strip()
+            if lookup == "SMX_COMPRESSED_SIZE":
+                self.contdata[key] = "{} GB".format(
+                    round(int(result) / 1024 ** 3, 2)
+                )  # noqa
         else:
             logger.info("Failed to get env var: '%s'", lookup)
 
@@ -206,49 +187,72 @@ class SupportMatrixExtractor:
         if key is None:
             key = lookup
         self.contdata[key] = self.ERROR
-        (err, output) = self.container.exec_run(
-            "python -m pip show '{}'".format(lookup)
+        p = subprocess.run(  # nosec B602
+            "python -m pip show '{}'".format(lookup),
+            shell=True,
+            capture_output=True,
+            check=False,
         )
-        if err != 0:
+        result = p.stdout.decode("utf-8")
+        if p.returncode != 0:
             logger.info("Failed to get package version from pip: %s", lookup)
             return
         versions = [
             line.split()[-1]
-            for line in output.decode().split("\n")
+            for line in result.split("\n")
             if line.startswith("Version:")
         ]
         if len(versions) == 1:
             self.contdata[key] = versions[0].strip()
         else:
-            logger.info(
-                "Failed to extract version from pip output: %s", output.decode()
-            )
+            logger.info("Failed to extract version from pip output: %s", result)
 
-    def get_from_image(self, lookup: str, key=None):
+    def get_from_python(self, lookup: str, key=None):
+        """Retrieves the version of a Python package by importing the package
+        and printing the ``__version__`` value.
+
+        Returns `None` if the package version cannot be printed.
+        """
         if key is None:
             key = lookup
         self.contdata[key] = self.ERROR
-        attrs = self.container.image.attrs
-        try:
-            self.contdata[key] = attrs[lookup]
-        except KeyError:
-            logger.info("Failed to get attr from image: '%s'", lookup)
-        if lookup == "Size":
-            self.contdata[key] = "{} GB".format(
-                round(attrs[lookup] / 1024 ** 3, 2)
-            )  # noqa
+        p = subprocess.run(  # nosec B602
+            "python -c 'import {} as x; print(x.__version__);'".format(lookup),
+            shell=True,
+            capture_output=True,
+            check=False,
+        )
+        result = p.stdout.decode("utf-8")
+        if p.returncode != 0:
+            logger.info(
+                "Failed to get '%s' package version from python: %s",
+                lookup,
+                result,
+            )
+            return
+        self.contdata[key] = result.strip()
 
     def get_from_cmd(self, cmd: str, key: str):
         self.contdata[key] = self.ERROR
-        (err, output) = self.container.exec_run("bash -c '{}'".format(cmd))
-        if err != 1:
-            self.contdata[key] = output.decode("utf-8").strip()
+        p = subprocess.run(  # nosec B602
+            "bash -c '{}'".format(cmd),
+            shell=True,
+            capture_output=True,
+            check=False,
+        )
+        result = p.stdout.decode("utf-8")
+        if p.returncode == 0:
+            self.contdata[key] = result.strip()
             # Let the hacks begin...
             if key == "sm":
-                smlist = output.decode("utf-8").split()
+                smlist = result.split()
                 self.contdata[key] = ", ".join(smlist)
+            if key == "size":
+                self.contdata[key] = "{} GB".format(
+                    round(int(result) / 1024 ** 3, 2)
+                )  # noqa
         else:
-            logger.info("Command '%s' failed: %s", cmd, output.decode())
+            logger.info("Command '%s' failed: %s", cmd, result)
 
     def insert_snippet(self, key: str, snip: str):
         self.contdata[key] = snip
@@ -292,14 +296,6 @@ class SupportMatrixExtractor:
 def main(args):
     # Images information
     ngc_base = "nvcr.io/nvidia/merlin/"
-    containers = [
-        "merlin-training",
-        "merlin-tensorflow-training",
-        "merlin-pytorch-training",
-        "merlin-inference",
-        "merlin-tensorflow-inference",
-        "merlin-pytorch-inference",
-    ]
 
     scriptdir = Path(__file__).parent
 
@@ -308,18 +304,23 @@ def main(args):
     version = args.version
     force = False
 
-    jsonfile_start_mtime = jsonfile.stat().st_mtime
-
     if args.file:
         jsonfile = os.path.abspath(args.file)
     if args.snippets:
         snippetsfile = os.path.abspath(args.snippets)
-    if args.container:
-        containers = [args.container]
     if args.force is True:
         force = True
     if not version:
         version = get_yymm()
+
+    if args.pr:
+        repo = os.environ.get("REPO", r"NVIDIA-Merlin/Merlin")
+        open_pr(repo, str(jsonfile), version)
+        sys.exit(0)
+
+    if not args.container:
+        logger.error("container is a required argument")
+        sys.exit(1)
 
     sniptext = {}
     with open(snippetsfile) as f:
@@ -327,103 +328,87 @@ def main(args):
         for k in SupportMatrixExtractor.standard_snippets:
             assert sniptext[k]
 
-    # Iterate through the images and get information
-    for cont in containers:
-        img = ngc_base + cont + ":" + version
+    img = ngc_base + args.container + ":" + version
 
-        logger.info("Extracting information from: %s", img)
-        xtr = SupportMatrixExtractor(ngc_base + cont, version, jsonfile, force)
-        xtr.from_json()
+    logger.info("Extracting information from: %s", img)
+    xtr = SupportMatrixExtractor(ngc_base + args.container, version, jsonfile, force)
+    xtr.from_json()
 
-        if xtr.already_present() and force is False:
-            logger.info("...skipping because container is already in data.")
-            continue
+    if xtr.already_present() and force is False:
+        logger.info("...skipping because container is already in data.")
+        return
 
-        with managed_container(img) as container:
-            if isinstance(container, Exception):
-                logger.info("...image is not found.")
-                continue
+    for k in xtr.standard_snippets:
+        xtr.insert_snippet(k, sniptext[k])
 
-            logger.info("...container is running.")
+    xtr.insert_snippet("release", version)
 
-            xtr.use_container(container)
+    xtr.get_from_env("SMX_COMPRESSED_SIZE", "compressedSize")
+    xtr.get_from_cmd("du -sb / 2>/dev/null | cut -f1", "size")
+    xtr.get_from_envfile("/etc/os-release", "PRETTY_NAME", "os")
+    xtr.get_from_env("CUDA_VERSION", "cuda")
+    xtr.get_from_pip("rmm")
+    xtr.get_from_pip("cudf")
+    xtr.get_from_env("CUDNN_VERSION", "cudnn")
+    xtr.get_from_pip("nvtabular")
+    xtr.get_from_pip("transformers4rec")
+    xtr.get_from_pip("merlin.core")
+    xtr.get_from_pip("merlin.systems")
+    xtr.get_from_pip("merlin.models")
+    xtr.get_from_python("hugectr2onnx")
+    xtr.get_from_python("hugectr")
+    xtr.get_from_python("sparse_operation_kit")
+    xtr.get_from_pip("tensorflow", "tf")
+    xtr.get_from_pip("torch", "pytorch")
+    xtr.get_from_env("CUBLAS_VERSION", "cublas")
+    xtr.get_from_env("CUFFT_VERSION", "cufft")
+    xtr.get_from_env("CURAND_VERSION", "curand")
+    xtr.get_from_env("CUSOLVER_VERSION", "cusolver")
+    xtr.get_from_env("CUSPARSE_VERSION", "cusparse")
+    xtr.get_from_env("CUTENSOR_VERSION", "cutensor")
+    xtr.get_from_env("NVIDIA_TENSORFLOW_VERSION", "nvidia_tensorflow")
+    xtr.get_from_env("NVIDIA_PYTORCH_VERSION", "nvidia_pytorch")
+    xtr.get_from_env("OPENMPI_VERSION", "openmpi")
+    xtr.get_from_env("TRT_VERSION", "tensorrt")
+    xtr.get_from_env("TRTOSS_VERSION", "base_container")
+    # xtr.get_from_cmd("cuobjdump /usr/local/hugectr/lib/libhuge_ctr_shared.so
+    # | grep arch | sed -e \'s/.*sm_//\' | sed -e \'H;${x;s/\\n/, /g;s/^, //;p};d\'", "sm")
+    # flake8: noqa
+    xtr.get_from_cmd(
+        "if [ ! -f /usr/local/hugectr/lib/libhuge_ctr_shared.so ]; then exit 1; fi; cuobjdump /usr/local/hugectr/lib/libhuge_ctr_shared.so | grep arch | sed -e 's/.*sm_//'",
+        "sm",
+    )
+    xtr.get_from_cmd("cat /opt/tritonserver/TRITON_VERSION", "triton")
+    xtr.get_from_cmd(
+        'python -c "import sys;print(sys.version_info[0]);"', "python_major"
+    )
 
-            for k in xtr.standard_snippets:
-                xtr.insert_snippet(k, sniptext[k])
-            xtr.insert_snippet("release", args.version)
+    # Some hacks for the base container image
+    if args.container == "merlin-training":
+        xtr.insert_snippet("base_container", "Not applicable")
+    elif args.container == "merlin-tensorflow-training":
+        tf2_img = xtr.contdata["nvidia_tensorflow"]
+        py_maj = xtr.contdata["python_major"]
+        xtr.insert_snippet(
+            "base_container",
+            "nvcr.io/nvidia/tensorflow:{}-py{}".format(tf2_img, py_maj),
+        )
+    elif args.container == "merlin-pytorch-training":
+        pt_img = xtr.contdata["nvidia_pytorch"]
+        py_maj = xtr.contdata["python_major"]
+        xtr.insert_snippet(
+            "base_container",
+            "nvcr.io/nvidia/pytorch:{}-py{}".format(pt_img, py_maj),
+        )
+    else:
+        trtoss = xtr.contdata["base_container"]
+        xtr.insert_snippet("base_container", "Triton version {}".format(trtoss))
 
-            xtr.get_from_image("Size", "size")
-            xtr.get_from_envfile("/etc/os-release", "PRETTY_NAME", "os")
-            xtr.get_from_env("CUDA_VERSION", "cuda")
-            xtr.get_from_pip("rmm")
-            xtr.get_from_pip("cudf")
-            xtr.get_from_env("CUDNN_VERSION", "cudnn")
-            xtr.get_from_pip("nvtabular")
-            xtr.get_from_pip("transformers4rec")
-            xtr.get_from_pip("merlin.core")
-            xtr.get_from_pip("merlin.systems")
-            xtr.get_from_pip("merlin.models")
-            xtr.get_from_pip("hugectr2onnx")
-            xtr.get_from_pip("hugectr")
-            xtr.get_from_pip("sparse_operation_kit")
-            xtr.get_from_pip("tensorflow", "tf")
-            xtr.get_from_pip("torch", "pytorch")
-            xtr.get_from_env("CUBLAS_VERSION", "cublas")
-            xtr.get_from_env("CUFFT_VERSION", "cufft")
-            xtr.get_from_env("CURAND_VERSION", "curand")
-            xtr.get_from_env("CUSOLVER_VERSION", "cusolver")
-            xtr.get_from_env("CUSPARSE_VERSION", "cusparse")
-            xtr.get_from_env("CUTENSOR_VERSION", "cutensor")
-            xtr.get_from_env("NVIDIA_TENSORFLOW_VERSION", "nvidia_tensorflow")
-            xtr.get_from_env("NVIDIA_PYTORCH_VERSION", "nvidia_pytorch")
-            xtr.get_from_env("OPENMPI_VERSION", "openmpi")
-            xtr.get_from_env("TRT_VERSION", "tensorrt")
-            xtr.get_from_env("TRTOSS_VERSION", "base_container")
-            # xtr.get_from_cmd("cuobjdump /usr/local/hugectr/lib/libhuge_ctr_shared.so
-            # | grep arch | sed -e \'s/.*sm_//\' | sed -e \'H;${x;s/\\n/, /g;s/^, //;p};d\'", "sm")
-            # flake8: noqa
-            xtr.get_from_cmd(
-                "if [ ! -f /usr/local/hugectr/lib/libhuge_ctr_shared.so ]; then exit 1; fi; cuobjdump /usr/local/hugectr/lib/libhuge_ctr_shared.so | grep arch | sed -e 's/.*sm_//'",
-                "sm",
-            )
-            xtr.get_from_cmd("cat /opt/tritonserver/TRITON_VERSION", "triton")
-            xtr.get_from_cmd(
-                'python -c "import sys;print(sys.version_info[0]);"', "python_major"
-            )
+    xtr.to_json_file()
 
-            # Some hacks for the base container image
-            if cont == "merlin-training":
-                xtr.insert_snippet("base_container", "Not applicable")
-            elif cont == "merlin-tensorflow-training":
-                tf2_img = xtr.contdata["nvidia_tensorflow"]
-                py_maj = xtr.contdata["python_major"]
-                xtr.insert_snippet(
-                    "base_container",
-                    "nvcr.io/nvidia/tensorflow:{}-py{}".format(tf2_img, py_maj),
-                )
-            elif cont == "merlin-pytorch-training":
-                pt_img = xtr.contdata["nvidia_pytorch"]
-                py_maj = xtr.contdata["python_major"]
-                xtr.insert_snippet(
-                    "base_container",
-                    "nvcr.io/nvidia/pytorch:{}-py{}".format(pt_img, py_maj),
-                )
-            else:
-                trtoss = xtr.contdata["base_container"]
-                xtr.insert_snippet("base_container", "Triton version {}".format(trtoss))
-
-            xtr.to_json_file()
-
-            logger.info(xtr.contdata)
+    logger.info(xtr.contdata)
 
     logger.info(xtr.data)
-
-    if (
-        jsonfile.stat().st_mtime != jsonfile_start_mtime
-        and os.environ.get("SKIP_PR", False) is False
-    ):
-        repo = os.environ.get("REPO", r"NVIDIA-Merlin/Merlin")
-        open_pr(repo, str(jsonfile), version)
 
 
 def parse_args():
@@ -466,6 +451,13 @@ def parse_args():
         type=bool,
         default=False,
         help="When True, specifies to get data for a container that is already in data.json",
+    )
+
+    parser.add_argument(
+        "--pr",
+        type=bool,
+        default=False,
+        help="When True, open a PR for the data.json file",
     )
 
     args = parser.parse_args()

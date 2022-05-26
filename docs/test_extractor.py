@@ -5,11 +5,7 @@ import shutil
 import tempfile
 from pathlib import Path
 
-from extractor import SupportMatrixExtractor, managed_container
-
-import docker
-
-IMG = "python:3.8-buster@sha256:ccc66c06817c2e5b7ecd40db1c4305dea3cd9e48ec29151a593e0dbd76af365e"
+from extractor import SupportMatrixExtractor
 
 DATAJSON = Path(__file__).parent / "fixtures" / "data.json"
 SAMPLEJSON = Path(__file__).parent / "fixtures" / "sample.json"
@@ -18,9 +14,8 @@ SAMPLEAFTERJSON = Path(__file__).parent / "fixtures" / "sample_after.json"
 
 def test_get_from_envfile():
     ETC_OS_RELEASE = "/etc/os-release"
-    with tempfile.TemporaryFile() as f, managed_container(IMG) as c:
+    with tempfile.TemporaryFile() as f:
         xtr = SupportMatrixExtractor("x", "22.02", f.name)
-        xtr.use_container(c)
         xtr.get_from_envfile(ETC_OS_RELEASE, "PRETTY_NAME")
         assert (
             xtr.data["x"]["22.02"].get("PRETTY_NAME") == "Debian GNU/Linux 10 (buster)"
@@ -34,9 +29,8 @@ def test_get_from_envfile():
 
 
 def test_get_from_pip():
-    with tempfile.TemporaryFile() as f, managed_container(IMG) as c:
+    with tempfile.TemporaryFile() as f:
         xtr = SupportMatrixExtractor("x", "22.02", f.name)
-        xtr.use_container(c)
         xtr.get_from_pip("pip")
         assert xtr.data["x"]["22.02"].get("pip") == "22.0.4"
 
@@ -44,10 +38,19 @@ def test_get_from_pip():
         assert xtr.data["x"]["22.02"].get("spam") == SupportMatrixExtractor.ERROR
 
 
-def test_get_from_env():
-    with tempfile.TemporaryFile() as f, managed_container(IMG) as c:
+def test_get_from_python():
+    with tempfile.TemporaryFile() as f:
         xtr = SupportMatrixExtractor("x", "22.02", f.name)
-        xtr.use_container(c)
+        xtr.get_from_python("json")
+        assert xtr.data["x"]["22.02"].get("json") == "2.0.9"
+
+        xtr.get_from_python("spam")
+        assert xtr.data["x"]["22.02"].get("spam") == SupportMatrixExtractor.ERROR
+
+
+def test_get_from_env():
+    with tempfile.TemporaryFile() as f:
+        xtr = SupportMatrixExtractor("x", "22.02", f.name)
         xtr.get_from_env("SHELL")
         assert xtr.data["x"]["22.02"].get("SHELL") != SupportMatrixExtractor.ERROR
 
@@ -64,21 +67,9 @@ def test_get_from_env():
         assert xtr.data["x"]["22.02"].get("bar") == SupportMatrixExtractor.ERROR
 
 
-def test_get_from_image():
-    with tempfile.TemporaryFile() as f, managed_container(IMG) as c:
-        xtr = SupportMatrixExtractor("x", "22.02", f.name)
-        xtr.use_container(c)
-        xtr.get_from_image("Size", "size")
-        assert xtr.data["x"]["22.02"].get("size") != SupportMatrixExtractor.ERROR
-
-        xtr.get_from_image("blah")
-        assert xtr.data["x"]["22.02"].get("blah") == SupportMatrixExtractor.ERROR
-
-
 def test_get_from_cmd():
-    with tempfile.TemporaryFile() as f, managed_container(IMG) as c:
+    with tempfile.TemporaryFile() as f:
         xtr = SupportMatrixExtractor("x", "22.02", f.name)
-        xtr.use_container(c)
         xtr.get_from_cmd("cat /proc/1/cmdline", "cmdline")
         assert xtr.data["x"]["22.02"].get("cmdline") != SupportMatrixExtractor.ERROR
 
@@ -87,27 +78,24 @@ def test_get_from_cmd():
 
 
 def test_insert_snippet():
-    with tempfile.TemporaryFile() as f, managed_container(IMG) as c:
+    with tempfile.TemporaryFile() as f:
         xtr = SupportMatrixExtractor("x", "22.02", f.name)
-        xtr.use_container(c)
         xtr.insert_snippet("release", "99.99")
         assert "99.99" in xtr.data["x"]["22.02"].get("release")
 
 
 def test_to_json():
-    with tempfile.NamedTemporaryFile() as f, managed_container(IMG) as c:
+    with tempfile.NamedTemporaryFile() as f:
         xtr = SupportMatrixExtractor("x", "22.02", f.name)
-        xtr.use_container(c)
         xtr.get_from_pip("pip")
         assert xtr.to_json() == r'{"x": {"22.02": {"pip": "22.0.4"}}}'
 
 
 def test_from_json():
-    with tempfile.NamedTemporaryFile() as f, managed_container(IMG) as c:
+    with tempfile.NamedTemporaryFile() as f:
         shutil.copyfile(DATAJSON, f.name)
         xtr = SupportMatrixExtractor("x", "22.02", f.name)
         xtr.from_json()
-        xtr.use_container(c)
         print(f"{xtr.data}")
         assert "first" in xtr.data.keys()
         assert "one" in xtr.data["first"]
@@ -118,11 +106,10 @@ def test_from_json():
         assert "x" in xtr.data.keys()
         assert "22.02" in xtr.data["x"]
 
-    with tempfile.NamedTemporaryFile() as f, managed_container(IMG) as c:
+    with tempfile.NamedTemporaryFile() as f:
         shutil.copyfile(DATAJSON, f.name)
         xtr = SupportMatrixExtractor("first", "one", f.name)
         xtr.from_json()
-        xtr.use_container(c)
         print(f"{xtr.data}")
         assert "first" in xtr.data.keys()
         assert "one" in xtr.data["first"]
@@ -132,11 +119,10 @@ def test_from_json():
 
 
 def test_to_json_file():
-    with tempfile.NamedTemporaryFile() as f, managed_container(IMG) as c:
+    with tempfile.NamedTemporaryFile() as f:
         shutil.copyfile(SAMPLEJSON, f.name)
         xtr = SupportMatrixExtractor("x", "22.02", f.name)
         xtr.from_json()
-        xtr.use_container(c)
         xtr.get_from_pip("pip")
         xtr.to_json_file()
         a, b = "", ""
@@ -145,11 +131,10 @@ def test_to_json_file():
             b = json.load(fb)
             assert a == b
 
-    with tempfile.NamedTemporaryFile() as f, managed_container(IMG) as c:
+    with tempfile.NamedTemporaryFile() as f:
         shutil.copyfile(SAMPLEJSON, f.name)
         xtr = SupportMatrixExtractor("x", "22.02", f.name, force=True)
         xtr.from_json()
-        xtr.use_container(c)
         xtr.get_from_pip("pip")
         xtr.to_json_file()
         a, b = "", ""
@@ -182,11 +167,10 @@ def test_already_present():
         xtr.from_json()
         assert xtr.already_present() is False
 
-    with tempfile.NamedTemporaryFile() as f, managed_container(IMG) as c:
+    with tempfile.NamedTemporaryFile() as f:
         shutil.copyfile(DATAJSON, f.name)
         xtr = SupportMatrixExtractor("x", "22.02", f.name)
         xtr.from_json()
-        xtr.use_container(c)
         assert "first" in xtr.data.keys()
         assert "one" in xtr.data["first"]
 
@@ -195,9 +179,3 @@ def test_already_present():
         assert "one" in xtr.data["first"].keys()
         assert "x" in xtr.data.keys()
         assert "22.02" in xtr.data["x"]
-
-
-def test_managed_container():
-    with managed_container("foo-bar:baz") as nf:
-        assert isinstance(nf, docker.errors.ImageNotFound)
-        assert nf.status_code == 404
