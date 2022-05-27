@@ -101,7 +101,7 @@ RUN if [ "$HUGECTR_DEV_MODE" == "false" ]; then \
         pushd /hugectr && \
           git checkout ${HUGECTR_VER} && \
           cd sparse_operation_kit && \
-          python setup.py install && \
+          pip install . --no-deps && \
         popd; \
     fi
 
@@ -112,8 +112,6 @@ RUN if [ "$INSTALL_DISTRIBUTED_EMBEDDINGS" == "true" ]; then \
         cd /distributed_embeddings && git checkout ${TFDE_VER} && \
         make pip_pkg && pip install artifacts/*.whl && make clean; \
     fi
-
-ENV PYTHONPATH=$PYTHONPATH:/usr/lib/python3.8/site-packages/merlin_sok-1.1.3-py3.8-linux-x86_64.egg
 
 
 # Clean up
