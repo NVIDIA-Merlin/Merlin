@@ -56,7 +56,7 @@ cd /models/ && ci/test_unit.sh $container $devices
 
 ## Test Systems
 echo "Run unit tests for Systems"
-cd /systems && pytest -rxs /tests/unit
+cd /systems && pytest -rxs tests/unit
 
 ## Test HugeCTR
 if [ "$container" == "merlin-training" ]; then
