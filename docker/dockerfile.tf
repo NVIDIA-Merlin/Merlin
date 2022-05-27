@@ -16,7 +16,7 @@ COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/tensorflow2 back
 
 # Tensorflow dependencies (only)
 RUN pip install tensorflow-gpu \
-    && rm -r /usr/local/lib/python3.8/dist-packages/tensorflow
+    && pip uninstall tensorflow-gpu keras -y
 
 # DLFW Tensorflow packages
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python3.8/dist-packages/tensorflow /usr/local/lib/python3.8/dist-packages/tensorflow/
