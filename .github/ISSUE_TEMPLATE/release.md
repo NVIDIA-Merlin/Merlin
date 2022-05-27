@@ -14,6 +14,10 @@ assignees: ''
 
 ## Merlin Base Container
 
+### Blocking Bugs
+
+- [ ] ...
+
 ### Unit Tests
 
 - [ ] Merlin Core
@@ -27,9 +31,18 @@ assignees: ''
 - [ ] Merlin Models
 - [ ] Merlin Systems
 - [ ] NVTabular
+
+## Security Scans
+
+- [ ] Pulse
+- [ ] NGC
 
 ## Merlin Tensorflow Container
 
+### Blocking Bugs
+
+- [ ] ...
+
 ### Unit Tests
 
 - [ ] Merlin Core
@@ -43,9 +56,18 @@ assignees: ''
 - [ ] Merlin Models
 - [ ] Merlin Systems
 - [ ] NVTabular
+
+## Security Scans
+
+- [ ] Pulse
+- [ ] NGC
 
 ## Merlin PyTorch Container
 
+### Blocking Bugs
+
+- [ ] ...
+
 ### Unit Tests
 
 - [ ] Merlin Core
@@ -59,9 +81,18 @@ assignees: ''
 - [ ] Merlin Models
 - [ ] Merlin Systems
 - [ ] NVTabular
+
+## Security Scans
+
+- [ ] Pulse
+- [ ] NGC
 
 ## Merlin HugeCTR Container
 
+### Blocking Bugs
+
+- [ ] ...
+
 ### Unit Tests
 
 - [ ] Merlin Core
@@ -75,4 +106,9 @@ assignees: ''
 - [ ] Merlin Models
 - [ ] Merlin Systems
 - [ ] NVTabular
+
+## Security Scans
+
+- [ ] Pulse
+- [ ] NGC
 
