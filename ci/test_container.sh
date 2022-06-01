@@ -13,7 +13,7 @@ echo "##################"
 regex="merlin(.)*-inference"
 if [[ ! "$container" =~ $regex ]]; then
     echo "Check tritonserver for inference containers"
-    whereis tritonserver
+    which tritonserver
 fi
 
 if [ "$container" == "merlin-training" ]; then
