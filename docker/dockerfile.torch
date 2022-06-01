@@ -1,11 +1,11 @@
 # syntax=docker/dockerfile:1.2
-ARG MERLIN_VERSION=22.05-pre
-ARG TRITON_VERSION=22.03
-ARG TORCH_VERSION=22.03
+ARG MERLIN_VERSION=22.06
+ARG TRITON_VERSION=22.05
+ARG TORCH_VERSION=22.05
 
 ARG DLFW_IMAGE=nvcr.io/nvidia/pytorch:${TORCH_VERSION}-py3
 ARG FULL_IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-py3
-ARG BASE_IMAGE=merlin/base:${MERLIN_VERSION}
+ARG BASE_IMAGE=nvcr.io/nvstaging/merlin/merlin-base:${MERLIN_VERSION}
 
 FROM ${DLFW_IMAGE} as dlfw
 FROM ${FULL_IMAGE} as triton
