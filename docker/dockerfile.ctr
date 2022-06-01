@@ -1,13 +1,14 @@
 # syntax=docker/dockerfile:1.2
 ARG MERLIN_VERSION=22.06
 ARG TRITON_VERSION=22.05
-ARG HUGECTR_VER=master
-ARG HUGECTR_BACKEND_VER=main
-ARG HWLOC_VER=2.4.1
+
 ARG BASE_IMAGE=nvcr.io/nvstaging/merlin/merlin-base:${MERLIN_VERSION}
 
-
 FROM ${BASE_IMAGE} as base
+
+ARG HUGECTR_VER=master
+ARG HUGECTR_BACKEND_VER=main
+
 # Envs
 ENV CUDA_SHORT_VERSION=11.6
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64:/usr/local/lib:/repos/dist/lib
@@ -18,6 +19,44 @@ ENV PATH=${CUDA_HOME}/lib64/:${PATH}:${CUDA_HOME}/bin
 ENV PATH=$PATH:/usr/lib/x86_64-linux-gnu/
 RUN ln -s /usr/local/cuda/lib64/stubs/libcuda.so /usr/local/cuda/lib64/stubs/libcuda.so.1
 
+RUN apt update -y --fix-missing && \
+    apt install -y --no-install-recommends \
+       graphviz \
+       libexpat1-dev \
+       openssl \
+       protobuf-compiler \
+        # [ HugeCTR dependencies ]
+        #   Required to build RocksDB.
+            libgflags-dev \
+            zlib1g-dev libbz2-dev libsnappy-dev liblz4-dev libzstd-dev \
+        #   Required to build RdKafka.
+            zlib1g-dev libzstd-dev \
+            libssl-dev libsasl2-dev \
+        #   Required to build Protocol Buffers.
+            autoconf automake libtool \
+        #   Required to build Hadoop.
+            default-jdk maven \
+            libpmem-dev \
+            libsasl2-dev libssl-dev \
+            libsnappy-dev libzstd-dev zlib1g-dev \
+        #   Required to run Hadoop.
+            openssh-server \
+        # [ HugeCTR ]
+            libaio-dev libtbb-dev \
+            clang-format \
+       software-properties-common  && \
+    apt remove --purge cmake -y && \
+    apt autoremove -y && \
+    apt clean && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN pip install nvidia-pyindex mpi4py onnx onnxruntime
+RUN pip install betterproto graphviz pybind11 pydot pytest transformers==4.12
+RUN pip install --upgrade notebook
+RUN pip install --upgrade ipython
+RUN pip install tritonclient[all] grpcio-channelz
+RUN pip install git+https://github.com/rapidsai/asvdb.git@main
+
 # Copy files into the container
 COPY *-hadoop.sh ./
 
@@ -26,6 +65,8 @@ RUN apt remove --purge cmake -y && wget http://www.cmake.org/files/v3.21/cmake-3
     tar xf cmake-3.21.1.tar.gz && cd cmake-3.21.1 && ./configure && make && make install
 
 # Install CUDA-Aware hwloc
+ARG HWLOC_VER=2.4.1
+
 RUN cd /opt/hpcx/ompi/include/openmpi/opal/mca/hwloc/hwloc201 && rm -rfv hwloc201.h hwloc/include/hwloc.h
 RUN mkdir -p /var/tmp && wget -q -nc --no-check-certificate -P /var/tmp https://download.open-mpi.org/release/hwloc/v2.4/hwloc-${HWLOC_VER}.tar.gz && \
     mkdir -p /var/tmp && tar -x -f /var/tmp/hwloc-${HWLOC_VER}.tar.gz -C /var/tmp && \
@@ -75,7 +116,7 @@ RUN git clone --branch v${ROCKSDB_VER} --depth 1 https://github.com/facebook/roc
     rm -rf rocksdb
 
 # Dependency: Build and install RdKafka.
-RUN git clone --branch v${RDKAFKA_VER} --depth 1 https://github.com/edenhill/librdkafka.git rdkafka && \
+RUN git clone --branch v"${RDKAFKA_VER}" --depth 1 https://github.com/edenhill/librdkafka.git rdkafka && \
     cd rdkafka && \
     ./configure --enable-static && \
     make -j$(nproc) && \
@@ -153,12 +194,31 @@ RUN ln -s /usr/lib/x86_64-linux-gnu/libibverbs.so.1 /usr/lib/x86_64-linux-gnu/li
 RUN rm -rf /usr/lib/x86_64-linux-gnu/libibverbs.so && \
     ln -s /usr/lib/x86_64-linux-gnu/libibverbs.so.1.14.36.0 /usr/lib/x86_64-linux-gnu/libibverbs.so
 
+
 # Install HugeCTR
 ARG HUGECTR_HOME=/usr/local/hugectr
 RUN if [[ "${HUGECTR_DEV_MODE}" == "false" ]]; then \
         git clone --branch ${HUGECTR_VER} --depth 1 https://${_CI_JOB_TOKEN}${_HUGECTR_REPO} /hugectr && \
         cd /hugectr && \
         git submodule update --init --recursive && \
+        mkdir build && \
+        cd build && \
+        if [[ -f "/usr/local/lib/libhdfs.so" ]]; then \
+            cmake -DCMAKE_BUILD_TYPE=Release -DSM="60;61;70;75;80" -DENABLE_INFERENCE=ON -DENABLE_HDFS=ON .. \
+        ; else \
+            cmake -DCMAKE_BUILD_TYPE=Release -DSM="60;61;70;75;80" -DENABLE_INFERENCE=ON .. \
+        ; fi && \
+        make -j$(nproc) && \
+        make install && \
+        rm -rf ./* && \
+        chmod +x ${HUGECTR_HOME}/bin/* ${HUGECTR_HOME}/lib/*.so \
+    ; fi
+
+
+RUN if [[ "${HUGECTR_DEV_MODE}" == "false" ]]; then \
+        cd /hugectr && \
+        git submodule update --init --recursive && \
+        rm -rf build && \
         mkdir build && \
         cd build && \
         LD_LIBRARY_PATH=/usr/local/cuda/lib64/stubs/:$LD_LIBRARY_PATH && \
@@ -176,11 +236,18 @@ RUN if [[ "${HUGECTR_DEV_MODE}" == "false" ]]; then \
         python setup.py install \
     ; fi
 
+
+
+
+
 ENV PATH=$PATH:${HUGECTR_HOME}/bin \
     CPATH=$CPATH:${HUGECTR_HOME}/include \
     LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${HUGECTR_HOME}/lib \
     PYTHONPATH=${PYTHONPATH}:${HUGECTR_HOME}/lib
 
+
+ARG _HUGECTR_BACKEND_REPO="github.com/triton-inference-server/hugectr_backend.git"
+ARG TRITON_VERSION
 # Install Triton inference backend.
 RUN if [ "${HUGECTR_DEV_MODE}" == "false" ]; then \
         git clone --branch ${HUGECTR_BACKEND_VER} --depth 1 https://${_CI_JOB_TOKEN}${_HUGECTR_BACKEND_REPO} /repos/hugectr_triton_backend && \
