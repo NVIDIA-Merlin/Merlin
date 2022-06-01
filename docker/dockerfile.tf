@@ -50,7 +50,7 @@ RUN if [ "$HUGECTR_DEV_MODE" == "false" ]; then \
         pushd build-env && \ 
           git checkout ${HUGECTR_VER} && \
           cd sparse_operation_kit && \
-          python setup.py install && \
+          python -m pip install . && \
         popd && \
         rm -rf build-env; \
     fi
