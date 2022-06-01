@@ -8,8 +8,6 @@ FROM ${BASE_IMAGE} as base
 
 ARG HUGECTR_VER=master
 ARG HUGECTR_BACKEND_VER=main
-ARG HWLOC_VER=2.4.1
-
 
 # Envs
 ENV CUDA_SHORT_VERSION=11.6
@@ -67,6 +65,8 @@ RUN apt remove --purge cmake -y && wget http://www.cmake.org/files/v3.21/cmake-3
     tar xf cmake-3.21.1.tar.gz && cd cmake-3.21.1 && ./configure && make && make install
 
 # Install CUDA-Aware hwloc
+ARG HWLOC_VER=2.4.1
+
 RUN cd /opt/hpcx/ompi/include/openmpi/opal/mca/hwloc/hwloc201 && rm -rfv hwloc201.h hwloc/include/hwloc.h
 RUN mkdir -p /var/tmp && wget -q -nc --no-check-certificate -P /var/tmp https://download.open-mpi.org/release/hwloc/v2.4/hwloc-${HWLOC_VER}.tar.gz && \
     mkdir -p /var/tmp && tar -x -f /var/tmp/hwloc-${HWLOC_VER}.tar.gz -C /var/tmp && \
@@ -194,11 +194,6 @@ RUN ln -s /usr/lib/x86_64-linux-gnu/libibverbs.so.1 /usr/lib/x86_64-linux-gnu/li
 RUN rm -rf /usr/lib/x86_64-linux-gnu/libibverbs.so && \
     ln -s /usr/lib/x86_64-linux-gnu/libibverbs.so.1.14.36.0 /usr/lib/x86_64-linux-gnu/libibverbs.so
 
-
-ARG HUGECTR_VER=v3.6
-ARG HUGECTR_BACKEND_VER=v3.6
-# Install HugeCTR
-ARG HUGECTR_HOME=/usr/local/hugectr
 
 # Install HugeCTR
 ARG HUGECTR_HOME=/usr/local/hugectr
