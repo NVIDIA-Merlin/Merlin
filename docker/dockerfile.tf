@@ -15,7 +15,7 @@ FROM ${BASE_IMAGE} as base
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/tensorflow2 backends/tensorflow2/
 
 # Tensorflow dependencies (only)
-RUN pip install tensorflow-gpu scikit-build\
+RUN pip install tensorflow-gpu \
     && pip uninstall tensorflow-gpu keras -y
 
 # DLFW Tensorflow packages
@@ -50,7 +50,7 @@ RUN if [ "$HUGECTR_DEV_MODE" == "false" ]; then \
         pushd build-env && \ 
           git checkout ${HUGECTR_VER} && \
           cd sparse_operation_kit && \
-          python -m pip install . && \
+          python setup.py install && \
         popd && \
         rm -rf build-env; \
     fi
