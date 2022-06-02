@@ -173,14 +173,14 @@ model = mm.DLRMModel(
     embedding_dim=64,
     bottom_block=mm.MLPBlock([128, 64]),
     top_block=mm.MLPBlock([128, 64, 32]),
-    prediction_tasks=mm.BinaryClassificationTask(target_column, metrics=[tf.keras.metrics.AUC()])
+    prediction_tasks=mm.BinaryClassificationTask(target_column)
 )
 
 
 # In[12]:
 
 
-model.compile(optimizer='adam', run_eagerly=False)
+model.compile(optimizer='adam', run_eagerly=False, metrics=[tf.keras.metrics.AUC()])
 model.fit(train, validation_data=valid, batch_size=16*1024)
 
 
@@ -249,17 +249,20 @@ schema = schema.select_by_tag([Tags.ITEM_ID, Tags.USER_ID, Tags.ITEM, Tags.USER]
 model = mm.TwoTowerModel(
     schema,
     query_tower=mm.MLPBlock([128, 64], no_activation_last_layer=True),        
-    loss="categorical_crossentropy",  
     samplers=[mm.InBatchSampler()],
     embedding_options = mm.EmbeddingOptions(infer_embedding_sizes=True),
-    metrics=[mm.RecallAt(10), mm.NDCGAt(10)]
 )
 
 
 # In[19]:
 
 
-model.compile(optimizer='adam', run_eagerly=False)
+model.compile(
+    optimizer='adam', 
+    run_eagerly=False, 
+    loss="categorical_crossentropy", 
+    metrics=[mm.RecallAt(10), mm.NDCGAt(10)]
+)
 model.fit(train_tt, validation_data=valid_tt, batch_size=1024*8, epochs=1)
 
 
