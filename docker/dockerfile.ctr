@@ -50,6 +50,9 @@ RUN apt update -y --fix-missing && \
     apt clean && \
     rm -rf /var/lib/apt/lists/*
 
+ENV JAVA_HOME=/usr/lib/jvm/default-java
+ENV LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${JAVA_HOME}/lib:${JAVA_HOME}/lib/server
+
 RUN pip install nvidia-pyindex mpi4py onnx onnxruntime
 RUN pip install betterproto graphviz pybind11 pydot pytest transformers==4.12
 RUN pip install --upgrade notebook
