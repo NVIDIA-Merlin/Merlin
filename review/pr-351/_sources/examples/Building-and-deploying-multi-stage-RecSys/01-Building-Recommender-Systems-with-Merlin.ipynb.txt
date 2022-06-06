@@ -97,7 +97,7 @@
     "- [Feast](https://docs.feast.dev/): an end-to-end open source feature store library for machine learning\n",
     "- [Faiss](https://github.com/facebookresearch/faiss): a library for efficient similarity search and clustering of dense vectors\n",
     "\n",
-    "You can find more information about `Feast feature store` and `Faiss` libraries in the next notebook. Please follow the instructions in the README.md file to install these libraries."
+    "You can find more information about `Feast feature store` and `Faiss` libraries in the next notebook."
    ]
   },
   {
@@ -120,12 +120,17 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 2,
+   "execution_count": null,
    "id": "2cd8cc8d-5cc7-4a9f-91e5-3deec6f1fe74",
    "metadata": {},
    "outputs": [],
    "source": [
-    "%pip install tensorflow \"feast<0.20\" faiss-gpu"
+    "# for running this example on GPU, install the following libraries\n",
+    "%pip install tensorflow \"feast<0.20\" faiss-gpu\n",
+    "\n",
+    "# for running this example on CPU, uncomment the following lines\n",
+    "# %pip install tensorflow-cpu \"feast<0.20\" faiss-cpu\n",
+    "# %pip uninstall cudf"
    ]
   },
   {
@@ -149,7 +154,6 @@
    ],
    "source": [
     "import os\n",
-    "os.environ[\"TF_GPU_ALLOCATOR\"]=\"cuda_malloc_async\"\n",
     "import glob\n",
     "import gc\n",
     "\n",
@@ -162,7 +166,10 @@
     "\n",
     "import merlin.models.tf as mm\n",
     "from merlin.io.dataset import Dataset\n",
-    "import tensorflow as tf"
+    "import tensorflow as tf\n",
+    "\n",
+    "# for running this example on CPU, comment out the line below\n",
+    "os.environ[\"TF_GPU_ALLOCATOR\"]=\"cuda_malloc_async\" "
    ]
   },
   {
@@ -391,7 +398,7 @@
     "    embedding_dim=64,\n",
     "    bottom_block=mm.MLPBlock([128, 64]),\n",
     "    top_block=mm.MLPBlock([128, 64, 32]),\n",
-    "    prediction_tasks=mm.BinaryClassificationTask(target_column, metrics=[tf.keras.metrics.AUC()])\n",
+    "    prediction_tasks=mm.BinaryClassificationTask(target_column)\n",
     ")"
    ]
   },
@@ -434,7 +441,7 @@
     }
    ],
    "source": [
-    "model.compile(optimizer='adam', run_eagerly=False)\n",
+    "model.compile(optimizer='adam', run_eagerly=False, metrics=[tf.keras.metrics.AUC()])\n",
     "model.fit(train, validation_data=valid, batch_size=16*1024)"
    ]
   },
@@ -566,10 +573,8 @@
     "model = mm.TwoTowerModel(\n",
     "    schema,\n",
     "    query_tower=mm.MLPBlock([128, 64], no_activation_last_layer=True),        \n",
-    "    loss=\"categorical_crossentropy\",  \n",
     "    samplers=[mm.InBatchSampler()],\n",
     "    embedding_options = mm.EmbeddingOptions(infer_embedding_sizes=True),\n",
-    "    metrics=[mm.RecallAt(10), mm.NDCGAt(10)]\n",
     ")"
    ]
   },
@@ -612,7 +617,12 @@
     }
    ],
    "source": [
-    "model.compile(optimizer='adam', run_eagerly=False)\n",
+    "model.compile(\n",
+    "    optimizer='adam', \n",
+    "    run_eagerly=False, \n",
+    "    loss=\"categorical_crossentropy\", \n",
+    "    metrics=[mm.RecallAt(10), mm.NDCGAt(10)]\n",
+    ")\n",
     "model.fit(train_tt, validation_data=valid_tt, batch_size=1024*8, epochs=1)"
    ]
   },
