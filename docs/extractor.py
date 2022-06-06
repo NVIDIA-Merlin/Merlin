@@ -54,6 +54,7 @@ import yaml
 from github import Github
 from github.GithubException import GithubException
 from github.GitRef import GitRef
+from semver import VersionInfo
 
 level = logging.DEBUG if os.environ.get("DEBUG") else logging.INFO
 logging.basicConfig(level=level)
@@ -230,6 +231,10 @@ class SupportMatrixExtractor:
                 result,
             )
             return
+        for line in result.split("\n"):
+            if VersionInfo.isvalid(line):
+                result = line
+                break
         self.contdata[key] = result.strip()
 
     def get_from_cmd(self, cmd: str, key: str):
