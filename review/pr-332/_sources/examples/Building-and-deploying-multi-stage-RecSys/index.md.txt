@@ -26,7 +26,7 @@ To run the example notebooks using Docker containers, do the following:
    ```
    docker run -it --gpus all -p 8000:8000 -p 8001:8001 -p 8002:8002 -p 8888:8888 -v <path to your data>:/workspace/data/ --ipc=host <docker container> /bin/bash
    ```
-The container will open a shell when the run command execution is completed. You can remove the `--gpus` flag to run the example on CPU.
+The container will open a shell when the run command execution is completed. You can remove the `--gpus all` flag to run the example on CPU.
 
 1. You will have to start JupyterLab on the Docker container. First, install jupyter-lab with the following command if it is missing:
    ```
