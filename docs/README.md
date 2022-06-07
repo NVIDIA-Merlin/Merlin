@@ -46,14 +46,29 @@ Check that yours edits formatted correctly and read well.
 
 ## Tests
 
-```shell
-python -m pytest docs
-```
-...or...
+1. Start Python in a container:
 
-```shell
-coverage run -m pytest -v docs && coverage report -m
-```
+  ```shell
+  docker run --rm -it -v $(pwd):/workspace --network=host \
+    python:3.8-buster@sha256:ccc66c06817c2e5b7ecd40db1c4305dea3cd9e48ec29151a593e0dbd76af365e bash
+  ```
+
+1. Install dependencies in the container:
+
+  ```shell
+  python -m pip install pip==22.0.4 setuptools==59.4.0 wheel
+  python -m pip install -r docs/requirements-doc.txt
+  ```
+
+  > Pip is frozen at 22.0.4 because that version is specified
+  > in `test_extractor.py`.  Update the test if you update
+  > the version here and in `requirements-doc.txt`.
+
+1. Run the tests:
+
+  ```shell
+  coverage run -m pytest -v docs && coverage report -m
+  ```
 
 ## Handy notes
 
