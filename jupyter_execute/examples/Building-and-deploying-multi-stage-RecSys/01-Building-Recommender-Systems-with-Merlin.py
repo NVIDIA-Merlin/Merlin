@@ -53,7 +53,7 @@
 # - [Feast](https://docs.feast.dev/): an end-to-end open source feature store library for machine learning
 # - [Faiss](https://github.com/facebookresearch/faiss): a library for efficient similarity search and clustering of dense vectors
 # 
-# You can find more information about `Feast feature store` and `Faiss` libraries in the next notebook. Please follow the instructions in the README.md file to install these libraries.
+# You can find more information about `Feast feature store` and `Faiss` libraries in the next notebook.
 
 # ### Import required libraries and functions
 
@@ -61,17 +61,21 @@
 # 
 # These notebooks are developed and tested using our latest inference container on [NVIDIA's docker registry](https://catalog.ngc.nvidia.com/containers?filters=&orderBy=dateModifiedDESC&query=merlin).
 
-# In[2]:
+# In[ ]:
 
 
+# for running this example on GPU, install the following libraries
 get_ipython().run_line_magic('pip', 'install tensorflow "feast<0.20" faiss-gpu')
+
+# for running this example on CPU, uncomment the following lines
+# %pip install tensorflow-cpu "feast<0.20" faiss-cpu
+# %pip uninstall cudf
 
 
 # In[3]:
 
 
 import os
-os.environ["TF_GPU_ALLOCATOR"]="cuda_malloc_async"
 import glob
 import gc
 
@@ -85,6 +89,9 @@ from merlin.schema.tags import Tags
 import merlin.models.tf as mm
 from merlin.io.dataset import Dataset
 import tensorflow as tf
+
+# for running this example on CPU, comment out the line below
+os.environ["TF_GPU_ALLOCATOR"]="cuda_malloc_async" 
 
 
 # In[4]:

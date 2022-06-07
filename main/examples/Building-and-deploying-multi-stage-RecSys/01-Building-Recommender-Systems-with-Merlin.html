@@ -137,7 +137,7 @@
 <li><p><a class="reference external" href="https://docs.feast.dev/">Feast</a>: an end-to-end open source feature store library for machine learning</p></li>
 <li><p><a class="reference external" href="https://github.com/facebookresearch/faiss">Faiss</a>: a library for efficient similarity search and clustering of dense vectors</p></li>
 </ul>
-<p>You can find more information about <code class="docutils literal notranslate"><span class="pre">Feast</span> <span class="pre">feature</span> <span class="pre">store</span></code> and <code class="docutils literal notranslate"><span class="pre">Faiss</span></code> libraries in the next notebook. Please follow the instructions in the <a class="reference external" href="http://README.md">README.md</a> file to install these libraries.</p>
+<p>You can find more information about <code class="docutils literal notranslate"><span class="pre">Feast</span> <span class="pre">feature</span> <span class="pre">store</span></code> and <code class="docutils literal notranslate"><span class="pre">Faiss</span></code> libraries in the next notebook.</p>
 </div>
 <div class="section" id="import-required-libraries-and-functions">
 <h2>Import required libraries and functions<a class="headerlink" href="#import-required-libraries-and-functions" title="Permalink to this headline"></a></h2>
@@ -145,7 +145,12 @@
 <p>These notebooks are developed and tested using our latest inference container on <a class="reference external" href="https://catalog.ngc.nvidia.com/containers?filters=&amp;orderBy=dateModifiedDESC&amp;query=merlin">NVIDIA’s docker registry</a>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">pip</span> install tensorflow &quot;feast&lt;0.20&quot; faiss-gpu
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># for running this example on GPU, install the following libraries</span>
+<span class="o">%</span><span class="k">pip</span> install tensorflow &quot;feast&lt;0.20&quot; faiss-gpu
+
+<span class="c1"># for running this example on CPU, uncomment the following lines</span>
+<span class="c1"># %pip install tensorflow-cpu &quot;feast&lt;0.20&quot; faiss-cpu</span>
+<span class="c1"># %pip uninstall cudf</span>
 </pre></div>
 </div>
 </div>
@@ -153,7 +158,6 @@
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
-<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;TF_GPU_ALLOCATOR&quot;</span><span class="p">]</span><span class="o">=</span><span class="s2">&quot;cuda_malloc_async&quot;</span>
 <span class="kn">import</span> <span class="nn">glob</span>
 <span class="kn">import</span> <span class="nn">gc</span>
 
@@ -167,6 +171,9 @@
 <span class="kn">import</span> <span class="nn">merlin.models.tf</span> <span class="k">as</span> <span class="nn">mm</span>
 <span class="kn">from</span> <span class="nn">merlin.io.dataset</span> <span class="kn">import</span> <span class="n">Dataset</span>
 <span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
+
+<span class="c1"># for running this example on CPU, comment out the line below</span>
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;TF_GPU_ALLOCATOR&quot;</span><span class="p">]</span><span class="o">=</span><span class="s2">&quot;cuda_malloc_async&quot;</span> 
 </pre></div>
 </div>
 </div>

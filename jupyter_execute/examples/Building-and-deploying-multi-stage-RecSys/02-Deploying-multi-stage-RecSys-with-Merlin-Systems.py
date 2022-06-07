@@ -36,9 +36,15 @@
 
 # ### Import required libraries and functions
 
-# At this step, we assume you already installed the tensorflow-gpu, feast and faiss-gpu libraries when running the first notebook `01-Building-Recommender-Systems-with-Merlin.ipynb`. In case you need to install them, execute the following script in a cell.
+# At this step, we assume you already installed the tensorflow-gpu (or -cpu), feast and faiss-gpu (or -cpu) libraries when running the first notebook `01-Building-Recommender-Systems-with-Merlin.ipynb`. 
+# 
+# In case you need to install them for running this example on GPU, execute the following script in a cell.
 # ```
 # %pip install tensorflow "feast<0.20" faiss-gpu
+# ```
+# or the following script in a cell for CPU.
+# ```
+# %pip install tensorflow-cpu "feast<0.20" faiss-cpu
 # ```
 
 # In[ ]:
