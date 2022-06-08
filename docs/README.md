@@ -84,7 +84,7 @@ jq 'walk(if type == "object" then del(.cuparse) else . end)' < data.json > x
 ### View a container for a release
 
 ```shell
-jq '.["nvcr.io/nvidia/merlin/merlin-inference"]["22.03"]' < ../docs/source/data.json
+jq '.["nvcr.io/nvidia/merlin/merlin-hugectr"]["22.03"]' < ../docs/source/data.json
 ```
 
 ### List the containers and releases
