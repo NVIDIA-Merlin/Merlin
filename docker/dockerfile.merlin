@@ -286,6 +286,7 @@ ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/tritonserver/lib
 
 # Install Triton Backends
 WORKDIR /opt/tritonserver/
+COPY --chown=1000:1000 --from=build /opt/tritonserver/backends/nvtabular backends/nvtabular/
 
 # Python Packages
 COPY --chown=1000:1000 --from=build /usr/local/lib/python3.8/dist-packages /usr/local/lib/python3.8/dist-packages/
