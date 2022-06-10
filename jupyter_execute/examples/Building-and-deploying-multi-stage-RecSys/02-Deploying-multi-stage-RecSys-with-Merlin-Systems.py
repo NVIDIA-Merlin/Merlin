@@ -24,8 +24,6 @@
 # 
 # ## Deploying a Multi-Stage RecSys into Production with Merlin Systems and Triton Inference Server
 # 
-# This notebook is created using the latest stable [merlin-tensorflow-inference](https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-tensorflow-inference/tags) container. 
-# 
 # At this point, when you reach out to this notebook, we expect that you have already executed the first notebook `01-Building-Recommender-Systems-with-Merlin.ipynb` and exported all the required files and models. 
 # 
 # We are going to generate recommended items for a given user query (user_id) by following the steps described in the figure below.
@@ -36,15 +34,9 @@
 
 # ### Import required libraries and functions
 
-# At this step, we assume you already installed the tensorflow-gpu (or -cpu), feast and faiss-gpu (or -cpu) libraries when running the first notebook `01-Building-Recommender-Systems-with-Merlin.ipynb`. 
-# 
-# In case you need to install them for running this example on GPU, execute the following script in a cell.
+# At this step, we assume you already installed the tensorflow-gpu, feast and faiss-gpu libraries when running the first notebook `01-Building-Recommender-Systems-with-Merlin.ipynb`. In case you need to install them, execute the following script in a cell.
 # ```
 # %pip install tensorflow "feast<0.20" faiss-gpu
-# ```
-# or the following script in a cell for CPU.
-# ```
-# %pip install tensorflow-cpu "feast<0.20" faiss-cpu
 # ```
 
 # In[ ]:

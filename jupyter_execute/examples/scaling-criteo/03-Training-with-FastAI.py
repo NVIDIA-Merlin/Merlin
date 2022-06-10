@@ -24,8 +24,6 @@
 # 
 # # Scaling Criteo: Training with FastAI
 # 
-# This notebook is created using the latest stable [merlin-pytorch-training](https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-pytorch-training/tags) container. 
-# 
 # ## Overview
 # 
 # We observed that training pipelines can be slow as the dataloader is a bottleneck. NVTabular provides a highly optimized dataloader to accelerate training pipelines. We can use the PyTorch dataloader for FastAI models.

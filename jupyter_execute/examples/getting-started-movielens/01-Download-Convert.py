@@ -24,8 +24,6 @@
 # 
 # # Getting Started MovieLens: Download and Convert
 # 
-# This notebook is created using the latest stable [merlin-training](https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-training/tags), [merlin-tensorflow-training](https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-tensorflow-training/tags) or [merlin-pytorch-training](https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-pytorch-training/tags) container.
-# 
 # ## MovieLens25M
 # 
 # The [MovieLens25M](https://grouplens.org/datasets/movielens/25m/) is a popular dataset for recommender systems and is used in academic publications. The dataset contains 25M movie ratings for 62,000 movies given by 162,000 users. Many projects use only the user/item/rating information of MovieLens, but the original dataset provides metadata for the movies, as well. For example, which genres a movie has. Although we may not improve state-of-the-art results with our neural network architecture in this example, we will use the metadata to show how to multi-hot encode the categorical features.

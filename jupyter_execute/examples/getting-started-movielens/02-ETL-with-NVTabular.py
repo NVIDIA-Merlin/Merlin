@@ -24,8 +24,6 @@
 # 
 # # Getting Started MovieLens: ETL with NVTabular
 # 
-# This notebook is created using the latest stable [merlin-training](https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-training/tags), [merlin-tensorflow-training](https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-tensorflow-training/tags) or [merlin-pytorch-training](https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-pytorch-training/tags) container. 
-# 
 # ## Overview
 # 
 # NVTabular is a feature engineering and preprocessing library for tabular data designed to quickly and easily manipulate terabyte scale datasets used to train deep learning based recommender systems.  It provides a high level abstraction to simplify code and accelerates computation on the GPU using the RAPIDS cuDF library.<br><br>

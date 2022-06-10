@@ -24,8 +24,6 @@
 # 
 # ## Building Intelligent Recommender Systems with Merlin
 # 
-# This notebook is created using the latest stable [merlin-tensorflow-inference](https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-tensorflow-inference/tags) container. 
-# 
 # ### Overview
 
 # Recommender Systems (RecSys) are the engine of the modern internet and the catalyst for human decisions. Building a recommendation system is challenging because it requires multiple stages (data preprocessing, offline training, item retrieval, filtering, ranking, ordering, etc.) to work together seamlessly and efficiently. The biggest challenges for new practitioners are the lack of understanding around what RecSys look like in the real world, and the gap between examples of simple models and a production-ready end-to-end recommender systems.
@@ -53,7 +51,7 @@
 # - [Feast](https://docs.feast.dev/): an end-to-end open source feature store library for machine learning
 # - [Faiss](https://github.com/facebookresearch/faiss): a library for efficient similarity search and clustering of dense vectors
 # 
-# You can find more information about `Feast feature store` and `Faiss` libraries in the next notebook.
+# You can find more information about `Feast feature store` and `Faiss` libraries in the next notebook. Please follow the instructions in the README.md file to install these libraries.
 
 # ### Import required libraries and functions
 
@@ -61,21 +59,17 @@
 # 
 # These notebooks are developed and tested using our latest inference container on [NVIDIA's docker registry](https://catalog.ngc.nvidia.com/containers?filters=&orderBy=dateModifiedDESC&query=merlin).
 
-# In[ ]:
+# In[2]:
 
 
-# for running this example on GPU, install the following libraries
 get_ipython().run_line_magic('pip', 'install tensorflow "feast<0.20" faiss-gpu')
-
-# for running this example on CPU, uncomment the following lines
-# %pip install tensorflow-cpu "feast<0.20" faiss-cpu
-# %pip uninstall cudf
 
 
 # In[3]:
 
 
 import os
+os.environ["TF_GPU_ALLOCATOR"]="cuda_malloc_async"
 import glob
 import gc
 
@@ -89,9 +83,6 @@ from merlin.schema.tags import Tags
 import merlin.models.tf as mm
 from merlin.io.dataset import Dataset
 import tensorflow as tf
-
-# for running this example on CPU, comment out the line below
-os.environ["TF_GPU_ALLOCATOR"]="cuda_malloc_async" 
 
 
 # In[4]:
@@ -180,14 +171,14 @@ model = mm.DLRMModel(
     embedding_dim=64,
     bottom_block=mm.MLPBlock([128, 64]),
     top_block=mm.MLPBlock([128, 64, 32]),
-    prediction_tasks=mm.BinaryClassificationTask(target_column)
+    prediction_tasks=mm.BinaryClassificationTask(target_column, metrics=[tf.keras.metrics.AUC()])
 )
 
 
 # In[12]:
 
 
-model.compile(optimizer='adam', run_eagerly=False, metrics=[tf.keras.metrics.AUC()])
+model.compile(optimizer='adam', run_eagerly=False)
 model.fit(train, validation_data=valid, batch_size=16*1024)
 
 
@@ -256,20 +247,17 @@ schema = schema.select_by_tag([Tags.ITEM_ID, Tags.USER_ID, Tags.ITEM, Tags.USER]
 model = mm.TwoTowerModel(
     schema,
     query_tower=mm.MLPBlock([128, 64], no_activation_last_layer=True),        
+    loss="categorical_crossentropy",  
     samplers=[mm.InBatchSampler()],
     embedding_options = mm.EmbeddingOptions(infer_embedding_sizes=True),
+    metrics=[mm.RecallAt(10), mm.NDCGAt(10)]
 )
 
 
 # In[19]:
 
 
-model.compile(
-    optimizer='adam', 
-    run_eagerly=False, 
-    loss="categorical_crossentropy", 
-    metrics=[mm.RecallAt(10), mm.NDCGAt(10)]
-)
+model.compile(optimizer='adam', run_eagerly=False)
 model.fit(train_tt, validation_data=valid_tt, batch_size=1024*8, epochs=1)
 
 
