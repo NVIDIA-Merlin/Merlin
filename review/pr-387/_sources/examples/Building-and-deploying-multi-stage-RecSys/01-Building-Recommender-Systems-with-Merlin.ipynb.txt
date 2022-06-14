@@ -120,13 +120,24 @@
   },
   {
    "cell_type": "code",
-   "execution_count": null,
+   "execution_count": 1,
    "id": "2cd8cc8d-5cc7-4a9f-91e5-3deec6f1fe74",
    "metadata": {},
-   "outputs": [],
+   "outputs": [
+    {
+     "data": {
+      "application/javascript": "\n            setTimeout(function() {\n                var nbb_cell_id = 1;\n                var nbb_unformatted_code = \"%load_ext nb_black\\n# for running this example on GPU, install the following libraries\\n# %pip install tensorflow \\\"feast<0.20\\\" faiss-gpu\\n\\n# for running this example on CPU, uncomment the following lines\\n# %pip install tensorflow-cpu \\\"feast<0.20\\\" faiss-cpu\\n# %pip uninstall cudf\";\n                var nbb_formatted_code = \"%load_ext nb_black\\n# for running this example on GPU, install the following libraries\\n# %pip install tensorflow \\\"feast<0.20\\\" faiss-gpu\\n\\n# for running this example on CPU, uncomment the following lines\\n# %pip install tensorflow-cpu \\\"feast<0.20\\\" faiss-cpu\\n# %pip uninstall cudf\";\n                var nbb_cells = Jupyter.notebook.get_cells();\n                for (var i = 0; i < nbb_cells.length; ++i) {\n                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {\n                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {\n                             nbb_cells[i].set_text(nbb_formatted_code);\n                        }\n                        break;\n                    }\n                }\n            }, 500);\n            ",
+      "text/plain": [
+       "<IPython.core.display.Javascript object>"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    }
+   ],
    "source": [
     "# for running this example on GPU, install the following libraries\n",
-    "%pip install tensorflow \"feast<0.20\" faiss-gpu\n",
+    "# %pip install tensorflow \"feast<0.20\" faiss-gpu\n",
     "\n",
     "# for running this example on CPU, uncomment the following lines\n",
     "# %pip install tensorflow-cpu \"feast<0.20\" faiss-cpu\n",
@@ -151,13 +162,16 @@
    ],
    "source": [
     "import os\n",
-    "import glob\n",
-    "import gc\n",
     "\n",
-    "import nvtabular as nvt\n",
-    "from nvtabular.ops import *\n",
-    "\n",
-    "from merlin.models.utils.example_utils import workflow_fit_transform\n",
+    "from nvtabular.ops import (\n",
+    "    Categorify,\n",
+    "    TagAsUserID,\n",
+    "    TagAsItemID,\n",
+    "    TagAsItemFeatures,\n",
+    "    TagAsUserFeatures,\n",
+    "    AddMetadata,\n",
+    "    Filter,\n",
+    ")\n",
     "\n",
     "from merlin.schema.tags import Tags\n",
     "\n",
@@ -166,7 +180,7 @@
     "import tensorflow as tf\n",
     "\n",
     "# for running this example on CPU, comment out the line below\n",
-    "os.environ[\"TF_GPU_ALLOCATOR\"]=\"cuda_malloc_async\" "
+    "os.environ[\"TF_GPU_ALLOCATOR\"] = \"cuda_malloc_async\""
    ]
   },
   {
@@ -178,6 +192,7 @@
    "source": [
     "# disable INFO and DEBUG logging everywhere\n",
     "import logging\n",
+    "\n",
     "logging.disable(logging.WARNING)"
    ]
   },
@@ -199,7 +214,7 @@
    "outputs": [],
    "source": [
     "DATA_FOLDER = os.environ.get(\"DATA_FOLDER\", \"/workspace/data/\")\n",
-    "output_path = os.path.join(DATA_FOLDER, 'processed/ranking')"
+    "output_path = os.path.join(DATA_FOLDER, \"processed/ranking\")"
    ]
   },
   {
@@ -265,19 +280,32 @@
    "source": [
     "%%time\n",
     "\n",
-    "user_id = [\"user_id\"] >> Categorify(dtype='int32') >> TagAsUserID()\n",
-    "item_id = [\"item_id\"] >> Categorify(dtype='int32') >> TagAsItemID()\n",
+    "user_id = [\"user_id\"] >> Categorify(dtype=\"int32\") >> TagAsUserID()\n",
+    "item_id = [\"item_id\"] >> Categorify(dtype=\"int32\") >> TagAsItemID()\n",
     "\n",
-    "item_features = [\"item_category\", \"item_shop\", \"item_brand\"] >> Categorify(dtype='int32') >> TagAsItemFeatures() \n",
+    "item_features = (\n",
+    "    [\"item_category\", \"item_shop\", \"item_brand\"] >> Categorify(dtype=\"int32\") >> TagAsItemFeatures()\n",
+    ")\n",
     "\n",
-    "user_features = ['user_shops', 'user_profile', 'user_group', \n",
-    "       'user_gender', 'user_age', 'user_consumption_2', 'user_is_occupied',\n",
-    "       'user_geography', 'user_intentions', 'user_brands', 'user_categories'] \\\n",
-    "    >> Categorify(dtype='int32') >> TagAsUserFeatures() \n",
+    "user_features = (\n",
+    "    [\n",
+    "        \"user_shops\",\n",
+    "        \"user_profile\",\n",
+    "        \"user_group\",\n",
+    "        \"user_gender\",\n",
+    "        \"user_age\",\n",
+    "        \"user_consumption_2\",\n",
+    "        \"user_is_occupied\",\n",
+    "        \"user_geography\",\n",
+    "        \"user_intentions\",\n",
+    "        \"user_brands\",\n",
+    "        \"user_categories\",\n",
+    "    ] >> Categorify(dtype=\"int32\") >> TagAsUserFeatures()\n",
+    ")\n",
     "\n",
     "targets = [\"click\"] >> AddMetadata(tags=[Tags.BINARY_CLASSIFICATION, \"target\"])\n",
     "\n",
-    "outputs = user_id+item_id+item_features+user_features+targets"
+    "outputs = user_id + item_id + item_features + user_features + targets"
    ]
   },
   {
@@ -306,7 +334,9 @@
    "source": [
     "from merlin.datasets.ecommerce import transform_aliccp\n",
     "\n",
-    "transform_aliccp((train, valid), output_path, nvt_workflow=outputs, workflow_name='workflow_ranking')"
+    "transform_aliccp(\n",
+    "    (train, valid), output_path, nvt_workflow=outputs, workflow_name=\"workflow_ranking\"\n",
+    ")"
    ]
   },
   {
@@ -337,8 +367,8 @@
    "outputs": [],
    "source": [
     "# define train and valid dataset objects\n",
-    "train = Dataset(os.path.join(output_path, 'train', '*.parquet'), part_size=\"500MB\")\n",
-    "valid = Dataset(os.path.join(output_path, 'valid', '*.parquet'), part_size=\"500MB\")\n",
+    "train = Dataset(os.path.join(output_path, \"train\", \"*.parquet\"), part_size=\"500MB\")\n",
+    "valid = Dataset(os.path.join(output_path, \"valid\", \"*.parquet\"), part_size=\"500MB\")\n",
     "\n",
     "# define schema object\n",
     "schema = train.schema"
@@ -386,7 +416,7 @@
     "    embedding_dim=64,\n",
     "    bottom_block=mm.MLPBlock([128, 64]),\n",
     "    top_block=mm.MLPBlock([128, 64, 32]),\n",
-    "    prediction_tasks=mm.BinaryClassificationTask(target_column)\n",
+    "    prediction_tasks=mm.BinaryClassificationTask(target_column),\n",
     ")"
    ]
   },
@@ -415,8 +445,8 @@
     }
    ],
    "source": [
-    "model.compile(optimizer='adam', run_eagerly=False, metrics=[tf.keras.metrics.AUC()])\n",
-    "model.fit(train, validation_data=valid, batch_size=4096)"
+    "model.compile(optimizer=\"adam\", run_eagerly=False, metrics=[tf.keras.metrics.AUC()])\n",
+    "model.fit(train, validation_data=valid, batch_size=16 * 1024)"
    ]
   },
   {
@@ -435,7 +465,9 @@
    "outputs": [],
    "source": [
     "# set up the base dir to for feature store\n",
-    "BASE_DIR = os.environ.get(\"BASE_DIR\", \"/Merlin/examples/Building-and-deploying-multi-stage-RecSys/\")"
+    "BASE_DIR = os.environ.get(\n",
+    "    \"BASE_DIR\", \"/Merlin/examples/Building-and-deploying-multi-stage-RecSys/\"\n",
+    ")"
    ]
   },
   {
@@ -453,7 +485,7 @@
    "metadata": {},
    "outputs": [],
    "source": [
-    "model.save(os.path.join(BASE_DIR, 'dlrm'))"
+    "model.save(os.path.join(BASE_DIR, \"dlrm\"))"
    ]
   },
   {
@@ -479,7 +511,7 @@
    "metadata": {},
    "outputs": [],
    "source": [
-    "output_path = os.path.join(DATA_FOLDER, 'processed/retrieval')"
+    "output_path = os.path.join(DATA_FOLDER, \"processed/retrieval\")"
    ]
   },
   {
@@ -506,21 +538,39 @@
     }
    ],
    "source": [
-    "user_id = [\"user_id\"] >> Categorify(dtype='int32') >> TagAsUserID()\n",
-    "item_id = [\"item_id\"] >> Categorify(dtype='int32') >> TagAsItemID()\n",
+    "user_id = [\"user_id\"] >> Categorify(dtype=\"int32\") >> TagAsUserID()\n",
+    "item_id = [\"item_id\"] >> Categorify(dtype=\"int32\") >> TagAsItemID()\n",
     "\n",
-    "item_features = [\"item_category\", \"item_shop\", \"item_brand\"] >> Categorify(dtype='int32') >> TagAsItemFeatures()\n",
+    "item_features = (\n",
+    "    [\"item_category\", \"item_shop\", \"item_brand\"] >> Categorify(dtype=\"int32\") >> TagAsItemFeatures()\n",
+    ")\n",
     "\n",
-    "user_features = ['user_shops', 'user_profile', 'user_group', \n",
-    "       'user_gender', 'user_age', 'user_consumption_2', 'user_is_occupied',\n",
-    "       'user_geography', 'user_intentions', 'user_brands', 'user_categories'] \\\n",
-    "        >> Categorify(dtype='int32') >> TagAsUserFeatures() \n",
+    "user_features = (\n",
+    "    [\n",
+    "        \"user_shops\",\n",
+    "        \"user_profile\",\n",
+    "        \"user_group\",\n",
+    "        \"user_gender\",\n",
+    "        \"user_age\",\n",
+    "        \"user_consumption_2\",\n",
+    "        \"user_is_occupied\",\n",
+    "        \"user_geography\",\n",
+    "        \"user_intentions\",\n",
+    "        \"user_brands\",\n",
+    "        \"user_categories\",\n",
+    "    ] >> Categorify(dtype=\"int32\") >> TagAsUserFeatures()\n",
+    ")\n",
     "\n",
-    "inputs = user_id + item_id + item_features + user_features + ['click'] \n",
+    "inputs = user_id + item_id + item_features + user_features + [\"click\"]\n",
     "\n",
     "outputs = inputs >> Filter(f=lambda df: df[\"click\"] == 1)\n",
     "\n",
-    "transform_aliccp((train, valid), output_path, nvt_workflow=outputs, workflow_name='workflow_retrieval')"
+    "transform_aliccp(\n",
+    "    (train, valid),\n",
+    "    output_path,\n",
+    "    nvt_workflow=outputs,\n",
+    "    workflow_name=\"workflow_retrieval\",\n",
+    ")"
    ]
   },
   {
@@ -530,8 +580,8 @@
    "metadata": {},
    "outputs": [],
    "source": [
-    "train_tt = Dataset(os.path.join(output_path, 'train', '*.parquet'))\n",
-    "valid_tt = Dataset(os.path.join(output_path, 'valid', '*.parquet'))\n",
+    "train_tt = Dataset(os.path.join(output_path, \"train\", \"*.parquet\"))\n",
+    "valid_tt = Dataset(os.path.join(output_path, \"valid\", \"*.parquet\"))\n",
     "\n",
     "schema = train_tt.schema\n",
     "schema = schema.select_by_tag([Tags.ITEM_ID, Tags.USER_ID, Tags.ITEM, Tags.USER])"
@@ -546,9 +596,9 @@
    "source": [
     "model = mm.TwoTowerModel(\n",
     "    schema,\n",
-    "    query_tower=mm.MLPBlock([128, 64], no_activation_last_layer=True),        \n",
+    "    query_tower=mm.MLPBlock([128, 64], no_activation_last_layer=True),\n",
     "    samplers=[mm.InBatchSampler()],\n",
-    "    embedding_options = mm.EmbeddingOptions(infer_embedding_sizes=True),\n",
+    "    embedding_options=mm.EmbeddingOptions(infer_embedding_sizes=True),\n",
     ")"
    ]
   },
@@ -578,12 +628,12 @@
    ],
    "source": [
     "model.compile(\n",
-    "    optimizer='adam', \n",
-    "    run_eagerly=False, \n",
-    "    loss=\"categorical_crossentropy\", \n",
-    "    metrics=[mm.RecallAt(10), mm.NDCGAt(10)]\n",
+    "    optimizer=\"adam\",\n",
+    "    run_eagerly=False,\n",
+    "    loss=\"categorical_crossentropy\",\n",
+    "    metrics=[mm.RecallAt(10), mm.NDCGAt(10)],\n",
     ")\n",
-    "model.fit(train_tt, validation_data=valid_tt, batch_size=4096, epochs=1)"
+    "model.fit(train_tt, validation_data=valid_tt, batch_size=1024 * 8, epochs=1)"
    ]
   },
   {
@@ -645,8 +695,11 @@
    "metadata": {},
    "outputs": [],
    "source": [
-    "os.remove(os.path.join(BASE_DIR, 'feature_repo', 'example.py'))\n",
-    "os.remove(os.path.join(BASE_DIR, 'feature_repo/data', 'driver_stats.parquet'))"
+    "feature_repo_path = os.path.join(BASE_DIR, \"feature_repo\")\n",
+    "if os.path.exists(f\"{feature_repo_path}/example.py\"):\n",
+    "    os.remove(f\"{feature_repo_path}/example.py\")\n",
+    "if os.path.exists(f\"{feature_repo_path}/data/driver_stats.parquet\"):\n",
+    "    os.remove(f\"{feature_repo_path}/data/driver_stats.parquet\")"
    ]
   },
   {
@@ -665,7 +718,7 @@
    "outputs": [],
    "source": [
     "query_tower = model.retrieval_block.query_block()\n",
-    "query_tower.save(os.path.join(BASE_DIR, 'query_tower'))"
+    "query_tower.save(os.path.join(BASE_DIR, \"query_tower\"))"
    ]
   },
   {
@@ -684,7 +737,12 @@
    "outputs": [],
    "source": [
     "from merlin.models.utils.dataset import unique_rows_by_features\n",
-    "user_features = unique_rows_by_features(train, Tags.USER, Tags.USER_ID).compute().reset_index(drop=True)"
+    "\n",
+    "user_features = (\n",
+    "    unique_rows_by_features(train, Tags.USER, Tags.USER_ID)\n",
+    "    .compute()\n",
+    "    .reset_index(drop=True)\n",
+    ")"
    ]
   },
   {
@@ -856,6 +914,7 @@
    "outputs": [],
    "source": [
     "from datetime import datetime\n",
+    "\n",
     "user_features[\"datetime\"] = datetime.now()\n",
     "user_features[\"datetime\"] = user_features[\"datetime\"].astype(\"datetime64[ns]\")\n",
     "user_features[\"created\"] = datetime.now()\n",
@@ -1041,7 +1100,9 @@
    "metadata": {},
    "outputs": [],
    "source": [
-    "user_features.to_parquet(os.path.join(BASE_DIR, 'feature_repo/data', 'user_features.parquet'))"
+    "user_features.to_parquet(\n",
+    "    os.path.join(BASE_DIR, \"feature_repo/data\", \"user_features.parquet\")\n",
+    ")"
    ]
   },
   {
@@ -1051,7 +1112,11 @@
    "metadata": {},
    "outputs": [],
    "source": [
-    "item_features = unique_rows_by_features(train, Tags.ITEM, Tags.ITEM_ID).compute().reset_index(drop=True)"
+    "item_features = (\n",
+    "    unique_rows_by_features(train, Tags.ITEM, Tags.ITEM_ID)\n",
+    "    .compute()\n",
+    "    .reset_index(drop=True)\n",
+    ")"
    ]
   },
   {
@@ -1206,7 +1271,9 @@
    "outputs": [],
    "source": [
     "# save to disk\n",
-    "item_features.to_parquet(os.path.join(BASE_DIR, 'feature_repo/data', 'item_features.parquet'))"
+    "item_features.to_parquet(\n",
+    "    os.path.join(BASE_DIR, \"feature_repo/data\", \"item_features.parquet\")\n",
+    ")"
    ]
   },
   {
@@ -1224,7 +1291,9 @@
    "metadata": {},
    "outputs": [],
    "source": [
-    "item_embs = model.item_embeddings(Dataset(item_features, schema=schema), batch_size=1024)\n",
+    "item_embs = model.item_embeddings(\n",
+    "    Dataset(item_features, schema=schema), batch_size=1024\n",
+    ")\n",
     "item_embs_df = item_embs.compute(scheduler=\"synchronous\")"
    ]
   },
@@ -1235,8 +1304,10 @@
    "metadata": {},
    "outputs": [],
    "source": [
-    "# select only item_id together with embedding columns \n",
-    "item_embeddings = item_embs_df.drop(columns=['item_category', 'item_shop', 'item_brand'])"
+    "# select only item_id together with embedding columns\n",
+    "item_embeddings = item_embs_df.drop(\n",
+    "    columns=[\"item_category\", \"item_shop\", \"item_brand\"]\n",
+    ")"
    ]
   },
   {
@@ -1457,7 +1528,7 @@
    "outputs": [],
    "source": [
     "# save to disk\n",
-    "item_embeddings.to_parquet(os.path.join(BASE_DIR,'item_embeddings.parquet'))"
+    "item_embeddings.to_parquet(os.path.join(BASE_DIR, \"item_embeddings.parquet\"))"
    ]
   },
   {
@@ -1483,11 +1554,11 @@
    "metadata": {},
    "outputs": [],
    "source": [
-    "file = open(os.path.join(BASE_DIR, 'feature_repo/','user_features.py'), \"w\")\n",
+    "file = open(os.path.join(BASE_DIR, \"feature_repo/\", \"user_features.py\"), \"w\")\n",
     "file.write(\n",
-    "'''\n",
+    "    \"\"\"\n",
     "from google.protobuf.duration_pb2 import Duration\n",
-    "import datetime \n",
+    "import datetime\n",
     "from feast import Entity, Feature, FeatureView, ValueType\n",
     "from feast.infra.offline_stores.file_source import FileSource\n",
     "\n",
@@ -1520,7 +1591,9 @@
     "    input=user_features,\n",
     "    tags=dict(),\n",
     ")\n",
-    "'''.format(os.path.join(BASE_DIR, 'feature_repo/data/','user_features.parquet'))\n",
+    "\"\"\".format(\n",
+    "        os.path.join(BASE_DIR, \"feature_repo/data/\", \"user_features.parquet\")\n",
+    "    )\n",
     ")\n",
     "file.close()"
    ]
@@ -1532,11 +1605,11 @@
    "metadata": {},
    "outputs": [],
    "source": [
-    "with open(os.path.join(BASE_DIR, 'feature_repo/','item_features.py'), \"w\") as f:\n",
+    "with open(os.path.join(BASE_DIR, \"feature_repo/\", \"item_features.py\"), \"w\") as f:\n",
     "    f.write(\n",
-    "'''\n",
+    "        \"\"\"\n",
     "from google.protobuf.duration_pb2 import Duration\n",
-    "import datetime \n",
+    "import datetime\n",
     "from feast import Entity, Feature, FeatureView, ValueType\n",
     "from feast.infra.offline_stores.file_source import FileSource\n",
     "\n",
@@ -1561,9 +1634,11 @@
     "    input=item_features,\n",
     "    tags=dict(),\n",
     ")\n",
-    "'''.format(os.path.join(BASE_DIR, 'feature_repo/data/','item_features.parquet'))\n",
+    "\"\"\".format(\n",
+    "            os.path.join(BASE_DIR, \"feature_repo/data/\", \"item_features.parquet\")\n",
+    "        )\n",
     "    )\n",
-    "file.close() "
+    "file.close()"
    ]
   },
   {
@@ -1608,8 +1683,16 @@
    ],
    "source": [
     "import seedir as sd\n",
-    "feature_repo_path = os.path.join(BASE_DIR, 'feature_repo')\n",
-    "sd.seedir(feature_repo_path, style='lines', itemlimit=10, depthlimit=3, exclude_folders='.ipynb_checkpoints', sort=True)"
+    "\n",
+    "feature_repo_path = os.path.join(BASE_DIR, \"feature_repo\")\n",
+    "sd.seedir(\n",
+    "    feature_repo_path,\n",
+    "    style=\"lines\",\n",
+    "    itemlimit=10,\n",
+    "    depthlimit=3,\n",
+    "    exclude_folders=\".ipynb_checkpoints\",\n",
+    "    sort=True,\n",
+    ")"
    ]
   },
   {
@@ -1625,8 +1708,11 @@
   }
  ],
  "metadata": {
+  "interpreter": {
+   "hash": "2758ff992bb32b90e83258e2e763c5fcee80c4002721441c6c0d17c649a641dd"
+  },
   "kernelspec": {
-   "display_name": "Python 3 (ipykernel)",
+   "display_name": "Python 3.9.5 ('base')",
    "language": "python",
    "name": "python3"
   },
@@ -1640,7 +1726,7 @@
    "name": "python",
    "nbconvert_exporter": "python",
    "pygments_lexer": "ipython3",
-   "version": "3.8.10"
+   "version": "3.9.5"
   },
   "merlin": {
    "containers": [
