@@ -144,6 +144,40 @@
 </pre></div>
 </div>
 </div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/usr/local/lib/python3.8/dist-packages/faiss/loader.py:28: DeprecationWarning: distutils Version classes are deprecated. Use packaging.version instead.
+  if LooseVersion(numpy.__version__) &gt;= &quot;1.19&quot;:
+/usr/local/lib/python3.8/dist-packages/setuptools/_distutils/version.py:351: DeprecationWarning: distutils Version classes are deprecated. Use packaging.version instead.
+  other = LooseVersion(other)
+06/13/2022 03:47:43 PM INFO:Loading faiss with AVX2 support.
+06/13/2022 03:47:43 PM INFO:Could not load library with AVX2 support due to:
+ModuleNotFoundError(&quot;No module named &#39;faiss.swigfaiss_avx2&#39;&quot;)
+06/13/2022 03:47:43 PM INFO:Loading faiss.
+06/13/2022 03:47:43 PM INFO:Successfully loaded faiss.
+06/13/2022 03:47:43 PM INFO:init
+/usr/lib/python3.8/site-packages/cudf/utils/metadata/orc_column_statistics_pb2.py:19: DeprecationWarning: Call to deprecated create function FileDescriptor(). Note: Create unlinked descriptors is going to go away. Please use get/find descriptors from generated code or query the descriptor_pool.
+  DESCRIPTOR = _descriptor.FileDescriptor(
+/usr/lib/python3.8/site-packages/cudf/utils/metadata/orc_column_statistics_pb2.py:37: DeprecationWarning: Call to deprecated create function FieldDescriptor(). Note: Create unlinked descriptors is going to go away. Please use get/find descriptors from generated code or query the descriptor_pool.
+  _descriptor.FieldDescriptor(
+/usr/lib/python3.8/site-packages/cudf/utils/metadata/orc_column_statistics_pb2.py:30: DeprecationWarning: Call to deprecated create function Descriptor(). Note: Create unlinked descriptors is going to go away. Please use get/find descriptors from generated code or query the descriptor_pool.
+  _INTEGERSTATISTICS = _descriptor.Descriptor(
+/usr/lib/python3.8/site-packages/dask_cudf/core.py:32: DeprecationWarning: distutils Version classes are deprecated. Use packaging.version instead.
+  DASK_VERSION = LooseVersion(dask.__version__)
+/usr/local/lib/python3.8/dist-packages/tritonclient/grpc/model_config_pb2.py:19: DeprecationWarning: Call to deprecated create function FileDescriptor(). Note: Create unlinked descriptors is going to go away. Please use get/find descriptors from generated code or query the descriptor_pool.
+  DESCRIPTOR = _descriptor.FileDescriptor(
+/usr/local/lib/python3.8/dist-packages/tritonclient/grpc/model_config_pb2.py:33: DeprecationWarning: Call to deprecated create function EnumValueDescriptor(). Note: Create unlinked descriptors is going to go away. Please use get/find descriptors from generated code or query the descriptor_pool.
+  _descriptor.EnumValueDescriptor(
+/usr/local/lib/python3.8/dist-packages/tritonclient/grpc/model_config_pb2.py:27: DeprecationWarning: Call to deprecated create function EnumDescriptor(). Note: Create unlinked descriptors is going to go away. Please use get/find descriptors from generated code or query the descriptor_pool.
+  _DATATYPE = _descriptor.EnumDescriptor(
+/usr/local/lib/python3.8/dist-packages/tritonclient/grpc/model_config_pb2.py:330: DeprecationWarning: Call to deprecated create function FieldDescriptor(). Note: Create unlinked descriptors is going to go away. Please use get/find descriptors from generated code or query the descriptor_pool.
+  _descriptor.FieldDescriptor(
+/usr/local/lib/python3.8/dist-packages/tritonclient/grpc/model_config_pb2.py:323: DeprecationWarning: Call to deprecated create function Descriptor(). Note: Create unlinked descriptors is going to go away. Please use get/find descriptors from generated code or query the descriptor_pool.
+  _MODELRATELIMITER_RESOURCE = _descriptor.Descriptor(
+/usr/local/lib/python3.8/dist-packages/flatbuffers/compat.py:19: DeprecationWarning: the imp module is deprecated in favour of importlib; see the module&#39;s documentation for alternative uses
+  import imp
+</pre></div>
+</div>
+</div>
 </div>
 </div>
 <div class="section" id="register-our-features-on-feature-store">
@@ -171,13 +205,13 @@
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/Merlin/examples/Building-and-deploying-multi-stage-RecSys/feature_repo
 /usr/local/lib/python3.8/dist-packages/feast/feature_view.py:100: DeprecationWarning: The argument &#39;input&#39; is being deprecated. Please use &#39;batch_source&#39; instead. Feast 0.13 and onwards will not support the argument &#39;input&#39;.
   warnings.warn(
-Created entity <span class=" -Color -Color-Bold -Color-Bold-Green">item_id</span>
 Created entity <span class=" -Color -Color-Bold -Color-Bold-Green">user_id</span>
-Created feature view <span class=" -Color -Color-Bold -Color-Bold-Green">item_features</span>
+Created entity <span class=" -Color -Color-Bold -Color-Bold-Green">item_id</span>
 Created feature view <span class=" -Color -Color-Bold -Color-Bold-Green">user_features</span>
+Created feature view <span class=" -Color -Color-Bold -Color-Bold-Green">item_features</span>
 
-Created sqlite table <span class=" -Color -Color-Bold -Color-Bold-Green">feature_repo_item_features</span>
 Created sqlite table <span class=" -Color -Color-Bold -Color-Bold-Green">feature_repo_user_features</span>
+Created sqlite table <span class=" -Color -Color-Bold -Color-Bold-Green">feature_repo_item_features</span>
 </pre></div>
 </div>
 </div>
@@ -197,10 +231,10 @@ Created sqlite table <span class=" -Color -Color-Bold -Color-Bold-Green">feature
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Materializing <span class=" -Color -Color-Bold -Color-Bold-Green">2</span> feature views from <span class=" -Color -Color-Bold -Color-Bold-Green">1995-01-01 01:01:01+00:00</span> to <span class=" -Color -Color-Bold -Color-Bold-Green">2025-01-01 01:01:01+00:00</span> into the <span class=" -Color -Color-Bold -Color-Bold-Green">sqlite</span> online store.
 
-<span class=" -Color -Color-Bold -Color-Bold-Green">item_features</span>:
-100%|███████████████████████████████████████████████████████████| 448/448 [00:00&lt;00:00, 4689.41it/s]
 <span class=" -Color -Color-Bold -Color-Bold-Green">user_features</span>:
-100%|███████████████████████████████████████████████████████████| 458/458 [00:00&lt;00:00, 1477.71it/s]
+100%|████████████████████████████████████████████████████████████| 452/452 [00:00&lt;00:00, 593.93it/s]
+<span class=" -Color -Color-Bold -Color-Bold-Green">item_features</span>:
+100%|███████████████████████████████████████████████████████████| 441/441 [00:00&lt;00:00, 1204.47it/s]
 </pre></div>
 </div>
 </div>
@@ -277,7 +311,7 @@ Created sqlite table <span class=" -Color -Color-Bold -Color-Bold-Green">feature
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>WARNING clustering 448 points to 32 centroids: please provide at least 1248 training points
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>WARNING clustering 441 points to 32 centroids: please provide at least 1248 training points
 </pre></div>
 </div>
 </div>
@@ -305,7 +339,7 @@ Created sqlite table <span class=" -Color -Color-Bold -Color-Bold-Green">feature
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/systems/merlin/systems/dag/ops/feast.py:15: DeprecationWarning: `np.float` is a deprecated alias for the builtin `float`. To silence this warning, use `float` by itself. Doing this will not modify any behavior and is safe. If you specifically wanted the numpy scalar type, use `np.float64` here.
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/usr/local/lib/python3.8/dist-packages/merlin/systems/dag/ops/feast.py:15: DeprecationWarning: `np.float` is a deprecated alias for the builtin `float`. To silence this warning, use `float` by itself. Doing this will not modify any behavior and is safe. If you specifically wanted the numpy scalar type, use `np.float64` here.
 Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
   ValueType.FLOAT: (np.float, False, False),
 </pre></div>
@@ -340,11 +374,10 @@ Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdo
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2022-05-05 14:38:32.696154: I tensorflow/core/platform/cpu_feature_guard.cc:151] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  AVX2 AVX512F FMA
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2022-06-13 15:48:00.638777: I tensorflow/core/platform/cpu_feature_guard.cc:193] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  AVX2 FMA
 To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
-2022-05-05 14:38:34.750160: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1525] Created device /job:localhost/replica:0/task:0/device:GPU:0 with 30667 MB memory:  -&gt; device: 0, name: Quadro GV100, pci bus id: 0000:15:00.0, compute capability: 7.0
-2022-05-05 14:38:34.750858: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1525] Created device /job:localhost/replica:0/task:0/device:GPU:1 with 30315 MB memory:  -&gt; device: 1, name: Quadro GV100, pci bus id: 0000:2d:00.0, compute capability: 7.0
-05/05/2022 02:38:36 PM WARNING:No training configuration found in save file, so the model was *not* compiled. Compile it manually.
+2022-06-13 15:48:03.008635: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1532] Created device /job:localhost/replica:0/task:0/device:GPU:0 with 16255 MB memory:  -&gt; device: 0, name: Tesla V100-SXM2-32GB-LS, pci bus id: 0000:06:00.0, compute capability: 7.0
+06/13/2022 03:48:05 PM WARNING:No training configuration found in save file, so the model was *not* compiled. Compile it manually.
 </pre></div>
 </div>
 </div>
@@ -401,7 +434,7 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">top_k</span><span class="o">=</span><span class="mi">10</span>
 <span class="n">ordering</span> <span class="o">=</span> <span class="n">combined_features</span><span class="p">[</span><span class="s2">&quot;item_id&quot;</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">SoftmaxSampling</span><span class="p">(</span>
-    <span class="n">relevance_col</span><span class="o">=</span><span class="n">ranking</span><span class="p">[</span><span class="s2">&quot;output_1&quot;</span><span class="p">],</span> <span class="n">topk</span><span class="o">=</span><span class="n">top_k</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="mf">20.0</span>
+    <span class="n">relevance_col</span><span class="o">=</span><span class="n">ranking</span><span class="p">[</span><span class="s2">&quot;click/binary_classification_task&quot;</span><span class="p">],</span> <span class="n">topk</span><span class="o">=</span><span class="n">top_k</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="mf">20.0</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -524,16 +557,16 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>{&#39;ordered_ids&#39;: array([[309],
-        [169],
-        [ 82],
-        [343],
-        [193],
-        [205],
-        [334],
-        [437],
-        [157],
-        [ 98]], dtype=int32)}
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>{&#39;ordered_ids&#39;: array([[248],
+        [195],
+        [230],
+        [ 60],
+        [382],
+        [199],
+        [222],
+        [433],
+        [ 71],
+        [151]], dtype=int32)}
 </pre></div>
 </div>
 </div>

@@ -146,7 +146,7 @@
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># for running this example on GPU, install the following libraries</span>
-<span class="o">%</span><span class="k">pip</span> install tensorflow &quot;feast&lt;0.20&quot; faiss-gpu
+<span class="c1"># %pip install tensorflow &quot;feast&lt;0.20&quot; faiss-gpu</span>
 
 <span class="c1"># for running this example on CPU, uncomment the following lines</span>
 <span class="c1"># %pip install tensorflow-cpu &quot;feast&lt;0.20&quot; faiss-cpu</span>
@@ -154,17 +154,37 @@
 </pre></div>
 </div>
 </div>
+<div class="cell_output docutils container">
+<script type="application/javascript">
+            setTimeout(function() {
+                var nbb_cell_id = 1;
+                var nbb_unformatted_code = "%load_ext nb_black\n# for running this example on GPU, install the following libraries\n# %pip install tensorflow \"feast<0.20\" faiss-gpu\n\n# for running this example on CPU, uncomment the following lines\n# %pip install tensorflow-cpu \"feast<0.20\" faiss-cpu\n# %pip uninstall cudf";
+                var nbb_formatted_code = "%load_ext nb_black\n# for running this example on GPU, install the following libraries\n# %pip install tensorflow \"feast<0.20\" faiss-gpu\n\n# for running this example on CPU, uncomment the following lines\n# %pip install tensorflow-cpu \"feast<0.20\" faiss-cpu\n# %pip uninstall cudf";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            </script></div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">glob</span>
-<span class="kn">import</span> <span class="nn">gc</span>
 
-<span class="kn">import</span> <span class="nn">nvtabular</span> <span class="k">as</span> <span class="nn">nvt</span>
-<span class="kn">from</span> <span class="nn">nvtabular.ops</span> <span class="kn">import</span> <span class="o">*</span>
-
-<span class="kn">from</span> <span class="nn">merlin.models.utils.example_utils</span> <span class="kn">import</span> <span class="n">workflow_fit_transform</span>
+<span class="kn">from</span> <span class="nn">nvtabular.ops</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Categorify</span><span class="p">,</span>
+    <span class="n">TagAsUserID</span><span class="p">,</span>
+    <span class="n">TagAsItemID</span><span class="p">,</span>
+    <span class="n">TagAsItemFeatures</span><span class="p">,</span>
+    <span class="n">TagAsUserFeatures</span><span class="p">,</span>
+    <span class="n">AddMetadata</span><span class="p">,</span>
+    <span class="n">Filter</span><span class="p">,</span>
+<span class="p">)</span>
 
 <span class="kn">from</span> <span class="nn">merlin.schema.tags</span> <span class="kn">import</span> <span class="n">Tags</span>
 
@@ -173,17 +193,14 @@
 <span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
 
 <span class="c1"># for running this example on CPU, comment out the line below</span>
-<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;TF_GPU_ALLOCATOR&quot;</span><span class="p">]</span><span class="o">=</span><span class="s2">&quot;cuda_malloc_async&quot;</span> 
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;TF_GPU_ALLOCATOR&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;cuda_malloc_async&quot;</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2022-05-05 14:34:58.341639: I tensorflow/core/platform/cpu_feature_guard.cc:151] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  AVX2 AVX512F FMA
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2022-06-13 15:45:04.158619: I tensorflow/core/platform/cpu_feature_guard.cc:193] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  AVX2 FMA
 To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
-2022-05-05 14:35:00.407290: I tensorflow/core/common_runtime/gpu/gpu_process_state.cc:214] Using CUDA malloc Async allocator for GPU: 0
-2022-05-05 14:35:00.407448: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1525] Created device /job:localhost/replica:0/task:0/device:GPU:0 with 30667 MB memory:  -&gt; device: 0, name: Quadro GV100, pci bus id: 0000:15:00.0, compute capability: 7.0
-2022-05-05 14:35:00.408163: I tensorflow/core/common_runtime/gpu/gpu_process_state.cc:214] Using CUDA malloc Async allocator for GPU: 1
-2022-05-05 14:35:00.408224: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1525] Created device /job:localhost/replica:0/task:0/device:GPU:1 with 30315 MB memory:  -&gt; device: 1, name: Quadro GV100, pci bus id: 0000:2d:00.0, compute capability: 7.0
+2022-06-13 15:45:06.652810: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1532] Created device /job:localhost/replica:0/task:0/device:GPU:0 with 16255 MB memory:  -&gt; device: 0, name: Tesla V100-SXM2-32GB-LS, pci bus id: 0000:06:00.0, compute capability: 7.0
 </pre></div>
 </div>
 </div>
@@ -192,6 +209,7 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># disable INFO and DEBUG logging everywhere</span>
 <span class="kn">import</span> <span class="nn">logging</span>
+
 <span class="n">logging</span><span class="o">.</span><span class="n">disable</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">WARNING</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -202,7 +220,7 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">DATA_FOLDER</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;DATA_FOLDER&quot;</span><span class="p">,</span> <span class="s2">&quot;/workspace/data/&quot;</span><span class="p">)</span>
-<span class="n">output_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">DATA_FOLDER</span><span class="p">,</span> <span class="s1">&#39;processed/ranking&#39;</span><span class="p">)</span>
+<span class="n">output_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">DATA_FOLDER</span><span class="p">,</span> <span class="s2">&quot;processed/ranking&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -217,12 +235,6 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 </pre></div>
 </div>
 </div>
-<div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/core/merlin/io/dataset.py:251: UserWarning: Initializing an NVTabular Dataset in CPU mode.This is an experimental feature with extremely limited support!
-  warnings.warn(
-</pre></div>
-</div>
-</div>
 </div>
 <p>If you would like to use the real ALI-CCP dataset, you can use <a class="reference external" href="https://github.com/NVIDIA-Merlin/models/blob/main/merlin/datasets/ecommerce/aliccp/dataset.py">get_aliccp()</a> function instead. This function takes the raw csv files, and generate parquet files that can be directly fed to NVTabular workflow above.</p>
 </div>
@@ -233,25 +245,38 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%time</span>
 
-<span class="n">user_id</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;user_id&quot;</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">Categorify</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;int32&#39;</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="n">TagAsUserID</span><span class="p">()</span>
-<span class="n">item_id</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;item_id&quot;</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">Categorify</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;int32&#39;</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="n">TagAsItemID</span><span class="p">()</span>
+<span class="n">user_id</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;user_id&quot;</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">Categorify</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;int32&quot;</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="n">TagAsUserID</span><span class="p">()</span>
+<span class="n">item_id</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;item_id&quot;</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">Categorify</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;int32&quot;</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="n">TagAsItemID</span><span class="p">()</span>
 
-<span class="n">item_features</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;item_category&quot;</span><span class="p">,</span> <span class="s2">&quot;item_shop&quot;</span><span class="p">,</span> <span class="s2">&quot;item_brand&quot;</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">Categorify</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;int32&#39;</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="n">TagAsItemFeatures</span><span class="p">()</span> 
+<span class="n">item_features</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="p">[</span><span class="s2">&quot;item_category&quot;</span><span class="p">,</span> <span class="s2">&quot;item_shop&quot;</span><span class="p">,</span> <span class="s2">&quot;item_brand&quot;</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">Categorify</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;int32&quot;</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="n">TagAsItemFeatures</span><span class="p">()</span>
+<span class="p">)</span>
 
-<span class="n">user_features</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;user_shops&#39;</span><span class="p">,</span> <span class="s1">&#39;user_profile&#39;</span><span class="p">,</span> <span class="s1">&#39;user_group&#39;</span><span class="p">,</span> 
-       <span class="s1">&#39;user_gender&#39;</span><span class="p">,</span> <span class="s1">&#39;user_age&#39;</span><span class="p">,</span> <span class="s1">&#39;user_consumption_2&#39;</span><span class="p">,</span> <span class="s1">&#39;user_is_occupied&#39;</span><span class="p">,</span>
-       <span class="s1">&#39;user_geography&#39;</span><span class="p">,</span> <span class="s1">&#39;user_intentions&#39;</span><span class="p">,</span> <span class="s1">&#39;user_brands&#39;</span><span class="p">,</span> <span class="s1">&#39;user_categories&#39;</span><span class="p">]</span> \
-    <span class="o">&gt;&gt;</span> <span class="n">Categorify</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;int32&#39;</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="n">TagAsUserFeatures</span><span class="p">()</span> 
+<span class="n">user_features</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="p">[</span>
+        <span class="s2">&quot;user_shops&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;user_profile&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;user_group&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;user_gender&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;user_age&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;user_consumption_2&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;user_is_occupied&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;user_geography&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;user_intentions&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;user_brands&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;user_categories&quot;</span><span class="p">,</span>
+    <span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">Categorify</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;int32&quot;</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="n">TagAsUserFeatures</span><span class="p">()</span>
+<span class="p">)</span>
 
 <span class="n">targets</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;click&quot;</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">AddMetadata</span><span class="p">(</span><span class="n">tags</span><span class="o">=</span><span class="p">[</span><span class="n">Tags</span><span class="o">.</span><span class="n">BINARY_CLASSIFICATION</span><span class="p">,</span> <span class="s2">&quot;target&quot;</span><span class="p">])</span>
 
-<span class="n">outputs</span> <span class="o">=</span> <span class="n">user_id</span><span class="o">+</span><span class="n">item_id</span><span class="o">+</span><span class="n">item_features</span><span class="o">+</span><span class="n">user_features</span><span class="o">+</span><span class="n">targets</span>
+<span class="n">outputs</span> <span class="o">=</span> <span class="n">user_id</span> <span class="o">+</span> <span class="n">item_id</span> <span class="o">+</span> <span class="n">item_features</span> <span class="o">+</span> <span class="n">user_features</span> <span class="o">+</span> <span class="n">targets</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>CPU times: user 151 µs, sys: 45 µs, total: 196 µs
-Wall time: 200 µs
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>CPU times: user 242 µs, sys: 102 µs, total: 344 µs
+Wall time: 365 µs
 </pre></div>
 </div>
 </div>
@@ -261,12 +286,14 @@ Wall time: 200 µs
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">merlin.datasets.ecommerce</span> <span class="kn">import</span> <span class="n">transform_aliccp</span>
 
-<span class="n">transform_aliccp</span><span class="p">((</span><span class="n">train</span><span class="p">,</span> <span class="n">valid</span><span class="p">),</span> <span class="n">output_path</span><span class="p">,</span> <span class="n">nvt_workflow</span><span class="o">=</span><span class="n">outputs</span><span class="p">,</span> <span class="n">workflow_name</span><span class="o">=</span><span class="s1">&#39;workflow_ranking&#39;</span><span class="p">)</span>
+<span class="n">transform_aliccp</span><span class="p">(</span>
+    <span class="p">(</span><span class="n">train</span><span class="p">,</span> <span class="n">valid</span><span class="p">),</span> <span class="n">output_path</span><span class="p">,</span> <span class="n">nvt_workflow</span><span class="o">=</span><span class="n">outputs</span><span class="p">,</span> <span class="n">workflow_name</span><span class="o">=</span><span class="s2">&quot;workflow_ranking&quot;</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/core/merlin/io/dataset.py:251: UserWarning: Initializing an NVTabular Dataset in CPU mode.This is an experimental feature with extremely limited support!
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/usr/lib/python3.8/site-packages/cudf/core/dataframe.py:1292: UserWarning: The deep parameter is ignored and is only included for pandas compatibility.
   warnings.warn(
 </pre></div>
 </div>
@@ -280,8 +307,8 @@ Wall time: 200 µs
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># define train and valid dataset objects</span>
-<span class="n">train</span> <span class="o">=</span> <span class="n">Dataset</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="s1">&#39;train&#39;</span><span class="p">,</span> <span class="s1">&#39;*.parquet&#39;</span><span class="p">),</span> <span class="n">part_size</span><span class="o">=</span><span class="s2">&quot;500MB&quot;</span><span class="p">)</span>
-<span class="n">valid</span> <span class="o">=</span> <span class="n">Dataset</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="s1">&#39;valid&#39;</span><span class="p">,</span> <span class="s1">&#39;*.parquet&#39;</span><span class="p">),</span> <span class="n">part_size</span><span class="o">=</span><span class="s2">&quot;500MB&quot;</span><span class="p">)</span>
+<span class="n">train</span> <span class="o">=</span> <span class="n">Dataset</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="s2">&quot;train&quot;</span><span class="p">,</span> <span class="s2">&quot;*.parquet&quot;</span><span class="p">),</span> <span class="n">part_size</span><span class="o">=</span><span class="s2">&quot;500MB&quot;</span><span class="p">)</span>
+<span class="n">valid</span> <span class="o">=</span> <span class="n">Dataset</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="s2">&quot;valid&quot;</span><span class="p">,</span> <span class="s2">&quot;*.parquet&quot;</span><span class="p">),</span> <span class="n">part_size</span><span class="o">=</span><span class="s2">&quot;500MB&quot;</span><span class="p">)</span>
 
 <span class="c1"># define schema object</span>
 <span class="n">schema</span> <span class="o">=</span> <span class="n">train</span><span class="o">.</span><span class="n">schema</span>
@@ -310,7 +337,7 @@ Wall time: 200 µs
     <span class="n">embedding_dim</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span>
     <span class="n">bottom_block</span><span class="o">=</span><span class="n">mm</span><span class="o">.</span><span class="n">MLPBlock</span><span class="p">([</span><span class="mi">128</span><span class="p">,</span> <span class="mi">64</span><span class="p">]),</span>
     <span class="n">top_block</span><span class="o">=</span><span class="n">mm</span><span class="o">.</span><span class="n">MLPBlock</span><span class="p">([</span><span class="mi">128</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">32</span><span class="p">]),</span>
-    <span class="n">prediction_tasks</span><span class="o">=</span><span class="n">mm</span><span class="o">.</span><span class="n">BinaryClassificationTask</span><span class="p">(</span><span class="n">target_column</span><span class="p">)</span>
+    <span class="n">prediction_tasks</span><span class="o">=</span><span class="n">mm</span><span class="o">.</span><span class="n">BinaryClassificationTask</span><span class="p">(</span><span class="n">target_column</span><span class="p">),</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -318,22 +345,16 @@ Wall time: 200 µs
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">optimizer</span><span class="o">=</span><span class="s1">&#39;adam&#39;</span><span class="p">,</span> <span class="n">run_eagerly</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">metrics</span><span class="o">=</span><span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">AUC</span><span class="p">()])</span>
-<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train</span><span class="p">,</span> <span class="n">validation_data</span><span class="o">=</span><span class="n">valid</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">16</span><span class="o">*</span><span class="mi">1024</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">optimizer</span><span class="o">=</span><span class="s2">&quot;adam&quot;</span><span class="p">,</span> <span class="n">run_eagerly</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">metrics</span><span class="o">=</span><span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">AUC</span><span class="p">()])</span>
+<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train</span><span class="p">,</span> <span class="n">validation_data</span><span class="o">=</span><span class="n">valid</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">16</span> <span class="o">*</span> <span class="mi">1024</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2022-05-05 14:35:03.403519: W tensorflow/python/util/util.cc:368] Sets are not currently considered sequences, but this may change in the future, so consider avoiding using them.
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>5/5 [==============================] - 9s 313ms/step - loss: 0.6931 - auc: 0.4984 - val_loss: 0.6932 - val_auc: 0.5018
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>5/5 [==============================] - 6s 217ms/step - auc: 0.4983 - loss: 0.6931 - regularization_loss: 0.0000e+00 - total_loss: 0.6931 - val_auc: 0.4995 - val_loss: 0.6932 - val_regularization_loss: 0.0000e+00 - val_total_loss: 0.6932
-</pre></div>
-</div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2022-05-05 14:35:10.085952: W tensorflow/core/grappler/optimizers/loop_optimizer.cc:907] Skipping loop optimization for Merge node with control input: cond/branch_executed/_13
-</pre></div>
-</div>
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;keras.callbacks.History at 0x7fa0bab07520&gt;
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;keras.callbacks.History at 0x7f22ea7dbe20&gt;
 </pre></div>
 </div>
 </div>
@@ -342,7 +363,9 @@ Wall time: 200 µs
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># set up the base dir to for feature store</span>
-<span class="n">BASE_DIR</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;BASE_DIR&quot;</span><span class="p">,</span> <span class="s2">&quot;/Merlin/examples/Building-and-deploying-multi-stage-RecSys/&quot;</span><span class="p">)</span>
+<span class="n">BASE_DIR</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+    <span class="s2">&quot;BASE_DIR&quot;</span><span class="p">,</span> <span class="s2">&quot;/Merlin/examples/Building-and-deploying-multi-stage-RecSys/&quot;</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -350,7 +373,7 @@ Wall time: 200 µs
 <p>Let’s save our DLRM model to be able to load back at the deployment stage.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s1">&#39;dlrm&#39;</span><span class="p">))</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s2">&quot;dlrm&quot;</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
@@ -361,7 +384,7 @@ Wall time: 200 µs
 <p>Now we move to the offline retrieval stage. We are going to train a Two-Tower model for item retrieval. To learn more about the Two-tower model you can visit <a class="reference external" href="https://github.com/NVIDIA-Merlin/models/blob/main/examples/05-Retrieval-Model.ipynb">05-Retrieval-Model.ipynb</a>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">output_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">DATA_FOLDER</span><span class="p">,</span> <span class="s1">&#39;processed/retrieval&#39;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">output_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">DATA_FOLDER</span><span class="p">,</span> <span class="s2">&quot;processed/retrieval&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -369,26 +392,44 @@ Wall time: 200 µs
 <p>We select only positive interaction rows where <code class="docutils literal notranslate"><span class="pre">click==1</span></code> in the dataset with <code class="docutils literal notranslate"><span class="pre">Filter()</span></code> operator.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">user_id</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;user_id&quot;</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">Categorify</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;int32&#39;</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="n">TagAsUserID</span><span class="p">()</span>
-<span class="n">item_id</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;item_id&quot;</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">Categorify</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;int32&#39;</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="n">TagAsItemID</span><span class="p">()</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">user_id</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;user_id&quot;</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">Categorify</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;int32&quot;</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="n">TagAsUserID</span><span class="p">()</span>
+<span class="n">item_id</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;item_id&quot;</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">Categorify</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;int32&quot;</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="n">TagAsItemID</span><span class="p">()</span>
 
-<span class="n">item_features</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;item_category&quot;</span><span class="p">,</span> <span class="s2">&quot;item_shop&quot;</span><span class="p">,</span> <span class="s2">&quot;item_brand&quot;</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">Categorify</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;int32&#39;</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="n">TagAsItemFeatures</span><span class="p">()</span>
+<span class="n">item_features</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="p">[</span><span class="s2">&quot;item_category&quot;</span><span class="p">,</span> <span class="s2">&quot;item_shop&quot;</span><span class="p">,</span> <span class="s2">&quot;item_brand&quot;</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">Categorify</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;int32&quot;</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="n">TagAsItemFeatures</span><span class="p">()</span>
+<span class="p">)</span>
 
-<span class="n">user_features</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;user_shops&#39;</span><span class="p">,</span> <span class="s1">&#39;user_profile&#39;</span><span class="p">,</span> <span class="s1">&#39;user_group&#39;</span><span class="p">,</span> 
-       <span class="s1">&#39;user_gender&#39;</span><span class="p">,</span> <span class="s1">&#39;user_age&#39;</span><span class="p">,</span> <span class="s1">&#39;user_consumption_2&#39;</span><span class="p">,</span> <span class="s1">&#39;user_is_occupied&#39;</span><span class="p">,</span>
-       <span class="s1">&#39;user_geography&#39;</span><span class="p">,</span> <span class="s1">&#39;user_intentions&#39;</span><span class="p">,</span> <span class="s1">&#39;user_brands&#39;</span><span class="p">,</span> <span class="s1">&#39;user_categories&#39;</span><span class="p">]</span> \
-        <span class="o">&gt;&gt;</span> <span class="n">Categorify</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;int32&#39;</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="n">TagAsUserFeatures</span><span class="p">()</span> 
+<span class="n">user_features</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="p">[</span>
+        <span class="s2">&quot;user_shops&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;user_profile&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;user_group&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;user_gender&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;user_age&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;user_consumption_2&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;user_is_occupied&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;user_geography&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;user_intentions&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;user_brands&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;user_categories&quot;</span><span class="p">,</span>
+    <span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">Categorify</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;int32&quot;</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="n">TagAsUserFeatures</span><span class="p">()</span>
+<span class="p">)</span>
 
-<span class="n">inputs</span> <span class="o">=</span> <span class="n">user_id</span> <span class="o">+</span> <span class="n">item_id</span> <span class="o">+</span> <span class="n">item_features</span> <span class="o">+</span> <span class="n">user_features</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;click&#39;</span><span class="p">]</span> 
+<span class="n">inputs</span> <span class="o">=</span> <span class="n">user_id</span> <span class="o">+</span> <span class="n">item_id</span> <span class="o">+</span> <span class="n">item_features</span> <span class="o">+</span> <span class="n">user_features</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;click&quot;</span><span class="p">]</span>
 
 <span class="n">outputs</span> <span class="o">=</span> <span class="n">inputs</span> <span class="o">&gt;&gt;</span> <span class="n">Filter</span><span class="p">(</span><span class="n">f</span><span class="o">=</span><span class="k">lambda</span> <span class="n">df</span><span class="p">:</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;click&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
 
-<span class="n">transform_aliccp</span><span class="p">((</span><span class="n">train</span><span class="p">,</span> <span class="n">valid</span><span class="p">),</span> <span class="n">output_path</span><span class="p">,</span> <span class="n">nvt_workflow</span><span class="o">=</span><span class="n">outputs</span><span class="p">,</span> <span class="n">workflow_name</span><span class="o">=</span><span class="s1">&#39;workflow_retrieval&#39;</span><span class="p">)</span>
+<span class="n">transform_aliccp</span><span class="p">(</span>
+    <span class="p">(</span><span class="n">train</span><span class="p">,</span> <span class="n">valid</span><span class="p">),</span>
+    <span class="n">output_path</span><span class="p">,</span>
+    <span class="n">nvt_workflow</span><span class="o">=</span><span class="n">outputs</span><span class="p">,</span>
+    <span class="n">workflow_name</span><span class="o">=</span><span class="s2">&quot;workflow_retrieval&quot;</span><span class="p">,</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/core/merlin/io/dataset.py:251: UserWarning: Initializing an NVTabular Dataset in CPU mode.This is an experimental feature with extremely limited support!
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/usr/lib/python3.8/site-packages/cudf/core/dataframe.py:1292: UserWarning: The deep parameter is ignored and is only included for pandas compatibility.
   warnings.warn(
 </pre></div>
 </div>
@@ -396,8 +437,8 @@ Wall time: 200 µs
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">train_tt</span> <span class="o">=</span> <span class="n">Dataset</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="s1">&#39;train&#39;</span><span class="p">,</span> <span class="s1">&#39;*.parquet&#39;</span><span class="p">))</span>
-<span class="n">valid_tt</span> <span class="o">=</span> <span class="n">Dataset</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="s1">&#39;valid&#39;</span><span class="p">,</span> <span class="s1">&#39;*.parquet&#39;</span><span class="p">))</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">train_tt</span> <span class="o">=</span> <span class="n">Dataset</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="s2">&quot;train&quot;</span><span class="p">,</span> <span class="s2">&quot;*.parquet&quot;</span><span class="p">))</span>
+<span class="n">valid_tt</span> <span class="o">=</span> <span class="n">Dataset</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="s2">&quot;valid&quot;</span><span class="p">,</span> <span class="s2">&quot;*.parquet&quot;</span><span class="p">))</span>
 
 <span class="n">schema</span> <span class="o">=</span> <span class="n">train_tt</span><span class="o">.</span><span class="n">schema</span>
 <span class="n">schema</span> <span class="o">=</span> <span class="n">schema</span><span class="o">.</span><span class="n">select_by_tag</span><span class="p">([</span><span class="n">Tags</span><span class="o">.</span><span class="n">ITEM_ID</span><span class="p">,</span> <span class="n">Tags</span><span class="o">.</span><span class="n">USER_ID</span><span class="p">,</span> <span class="n">Tags</span><span class="o">.</span><span class="n">ITEM</span><span class="p">,</span> <span class="n">Tags</span><span class="o">.</span><span class="n">USER</span><span class="p">])</span>
@@ -409,9 +450,9 @@ Wall time: 200 µs
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">mm</span><span class="o">.</span><span class="n">TwoTowerModel</span><span class="p">(</span>
     <span class="n">schema</span><span class="p">,</span>
-    <span class="n">query_tower</span><span class="o">=</span><span class="n">mm</span><span class="o">.</span><span class="n">MLPBlock</span><span class="p">([</span><span class="mi">128</span><span class="p">,</span> <span class="mi">64</span><span class="p">],</span> <span class="n">no_activation_last_layer</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>        
+    <span class="n">query_tower</span><span class="o">=</span><span class="n">mm</span><span class="o">.</span><span class="n">MLPBlock</span><span class="p">([</span><span class="mi">128</span><span class="p">,</span> <span class="mi">64</span><span class="p">],</span> <span class="n">no_activation_last_layer</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
     <span class="n">samplers</span><span class="o">=</span><span class="p">[</span><span class="n">mm</span><span class="o">.</span><span class="n">InBatchSampler</span><span class="p">()],</span>
-    <span class="n">embedding_options</span> <span class="o">=</span> <span class="n">mm</span><span class="o">.</span><span class="n">EmbeddingOptions</span><span class="p">(</span><span class="n">infer_embedding_sizes</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="n">embedding_options</span><span class="o">=</span><span class="n">mm</span><span class="o">.</span><span class="n">EmbeddingOptions</span><span class="p">(</span><span class="n">infer_embedding_sizes</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -420,26 +461,20 @@ Wall time: 200 µs
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span>
-    <span class="n">optimizer</span><span class="o">=</span><span class="s1">&#39;adam&#39;</span><span class="p">,</span> 
-    <span class="n">run_eagerly</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> 
-    <span class="n">loss</span><span class="o">=</span><span class="s2">&quot;categorical_crossentropy&quot;</span><span class="p">,</span> 
-    <span class="n">metrics</span><span class="o">=</span><span class="p">[</span><span class="n">mm</span><span class="o">.</span><span class="n">RecallAt</span><span class="p">(</span><span class="mi">10</span><span class="p">),</span> <span class="n">mm</span><span class="o">.</span><span class="n">NDCGAt</span><span class="p">(</span><span class="mi">10</span><span class="p">)]</span>
+    <span class="n">optimizer</span><span class="o">=</span><span class="s2">&quot;adam&quot;</span><span class="p">,</span>
+    <span class="n">run_eagerly</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">loss</span><span class="o">=</span><span class="s2">&quot;categorical_crossentropy&quot;</span><span class="p">,</span>
+    <span class="n">metrics</span><span class="o">=</span><span class="p">[</span><span class="n">mm</span><span class="o">.</span><span class="n">RecallAt</span><span class="p">(</span><span class="mi">10</span><span class="p">),</span> <span class="n">mm</span><span class="o">.</span><span class="n">NDCGAt</span><span class="p">(</span><span class="mi">10</span><span class="p">)],</span>
 <span class="p">)</span>
-<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train_tt</span><span class="p">,</span> <span class="n">validation_data</span><span class="o">=</span><span class="n">valid_tt</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">1024</span><span class="o">*</span><span class="mi">8</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train_tt</span><span class="p">,</span> <span class="n">validation_data</span><span class="o">=</span><span class="n">valid_tt</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">1024</span> <span class="o">*</span> <span class="mi">8</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>4/5 [=======================&gt;......] - ETA: 0s - recall_at_10: 0.0199 - ndcg_10: 0.0175 - loss: 8.9784 - regularization_loss: 0.0000e+00 - total_loss: 8.9784
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>5/5 [==============================] - 11s 566ms/step - loss: 8.8953 - recall_at_10: 0.0175 - ndcg_10: 0.0135 - val_loss: 8.8948 - val_recall_at_10: 0.0358 - val_ndcg_10: 0.0339
 </pre></div>
 </div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2022-05-05 14:35:25.929977: W tensorflow/core/grappler/optimizers/loop_optimizer.cc:907] Skipping loop optimization for Merge node with control input: cond/branch_executed/_24
-</pre></div>
-</div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>5/5 [==============================] - 6s 326ms/step - recall_at_10: 0.0209 - ndcg_10: 0.0185 - loss: 8.5198 - regularization_loss: 0.0000e+00 - total_loss: 8.5198 - val_recall_at_10: 0.0419 - val_ndcg_10: 0.0394 - val_loss: 8.8001 - val_regularization_loss: 0.0000e+00 - val_total_loss: 8.8001
-</pre></div>
-</div>
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;keras.callbacks.History at 0x7fa052dd8310&gt;
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;keras.callbacks.History at 0x7f22db4ec400&gt;
 </pre></div>
 </div>
 </div>
@@ -464,8 +499,11 @@ Wall time: 200 µs
 <p>You should be seeing a message like <i>Creating a new Feast repository in … </i> printed out above. Now, navigate to the <code class="docutils literal notranslate"><span class="pre">feature_repo</span></code> folder and remove the demo parquet file created by default, and <code class="docutils literal notranslate"><span class="pre">examples.py</span></code> file.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s1">&#39;feature_repo&#39;</span><span class="p">,</span> <span class="s1">&#39;example.py&#39;</span><span class="p">))</span>
-<span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s1">&#39;feature_repo/data&#39;</span><span class="p">,</span> <span class="s1">&#39;driver_stats.parquet&#39;</span><span class="p">))</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">feature_repo_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s2">&quot;feature_repo&quot;</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">feature_repo_path</span><span class="si">}</span><span class="s2">/example.py&quot;</span><span class="p">):</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">feature_repo_path</span><span class="si">}</span><span class="s2">/example.py&quot;</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">feature_repo_path</span><span class="si">}</span><span class="s2">/data/driver_stats.parquet&quot;</span><span class="p">):</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">feature_repo_path</span><span class="si">}</span><span class="s2">/data/driver_stats.parquet&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -476,7 +514,7 @@ Wall time: 200 µs
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">query_tower</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">retrieval_block</span><span class="o">.</span><span class="n">query_block</span><span class="p">()</span>
-<span class="n">query_tower</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s1">&#39;query_tower&#39;</span><span class="p">))</span>
+<span class="n">query_tower</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s2">&quot;query_tower&quot;</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
@@ -487,13 +525,12 @@ Wall time: 200 µs
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">merlin.models.utils.dataset</span> <span class="kn">import</span> <span class="n">unique_rows_by_features</span>
-<span class="n">user_features</span> <span class="o">=</span> <span class="n">unique_rows_by_features</span><span class="p">(</span><span class="n">train</span><span class="p">,</span> <span class="n">Tags</span><span class="o">.</span><span class="n">USER</span><span class="p">,</span> <span class="n">Tags</span><span class="o">.</span><span class="n">USER_ID</span><span class="p">)</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/core/merlin/io/dataset.py:251: UserWarning: Initializing an NVTabular Dataset in CPU mode.This is an experimental feature with extremely limited support!
-  warnings.warn(
+
+<span class="n">user_features</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">unique_rows_by_features</span><span class="p">(</span><span class="n">train</span><span class="p">,</span> <span class="n">Tags</span><span class="o">.</span><span class="n">USER</span><span class="p">,</span> <span class="n">Tags</span><span class="o">.</span><span class="n">USER_ID</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -540,8 +577,6 @@ Wall time: 200 µs
   <tbody>
     <tr>
       <th>0</th>
-      <td>14</td>
-      <td>14</td>
       <td>1</td>
       <td>1</td>
       <td>1</td>
@@ -549,14 +584,15 @@ Wall time: 200 µs
       <td>1</td>
       <td>1</td>
       <td>1</td>
-      <td>14</td>
-      <td>14</td>
-      <td>14</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>38</td>
-      <td>38</td>
+      <td>2</td>
       <td>2</td>
       <td>1</td>
       <td>1</td>
@@ -564,14 +600,15 @@ Wall time: 200 µs
       <td>1</td>
       <td>1</td>
       <td>1</td>
-      <td>38</td>
-      <td>38</td>
-      <td>38</td>
+      <td>1</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
     </tr>
     <tr>
       <th>2</th>
-      <td>8</td>
-      <td>8</td>
+      <td>3</td>
+      <td>3</td>
       <td>1</td>
       <td>1</td>
       <td>1</td>
@@ -579,14 +616,14 @@ Wall time: 200 µs
       <td>1</td>
       <td>1</td>
       <td>1</td>
-      <td>8</td>
-      <td>8</td>
-      <td>8</td>
+      <td>3</td>
+      <td>3</td>
+      <td>3</td>
     </tr>
     <tr>
       <th>3</th>
-      <td>5</td>
-      <td>5</td>
+      <td>4</td>
+      <td>4</td>
       <td>1</td>
       <td>1</td>
       <td>1</td>
@@ -594,24 +631,24 @@ Wall time: 200 µs
       <td>1</td>
       <td>1</td>
       <td>1</td>
-      <td>5</td>
-      <td>5</td>
-      <td>5</td>
+      <td>4</td>
+      <td>4</td>
+      <td>4</td>
     </tr>
     <tr>
       <th>4</th>
-      <td>31</td>
-      <td>31</td>
-      <td>2</td>
+      <td>5</td>
+      <td>5</td>
       <td>1</td>
       <td>1</td>
       <td>1</td>
       <td>1</td>
       <td>1</td>
       <td>1</td>
-      <td>31</td>
-      <td>31</td>
-      <td>31</td>
+      <td>1</td>
+      <td>5</td>
+      <td>5</td>
+      <td>5</td>
     </tr>
   </tbody>
 </table>
@@ -621,6 +658,7 @@ Wall time: 200 µs
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+
 <span class="n">user_features</span><span class="p">[</span><span class="s2">&quot;datetime&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
 <span class="n">user_features</span><span class="p">[</span><span class="s2">&quot;datetime&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">user_features</span><span class="p">[</span><span class="s2">&quot;datetime&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;datetime64[ns]&quot;</span><span class="p">)</span>
 <span class="n">user_features</span><span class="p">[</span><span class="s2">&quot;created&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
@@ -673,8 +711,6 @@ Wall time: 200 µs
   <tbody>
     <tr>
       <th>0</th>
-      <td>14</td>
-      <td>14</td>
       <td>1</td>
       <td>1</td>
       <td>1</td>
@@ -682,16 +718,17 @@ Wall time: 200 µs
       <td>1</td>
       <td>1</td>
       <td>1</td>
-      <td>14</td>
-      <td>14</td>
-      <td>14</td>
-      <td>2022-05-05 14:35:32.971809</td>
-      <td>2022-05-05 14:35:32.973595</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>2022-06-13 15:46:06.144215</td>
+      <td>2022-06-13 15:46:06.765273</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>38</td>
-      <td>38</td>
+      <td>2</td>
       <td>2</td>
       <td>1</td>
       <td>1</td>
@@ -699,16 +736,17 @@ Wall time: 200 µs
       <td>1</td>
       <td>1</td>
       <td>1</td>
-      <td>38</td>
-      <td>38</td>
-      <td>38</td>
-      <td>2022-05-05 14:35:32.971809</td>
-      <td>2022-05-05 14:35:32.973595</td>
+      <td>1</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2</td>
+      <td>2022-06-13 15:46:06.144215</td>
+      <td>2022-06-13 15:46:06.765273</td>
     </tr>
     <tr>
       <th>2</th>
-      <td>8</td>
-      <td>8</td>
+      <td>3</td>
+      <td>3</td>
       <td>1</td>
       <td>1</td>
       <td>1</td>
@@ -716,16 +754,16 @@ Wall time: 200 µs
       <td>1</td>
       <td>1</td>
       <td>1</td>
-      <td>8</td>
-      <td>8</td>
-      <td>8</td>
-      <td>2022-05-05 14:35:32.971809</td>
-      <td>2022-05-05 14:35:32.973595</td>
+      <td>3</td>
+      <td>3</td>
+      <td>3</td>
+      <td>2022-06-13 15:46:06.144215</td>
+      <td>2022-06-13 15:46:06.765273</td>
     </tr>
     <tr>
       <th>3</th>
-      <td>5</td>
-      <td>5</td>
+      <td>4</td>
+      <td>4</td>
       <td>1</td>
       <td>1</td>
       <td>1</td>
@@ -733,28 +771,28 @@ Wall time: 200 µs
       <td>1</td>
       <td>1</td>
       <td>1</td>
-      <td>5</td>
-      <td>5</td>
-      <td>5</td>
-      <td>2022-05-05 14:35:32.971809</td>
-      <td>2022-05-05 14:35:32.973595</td>
+      <td>4</td>
+      <td>4</td>
+      <td>4</td>
+      <td>2022-06-13 15:46:06.144215</td>
+      <td>2022-06-13 15:46:06.765273</td>
     </tr>
     <tr>
       <th>4</th>
-      <td>31</td>
-      <td>31</td>
-      <td>2</td>
+      <td>5</td>
+      <td>5</td>
       <td>1</td>
       <td>1</td>
       <td>1</td>
       <td>1</td>
       <td>1</td>
       <td>1</td>
-      <td>31</td>
-      <td>31</td>
-      <td>31</td>
-      <td>2022-05-05 14:35:32.971809</td>
-      <td>2022-05-05 14:35:32.973595</td>
+      <td>1</td>
+      <td>5</td>
+      <td>5</td>
+      <td>5</td>
+      <td>2022-06-13 15:46:06.144215</td>
+      <td>2022-06-13 15:46:06.765273</td>
     </tr>
   </tbody>
 </table>
@@ -762,20 +800,20 @@ Wall time: 200 µs
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">user_features</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s1">&#39;feature_repo/data&#39;</span><span class="p">,</span> <span class="s1">&#39;user_features.parquet&#39;</span><span class="p">))</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">user_features</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s2">&quot;feature_repo/data&quot;</span><span class="p">,</span> <span class="s2">&quot;user_features.parquet&quot;</span><span class="p">)</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 </div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">item_features</span> <span class="o">=</span> <span class="n">unique_rows_by_features</span><span class="p">(</span><span class="n">train</span><span class="p">,</span> <span class="n">Tags</span><span class="o">.</span><span class="n">ITEM</span><span class="p">,</span> <span class="n">Tags</span><span class="o">.</span><span class="n">ITEM_ID</span><span class="p">)</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/core/merlin/io/dataset.py:251: UserWarning: Initializing an NVTabular Dataset in CPU mode.This is an experimental feature with extremely limited support!
-  warnings.warn(
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">item_features</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">unique_rows_by_features</span><span class="p">(</span><span class="n">train</span><span class="p">,</span> <span class="n">Tags</span><span class="o">.</span><span class="n">ITEM</span><span class="p">,</span> <span class="n">Tags</span><span class="o">.</span><span class="n">ITEM_ID</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -787,7 +825,7 @@ Wall time: 200 µs
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(448, 4)
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(441, 4)
 </pre></div>
 </div>
 </div>
@@ -838,12 +876,12 @@ Wall time: 200 µs
   <tbody>
     <tr>
       <th>0</th>
-      <td>15</td>
-      <td>15</td>
-      <td>15</td>
-      <td>15</td>
-      <td>2022-05-05 14:35:33.084300</td>
-      <td>2022-05-05 14:35:33.086938</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>2022-06-13 15:46:06.930595</td>
+      <td>2022-06-13 15:46:06.933351</td>
     </tr>
     <tr>
       <th>1</th>
@@ -851,35 +889,35 @@ Wall time: 200 µs
       <td>2</td>
       <td>2</td>
       <td>2</td>
-      <td>2022-05-05 14:35:33.084300</td>
-      <td>2022-05-05 14:35:33.086938</td>
+      <td>2022-06-13 15:46:06.930595</td>
+      <td>2022-06-13 15:46:06.933351</td>
     </tr>
     <tr>
       <th>2</th>
-      <td>59</td>
-      <td>59</td>
-      <td>59</td>
-      <td>59</td>
-      <td>2022-05-05 14:35:33.084300</td>
-      <td>2022-05-05 14:35:33.086938</td>
+      <td>3</td>
+      <td>3</td>
+      <td>3</td>
+      <td>3</td>
+      <td>2022-06-13 15:46:06.930595</td>
+      <td>2022-06-13 15:46:06.933351</td>
     </tr>
     <tr>
       <th>3</th>
-      <td>149</td>
-      <td>149</td>
-      <td>149</td>
-      <td>149</td>
-      <td>2022-05-05 14:35:33.084300</td>
-      <td>2022-05-05 14:35:33.086938</td>
+      <td>4</td>
+      <td>4</td>
+      <td>4</td>
+      <td>4</td>
+      <td>2022-06-13 15:46:06.930595</td>
+      <td>2022-06-13 15:46:06.933351</td>
     </tr>
     <tr>
       <th>4</th>
-      <td>63</td>
-      <td>63</td>
-      <td>63</td>
-      <td>63</td>
-      <td>2022-05-05 14:35:33.084300</td>
-      <td>2022-05-05 14:35:33.086938</td>
+      <td>5</td>
+      <td>5</td>
+      <td>5</td>
+      <td>5</td>
+      <td>2022-06-13 15:46:06.930595</td>
+      <td>2022-06-13 15:46:06.933351</td>
     </tr>
   </tbody>
 </table>
@@ -888,7 +926,9 @@ Wall time: 200 µs
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># save to disk</span>
-<span class="n">item_features</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s1">&#39;feature_repo/data&#39;</span><span class="p">,</span> <span class="s1">&#39;item_features.parquet&#39;</span><span class="p">))</span>
+<span class="n">item_features</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s2">&quot;feature_repo/data&quot;</span><span class="p">,</span> <span class="s2">&quot;item_features.parquet&quot;</span><span class="p">)</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -898,24 +938,20 @@ Wall time: 200 µs
 <h2>Extract and save Item embeddings<a class="headerlink" href="#extract-and-save-item-embeddings" title="Permalink to this headline"></a></h2>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">item_embs</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">item_embeddings</span><span class="p">(</span><span class="n">Dataset</span><span class="p">(</span><span class="n">item_features</span><span class="p">,</span> <span class="n">schema</span><span class="o">=</span><span class="n">schema</span><span class="p">),</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">1024</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">item_embs</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">item_embeddings</span><span class="p">(</span>
+    <span class="n">Dataset</span><span class="p">(</span><span class="n">item_features</span><span class="p">,</span> <span class="n">schema</span><span class="o">=</span><span class="n">schema</span><span class="p">),</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">1024</span>
+<span class="p">)</span>
 <span class="n">item_embs_df</span> <span class="o">=</span> <span class="n">item_embs</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">scheduler</span><span class="o">=</span><span class="s2">&quot;synchronous&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/core/merlin/io/dataset.py:251: UserWarning: Initializing an NVTabular Dataset in CPU mode.This is an experimental feature with extremely limited support!
-  warnings.warn(
-/core/merlin/io/dataset.py:251: UserWarning: Initializing an NVTabular Dataset in CPU mode.This is an experimental feature with extremely limited support!
-  warnings.warn(
 </pre></div>
 </div>
 </div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># select only item_id together with embedding columns </span>
-<span class="n">item_embeddings</span> <span class="o">=</span> <span class="n">item_embs_df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;item_category&#39;</span><span class="p">,</span> <span class="s1">&#39;item_shop&#39;</span><span class="p">,</span> <span class="s1">&#39;item_brand&#39;</span><span class="p">])</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># select only item_id together with embedding columns</span>
+<span class="n">item_embeddings</span> <span class="o">=</span> <span class="n">item_embs_df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span>
+    <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;item_category&quot;</span><span class="p">,</span> <span class="s2">&quot;item_shop&quot;</span><span class="p">,</span> <span class="s2">&quot;item_brand&quot;</span><span class="p">]</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -971,123 +1007,123 @@ Wall time: 200 µs
   <tbody>
     <tr>
       <th>0</th>
-      <td>15</td>
-      <td>0.009764</td>
-      <td>0.008560</td>
-      <td>-0.008236</td>
-      <td>0.001079</td>
-      <td>0.006261</td>
-      <td>0.009971</td>
-      <td>0.009541</td>
-      <td>-0.019058</td>
-      <td>0.036954</td>
+      <td>1</td>
+      <td>-0.014644</td>
+      <td>-0.030120</td>
+      <td>-0.043844</td>
+      <td>-0.032847</td>
+      <td>0.011542</td>
+      <td>-0.023905</td>
+      <td>-0.029672</td>
+      <td>-0.019096</td>
+      <td>0.003238</td>
       <td>...</td>
-      <td>0.003188</td>
-      <td>0.025160</td>
-      <td>0.003522</td>
-      <td>0.024247</td>
-      <td>0.023871</td>
-      <td>-0.017902</td>
-      <td>0.007299</td>
-      <td>-0.013606</td>
-      <td>0.003823</td>
-      <td>0.013440</td>
+      <td>-0.037217</td>
+      <td>0.038835</td>
+      <td>0.007689</td>
+      <td>0.000896</td>
+      <td>-0.009022</td>
+      <td>-0.010495</td>
+      <td>0.023698</td>
+      <td>0.033870</td>
+      <td>-0.029741</td>
+      <td>-0.030549</td>
     </tr>
     <tr>
       <th>1</th>
       <td>2</td>
-      <td>0.014012</td>
-      <td>0.019497</td>
-      <td>-0.015541</td>
-      <td>-0.006398</td>
-      <td>0.004327</td>
-      <td>0.077202</td>
-      <td>0.033808</td>
-      <td>-0.008815</td>
-      <td>0.062406</td>
+      <td>-0.026403</td>
+      <td>-0.005529</td>
+      <td>-0.025439</td>
+      <td>-0.003412</td>
+      <td>0.005109</td>
+      <td>-0.013113</td>
+      <td>0.029868</td>
+      <td>-0.038708</td>
+      <td>0.003663</td>
       <td>...</td>
-      <td>0.011110</td>
-      <td>0.010548</td>
-      <td>-0.021843</td>
-      <td>0.044792</td>
-      <td>0.043012</td>
-      <td>-0.014118</td>
-      <td>0.028639</td>
-      <td>0.021822</td>
-      <td>-0.008754</td>
-      <td>-0.021522</td>
+      <td>-0.030878</td>
+      <td>-0.014543</td>
+      <td>-0.017892</td>
+      <td>0.025364</td>
+      <td>-0.032985</td>
+      <td>-0.006969</td>
+      <td>0.031746</td>
+      <td>-0.003650</td>
+      <td>-0.019432</td>
+      <td>-0.006048</td>
     </tr>
     <tr>
       <th>2</th>
-      <td>59</td>
-      <td>0.019117</td>
-      <td>0.004479</td>
-      <td>-0.031548</td>
-      <td>-0.020642</td>
-      <td>0.035912</td>
-      <td>0.015081</td>
-      <td>0.001050</td>
-      <td>-0.005041</td>
-      <td>0.014927</td>
+      <td>3</td>
+      <td>-0.031090</td>
+      <td>-0.035648</td>
+      <td>-0.042533</td>
+      <td>-0.020776</td>
+      <td>0.000392</td>
+      <td>-0.001049</td>
+      <td>-0.014174</td>
+      <td>-0.000956</td>
+      <td>-0.053086</td>
       <td>...</td>
-      <td>-0.012306</td>
-      <td>0.012168</td>
-      <td>-0.012633</td>
-      <td>0.017448</td>
-      <td>0.016328</td>
-      <td>-0.022380</td>
-      <td>-0.008413</td>
-      <td>0.028804</td>
-      <td>0.009847</td>
-      <td>-0.018740</td>
+      <td>0.023282</td>
+      <td>0.025333</td>
+      <td>0.016674</td>
+      <td>0.017381</td>
+      <td>-0.007932</td>
+      <td>-0.029791</td>
+      <td>0.007936</td>
+      <td>0.024365</td>
+      <td>-0.033152</td>
+      <td>-0.006021</td>
     </tr>
     <tr>
       <th>3</th>
-      <td>149</td>
-      <td>0.022785</td>
-      <td>0.018213</td>
-      <td>-0.035266</td>
-      <td>0.002669</td>
-      <td>0.004770</td>
-      <td>0.023919</td>
-      <td>0.004185</td>
-      <td>-0.048692</td>
-      <td>0.013208</td>
+      <td>4</td>
+      <td>0.021717</td>
+      <td>0.009807</td>
+      <td>-0.005943</td>
+      <td>-0.022264</td>
+      <td>0.023473</td>
+      <td>-0.033276</td>
+      <td>-0.025934</td>
+      <td>-0.023402</td>
+      <td>0.017395</td>
       <td>...</td>
-      <td>-0.002208</td>
-      <td>0.023864</td>
-      <td>-0.019109</td>
-      <td>-0.006574</td>
-      <td>0.012167</td>
-      <td>0.009672</td>
-      <td>-0.016330</td>
-      <td>0.005729</td>
-      <td>0.025929</td>
-      <td>-0.008024</td>
+      <td>-0.051937</td>
+      <td>0.004534</td>
+      <td>0.017306</td>
+      <td>0.012567</td>
+      <td>0.021283</td>
+      <td>0.006707</td>
+      <td>-0.012907</td>
+      <td>0.037199</td>
+      <td>0.002680</td>
+      <td>-0.035851</td>
     </tr>
     <tr>
       <th>4</th>
-      <td>63</td>
-      <td>-0.012254</td>
-      <td>-0.016057</td>
-      <td>-0.017900</td>
-      <td>-0.017911</td>
-      <td>-0.037520</td>
-      <td>0.012523</td>
-      <td>-0.007489</td>
-      <td>-0.005636</td>
-      <td>0.017751</td>
+      <td>5</td>
+      <td>0.000333</td>
+      <td>-0.007780</td>
+      <td>-0.028711</td>
+      <td>0.000049</td>
+      <td>0.019983</td>
+      <td>0.008787</td>
+      <td>-0.021814</td>
+      <td>-0.000160</td>
+      <td>-0.031236</td>
       <td>...</td>
-      <td>0.009128</td>
-      <td>0.032535</td>
-      <td>-0.020749</td>
-      <td>0.038132</td>
-      <td>0.032030</td>
-      <td>-0.052667</td>
-      <td>-0.014624</td>
-      <td>-0.009040</td>
-      <td>-0.029470</td>
-      <td>-0.004175</td>
+      <td>0.021217</td>
+      <td>0.053417</td>
+      <td>0.006594</td>
+      <td>0.011942</td>
+      <td>0.005315</td>
+      <td>0.001932</td>
+      <td>-0.020481</td>
+      <td>0.018115</td>
+      <td>-0.002176</td>
+      <td>0.002586</td>
     </tr>
   </tbody>
 </table>
@@ -1097,7 +1133,7 @@ Wall time: 200 µs
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># save to disk</span>
-<span class="n">item_embeddings</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span><span class="s1">&#39;item_embeddings.parquet&#39;</span><span class="p">))</span>
+<span class="n">item_embeddings</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s2">&quot;item_embeddings.parquet&quot;</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
@@ -1108,11 +1144,11 @@ Wall time: 200 µs
 <p>Now we will create our user and item features definitions in the user_features.py and item_features.py files and save these files in the feature_repo.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s1">&#39;feature_repo/&#39;</span><span class="p">,</span><span class="s1">&#39;user_features.py&#39;</span><span class="p">),</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s2">&quot;feature_repo/&quot;</span><span class="p">,</span> <span class="s2">&quot;user_features.py&quot;</span><span class="p">),</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span>
 <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
-<span class="sd">&#39;&#39;&#39;</span>
+    <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">from google.protobuf.duration_pb2 import Duration</span>
-<span class="sd">import datetime </span>
+<span class="sd">import datetime</span>
 <span class="sd">from feast import Entity, Feature, FeatureView, ValueType</span>
 <span class="sd">from feast.infra.offline_stores.file_source import FileSource</span>
 
@@ -1145,7 +1181,9 @@ Wall time: 200 µs
 <span class="sd">    input=user_features,</span>
 <span class="sd">    tags=dict(),</span>
 <span class="sd">)</span>
-<span class="sd">&#39;&#39;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s1">&#39;feature_repo/data/&#39;</span><span class="p">,</span><span class="s1">&#39;user_features.parquet&#39;</span><span class="p">))</span>
+<span class="sd">&quot;&quot;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s2">&quot;feature_repo/data/&quot;</span><span class="p">,</span> <span class="s2">&quot;user_features.parquet&quot;</span><span class="p">)</span>
+    <span class="p">)</span>
 <span class="p">)</span>
 <span class="n">file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 </pre></div>
@@ -1154,11 +1192,11 @@ Wall time: 200 µs
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s1">&#39;feature_repo/&#39;</span><span class="p">,</span><span class="s1">&#39;item_features.py&#39;</span><span class="p">),</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s2">&quot;feature_repo/&quot;</span><span class="p">,</span> <span class="s2">&quot;item_features.py&quot;</span><span class="p">),</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
     <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
-<span class="sd">&#39;&#39;&#39;</span>
+        <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">from google.protobuf.duration_pb2 import Duration</span>
-<span class="sd">import datetime </span>
+<span class="sd">import datetime</span>
 <span class="sd">from feast import Entity, Feature, FeatureView, ValueType</span>
 <span class="sd">from feast.infra.offline_stores.file_source import FileSource</span>
 
@@ -1183,9 +1221,11 @@ Wall time: 200 µs
 <span class="sd">    input=item_features,</span>
 <span class="sd">    tags=dict(),</span>
 <span class="sd">)</span>
-<span class="sd">&#39;&#39;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s1">&#39;feature_repo/data/&#39;</span><span class="p">,</span><span class="s1">&#39;item_features.parquet&#39;</span><span class="p">))</span>
+<span class="sd">&quot;&quot;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s2">&quot;feature_repo/data/&quot;</span><span class="p">,</span> <span class="s2">&quot;item_features.parquet&quot;</span><span class="p">)</span>
+        <span class="p">)</span>
     <span class="p">)</span>
-<span class="n">file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span> 
+<span class="n">file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
@@ -1202,8 +1242,16 @@ Wall time: 200 µs
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">seedir</span> <span class="k">as</span> <span class="nn">sd</span>
-<span class="n">feature_repo_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s1">&#39;feature_repo&#39;</span><span class="p">)</span>
-<span class="n">sd</span><span class="o">.</span><span class="n">seedir</span><span class="p">(</span><span class="n">feature_repo_path</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s1">&#39;lines&#39;</span><span class="p">,</span> <span class="n">itemlimit</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">depthlimit</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">exclude_folders</span><span class="o">=</span><span class="s1">&#39;.ipynb_checkpoints&#39;</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">feature_repo_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s2">&quot;feature_repo&quot;</span><span class="p">)</span>
+<span class="n">sd</span><span class="o">.</span><span class="n">seedir</span><span class="p">(</span>
+    <span class="n">feature_repo_path</span><span class="p">,</span>
+    <span class="n">style</span><span class="o">=</span><span class="s2">&quot;lines&quot;</span><span class="p">,</span>
+    <span class="n">itemlimit</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="n">depthlimit</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+    <span class="n">exclude_folders</span><span class="o">=</span><span class="s2">&quot;.ipynb_checkpoints&quot;</span><span class="p">,</span>
+    <span class="n">sort</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 </div>
