@@ -19,6 +19,16 @@ fi
 if [ "$container" == "merlin-hugectr" ]; then
     echo "Check HugeCTR for ctr-training container"
     python -c "import hugectr; print(hugectr.__version__)"
+
+    # TODO: remove this block once
+    # https://github.com/NVIDIA-Merlin/HugeCTR/pull/328
+    # is in the hugectr release
+    cd /hugectr && \
+    checker_test && \
+    device_map_test && \
+    loss_test && \
+    optimizer_test && \
+    regularizers_test
 fi
 
 if [ "$container" == "merlin-tensorflow" ]; then
@@ -28,6 +38,13 @@ if [ "$container" == "merlin-tensorflow" ]; then
     python -c "import sparse_operation_kit; print(sparse_operation_kit.__version__)"
     echo "Check distributed-embeddings for tf-training container"
     python -c "import distributed_embeddings as tfde; print(tfde.__doc__)"
+
+    # TODO: remove this block once
+    # https://github.com/NVIDIA-Merlin/HugeCTR/pull/328
+    # is in the hugectr release
+    pushd /hugectr/sparse_operation_kit/unit_test/test_scripts/tf2 && \
+    bash sok_test_unit.sh && \
+    popd
 fi
 
 if [ "$container" == "merlin-pytorch" ]; then
