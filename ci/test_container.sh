@@ -16,19 +16,19 @@ if [[ ! "$container" =~ $regex ]]; then
     which tritonserver
 fi
 
-if [ "$container" == "merlin-training" ]; then
+if [ "$container" == "merlin-hugectr" ]; then
     echo "Check HugeCTR for ctr-training container"
     python -c "import hugectr; print(hugectr.__version__)"
 fi
 
-if [ "$container" == "merlin-tensorflow-training" ]; then
-    echo "Check TensorFlow for tf-training container"
+if [ "$container" == "merlin-tensorflow" ]; then
+    echo "Check TensorFlow for merlin-tensorflow container"
     python -c "import tensorflow; print(tensorflow.__version__)"
     echo "Check distributed-embeddings for tf-training container"
     python -c "import distributed_embeddings as tfde; print(tfde.__doc__)"
 fi
 
-if [ "$container" == "merlin-pytorch-training" ]; then
+if [ "$container" == "merlin-pytorch" ]; then
     echo "Check PyTorch for torch-training container"
     python -c "import torch; print(torch.__version__)"
 fi
@@ -59,13 +59,13 @@ echo "Run unit tests for Systems"
 cd /systems && pytest -rxs tests/unit
 
 ## Test HugeCTR
-if [ "$container" == "merlin-training" ]; then
+if [ "$container" == "merlin-hugectr" ]; then
     echo "Run unit tests for HugeCTR"
     /hugectr/ci/test_unit.sh $container $devices
 fi
 
 ## Test distributed-embeddings
-if [ "$container" == "merlin-tensorflow-training" ]; then
+if [ "$container" == "merlin-tensorflow" ]; then
     echo "Run unit tests for distributed-embeddings"
     pytest -rxs /distributed_embeddings/tests
 fi
