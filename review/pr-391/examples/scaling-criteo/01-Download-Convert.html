@@ -113,7 +113,7 @@
 <img alt="http://developer.download.nvidia.com/compute/machine-learning/frameworks/nvidia_logo.png" src="http://developer.download.nvidia.com/compute/machine-learning/frameworks/nvidia_logo.png" />
 <div class="tex2jax_ignore mathjax_ignore section" id="scaling-criteo-download-and-convert">
 <h1>Scaling Criteo: Download and Convert<a class="headerlink" href="#scaling-criteo-download-and-convert" title="Permalink to this headline"></a></h1>
-<p>This notebook is created using the latest stable <a class="reference external" href="https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-training/tags">merlin-training</a>, <a class="reference external" href="https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-tensorflow-training/tags">merlin-tensorflow-training</a> or <a class="reference external" href="https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-pytorch-training/tags">merlin-pytorch-training</a> container.</p>
+<p>This notebook is created using the latest stable <a class="reference external" href="https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-hugectr/tags">merlin-hugectr</a>, <a class="reference external" href="https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-tensorflow/tags">merlin-tensorflow</a>, or <a class="reference external" href="https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-pytorch/tags">merlin-pytorch</a> container.</p>
 <div class="section" id="criteo-1tb-click-logs-dataset">
 <h2>Criteo 1TB Click Logs dataset<a class="headerlink" href="#criteo-1tb-click-logs-dataset" title="Permalink to this headline"></a></h2>
 <p>The <a class="reference external" href="https://ailab.criteo.com/download-criteo-1tb-click-logs-dataset/">Criteo 1TB Click Logs dataset</a> is the largest public available dataset for recommender system. It contains ~1.3 TB of uncompressed click logs containing over four billion samples spanning 24 days. Each record contains 40 features: one label indicating a click or no click, 13 numerical figures, and 26 categorical features. The dataset is provided by CriteoLabs. A subset of 7 days was used in this <a class="reference external" href="https://www.kaggle.com/c/criteo-display-ad-challenge/overview">Kaggle Competition</a>. We will use the dataset as an example how to scale ETL, Training and Inference.</p>
@@ -142,9 +142,9 @@
     <span class="c1"># Test if NUMBER_DAYS in valid range</span>
     <span class="k">if</span> <span class="n">NUMBER_DAYS</span> <span class="o">&lt;</span> <span class="mi">2</span> <span class="ow">or</span> <span class="n">NUMBER_DAYS</span> <span class="o">&gt;</span> <span class="mi">23</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="nb">str</span><span class="p">(</span><span class="n">NUMBER_DAYS</span><span class="p">)</span>
-            <span class="o">+</span> <span class="s2">&quot; is not supported. A minimum of 2 days are &quot;</span>
-            <span class="o">+</span> <span class="s2">&quot;required and a maximum of 24 (0-23 days) are available&quot;</span>
+            <span class="nb">str</span><span class="p">(</span><span class="n">NUMBER_DAYS</span><span class="p">)</span> <span class="o">+</span>
+            <span class="s2">&quot; is not supported. A minimum of 2 days are &quot;</span> <span class="o">+</span>
+            <span class="s2">&quot;required and a maximum of 24 (0-23 days) are available&quot;</span>
         <span class="p">)</span>
 
     <span class="c1"># Create BASE_DIR if not exists</span>
@@ -167,9 +167,9 @@
             <span class="ow">or</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">file</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.gz&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
         <span class="p">):</span>
             <span class="n">download_file</span><span class="p">(</span>
-                <span class="s2">&quot;http://azuremlsampleexperiments.blob.core.windows.net/criteo/day_&quot;</span>
-                <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
-                <span class="o">+</span> <span class="s2">&quot;.gz&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;http://azuremlsampleexperiments.blob.core.windows.net/criteo/day_&quot;</span> <span class="o">+</span>
+                <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">+</span>
+                <span class="s2">&quot;.gz&quot;</span><span class="p">,</span>
                 <span class="n">file</span><span class="p">,</span>
             <span class="p">)</span>
 </pre></div>

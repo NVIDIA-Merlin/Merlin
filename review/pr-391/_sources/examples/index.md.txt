@@ -42,16 +42,16 @@ These notebooks demonstrate how to scale NVTabular:
 ## Running the Example Notebooks
 
 You can run the examples with Docker containers.
-Docker containers are available from the NVIDIA GPU Cloud.
+Docker containers are available from the NVIDIA GPU Cloud catalog.
 Access the catalog of containers at <http://ngc.nvidia.com/catalog/containers>.
 
 Depending on which example you want to run, you should use any one of these Docker containers:
 
-- [Merlin-Training](https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-training) (contains Merlin Core, Merlin Models, Merlin Systems, NVTabular and HugeCTR)
-- [Merlin-PyTorch-Training](https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-pytorch-inference) (contains Merlin Core, Merlin Models, Merlin Systems, NVTabular and PyTorch)
-- [Merlin-Tensorflow-Training](https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-tensorflow-training) (contains Merlin Core, Merlin Models, Merlin Systems, NVTabular and TensorFlow)
-- [Merlin-Tensorflow-Inference](https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-tensorflow-inference) (contains Merlin Core, Merlin Models, Merlin Systems, NVTabular, TensorFlow and Triton Inference Server)
-- [Merlin-Inference](https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-inference) (contains Merlin Core, Merlin Models, Merlin Systems, NVTabular, TensorFlow, PyTorch, HugeCTR and Triton Inference Server)
+- [`merlin-hugectr`](https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-hugectr) (contains Merlin Core, Merlin Models, Merlin Systems, NVTabular, HugeCTR)
+- [`merlin-tensorflow`](https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-tensorflow) (contains Merlin Core, Merlin Models, Merlin Systems, NVTabular and TensorFlow)
+- [`merlin-pytorch`](https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-pytorch) (contains Merlin Core, Merlin Models, Merlin Systems, NVTabular and PyTorch)
+
+All the containers include Triton Inference Server and are capable of training models and performing inference.
 
 There are example docker-compose files referenced in [Scaling to large Datasets with Criteo](https://github.com/NVIDIA-Merlin/Merlin/tree/main/examples/scaling-criteo) that you can get from our GitHub repository.
 

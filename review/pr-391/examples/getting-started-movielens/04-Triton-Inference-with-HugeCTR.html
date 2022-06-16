@@ -113,7 +113,7 @@
 <img alt="http://developer.download.nvidia.com/compute/machine-learning/frameworks/nvidia_logo.png" src="http://developer.download.nvidia.com/compute/machine-learning/frameworks/nvidia_logo.png" />
 <div class="tex2jax_ignore mathjax_ignore section" id="serve-recommendations-from-the-hugectr-model">
 <h1>Serve Recommendations from the HugeCTR Model<a class="headerlink" href="#serve-recommendations-from-the-hugectr-model" title="Permalink to this headline"></a></h1>
-<p>This notebook is created using the latest stable <a class="reference external" href="https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-inference/tags">merlin-inference</a> container.</p>
+<p>This notebook is created using the latest stable <a class="reference external" href="https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-hugectr/tags">merlin-hugectr</a> container.</p>
 <div class="section" id="overview">
 <h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline"></a></h2>
 <p>In this notebook, we will show how we do inference with our trained deep learning recommender model using Triton Inference Server. In this example, we deploy the NVTabular workflow and HugeCTR model with Triton Inference Server. We deploy them as an ensemble. For each request, Triton Inference Server will feed the input data through the NVTabular workflow and its output through the HugeCR model.</p>
@@ -258,8 +258,8 @@
 </div>
 <div class="section" id="load-models-on-triton-server">
 <h3>Load Models on Triton Server<a class="headerlink" href="#load-models-on-triton-server" title="Permalink to this headline"></a></h3>
-<p>At this stage, you should launch the Triton Inference Server docker container with the following script:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>docker run -it --gpus=all -p 8000:8000 -p 8001:8001 -p 8002:8002 -v ${PWD}:/model nvcr.io/nvidia/merlin/merlin-inference:21.11
+<p>At this stage, you should start the Triton Inference Server in the container with the following command:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>docker run -it --gpus=all -p 8000:8000 -p 8001:8001 -p 8002:8002 -v ${PWD}:/model nvcr.io/nvidia/merlin/merlin-hugectr:latest
 </pre></div>
 </div>
 <p>After you started the container you can start triton server with the command below:</p>
