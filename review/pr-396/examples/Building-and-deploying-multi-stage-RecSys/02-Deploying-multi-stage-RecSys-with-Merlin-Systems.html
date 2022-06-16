@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Deploying a Multi-Stage RecSys into Production with Merlin Systems and Triton Inference Server &mdash; Merlin  documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/togglebutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/mystnb.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script >let toggleHintShow = 'Click to show';</script>
+        <script >let toggleHintHide = 'Click to hide';</script>
+        <script >let toggleOpenOnPrint = 'true';</script>
+        <script src="../../_static/togglebutton.js"></script>
+        <script >var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Scaling Large Datasets with Criteo" href="../scaling-criteo/index.html" />
+    <link rel="prev" title="Building Intelligent Recommender Systems with Merlin" href="01-Building-Recommender-Systems-with-Merlin.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Merlin
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../README.html">Introduction</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">Example Notebooks</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../index.html#inventory">Inventory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#running-the-example-notebooks">Running the Example Notebooks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../getting-started-movielens/index.html">Getting Started using the MovieLens Dataset</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">Deploying a Multi-Stage Recommender System</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="index.html#running-the-example-notebooks">Running the Example Notebooks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="01-Building-Recommender-Systems-with-Merlin.html">Building the Recommender System</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Deploying the Recommender System with Triton</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../scaling-criteo/index.html">Scaling Large Datasets with Criteo</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../containers.html">Merlin Containers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../support_matrix/index.html">Merlin Support Matrix</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Merlin</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">NVIDIA Merlin Example Notebooks</a> &raquo;</li>
+          <li><a href="index.html">Deploying a Multi-Stage Recommender System</a> &raquo;</li>
+      <li>Deploying a Multi-Stage RecSys into Production with Merlin Systems and Triton Inference Server</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Copyright 2021 NVIDIA Corporation. All Rights Reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+<span class="c1"># ================================</span>
+</pre></div>
+</div>
+</div>
+</div>
+<img alt="http://developer.download.nvidia.com/compute/machine-learning/frameworks/nvidia_logo.png" src="http://developer.download.nvidia.com/compute/machine-learning/frameworks/nvidia_logo.png" />
+<div class="section" id="deploying-a-multi-stage-recsys-into-production-with-merlin-systems-and-triton-inference-server">
+<h1>Deploying a Multi-Stage RecSys into Production with Merlin Systems and Triton Inference Server<a class="headerlink" href="#deploying-a-multi-stage-recsys-into-production-with-merlin-systems-and-triton-inference-server" title="Permalink to this headline"></a></h1>
+<p>This notebook is created using the latest stable <a class="reference external" href="https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-tensorflow-inference/tags">merlin-tensorflow-inference</a> container.</p>
+<p>At this point, when you reach out to this notebook, we expect that you have already executed the first notebook <code class="docutils literal notranslate"><span class="pre">01-Building-Recommender-Systems-with-Merlin.ipynb</span></code> and exported all the required files and models.</p>
+<p>We are going to generate recommended items for a given user query (user_id) by following the steps described in the figure below.</p>
+<p><img alt="tritonensemble" src="../../_images/triton_ensemble.png" /></p>
+<p>Merlin Systems library have the set of operators to be able to serve multi-stage recommender systems built with Tensorflow on <a class="reference external" href="https://github.com/triton-inference-server/server">Triton Inference Server</a>(TIS) easily and efficiently. Below, we will go through these operators and demonstrate their usage in serving a multi-stage system on Triton.</p>
+<div class="section" id="import-required-libraries-and-functions">
+<h2>Import required libraries and functions<a class="headerlink" href="#import-required-libraries-and-functions" title="Permalink to this headline"></a></h2>
+<p>At this step, we assume you already installed the tensorflow-gpu (or -cpu), feast and faiss-gpu (or -cpu) libraries when running the first notebook <code class="docutils literal notranslate"><span class="pre">01-Building-Recommender-Systems-with-Merlin.ipynb</span></code>.</p>
+<p>In case you need to install them for running this example on GPU, execute the following script in a cell.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="n">pip</span> <span class="n">install</span> <span class="n">tensorflow</span> <span class="s2">&quot;feast&lt;0.20&quot;</span> <span class="n">faiss</span><span class="o">-</span><span class="n">gpu</span>
+</pre></div>
+</div>
+<p>or the following script in a cell for CPU.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="n">pip</span> <span class="n">install</span> <span class="n">tensorflow</span><span class="o">-</span><span class="n">cpu</span> <span class="s2">&quot;feast&lt;0.20&quot;</span> <span class="n">faiss</span><span class="o">-</span><span class="n">cpu</span>
+</pre></div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">feast</span>
+<span class="kn">import</span> <span class="nn">faiss</span>
+<span class="kn">import</span> <span class="nn">seedir</span> <span class="k">as</span> <span class="nn">sd</span>
+<span class="kn">from</span> <span class="nn">nvtabular</span> <span class="kn">import</span> <span class="n">ColumnSchema</span><span class="p">,</span> <span class="n">Schema</span>
+
+<span class="kn">from</span> <span class="nn">merlin.systems.dag.ensemble</span> <span class="kn">import</span> <span class="n">Ensemble</span>
+<span class="kn">from</span> <span class="nn">merlin.systems.dag.ops.session_filter</span> <span class="kn">import</span> <span class="n">FilterCandidates</span>
+<span class="kn">from</span> <span class="nn">merlin.systems.dag.ops.softmax_sampling</span> <span class="kn">import</span> <span class="n">SoftmaxSampling</span>
+<span class="kn">from</span> <span class="nn">merlin.systems.dag.ops.tensorflow</span> <span class="kn">import</span> <span class="n">PredictTensorflow</span>
+<span class="kn">from</span> <span class="nn">merlin.systems.dag.ops.unroll_features</span> <span class="kn">import</span> <span class="n">UnrollFeatures</span>
+<span class="kn">from</span> <span class="nn">merlin.systems.triton.utils</span> <span class="kn">import</span> <span class="n">run_triton_server</span><span class="p">,</span> <span class="n">run_ensemble_on_tritonserver</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/usr/local/lib/python3.8/dist-packages/faiss/loader.py:28: DeprecationWarning: distutils Version classes are deprecated. Use packaging.version instead.
+  if LooseVersion(numpy.__version__) &gt;= &quot;1.19&quot;:
+/usr/local/lib/python3.8/dist-packages/setuptools/_distutils/version.py:351: DeprecationWarning: distutils Version classes are deprecated. Use packaging.version instead.
+  other = LooseVersion(other)
+06/13/2022 03:47:43 PM INFO:Loading faiss with AVX2 support.
+06/13/2022 03:47:43 PM INFO:Could not load library with AVX2 support due to:
+ModuleNotFoundError(&quot;No module named &#39;faiss.swigfaiss_avx2&#39;&quot;)
+06/13/2022 03:47:43 PM INFO:Loading faiss.
+06/13/2022 03:47:43 PM INFO:Successfully loaded faiss.
+06/13/2022 03:47:43 PM INFO:init
+/usr/lib/python3.8/site-packages/cudf/utils/metadata/orc_column_statistics_pb2.py:19: DeprecationWarning: Call to deprecated create function FileDescriptor(). Note: Create unlinked descriptors is going to go away. Please use get/find descriptors from generated code or query the descriptor_pool.
+  DESCRIPTOR = _descriptor.FileDescriptor(
+/usr/lib/python3.8/site-packages/cudf/utils/metadata/orc_column_statistics_pb2.py:37: DeprecationWarning: Call to deprecated create function FieldDescriptor(). Note: Create unlinked descriptors is going to go away. Please use get/find descriptors from generated code or query the descriptor_pool.
+  _descriptor.FieldDescriptor(
+/usr/lib/python3.8/site-packages/cudf/utils/metadata/orc_column_statistics_pb2.py:30: DeprecationWarning: Call to deprecated create function Descriptor(). Note: Create unlinked descriptors is going to go away. Please use get/find descriptors from generated code or query the descriptor_pool.
+  _INTEGERSTATISTICS = _descriptor.Descriptor(
+/usr/lib/python3.8/site-packages/dask_cudf/core.py:32: DeprecationWarning: distutils Version classes are deprecated. Use packaging.version instead.
+  DASK_VERSION = LooseVersion(dask.__version__)
+/usr/local/lib/python3.8/dist-packages/tritonclient/grpc/model_config_pb2.py:19: DeprecationWarning: Call to deprecated create function FileDescriptor(). Note: Create unlinked descriptors is going to go away. Please use get/find descriptors from generated code or query the descriptor_pool.
+  DESCRIPTOR = _descriptor.FileDescriptor(
+/usr/local/lib/python3.8/dist-packages/tritonclient/grpc/model_config_pb2.py:33: DeprecationWarning: Call to deprecated create function EnumValueDescriptor(). Note: Create unlinked descriptors is going to go away. Please use get/find descriptors from generated code or query the descriptor_pool.
+  _descriptor.EnumValueDescriptor(
+/usr/local/lib/python3.8/dist-packages/tritonclient/grpc/model_config_pb2.py:27: DeprecationWarning: Call to deprecated create function EnumDescriptor(). Note: Create unlinked descriptors is going to go away. Please use get/find descriptors from generated code or query the descriptor_pool.
+  _DATATYPE = _descriptor.EnumDescriptor(
+/usr/local/lib/python3.8/dist-packages/tritonclient/grpc/model_config_pb2.py:330: DeprecationWarning: Call to deprecated create function FieldDescriptor(). Note: Create unlinked descriptors is going to go away. Please use get/find descriptors from generated code or query the descriptor_pool.
+  _descriptor.FieldDescriptor(
+/usr/local/lib/python3.8/dist-packages/tritonclient/grpc/model_config_pb2.py:323: DeprecationWarning: Call to deprecated create function Descriptor(). Note: Create unlinked descriptors is going to go away. Please use get/find descriptors from generated code or query the descriptor_pool.
+  _MODELRATELIMITER_RESOURCE = _descriptor.Descriptor(
+/usr/local/lib/python3.8/dist-packages/flatbuffers/compat.py:19: DeprecationWarning: the imp module is deprecated in favour of importlib; see the module&#39;s documentation for alternative uses
+  import imp
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="register-our-features-on-feature-store">
+<h2>Register our features on feature store<a class="headerlink" href="#register-our-features-on-feature-store" title="Permalink to this headline"></a></h2>
+<p>The Feast feature registry is a central catalog of all the feature definitions and their related metadata(read more <a class="reference external" href="https://docs.feast.dev/getting-started/architecture-and-components/registry">here</a>). We have defined our user and item features definitions in the <code class="docutils literal notranslate"><span class="pre">user_features.py</span></code> and  <code class="docutils literal notranslate"><span class="pre">item_features.py</span></code> files. With FeatureView() users can register data sources in their organizations into Feast, and then use those data sources for both training and online inference. In the <code class="docutils literal notranslate"><span class="pre">user_features.py</span></code> and <code class="docutils literal notranslate"><span class="pre">item_features.py</span></code> files, we are telling Feast where to find user and item features.</p>
+<p>Before we move on to the next steps, we need to perform <code class="docutils literal notranslate"><span class="pre">feast</span> <span class="pre">apply</span></code>command as directed below.  With that, we register our features, we can apply the changes to create our feature registry and store all entity and feature view definitions in a local SQLite online store called <code class="docutils literal notranslate"><span class="pre">online_store.db</span></code>.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">BASE_DIR</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;BASE_DIR&quot;</span><span class="p">,</span> <span class="s2">&quot;/Merlin/examples/Building-and-deploying-multi-stage-RecSys/&quot;</span><span class="p">)</span>
+
+<span class="c1"># define feature repo path</span>
+<span class="n">feast_repo_path</span> <span class="o">=</span> <span class="n">BASE_DIR</span> <span class="o">+</span> <span class="s2">&quot;feature_repo/&quot;</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">cd</span> $feast_repo_path
+<span class="o">!</span>feast apply
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/Merlin/examples/Building-and-deploying-multi-stage-RecSys/feature_repo
+/usr/local/lib/python3.8/dist-packages/feast/feature_view.py:100: DeprecationWarning: The argument &#39;input&#39; is being deprecated. Please use &#39;batch_source&#39; instead. Feast 0.13 and onwards will not support the argument &#39;input&#39;.
+  warnings.warn(
+Created entity <span class=" -Color -Color-Bold -Color-Bold-Green">user_id</span>
+Created entity <span class=" -Color -Color-Bold -Color-Bold-Green">item_id</span>
+Created feature view <span class=" -Color -Color-Bold -Color-Bold-Green">user_features</span>
+Created feature view <span class=" -Color -Color-Bold -Color-Bold-Green">item_features</span>
+
+Created sqlite table <span class=" -Color -Color-Bold -Color-Bold-Green">feature_repo_user_features</span>
+Created sqlite table <span class=" -Color -Color-Bold -Color-Bold-Green">feature_repo_item_features</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="loading-features-from-offline-store-into-an-online-store">
+<h2>Loading features from offline store into an online store<a class="headerlink" href="#loading-features-from-offline-store-into-an-online-store" title="Permalink to this headline"></a></h2>
+<p>After we execute <code class="docutils literal notranslate"><span class="pre">apply</span></code> and registered our features and created our online local store, now we need to perform <a class="reference external" href="https://docs.feast.dev/how-to-guides/running-feast-in-production">materialization</a> operation. This is done to keep our online store up to date and get it ready for prediction. For that we need to run a job that loads feature data from our feature view sources into our online store. As we add new features to our offline stores, we can continuously materialize them to keep our online store up to date by finding the latest feature values for each user.</p>
+<p>When you run the <code class="docutils literal notranslate"><span class="pre">feast</span> <span class="pre">materialize</span> <span class="pre">..</span></code> command below, you will see a message <i>Materializing 2 feature views from 1995-01-01 01:01:01+00:00 to 2025-01-01 01:01:01+00:00 into the sqlite online store </i>  will be printed out.</p>
+<p>Note that materialization step takes some time…</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>feast materialize <span class="m">1995</span>-01-01T01:01:01 <span class="m">2025</span>-01-01T01:01:01
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Materializing <span class=" -Color -Color-Bold -Color-Bold-Green">2</span> feature views from <span class=" -Color -Color-Bold -Color-Bold-Green">1995-01-01 01:01:01+00:00</span> to <span class=" -Color -Color-Bold -Color-Bold-Green">2025-01-01 01:01:01+00:00</span> into the <span class=" -Color -Color-Bold -Color-Bold-Green">sqlite</span> online store.
+
+<span class=" -Color -Color-Bold -Color-Bold-Green">user_features</span>:
+100%|████████████████████████████████████████████████████████████| 452/452 [00:00&lt;00:00, 593.93it/s]
+<span class=" -Color -Color-Bold -Color-Bold-Green">item_features</span>:
+100%|███████████████████████████████████████████████████████████| 441/441 [00:00&lt;00:00, 1204.47it/s]
+</pre></div>
+</div>
+</div>
+</div>
+<p>Now, let’s check our feature_repo structure again after we ran <code class="docutils literal notranslate"><span class="pre">apply</span></code> and <code class="docutils literal notranslate"><span class="pre">materialize</span></code> commands.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># set up the base dir to for feature store</span>
+<span class="n">feature_repo_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s1">&#39;feature_repo&#39;</span><span class="p">)</span>
+<span class="n">sd</span><span class="o">.</span><span class="n">seedir</span><span class="p">(</span><span class="n">feature_repo_path</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s1">&#39;lines&#39;</span><span class="p">,</span> <span class="n">itemlimit</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">depthlimit</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">exclude_folders</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;.ipynb_checkpoints&#39;</span><span class="p">,</span> <span class="s1">&#39;__pycache__&#39;</span><span class="p">],</span> <span class="n">sort</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>feature_repo/
+├─__init__.py
+├─data/
+│ ├─item_features.parquet
+│ ├─online_store.db
+│ ├─registry.db
+│ └─user_features.parquet
+├─feature_store.yaml
+├─item_features.py
+└─user_features.py
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="set-up-faiss-index-create-feature-store-client-and-objects-for-the-triton-ensemble">
+<h2>Set up Faiss index, create feature store client and objects for the Triton ensemble<a class="headerlink" href="#set-up-faiss-index-create-feature-store-client-and-objects-for-the-triton-ensemble" title="Permalink to this headline"></a></h2>
+<p>Create a folder for faiss index path</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span> <span class="o">+</span> <span class="s1">&#39;faiss_index&#39;</span><span class="p">)):</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span> <span class="o">+</span> <span class="s1">&#39;faiss_index&#39;</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Define paths for ranking model, retrieval model, and faiss index path</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">faiss_index_path</span> <span class="o">=</span> <span class="n">BASE_DIR</span> <span class="o">+</span> <span class="s1">&#39;faiss_index&#39;</span> <span class="o">+</span> <span class="s2">&quot;/index.faiss&quot;</span>
+<span class="n">retrieval_model_path</span> <span class="o">=</span> <span class="n">BASE_DIR</span> <span class="o">+</span> <span class="s2">&quot;query_tower/&quot;</span>
+<span class="n">ranking_model_path</span> <span class="o">=</span> <span class="n">BASE_DIR</span> <span class="o">+</span> <span class="s2">&quot;dlrm/&quot;</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Create a request schema that we are going to use when sending a request to Triton Infrence Server (TIS).</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">request_schema</span> <span class="o">=</span> <span class="n">Schema</span><span class="p">(</span>
+    <span class="p">[</span>
+        <span class="n">ColumnSchema</span><span class="p">(</span><span class="s2">&quot;user_id&quot;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">),</span>
+    <span class="p">]</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">QueryFaiss</span></code> operator creates an interface between a FAISS Approximate Nearest Neighbors (ANN) Index and Triton Infrence Server. For a given input query vector, we do an ANN search query to find the ids of top-k nearby nodes in the index.</p>
+<p><code class="docutils literal notranslate"><span class="pre">setup_faiss</span></code> is  a utility function that will create a Faiss index from an embedding vector with using L2 distance.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">merlin.systems.dag.ops.faiss</span> <span class="kn">import</span> <span class="n">QueryFaiss</span><span class="p">,</span> <span class="n">setup_faiss</span> 
+
+<span class="n">item_embeddings</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span>
+    <span class="n">pd</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="n">BASE_DIR</span> <span class="o">+</span> <span class="s2">&quot;item_embeddings.parquet&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+<span class="p">)</span>
+<span class="n">setup_faiss</span><span class="p">(</span><span class="n">item_embeddings</span><span class="p">,</span> <span class="n">faiss_index_path</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>WARNING clustering 441 points to 32 centroids: please provide at least 1248 training points
+</pre></div>
+</div>
+</div>
+</div>
+<p>Create feature store client.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">feature_store</span> <span class="o">=</span> <span class="n">feast</span><span class="o">.</span><span class="n">FeatureStore</span><span class="p">(</span><span class="n">feast_repo_path</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Fetch user features with <code class="docutils literal notranslate"><span class="pre">QueryFeast</span></code> operator from the feature store. <code class="docutils literal notranslate"><span class="pre">QueryFeast</span></code> operator is responsible for ensuring that our feast feature store can communicate correctly with tritonserver for the ensemble feast feature look ups.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">merlin.systems.dag.ops.feast</span> <span class="kn">import</span> <span class="n">QueryFeast</span> 
+
+<span class="n">user_features</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;user_id&quot;</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">QueryFeast</span><span class="o">.</span><span class="n">from_feature_view</span><span class="p">(</span>
+    <span class="n">store</span><span class="o">=</span><span class="n">feature_store</span><span class="p">,</span>
+    <span class="n">view</span><span class="o">=</span><span class="s2">&quot;user_features&quot;</span><span class="p">,</span>
+    <span class="n">column</span><span class="o">=</span><span class="s2">&quot;user_id&quot;</span><span class="p">,</span>
+    <span class="n">include_id</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/usr/local/lib/python3.8/dist-packages/merlin/systems/dag/ops/feast.py:15: DeprecationWarning: `np.float` is a deprecated alias for the builtin `float`. To silence this warning, use `float` by itself. Doing this will not modify any behavior and is safe. If you specifically wanted the numpy scalar type, use `np.float64` here.
+Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
+  ValueType.FLOAT: (np.float, False, False),
+</pre></div>
+</div>
+</div>
+</div>
+<p>Retrieve top-K candidate items using <code class="docutils literal notranslate"><span class="pre">retrieval</span> <span class="pre">model</span></code> that are relevant for a given user. We use <code class="docutils literal notranslate"><span class="pre">PredictTensorflow()</span></code> operator that takes a tensorflow model and packages it correctly for TIS to run with the tensorflow backend.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># prevent TF to claim all GPU memory</span>
+<span class="kn">from</span> <span class="nn">merlin.models.loader.tf_utils</span> <span class="kn">import</span> <span class="n">configure_tensorflow</span>
+
+<span class="n">configure_tensorflow</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;function tensorflow.python.dlpack.dlpack.from_dlpack(dlcapsule)&gt;
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">topk_retrieval</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="n">retrieval</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">user_features</span>
+    <span class="o">&gt;&gt;</span> <span class="n">PredictTensorflow</span><span class="p">(</span><span class="n">retrieval_model_path</span><span class="p">)</span>
+    <span class="o">&gt;&gt;</span> <span class="n">QueryFaiss</span><span class="p">(</span><span class="n">faiss_index_path</span><span class="p">,</span> <span class="n">topk</span><span class="o">=</span><span class="n">topk_retrieval</span><span class="p">)</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2022-06-13 15:48:00.638777: I tensorflow/core/platform/cpu_feature_guard.cc:193] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  AVX2 FMA
+To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2022-06-13 15:48:03.008635: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1532] Created device /job:localhost/replica:0/task:0/device:GPU:0 with 16255 MB memory:  -&gt; device: 0, name: Tesla V100-SXM2-32GB-LS, pci bus id: 0000:06:00.0, compute capability: 7.0
+06/13/2022 03:48:05 PM WARNING:No training configuration found in save file, so the model was *not* compiled. Compile it manually.
+</pre></div>
+</div>
+</div>
+</div>
+<p>Fetch item features for the candidate items that are retrieved from the retrieval step above from the feature store.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">item_features</span> <span class="o">=</span> <span class="n">retrieval</span><span class="p">[</span><span class="s2">&quot;candidate_ids&quot;</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">QueryFeast</span><span class="o">.</span><span class="n">from_feature_view</span><span class="p">(</span>
+    <span class="n">store</span><span class="o">=</span><span class="n">feature_store</span><span class="p">,</span>
+    <span class="n">view</span><span class="o">=</span><span class="s2">&quot;item_features&quot;</span><span class="p">,</span>
+    <span class="n">column</span><span class="o">=</span><span class="s2">&quot;candidate_ids&quot;</span><span class="p">,</span>
+    <span class="n">output_prefix</span><span class="o">=</span><span class="s2">&quot;item&quot;</span><span class="p">,</span>
+    <span class="n">include_id</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Merge the user features and items features to create the all set of combined features that were used in model training using <code class="docutils literal notranslate"><span class="pre">UnrollFeatures</span></code> operator which takes a target column and joins the “unroll” columns to the target. This helps when broadcasting a series of user features to a set of items.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">user_features_to_unroll</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;user_id&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;user_shops&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;user_profile&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;user_group&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;user_gender&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;user_age&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;user_consumption_2&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;user_is_occupied&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;user_geography&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;user_intentions&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;user_brands&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;user_categories&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+
+<span class="n">combined_features</span> <span class="o">=</span> <span class="n">item_features</span> <span class="o">&gt;&gt;</span> <span class="n">UnrollFeatures</span><span class="p">(</span>
+    <span class="s2">&quot;item_id&quot;</span><span class="p">,</span> <span class="n">user_features</span><span class="p">[</span><span class="n">user_features_to_unroll</span><span class="p">]</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Rank the combined features using the trained ranking model, which is a DLRM model for this example. We feed the path of the ranking model to <code class="docutils literal notranslate"><span class="pre">PredictTensorflow()</span></code> operator.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ranking</span> <span class="o">=</span> <span class="n">combined_features</span> <span class="o">&gt;&gt;</span> <span class="n">PredictTensorflow</span><span class="p">(</span><span class="n">ranking_model_path</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>For the ordering we use <code class="docutils literal notranslate"><span class="pre">SoftmaxSampling()</span></code> operator. This operator sorts all inputs in descending order given the input ids and prediction introducing some randomization into the ordering by sampling items from the softmax of the predicted relevance scores, and finally returns top-k ordered items.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">top_k</span><span class="o">=</span><span class="mi">10</span>
+<span class="n">ordering</span> <span class="o">=</span> <span class="n">combined_features</span><span class="p">[</span><span class="s2">&quot;item_id&quot;</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">SoftmaxSampling</span><span class="p">(</span>
+    <span class="n">relevance_col</span><span class="o">=</span><span class="n">ranking</span><span class="p">[</span><span class="s2">&quot;click/binary_classification_task&quot;</span><span class="p">],</span> <span class="n">topk</span><span class="o">=</span><span class="n">top_k</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="mf">20.0</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="export-graph-as-ensemble">
+<h2>Export Graph as Ensemble<a class="headerlink" href="#export-graph-as-ensemble" title="Permalink to this headline"></a></h2>
+<p>The last step is to create the ensemble artifacts that TIS can consume. To make these artifacts import the Ensemble class. This class  represents an entire ensemble consisting of multiple models that run sequentially in TIS initiated by an inference request. It is responsible with interpreting the graph and exporting the correct files for TIS.</p>
+<p>When we create an Ensemble object we feed the graph and a schema representing the starting input of the graph.  After we create the ensemble object, we export the graph, supplying an export path for the <code class="docutils literal notranslate"><span class="pre">ensemble.export()</span></code> function. This returns an ensemble config which represents the entire inference pipeline and a list of node-specific configs.</p>
+<p>Create the folder to export the models and config files.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span> <span class="o">+</span> <span class="s1">&#39;poc_ensemble&#39;</span><span class="p">)):</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span> <span class="o">+</span> <span class="s1">&#39;poc_ensemble&#39;</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># define the path where all the models and config files exported to</span>
+<span class="n">export_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span> <span class="o">+</span> <span class="s1">&#39;poc_ensemble&#39;</span><span class="p">)</span>
+
+<span class="n">ensemble</span> <span class="o">=</span> <span class="n">Ensemble</span><span class="p">(</span><span class="n">ordering</span><span class="p">,</span> <span class="n">request_schema</span><span class="p">)</span>
+<span class="n">ens_config</span><span class="p">,</span> <span class="n">node_configs</span> <span class="o">=</span> <span class="n">ensemble</span><span class="o">.</span><span class="n">export</span><span class="p">(</span><span class="n">export_path</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Let’s check our export_path structure</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sd</span><span class="o">.</span><span class="n">seedir</span><span class="p">(</span><span class="n">export_path</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s1">&#39;lines&#39;</span><span class="p">,</span> <span class="n">itemlimit</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">depthlimit</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">exclude_folders</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;.ipynb_checkpoints&#39;</span><span class="p">,</span> <span class="s1">&#39;__pycache__&#39;</span><span class="p">],</span> <span class="n">sort</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>poc_ensemble/
+├─0_queryfeast/
+│ ├─1/
+│ │ └─model.py
+│ └─config.pbtxt
+├─1_predicttensorflow/
+│ ├─1/
+│ │ └─model.savedmodel/
+│ │   ├─assets/
+│ │   ├─keras_metadata.pb
+│ │   ├─saved_model.pb
+│ │   └─variables/
+│ │     ├─variables.data-00000-of-00001
+│ │     └─variables.index
+│ └─config.pbtxt
+├─2_queryfaiss/
+│ ├─1/
+│ │ ├─index.faiss/
+│ │ │ └─index.faiss
+│ │ └─model.py
+│ └─config.pbtxt
+├─3_queryfeast/
+│ ├─1/
+│ │ └─model.py
+│ └─config.pbtxt
+├─4_unrollfeatures/
+│ ├─1/
+│ │ └─model.py
+│ └─config.pbtxt
+├─5_predicttensorflow/
+│ ├─1/
+│ │ └─model.savedmodel/
+│ │   ├─assets/
+│ │   ├─keras_metadata.pb
+│ │   ├─saved_model.pb
+│ │   └─variables/
+│ │     ├─variables.data-00000-of-00001
+│ │     └─variables.index
+│ └─config.pbtxt
+├─6_softmaxsampling/
+│ ├─1/
+│ │ └─model.py
+│ └─config.pbtxt
+└─ensemble_model/
+  ├─1/
+  └─config.pbtxt
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="starting-triton-server">
+<h2>Starting Triton Server<a class="headerlink" href="#starting-triton-server" title="Permalink to this headline"></a></h2>
+<p>It is time to deploy all the models as an ensemble model to Triton Inference Serve <a class="reference external" href="https://github.com/triton-inference-server">TIS</a>. After we export the ensemble, we are ready to start the TIS. You can start triton server by using the following command on your terminal:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">tritonserver</span> <span class="o">--</span><span class="n">model</span><span class="o">-</span><span class="n">repository</span><span class="o">=/</span><span class="n">ensemble_export_path</span><span class="o">/</span> <span class="o">--</span><span class="n">backend</span><span class="o">-</span><span class="n">config</span><span class="o">=</span><span class="n">tensorflow</span><span class="p">,</span><span class="n">version</span><span class="o">=</span><span class="mi">2</span>
+</pre></div>
+</div>
+<p>For the <code class="docutils literal notranslate"><span class="pre">--model-repository</span></code> argument, specify the same path as the <code class="docutils literal notranslate"><span class="pre">export_path</span></code> that you specified previously in the <code class="docutils literal notranslate"><span class="pre">ensemble.export</span></code> method. This command will launch the server and load all the models to the server. Once all the models are loaded successfully, you should see <code class="docutils literal notranslate"><span class="pre">READY</span></code> status printed out in the terminal for each loaded model.</p>
+</div>
+<div class="section" id="retrieving-recommendations-from-triton">
+<h2>Retrieving Recommendations from Triton<a class="headerlink" href="#retrieving-recommendations-from-triton" title="Permalink to this headline"></a></h2>
+<p>Once our models are successfully loaded to the TIS, we can now easily send a request to TIS and get a response for our query with <code class="docutils literal notranslate"><span class="pre">send_triton_request</span></code> utility function.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">merlin.systems.triton.utils</span> <span class="kn">import</span> <span class="n">send_triton_request</span>
+<span class="kn">from</span> <span class="nn">merlin.core.dispatch</span> <span class="kn">import</span> <span class="n">make_df</span>
+
+<span class="c1"># create a request to be sent to TIS</span>
+<span class="n">request</span> <span class="o">=</span> <span class="n">make_df</span><span class="p">({</span><span class="s2">&quot;user_id&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">]})</span>
+<span class="n">request</span><span class="p">[</span><span class="s2">&quot;user_id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">request</span><span class="p">[</span><span class="s2">&quot;user_id&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+
+<span class="n">outputs</span> <span class="o">=</span> <span class="n">ensemble</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">output_schema</span><span class="o">.</span><span class="n">column_names</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">response</span> <span class="o">=</span> <span class="n">send_triton_request</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">outputs</span><span class="p">)</span>
+<span class="n">response</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>{&#39;ordered_ids&#39;: array([[248],
+        [195],
+        [230],
+        [ 60],
+        [382],
+        [199],
+        [222],
+        [433],
+        [ 71],
+        [151]], dtype=int32)}
+</pre></div>
+</div>
+</div>
+</div>
+<p>Note that these item ids are encoded values, not the raw original values. We will eventually create the reverse dictionary lookup functionality to be able to map these encoded item ids to their original raw ids with one-line of code. But if you really want to do it now, you can easily map these ids to their original values using the <code class="docutils literal notranslate"><span class="pre">unique.item_id.parquet</span></code> file stored in the <code class="docutils literal notranslate"><span class="pre">categories</span></code> folder.</p>
+<p>That’s it! You finished deploying a multi-stage Recommender Systems on Triton Inference Server using Merlin framework.</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="01-Building-Recommender-Systems-with-Merlin.html" class="btn btn-neutral float-left" title="Building Intelligent Recommender Systems with Merlin" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../scaling-criteo/index.html" class="btn btn-neutral float-right" title="Scaling Large Datasets with Criteo" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, NVIDIA.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
