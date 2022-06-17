@@ -1,0 +1,1739 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "id": "8c3403a6",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Copyright 2021 NVIDIA Corporation. All Rights Reserved.\n",
+    "#\n",
+    "# Licensed under the Apache License, Version 2.0 (the \"License\");\n",
+    "# you may not use this file except in compliance with the License.\n",
+    "# You may obtain a copy of the License at\n",
+    "#\n",
+    "#     http://www.apache.org/licenses/LICENSE-2.0\n",
+    "#\n",
+    "# Unless required by applicable law or agreed to in writing, software\n",
+    "# distributed under the License is distributed on an \"AS IS\" BASIS,\n",
+    "# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n",
+    "# See the License for the specific language governing permissions and\n",
+    "# limitations under the License.\n",
+    "# ================================"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "ad9b5cc0-2110-464e-9773-003ffe7d216c",
+   "metadata": {},
+   "source": [
+    "<img src=\"http://developer.download.nvidia.com/compute/machine-learning/frameworks/nvidia_logo.png\" style=\"width: 90px; float: right;\">\n",
+    "\n",
+    "## Building Intelligent Recommender Systems with Merlin\n",
+    "\n",
+    "This notebook is created using the latest stable [merlin-tensorflow-inference](https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-tensorflow-inference/tags) container. \n",
+    "\n",
+    "### Overview"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "f9657308-2e08-49b4-8924-eace75a4634c",
+   "metadata": {},
+   "source": [
+    "Recommender Systems (RecSys) are the engine of the modern internet and the catalyst for human decisions. Building a recommendation system is challenging because it requires multiple stages (data preprocessing, offline training, item retrieval, filtering, ranking, ordering, etc.) to work together seamlessly and efficiently. The biggest challenges for new practitioners are the lack of understanding around what RecSys look like in the real world, and the gap between examples of simple models and a production-ready end-to-end recommender systems."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "405280b0-3d48-43b6-ab95-d29be7a43e9e",
+   "metadata": {},
+   "source": [
+    "The figure below represents a four-stage recommender systems. This is more complex process than only training a single model and deploying it, and it is much more realistic and closer to what's happening in the real-world recommender production systems."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "27220153",
+   "metadata": {},
+   "source": [
+    "![fourstage](../images/fourstages.png)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "b27ffed1-4b4b-4b6f-b933-31e9f6c1b4e1",
+   "metadata": {},
+   "source": [
+    "In these series of notebooks, we are going to showcase how we can deploy a four-stage recommender systems using Merlin Systems library easily on [Triton Inference Server](https://github.com/triton-inference-server/server). Let's go over the concepts in the figure briefly. \n",
+    "- **Retrieval:** This is the step to narrow down millions of items into thousands of candidates. We are going to train a Two-Tower item retrieval model to retrieve the relevant top-K candidate items.\n",
+    "- **Filtering:** This step is to exclude the already interacted  or undesirable items from the candidate items set or to apply business logic rules. Although this is an important step, for this example we skip this step.\n",
+    "- **Scoring:** This is also known as ranking. Here the retrieved and filtered candidate items are being scored. We are going to train a ranking model to be able to use at our scoring step. \n",
+    "- **Ordering:** At this stage, we can order the final set of items that we want to recommend to the user. Here, we’re able to align the output of the model with business needs, constraints, or criteria.\n",
+    "\n",
+    "To learn more about the four-stage recommender systems, you can listen to Even Oldridge's [Moving Beyond Recommender Models talk](https://www.youtube.com/watch?v=5qjiY-kLwFY&list=PL65MqKWg6XcrdN4TJV0K1PdLhF_Uq-b43&index=7) at KDD'21 and read more [in this blog post](https://eugeneyan.com/writing/system-design-for-discovery/)."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "e26f3194-9f17-4fa7-8baa-14333f2a122a",
+   "metadata": {},
+   "source": [
+    "### Learning objectives\n",
+    "- Understanding four stages of recommender systems\n",
+    "- Training retrieval and ranking models with Merlin Models\n",
+    "- Setting up feature store and approximate nearest neighbours (ANN) search libraries\n",
+    "- Deploying trained models to Triton Inference Server with Merlin Systems"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "58d8bd1f-fa29-4d4b-a320-c76538f2302f",
+   "metadata": {},
+   "source": [
+    "In addition to NVIDIA Merlin libraries and the Triton Inference Server client library, we use two external libraries in these series of examples:\n",
+    "\n",
+    "- [Feast](https://docs.feast.dev/): an end-to-end open source feature store library for machine learning\n",
+    "- [Faiss](https://github.com/facebookresearch/faiss): a library for efficient similarity search and clustering of dense vectors\n",
+    "\n",
+    "You can find more information about `Feast feature store` and `Faiss` libraries in the next notebook."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "46b7f3bd",
+   "metadata": {},
+   "source": [
+    "### Import required libraries and functions"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "6c1586d8-e5a6-40c3-b6bb-61a3e62fa34c",
+   "metadata": {},
+   "source": [
+    "**Compatibility:**\n",
+    "\n",
+    "These notebooks are developed and tested using our latest inference container on [NVIDIA's docker registry](https://catalog.ngc.nvidia.com/containers?filters=&orderBy=dateModifiedDESC&query=merlin)."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "id": "2cd8cc8d-5cc7-4a9f-91e5-3deec6f1fe74",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "application/javascript": "\n            setTimeout(function() {\n                var nbb_cell_id = 1;\n                var nbb_unformatted_code = \"%load_ext nb_black\\n# for running this example on GPU, install the following libraries\\n# %pip install tensorflow \\\"feast<0.20\\\" faiss-gpu\\n\\n# for running this example on CPU, uncomment the following lines\\n# %pip install tensorflow-cpu \\\"feast<0.20\\\" faiss-cpu\\n# %pip uninstall cudf\";\n                var nbb_formatted_code = \"%load_ext nb_black\\n# for running this example on GPU, install the following libraries\\n# %pip install tensorflow \\\"feast<0.20\\\" faiss-gpu\\n\\n# for running this example on CPU, uncomment the following lines\\n# %pip install tensorflow-cpu \\\"feast<0.20\\\" faiss-cpu\\n# %pip uninstall cudf\";\n                var nbb_cells = Jupyter.notebook.get_cells();\n                for (var i = 0; i < nbb_cells.length; ++i) {\n                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {\n                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {\n                             nbb_cells[i].set_text(nbb_formatted_code);\n                        }\n                        break;\n                    }\n                }\n            }, 500);\n            ",
+      "text/plain": [
+       "<IPython.core.display.Javascript object>"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "# for running this example on GPU, install the following libraries\n",
+    "# %pip install tensorflow \"feast<0.20\" faiss-gpu\n",
+    "\n",
+    "# for running this example on CPU, uncomment the following lines\n",
+    "# %pip install tensorflow-cpu \"feast<0.20\" faiss-cpu\n",
+    "# %pip uninstall cudf"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "id": "08cdbfcc",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "2022-06-13 15:45:04.158619: I tensorflow/core/platform/cpu_feature_guard.cc:193] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  AVX2 FMA\n",
+      "To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.\n",
+      "2022-06-13 15:45:06.652810: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1532] Created device /job:localhost/replica:0/task:0/device:GPU:0 with 16255 MB memory:  -> device: 0, name: Tesla V100-SXM2-32GB-LS, pci bus id: 0000:06:00.0, compute capability: 7.0\n"
+     ]
+    }
+   ],
+   "source": [
+    "import os\n",
+    "\n",
+    "from nvtabular.ops import (\n",
+    "    Categorify,\n",
+    "    TagAsUserID,\n",
+    "    TagAsItemID,\n",
+    "    TagAsItemFeatures,\n",
+    "    TagAsUserFeatures,\n",
+    "    AddMetadata,\n",
+    "    Filter,\n",
+    ")\n",
+    "\n",
+    "from merlin.schema.tags import Tags\n",
+    "\n",
+    "import merlin.models.tf as mm\n",
+    "from merlin.io.dataset import Dataset\n",
+    "import tensorflow as tf\n",
+    "\n",
+    "# for running this example on CPU, comment out the line below\n",
+    "os.environ[\"TF_GPU_ALLOCATOR\"] = \"cuda_malloc_async\""
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "id": "028a1398-76a8-4998-97d8-34a806e130d3",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# disable INFO and DEBUG logging everywhere\n",
+    "import logging\n",
+    "\n",
+    "logging.disable(logging.WARNING)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "baad8ae3",
+   "metadata": {},
+   "source": [
+    "In this example notebook, we will generate the synthetic train and test datasets mimicking the real [Ali-CCP: Alibaba Click and Conversion Prediction](https://tianchi.aliyun.com/dataset/dataDetail?dataId=408#1) dataset to build our recommender system models.\n",
+    "\n",
+    "First, we define our input and output paths."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "id": "81ddb370",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "DATA_FOLDER = os.environ.get(\"DATA_FOLDER\", \"/workspace/data/\")\n",
+    "output_path = os.path.join(DATA_FOLDER, \"processed/ranking\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "7a746a3f-1845-4af3-8a37-1b34aa1bb81b",
+   "metadata": {},
+   "source": [
+    "Then, we use `generate_data` utility function to generate synthetic dataset. "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "id": "b44b3378-7297-4946-a271-742a9239bc3e",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from merlin.datasets.synthetic import generate_data\n",
+    "\n",
+    "NUM_ROWS = 100000\n",
+    "train, valid = generate_data(\"aliccp-raw\", int(NUM_ROWS), set_sizes=(0.7, 0.3))"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "16bae6de-0345-4963-8f73-3ae234e54040",
+   "metadata": {},
+   "source": [
+    "If you would like to use the real ALI-CCP dataset, you can use [get_aliccp()](https://github.com/NVIDIA-Merlin/models/blob/main/merlin/datasets/ecommerce/aliccp/dataset.py) function instead. This function takes the raw csv files, and generate parquet files that can be directly fed to NVTabular workflow above."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "cf9bca46-a6b6-4a73-afd8-fe2869c60748",
+   "metadata": {},
+   "source": [
+    "### Feature Engineering with NVTabular"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "da2b09cc-09fb-4814-a1cb-7e6168d9eb4b",
+   "metadata": {},
+   "source": [
+    "We are going to process our raw categorical features by encoding them using `Categorify()` operator and tag the features with `user` or `item` tags in the schema file. To learn more about [NVTabular](https://github.com/NVIDIA-Merlin/NVTabular) and the schema object visit this example [notebook](https://github.com/NVIDIA-Merlin/models/blob/main/examples/02-Merlin-Models-and-NVTabular-integration.ipynb) in the Merlin Models repo."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "id": "550d45c9",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "CPU times: user 242 µs, sys: 102 µs, total: 344 µs\n",
+      "Wall time: 365 µs\n"
+     ]
+    }
+   ],
+   "source": [
+    "%%time\n",
+    "\n",
+    "user_id = [\"user_id\"] >> Categorify(dtype=\"int32\") >> TagAsUserID()\n",
+    "item_id = [\"item_id\"] >> Categorify(dtype=\"int32\") >> TagAsItemID()\n",
+    "\n",
+    "item_features = (\n",
+    "    [\"item_category\", \"item_shop\", \"item_brand\"] >> Categorify(dtype=\"int32\") >> TagAsItemFeatures()\n",
+    ")\n",
+    "\n",
+    "user_features = (\n",
+    "    [\n",
+    "        \"user_shops\",\n",
+    "        \"user_profile\",\n",
+    "        \"user_group\",\n",
+    "        \"user_gender\",\n",
+    "        \"user_age\",\n",
+    "        \"user_consumption_2\",\n",
+    "        \"user_is_occupied\",\n",
+    "        \"user_geography\",\n",
+    "        \"user_intentions\",\n",
+    "        \"user_brands\",\n",
+    "        \"user_categories\",\n",
+    "    ] >> Categorify(dtype=\"int32\") >> TagAsUserFeatures()\n",
+    ")\n",
+    "\n",
+    "targets = [\"click\"] >> AddMetadata(tags=[Tags.BINARY_CLASSIFICATION, \"target\"])\n",
+    "\n",
+    "outputs = user_id + item_id + item_features + user_features + targets"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "ad19550f-49db-48a3-83c6-aad7d348673c",
+   "metadata": {},
+   "source": [
+    "Let's call `transform_aliccp` utility function to be able to perform `fit` and `transform` steps on the raw dataset applying the operators defined in the NVTabular workflow pipeline below, and also save our workflow model. After fit and transform, the processed parquet files are saved to output_path."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "id": "e117e7b5-5007-424b-8d3f-9e1db245fd4c",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "/usr/lib/python3.8/site-packages/cudf/core/dataframe.py:1292: UserWarning: The deep parameter is ignored and is only included for pandas compatibility.\n",
+      "  warnings.warn(\n"
+     ]
+    }
+   ],
+   "source": [
+    "from merlin.datasets.ecommerce import transform_aliccp\n",
+    "\n",
+    "transform_aliccp(\n",
+    "    (train, valid), output_path, nvt_workflow=outputs, workflow_name=\"workflow_ranking\"\n",
+    ")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "e16401d4",
+   "metadata": {
+    "tags": []
+   },
+   "source": [
+    "### Training a Ranking Model with DLRM"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "c4f2b234",
+   "metadata": {},
+   "source": [
+    "NVTabular exported the schema file, `schema.pbtxt` a protobuf text file, of our processed dataset. To learn more about the schema object and schema file you can explore [02-Merlin-Models-and-NVTabular-integration.ipynb](https://github.com/NVIDIA-Merlin/models/blob/main/examples/02-Merlin-Models-and-NVTabular-integration.ipynb) notebook.\n",
+    "\n",
+    "We use the `schema` object to define our model."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 9,
+   "id": "cb870461-6ac2-49b2-ba6a-2da6ecb57f1d",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# define train and valid dataset objects\n",
+    "train = Dataset(os.path.join(output_path, \"train\", \"*.parquet\"), part_size=\"500MB\")\n",
+    "valid = Dataset(os.path.join(output_path, \"valid\", \"*.parquet\"), part_size=\"500MB\")\n",
+    "\n",
+    "# define schema object\n",
+    "schema = train.schema"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 10,
+   "id": "30e4ebc2",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "'click'"
+      ]
+     },
+     "execution_count": 10,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "target_column = schema.select_by_tag(Tags.TARGET).column_names[0]\n",
+    "target_column"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "8f68e26b",
+   "metadata": {},
+   "source": [
+    "Deep Learning Recommendation Model [(DLRM)](https://arxiv.org/abs/1906.00091) architecture is a popular neural network model originally proposed by Facebook in 2019. The model was introduced as a personalization deep learning model that uses embeddings to process sparse features that represent categorical data and a multilayer perceptron (MLP) to process dense features, then interacts these features explicitly using the statistical techniques proposed in [here](https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=5694074). To learn more about DLRM architetcture please visit `Exploring-different-models` [notebook](https://github.com/NVIDIA-Merlin/models/blob/main/examples/04-Exporting-ranking-models.ipynb) in the Merlin Models GH repo."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 11,
+   "id": "e4325080",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "model = mm.DLRMModel(\n",
+    "    schema,\n",
+    "    embedding_dim=64,\n",
+    "    bottom_block=mm.MLPBlock([128, 64]),\n",
+    "    top_block=mm.MLPBlock([128, 64, 32]),\n",
+    "    prediction_tasks=mm.BinaryClassificationTask(target_column),\n",
+    ")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 12,
+   "id": "bfe2aa9e",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "5/5 [==============================] - 9s 313ms/step - loss: 0.6931 - auc: 0.4984 - val_loss: 0.6932 - val_auc: 0.5018\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "<keras.callbacks.History at 0x7f22ea7dbe20>"
+      ]
+     },
+     "execution_count": 12,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "model.compile(optimizer=\"adam\", run_eagerly=False, metrics=[tf.keras.metrics.AUC()])\n",
+    "model.fit(train, validation_data=valid, batch_size=16 * 1024)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "18d91780-88d3-4dd8-9ed2-db33424d3e98",
+   "metadata": {},
+   "source": [
+    "We will create the feature repo in the current working directory, which is `BASE_DIR` for us."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 13,
+   "id": "dd78a82e",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# set up the base dir to for feature store\n",
+    "BASE_DIR = os.environ.get(\n",
+    "    \"BASE_DIR\", \"/Merlin/examples/Building-and-deploying-multi-stage-RecSys/\"\n",
+    ")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "498c4d49-7a59-4260-87b9-b86b66f2c67f",
+   "metadata": {},
+   "source": [
+    "Let's save our DLRM model to be able to load back at the deployment stage. "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 14,
+   "id": "00447c12-ea80-4d98-ab47-cc1a982a6958",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "model.save(os.path.join(BASE_DIR, \"dlrm\"))"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "91205a3c-f46e-45a0-b668-1a9bdef0c51d",
+   "metadata": {},
+   "source": [
+    "### Training a Retrieval Model with Two-Tower Model"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "255e5dbf-f648-4667-8dc3-47feef88d3f1",
+   "metadata": {},
+   "source": [
+    "Now we move to the offline retrieval stage. We are going to train a Two-Tower model for item retrieval. To learn more about the Two-tower model you can visit [05-Retrieval-Model.ipynb](https://github.com/NVIDIA-Merlin/models/blob/main/examples/05-Retrieval-Model.ipynb)."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 15,
+   "id": "00de24e9-331a-486e-9843-6c554ad2ec77",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "output_path = os.path.join(DATA_FOLDER, \"processed/retrieval\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "9cdaec18-84f2-42f6-bee5-d66cf28c03f4",
+   "metadata": {},
+   "source": [
+    "We select only positive interaction rows where `click==1` in the dataset with `Filter()` operator."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 16,
+   "id": "22a7d605-478f-40e6-a5dc-3e7a61e9b035",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "/usr/lib/python3.8/site-packages/cudf/core/dataframe.py:1292: UserWarning: The deep parameter is ignored and is only included for pandas compatibility.\n",
+      "  warnings.warn(\n"
+     ]
+    }
+   ],
+   "source": [
+    "user_id = [\"user_id\"] >> Categorify(dtype=\"int32\") >> TagAsUserID()\n",
+    "item_id = [\"item_id\"] >> Categorify(dtype=\"int32\") >> TagAsItemID()\n",
+    "\n",
+    "item_features = (\n",
+    "    [\"item_category\", \"item_shop\", \"item_brand\"] >> Categorify(dtype=\"int32\") >> TagAsItemFeatures()\n",
+    ")\n",
+    "\n",
+    "user_features = (\n",
+    "    [\n",
+    "        \"user_shops\",\n",
+    "        \"user_profile\",\n",
+    "        \"user_group\",\n",
+    "        \"user_gender\",\n",
+    "        \"user_age\",\n",
+    "        \"user_consumption_2\",\n",
+    "        \"user_is_occupied\",\n",
+    "        \"user_geography\",\n",
+    "        \"user_intentions\",\n",
+    "        \"user_brands\",\n",
+    "        \"user_categories\",\n",
+    "    ] >> Categorify(dtype=\"int32\") >> TagAsUserFeatures()\n",
+    ")\n",
+    "\n",
+    "inputs = user_id + item_id + item_features + user_features + [\"click\"]\n",
+    "\n",
+    "outputs = inputs >> Filter(f=lambda df: df[\"click\"] == 1)\n",
+    "\n",
+    "transform_aliccp(\n",
+    "    (train, valid),\n",
+    "    output_path,\n",
+    "    nvt_workflow=outputs,\n",
+    "    workflow_name=\"workflow_retrieval\",\n",
+    ")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 17,
+   "id": "dc150549-6fa0-441f-939d-a358e56d5e43",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "train_tt = Dataset(os.path.join(output_path, \"train\", \"*.parquet\"))\n",
+    "valid_tt = Dataset(os.path.join(output_path, \"valid\", \"*.parquet\"))\n",
+    "\n",
+    "schema = train_tt.schema\n",
+    "schema = schema.select_by_tag([Tags.ITEM_ID, Tags.USER_ID, Tags.ITEM, Tags.USER])"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 18,
+   "id": "02471088-0ed8-42e7-968e-b7e68865d55c",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "model = mm.TwoTowerModel(\n",
+    "    schema,\n",
+    "    query_tower=mm.MLPBlock([128, 64], no_activation_last_layer=True),\n",
+    "    samplers=[mm.InBatchSampler()],\n",
+    "    embedding_options=mm.EmbeddingOptions(infer_embedding_sizes=True),\n",
+    ")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 19,
+   "id": "d6703d7c-d38f-4d6d-a20a-9ee95ff1e256",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "5/5 [==============================] - 11s 566ms/step - loss: 8.8953 - recall_at_10: 0.0175 - ndcg_10: 0.0135 - val_loss: 8.8948 - val_recall_at_10: 0.0358 - val_ndcg_10: 0.0339\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "<keras.callbacks.History at 0x7f22db4ec400>"
+      ]
+     },
+     "execution_count": 19,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "model.compile(\n",
+    "    optimizer=\"adam\",\n",
+    "    run_eagerly=False,\n",
+    "    loss=\"categorical_crossentropy\",\n",
+    "    metrics=[mm.RecallAt(10), mm.NDCGAt(10)],\n",
+    ")\n",
+    "model.fit(train_tt, validation_data=valid_tt, batch_size=1024 * 8, epochs=1)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "d64a3f3f-81d8-489c-835f-c62f76df22d5",
+   "metadata": {},
+   "source": [
+    "In the following cells we are going to export the required user and item features files, and save the query (user) tower model and item embeddings to disk. If you want to read more about exporting retrieval models, please visit [05-Retrieval-Model.ipynb](https://github.com/NVIDIA-Merlin/models/blob/main/examples/05-Retrieval-Model.ipynb) notebook in Merlin Models library repo."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "5da1f434-f5a1-4478-b588-7e7ec17e6a88",
+   "metadata": {},
+   "source": [
+    "### Set up a feature store with Feast"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "99a4e939-d3cf-44f0-9012-d2af3264ee25",
+   "metadata": {},
+   "source": [
+    "Before we move onto the next step, we need to create a Feast feature repository."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 20,
+   "id": "2e7e96d2-9cd2-40d1-b356-8cd76b57bb4a",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "\n",
+      "Creating a new Feast repository in \u001b[1m\u001b[32m/Merlin/examples/Building-and-deploying-multi-stage-RecSys/feature_repo\u001b[0m.\n",
+      "\n"
+     ]
+    }
+   ],
+   "source": [
+    "!cd $BASE_DIR && feast init feature_repo"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "5e630e53-8336-487a-9ceb-133b1538acfb",
+   "metadata": {},
+   "source": [
+    "You should be seeing a message like <i>Creating a new Feast repository in ... </i> printed out above. Now, navigate to the `feature_repo` folder and remove the demo parquet file created by default, and `examples.py` file."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 21,
+   "id": "26ba2521-ed1b-4c2b-afdd-26b4a5a9c008",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "feature_repo_path = os.path.join(BASE_DIR, \"feature_repo\")\n",
+    "if os.path.exists(f\"{feature_repo_path}/example.py\"):\n",
+    "    os.remove(f\"{feature_repo_path}/example.py\")\n",
+    "if os.path.exists(f\"{feature_repo_path}/data/driver_stats.parquet\"):\n",
+    "    os.remove(f\"{feature_repo_path}/data/driver_stats.parquet\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "e44fc89d-170b-41a1-a29b-5f958ed31399",
+   "metadata": {},
+   "source": [
+    "### Exporting query (user) model"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 22,
+   "id": "2af24597-e89c-43a4-9a13-458d8bed7c8a",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "query_tower = model.retrieval_block.query_block()\n",
+    "query_tower.save(os.path.join(BASE_DIR, \"query_tower\"))"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "78315676-eb6c-405a-b1fd-3174ea328406",
+   "metadata": {},
+   "source": [
+    "### Exporting user and item features"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 23,
+   "id": "ea0b369c-2f01-42e3-9f3c-74c3ff4a6d64",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from merlin.models.utils.dataset import unique_rows_by_features\n",
+    "\n",
+    "user_features = (\n",
+    "    unique_rows_by_features(train, Tags.USER, Tags.USER_ID)\n",
+    "    .compute()\n",
+    "    .reset_index(drop=True)\n",
+    ")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 24,
+   "id": "6b0949f9-e67a-414f-9d74-65f138e820a8",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>user_id</th>\n",
+       "      <th>user_shops</th>\n",
+       "      <th>user_profile</th>\n",
+       "      <th>user_group</th>\n",
+       "      <th>user_gender</th>\n",
+       "      <th>user_age</th>\n",
+       "      <th>user_consumption_2</th>\n",
+       "      <th>user_is_occupied</th>\n",
+       "      <th>user_geography</th>\n",
+       "      <th>user_intentions</th>\n",
+       "      <th>user_brands</th>\n",
+       "      <th>user_categories</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>2</td>\n",
+       "      <td>2</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>2</td>\n",
+       "      <td>2</td>\n",
+       "      <td>2</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>3</td>\n",
+       "      <td>3</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>3</td>\n",
+       "      <td>3</td>\n",
+       "      <td>3</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>4</td>\n",
+       "      <td>4</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>4</td>\n",
+       "      <td>4</td>\n",
+       "      <td>4</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>5</td>\n",
+       "      <td>5</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>5</td>\n",
+       "      <td>5</td>\n",
+       "      <td>5</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "   user_id  user_shops  user_profile  user_group  user_gender  user_age  \\\n",
+       "0        1           1             1           1            1         1   \n",
+       "1        2           2             1           1            1         1   \n",
+       "2        3           3             1           1            1         1   \n",
+       "3        4           4             1           1            1         1   \n",
+       "4        5           5             1           1            1         1   \n",
+       "\n",
+       "   user_consumption_2  user_is_occupied  user_geography  user_intentions  \\\n",
+       "0                   1                 1               1                1   \n",
+       "1                   1                 1               1                2   \n",
+       "2                   1                 1               1                3   \n",
+       "3                   1                 1               1                4   \n",
+       "4                   1                 1               1                5   \n",
+       "\n",
+       "   user_brands  user_categories  \n",
+       "0            1                1  \n",
+       "1            2                2  \n",
+       "2            3                3  \n",
+       "3            4                4  \n",
+       "4            5                5  "
+      ]
+     },
+     "execution_count": 24,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "user_features.head()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "4a46bd8c-1337-4c74-a85b-25348a897d90",
+   "metadata": {},
+   "source": [
+    "We will artificially add `datetime` and `created` timestamp columns to our user_features dataframe. This required by Feast to track the user-item features and their creation time and to determine which version to use when we query Feast."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 25,
+   "id": "d30bd2f8-8a78-4df7-9bc4-42bd741c5b99",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from datetime import datetime\n",
+    "\n",
+    "user_features[\"datetime\"] = datetime.now()\n",
+    "user_features[\"datetime\"] = user_features[\"datetime\"].astype(\"datetime64[ns]\")\n",
+    "user_features[\"created\"] = datetime.now()\n",
+    "user_features[\"created\"] = user_features[\"created\"].astype(\"datetime64[ns]\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 26,
+   "id": "d4998cd1-9dcd-4911-8f23-372e197b41e9",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>user_id</th>\n",
+       "      <th>user_shops</th>\n",
+       "      <th>user_profile</th>\n",
+       "      <th>user_group</th>\n",
+       "      <th>user_gender</th>\n",
+       "      <th>user_age</th>\n",
+       "      <th>user_consumption_2</th>\n",
+       "      <th>user_is_occupied</th>\n",
+       "      <th>user_geography</th>\n",
+       "      <th>user_intentions</th>\n",
+       "      <th>user_brands</th>\n",
+       "      <th>user_categories</th>\n",
+       "      <th>datetime</th>\n",
+       "      <th>created</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>2022-06-13 15:46:06.144215</td>\n",
+       "      <td>2022-06-13 15:46:06.765273</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>2</td>\n",
+       "      <td>2</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>2</td>\n",
+       "      <td>2</td>\n",
+       "      <td>2</td>\n",
+       "      <td>2022-06-13 15:46:06.144215</td>\n",
+       "      <td>2022-06-13 15:46:06.765273</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>3</td>\n",
+       "      <td>3</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>3</td>\n",
+       "      <td>3</td>\n",
+       "      <td>3</td>\n",
+       "      <td>2022-06-13 15:46:06.144215</td>\n",
+       "      <td>2022-06-13 15:46:06.765273</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>4</td>\n",
+       "      <td>4</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>4</td>\n",
+       "      <td>4</td>\n",
+       "      <td>4</td>\n",
+       "      <td>2022-06-13 15:46:06.144215</td>\n",
+       "      <td>2022-06-13 15:46:06.765273</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>5</td>\n",
+       "      <td>5</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>5</td>\n",
+       "      <td>5</td>\n",
+       "      <td>5</td>\n",
+       "      <td>2022-06-13 15:46:06.144215</td>\n",
+       "      <td>2022-06-13 15:46:06.765273</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "   user_id  user_shops  user_profile  user_group  user_gender  user_age  \\\n",
+       "0        1           1             1           1            1         1   \n",
+       "1        2           2             1           1            1         1   \n",
+       "2        3           3             1           1            1         1   \n",
+       "3        4           4             1           1            1         1   \n",
+       "4        5           5             1           1            1         1   \n",
+       "\n",
+       "   user_consumption_2  user_is_occupied  user_geography  user_intentions  \\\n",
+       "0                   1                 1               1                1   \n",
+       "1                   1                 1               1                2   \n",
+       "2                   1                 1               1                3   \n",
+       "3                   1                 1               1                4   \n",
+       "4                   1                 1               1                5   \n",
+       "\n",
+       "   user_brands  user_categories                   datetime  \\\n",
+       "0            1                1 2022-06-13 15:46:06.144215   \n",
+       "1            2                2 2022-06-13 15:46:06.144215   \n",
+       "2            3                3 2022-06-13 15:46:06.144215   \n",
+       "3            4                4 2022-06-13 15:46:06.144215   \n",
+       "4            5                5 2022-06-13 15:46:06.144215   \n",
+       "\n",
+       "                     created  \n",
+       "0 2022-06-13 15:46:06.765273  \n",
+       "1 2022-06-13 15:46:06.765273  \n",
+       "2 2022-06-13 15:46:06.765273  \n",
+       "3 2022-06-13 15:46:06.765273  \n",
+       "4 2022-06-13 15:46:06.765273  "
+      ]
+     },
+     "execution_count": 26,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "user_features.head()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 27,
+   "id": "2981b3ed-6156-49f0-aa14-326a3853a58a",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "user_features.to_parquet(\n",
+    "    os.path.join(BASE_DIR, \"feature_repo/data\", \"user_features.parquet\")\n",
+    ")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 28,
+   "id": "0a33a668-8e2a-4546-8f54-0060d405ba91",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "item_features = (\n",
+    "    unique_rows_by_features(train, Tags.ITEM, Tags.ITEM_ID)\n",
+    "    .compute()\n",
+    "    .reset_index(drop=True)\n",
+    ")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 29,
+   "id": "97189581-473c-4928-8be7-ec31b86d69ee",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "(441, 4)"
+      ]
+     },
+     "execution_count": 29,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "item_features.shape"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 30,
+   "id": "68a694d6-926f-4b0f-8edc-8cc7ac85ade7",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "item_features[\"datetime\"] = datetime.now()\n",
+    "item_features[\"datetime\"] = item_features[\"datetime\"].astype(\"datetime64[ns]\")\n",
+    "item_features[\"created\"] = datetime.now()\n",
+    "item_features[\"created\"] = item_features[\"created\"].astype(\"datetime64[ns]\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 31,
+   "id": "6c03fa22-b112-4243-bbe1-1cd7260cb85b",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>item_id</th>\n",
+       "      <th>item_category</th>\n",
+       "      <th>item_shop</th>\n",
+       "      <th>item_brand</th>\n",
+       "      <th>datetime</th>\n",
+       "      <th>created</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>2022-06-13 15:46:06.930595</td>\n",
+       "      <td>2022-06-13 15:46:06.933351</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>2</td>\n",
+       "      <td>2</td>\n",
+       "      <td>2</td>\n",
+       "      <td>2</td>\n",
+       "      <td>2022-06-13 15:46:06.930595</td>\n",
+       "      <td>2022-06-13 15:46:06.933351</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>3</td>\n",
+       "      <td>3</td>\n",
+       "      <td>3</td>\n",
+       "      <td>3</td>\n",
+       "      <td>2022-06-13 15:46:06.930595</td>\n",
+       "      <td>2022-06-13 15:46:06.933351</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>4</td>\n",
+       "      <td>4</td>\n",
+       "      <td>4</td>\n",
+       "      <td>4</td>\n",
+       "      <td>2022-06-13 15:46:06.930595</td>\n",
+       "      <td>2022-06-13 15:46:06.933351</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>5</td>\n",
+       "      <td>5</td>\n",
+       "      <td>5</td>\n",
+       "      <td>5</td>\n",
+       "      <td>2022-06-13 15:46:06.930595</td>\n",
+       "      <td>2022-06-13 15:46:06.933351</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "   item_id  item_category  item_shop  item_brand                   datetime  \\\n",
+       "0        1              1          1           1 2022-06-13 15:46:06.930595   \n",
+       "1        2              2          2           2 2022-06-13 15:46:06.930595   \n",
+       "2        3              3          3           3 2022-06-13 15:46:06.930595   \n",
+       "3        4              4          4           4 2022-06-13 15:46:06.930595   \n",
+       "4        5              5          5           5 2022-06-13 15:46:06.930595   \n",
+       "\n",
+       "                     created  \n",
+       "0 2022-06-13 15:46:06.933351  \n",
+       "1 2022-06-13 15:46:06.933351  \n",
+       "2 2022-06-13 15:46:06.933351  \n",
+       "3 2022-06-13 15:46:06.933351  \n",
+       "4 2022-06-13 15:46:06.933351  "
+      ]
+     },
+     "execution_count": 31,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "item_features.head()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 32,
+   "id": "c312884b-a1f8-4e08-8068-696e06a9bf46",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# save to disk\n",
+    "item_features.to_parquet(\n",
+    "    os.path.join(BASE_DIR, \"feature_repo/data\", \"item_features.parquet\")\n",
+    ")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "ff30ceab-b264-4509-9c5b-5a10425e143b",
+   "metadata": {},
+   "source": [
+    "### Extract and save Item embeddings"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 33,
+   "id": "00f1fe65-882e-4962-bb16-19a130fda215",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "item_embs = model.item_embeddings(\n",
+    "    Dataset(item_features, schema=schema), batch_size=1024\n",
+    ")\n",
+    "item_embs_df = item_embs.compute(scheduler=\"synchronous\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 34,
+   "id": "cf8b82ea-6cce-4dab-ad17-114b5e7eabd4",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# select only item_id together with embedding columns\n",
+    "item_embeddings = item_embs_df.drop(\n",
+    "    columns=[\"item_category\", \"item_shop\", \"item_brand\"]\n",
+    ")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 35,
+   "id": "e02f0957-6665-400a-80c0-60b307466caf",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>item_id</th>\n",
+       "      <th>0</th>\n",
+       "      <th>1</th>\n",
+       "      <th>2</th>\n",
+       "      <th>3</th>\n",
+       "      <th>4</th>\n",
+       "      <th>5</th>\n",
+       "      <th>6</th>\n",
+       "      <th>7</th>\n",
+       "      <th>8</th>\n",
+       "      <th>...</th>\n",
+       "      <th>54</th>\n",
+       "      <th>55</th>\n",
+       "      <th>56</th>\n",
+       "      <th>57</th>\n",
+       "      <th>58</th>\n",
+       "      <th>59</th>\n",
+       "      <th>60</th>\n",
+       "      <th>61</th>\n",
+       "      <th>62</th>\n",
+       "      <th>63</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>1</td>\n",
+       "      <td>-0.014644</td>\n",
+       "      <td>-0.030120</td>\n",
+       "      <td>-0.043844</td>\n",
+       "      <td>-0.032847</td>\n",
+       "      <td>0.011542</td>\n",
+       "      <td>-0.023905</td>\n",
+       "      <td>-0.029672</td>\n",
+       "      <td>-0.019096</td>\n",
+       "      <td>0.003238</td>\n",
+       "      <td>...</td>\n",
+       "      <td>-0.037217</td>\n",
+       "      <td>0.038835</td>\n",
+       "      <td>0.007689</td>\n",
+       "      <td>0.000896</td>\n",
+       "      <td>-0.009022</td>\n",
+       "      <td>-0.010495</td>\n",
+       "      <td>0.023698</td>\n",
+       "      <td>0.033870</td>\n",
+       "      <td>-0.029741</td>\n",
+       "      <td>-0.030549</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>2</td>\n",
+       "      <td>-0.026403</td>\n",
+       "      <td>-0.005529</td>\n",
+       "      <td>-0.025439</td>\n",
+       "      <td>-0.003412</td>\n",
+       "      <td>0.005109</td>\n",
+       "      <td>-0.013113</td>\n",
+       "      <td>0.029868</td>\n",
+       "      <td>-0.038708</td>\n",
+       "      <td>0.003663</td>\n",
+       "      <td>...</td>\n",
+       "      <td>-0.030878</td>\n",
+       "      <td>-0.014543</td>\n",
+       "      <td>-0.017892</td>\n",
+       "      <td>0.025364</td>\n",
+       "      <td>-0.032985</td>\n",
+       "      <td>-0.006969</td>\n",
+       "      <td>0.031746</td>\n",
+       "      <td>-0.003650</td>\n",
+       "      <td>-0.019432</td>\n",
+       "      <td>-0.006048</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>3</td>\n",
+       "      <td>-0.031090</td>\n",
+       "      <td>-0.035648</td>\n",
+       "      <td>-0.042533</td>\n",
+       "      <td>-0.020776</td>\n",
+       "      <td>0.000392</td>\n",
+       "      <td>-0.001049</td>\n",
+       "      <td>-0.014174</td>\n",
+       "      <td>-0.000956</td>\n",
+       "      <td>-0.053086</td>\n",
+       "      <td>...</td>\n",
+       "      <td>0.023282</td>\n",
+       "      <td>0.025333</td>\n",
+       "      <td>0.016674</td>\n",
+       "      <td>0.017381</td>\n",
+       "      <td>-0.007932</td>\n",
+       "      <td>-0.029791</td>\n",
+       "      <td>0.007936</td>\n",
+       "      <td>0.024365</td>\n",
+       "      <td>-0.033152</td>\n",
+       "      <td>-0.006021</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>4</td>\n",
+       "      <td>0.021717</td>\n",
+       "      <td>0.009807</td>\n",
+       "      <td>-0.005943</td>\n",
+       "      <td>-0.022264</td>\n",
+       "      <td>0.023473</td>\n",
+       "      <td>-0.033276</td>\n",
+       "      <td>-0.025934</td>\n",
+       "      <td>-0.023402</td>\n",
+       "      <td>0.017395</td>\n",
+       "      <td>...</td>\n",
+       "      <td>-0.051937</td>\n",
+       "      <td>0.004534</td>\n",
+       "      <td>0.017306</td>\n",
+       "      <td>0.012567</td>\n",
+       "      <td>0.021283</td>\n",
+       "      <td>0.006707</td>\n",
+       "      <td>-0.012907</td>\n",
+       "      <td>0.037199</td>\n",
+       "      <td>0.002680</td>\n",
+       "      <td>-0.035851</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>5</td>\n",
+       "      <td>0.000333</td>\n",
+       "      <td>-0.007780</td>\n",
+       "      <td>-0.028711</td>\n",
+       "      <td>0.000049</td>\n",
+       "      <td>0.019983</td>\n",
+       "      <td>0.008787</td>\n",
+       "      <td>-0.021814</td>\n",
+       "      <td>-0.000160</td>\n",
+       "      <td>-0.031236</td>\n",
+       "      <td>...</td>\n",
+       "      <td>0.021217</td>\n",
+       "      <td>0.053417</td>\n",
+       "      <td>0.006594</td>\n",
+       "      <td>0.011942</td>\n",
+       "      <td>0.005315</td>\n",
+       "      <td>0.001932</td>\n",
+       "      <td>-0.020481</td>\n",
+       "      <td>0.018115</td>\n",
+       "      <td>-0.002176</td>\n",
+       "      <td>0.002586</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "<p>5 rows × 65 columns</p>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "   item_id         0         1         2         3         4         5  \\\n",
+       "0        1 -0.014644 -0.030120 -0.043844 -0.032847  0.011542 -0.023905   \n",
+       "1        2 -0.026403 -0.005529 -0.025439 -0.003412  0.005109 -0.013113   \n",
+       "2        3 -0.031090 -0.035648 -0.042533 -0.020776  0.000392 -0.001049   \n",
+       "3        4  0.021717  0.009807 -0.005943 -0.022264  0.023473 -0.033276   \n",
+       "4        5  0.000333 -0.007780 -0.028711  0.000049  0.019983  0.008787   \n",
+       "\n",
+       "          6         7         8  ...        54        55        56        57  \\\n",
+       "0 -0.029672 -0.019096  0.003238  ... -0.037217  0.038835  0.007689  0.000896   \n",
+       "1  0.029868 -0.038708  0.003663  ... -0.030878 -0.014543 -0.017892  0.025364   \n",
+       "2 -0.014174 -0.000956 -0.053086  ...  0.023282  0.025333  0.016674  0.017381   \n",
+       "3 -0.025934 -0.023402  0.017395  ... -0.051937  0.004534  0.017306  0.012567   \n",
+       "4 -0.021814 -0.000160 -0.031236  ...  0.021217  0.053417  0.006594  0.011942   \n",
+       "\n",
+       "         58        59        60        61        62        63  \n",
+       "0 -0.009022 -0.010495  0.023698  0.033870 -0.029741 -0.030549  \n",
+       "1 -0.032985 -0.006969  0.031746 -0.003650 -0.019432 -0.006048  \n",
+       "2 -0.007932 -0.029791  0.007936  0.024365 -0.033152 -0.006021  \n",
+       "3  0.021283  0.006707 -0.012907  0.037199  0.002680 -0.035851  \n",
+       "4  0.005315  0.001932 -0.020481  0.018115 -0.002176  0.002586  \n",
+       "\n",
+       "[5 rows x 65 columns]"
+      ]
+     },
+     "execution_count": 35,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "item_embeddings.head()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 36,
+   "id": "66d7271e-0ea6-4568-ac5a-04089735f542",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# save to disk\n",
+    "item_embeddings.to_parquet(os.path.join(BASE_DIR, \"item_embeddings.parquet\"))"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "dadae279-913c-487b-ad55-4b4d6c110dc1",
+   "metadata": {},
+   "source": [
+    "### Create feature definitions "
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "1f70939f-8063-4422-b29b-6668acb1cfb7",
+   "metadata": {},
+   "source": [
+    "Now we will create our user and item features definitions in the user_features.py and item_features.py files and save these files in the feature_repo."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 37,
+   "id": "4ee27d67-e35a-42c5-8025-ed73f35c8e13",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "file = open(os.path.join(BASE_DIR, \"feature_repo/\", \"user_features.py\"), \"w\")\n",
+    "file.write(\n",
+    "    \"\"\"\n",
+    "from google.protobuf.duration_pb2 import Duration\n",
+    "import datetime\n",
+    "from feast import Entity, Feature, FeatureView, ValueType\n",
+    "from feast.infra.offline_stores.file_source import FileSource\n",
+    "\n",
+    "user_features = FileSource(\n",
+    "    path=\"{}\",\n",
+    "    event_timestamp_column=\"datetime\",\n",
+    "    created_timestamp_column=\"created\",\n",
+    ")\n",
+    "\n",
+    "user = Entity(name=\"user_id\", value_type=ValueType.INT32, description=\"user id\",)\n",
+    "\n",
+    "user_features_view = FeatureView(\n",
+    "    name=\"user_features\",\n",
+    "    entities=[\"user_id\"],\n",
+    "    ttl=Duration(seconds=86400 * 7),\n",
+    "    features=[\n",
+    "        Feature(name=\"user_shops\", dtype=ValueType.INT32),\n",
+    "        Feature(name=\"user_profile\", dtype=ValueType.INT32),\n",
+    "        Feature(name=\"user_group\", dtype=ValueType.INT32),\n",
+    "        Feature(name=\"user_gender\", dtype=ValueType.INT32),\n",
+    "        Feature(name=\"user_age\", dtype=ValueType.INT32),\n",
+    "        Feature(name=\"user_consumption_2\", dtype=ValueType.INT32),\n",
+    "        Feature(name=\"user_is_occupied\", dtype=ValueType.INT32),\n",
+    "        Feature(name=\"user_geography\", dtype=ValueType.INT32),\n",
+    "        Feature(name=\"user_intentions\", dtype=ValueType.INT32),\n",
+    "        Feature(name=\"user_brands\", dtype=ValueType.INT32),\n",
+    "        Feature(name=\"user_categories\", dtype=ValueType.INT32),\n",
+    "    ],\n",
+    "    online=True,\n",
+    "    input=user_features,\n",
+    "    tags=dict(),\n",
+    ")\n",
+    "\"\"\".format(\n",
+    "        os.path.join(BASE_DIR, \"feature_repo/data/\", \"user_features.parquet\")\n",
+    "    )\n",
+    ")\n",
+    "file.close()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 38,
+   "id": "48a5927c-840d-410c-8f5b-bebce4f79640",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "with open(os.path.join(BASE_DIR, \"feature_repo/\", \"item_features.py\"), \"w\") as f:\n",
+    "    f.write(\n",
+    "        \"\"\"\n",
+    "from google.protobuf.duration_pb2 import Duration\n",
+    "import datetime\n",
+    "from feast import Entity, Feature, FeatureView, ValueType\n",
+    "from feast.infra.offline_stores.file_source import FileSource\n",
+    "\n",
+    "item_features = FileSource(\n",
+    "    path=\"{}\",\n",
+    "    event_timestamp_column=\"datetime\",\n",
+    "    created_timestamp_column=\"created\",\n",
+    ")\n",
+    "\n",
+    "item = Entity(name=\"item_id\", value_type=ValueType.INT32, description=\"item id\",)\n",
+    "\n",
+    "item_features_view = FeatureView(\n",
+    "    name=\"item_features\",\n",
+    "    entities=[\"item_id\"],\n",
+    "    ttl=Duration(seconds=86400 * 7),\n",
+    "    features=[\n",
+    "        Feature(name=\"item_category\", dtype=ValueType.INT32),\n",
+    "        Feature(name=\"item_shop\", dtype=ValueType.INT32),\n",
+    "        Feature(name=\"item_brand\", dtype=ValueType.INT32),\n",
+    "    ],\n",
+    "    online=True,\n",
+    "    input=item_features,\n",
+    "    tags=dict(),\n",
+    ")\n",
+    "\"\"\".format(\n",
+    "            os.path.join(BASE_DIR, \"feature_repo/data/\", \"item_features.parquet\")\n",
+    "        )\n",
+    "    )\n",
+    "file.close()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "660333b2-4f99-49c7-8cd3-f0aad5dbd66f",
+   "metadata": {},
+   "source": [
+    "Let's checkout our Feast feature repository structure."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "57133c1e-18d9-4ccb-9704-cdebd271985e",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# install seedir\n",
+    "!pip install seedir"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 40,
+   "id": "986d53ea-c946-4046-a390-6d3b8801d280",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "feature_repo/\n",
+      "├─__init__.py\n",
+      "├─data/\n",
+      "│ ├─item_features.parquet\n",
+      "│ └─user_features.parquet\n",
+      "├─feature_store.yaml\n",
+      "├─item_features.py\n",
+      "└─user_features.py\n"
+     ]
+    }
+   ],
+   "source": [
+    "import seedir as sd\n",
+    "\n",
+    "feature_repo_path = os.path.join(BASE_DIR, \"feature_repo\")\n",
+    "sd.seedir(\n",
+    "    feature_repo_path,\n",
+    "    style=\"lines\",\n",
+    "    itemlimit=10,\n",
+    "    depthlimit=3,\n",
+    "    exclude_folders=\".ipynb_checkpoints\",\n",
+    "    sort=True,\n",
+    ")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "80678ea1-a7fb-4016-9e6f-c905497f4142",
+   "metadata": {},
+   "source": [
+    "### Next Steps\n",
+    "We trained and exported our ranking and retrieval models and NVTabular workflows. In the next step, we will learn how to deploy our trained models into [Triton Inference Server (TIS)](https://github.com/triton-inference-server/server) with Merlin Systems library.\n",
+    "\n",
+    "For the next step, move on to the `02-Deploying-multi-stage-Recsys-with-Merlin-Systems.ipynb` notebook to deploy our saved models as an ensemble to TIS and obtain prediction results for a given request."
+   ]
+  }
+ ],
+ "metadata": {
+  "interpreter": {
+   "hash": "2758ff992bb32b90e83258e2e763c5fcee80c4002721441c6c0d17c649a641dd"
+  },
+  "kernelspec": {
+   "display_name": "Python 3.9.5 ('base')",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.9.5"
+  },
+  "merlin": {
+   "containers": [
+    "nvcr.io/nvidia/merlin/merlin-tensorflow-inference:latest"
+   ]
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}
