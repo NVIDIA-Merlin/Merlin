@@ -98,7 +98,7 @@ echo "#####################"
 
 # Test NVTabular 
 ## Not shared storage in blossom yet, inference testing cannot be run
-echo "Run instegration tests for NVTabular"
+echo "Run integration tests for NVTabular"
 /nvtabular/ci/test_integration.sh $container $devices --report 1
 
 # Test Transformers4Rec
