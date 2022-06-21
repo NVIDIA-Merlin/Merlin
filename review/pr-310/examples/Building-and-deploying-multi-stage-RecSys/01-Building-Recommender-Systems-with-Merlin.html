@@ -137,7 +137,7 @@
 <li><p><a class="reference external" href="https://docs.feast.dev/">Feast</a>: an end-to-end open source feature store library for machine learning</p></li>
 <li><p><a class="reference external" href="https://github.com/facebookresearch/faiss">Faiss</a>: a library for efficient similarity search and clustering of dense vectors</p></li>
 </ul>
-<p>You can find more information about <code class="docutils literal notranslate"><span class="pre">Feast</span> <span class="pre">feature</span> <span class="pre">store</span></code> and <code class="docutils literal notranslate"><span class="pre">Faiss</span></code> libraries in the next notebook. Please follow the instructions in the <a class="reference external" href="http://README.md">README.md</a> file to install these libraries.</p>
+<p>You can find more information about <code class="docutils literal notranslate"><span class="pre">Feast</span> <span class="pre">feature</span> <span class="pre">store</span></code> and <code class="docutils literal notranslate"><span class="pre">Faiss</span></code> libraries in the next notebook.</p>
 </div>
 <div class="section" id="import-required-libraries-and-functions">
 <h2>Import required libraries and functions<a class="headerlink" href="#import-required-libraries-and-functions" title="Permalink to this headline"></a></h2>
@@ -145,144 +145,62 @@
 <p>These notebooks are developed and tested using our latest inference container on <a class="reference external" href="https://catalog.ngc.nvidia.com/containers?filters=&amp;orderBy=dateModifiedDESC&amp;query=merlin">NVIDIA’s docker registry</a>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">pip</span> install tensorflow &quot;feast&lt;0.20&quot; faiss-gpu
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># for running this example on GPU, install the following libraries</span>
+<span class="c1"># %pip install tensorflow &quot;feast&lt;0.20&quot; faiss-gpu</span>
+
+<span class="c1"># for running this example on CPU, uncomment the following lines</span>
+<span class="c1"># %pip install tensorflow-cpu &quot;feast&lt;0.20&quot; faiss-cpu</span>
+<span class="c1"># %pip uninstall cudf</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Looking in indexes: https://pypi.org/simple, https://pypi.ngc.nvidia.com
-Requirement already satisfied: tensorflow in /usr/local/lib/python3.8/dist-packages (2.8.0)
-Requirement already satisfied: feast&lt;0.20 in /usr/local/lib/python3.8/dist-packages (0.19.4)
-Requirement already satisfied: faiss-gpu in /usr/local/lib/python3.8/dist-packages (1.7.2)
-Requirement already satisfied: wrapt&gt;=1.11.0 in /usr/local/lib/python3.8/dist-packages (from tensorflow) (1.14.1)
-Requirement already satisfied: tensorboard&lt;2.9,&gt;=2.8 in /usr/local/lib/python3.8/dist-packages (from tensorflow) (2.8.0)
-Requirement already satisfied: six&gt;=1.12.0 in /usr/lib/python3/dist-packages (from tensorflow) (1.14.0)
-Requirement already satisfied: tensorflow-io-gcs-filesystem&gt;=0.23.1 in /usr/local/lib/python3.8/dist-packages (from tensorflow) (0.25.0)
-Requirement already satisfied: flatbuffers&gt;=1.12 in /usr/local/lib/python3.8/dist-packages (from tensorflow) (2.0)
-Requirement already satisfied: protobuf&gt;=3.9.2 in /usr/local/lib/python3.8/dist-packages (from tensorflow) (3.19.4)
-Requirement already satisfied: typing-extensions&gt;=3.6.6 in /usr/local/lib/python3.8/dist-packages (from tensorflow) (4.1.1)
-Requirement already satisfied: grpcio&lt;2.0,&gt;=1.24.3 in /usr/local/lib/python3.8/dist-packages (from tensorflow) (1.46.1)
-Requirement already satisfied: setuptools in /usr/local/lib/python3.8/dist-packages (from tensorflow) (61.0.0)
-Requirement already satisfied: absl-py&gt;=0.4.0 in /usr/local/lib/python3.8/dist-packages (from tensorflow) (1.0.0)
-Requirement already satisfied: h5py&gt;=2.9.0 in /usr/local/lib/python3.8/dist-packages (from tensorflow) (3.6.0)
-Requirement already satisfied: keras&lt;2.9,&gt;=2.8.0rc0 in /usr/local/lib/python3.8/dist-packages (from tensorflow) (2.8.0)
-Requirement already satisfied: opt-einsum&gt;=2.3.2 in /usr/local/lib/python3.8/dist-packages (from tensorflow) (3.3.0)
-Requirement already satisfied: astunparse&gt;=1.6.0 in /usr/local/lib/python3.8/dist-packages (from tensorflow) (1.6.3)
-Requirement already satisfied: termcolor&gt;=1.1.0 in /usr/local/lib/python3.8/dist-packages (from tensorflow) (1.1.0)
-Requirement already satisfied: libclang&gt;=9.0.1 in /usr/local/lib/python3.8/dist-packages (from tensorflow) (14.0.1)
-Requirement already satisfied: gast&gt;=0.2.1 in /usr/local/lib/python3.8/dist-packages (from tensorflow) (0.5.3)
-Requirement already satisfied: tf-estimator-nightly==2.8.0.dev2021122109 in /usr/local/lib/python3.8/dist-packages (from tensorflow) (2.8.0.dev2021122109)
-Requirement already satisfied: numpy&gt;=1.20 in /usr/local/lib/python3.8/dist-packages (from tensorflow) (1.21.5)
-Requirement already satisfied: keras-preprocessing&gt;=1.1.1 in /usr/local/lib/python3.8/dist-packages (from tensorflow) (1.1.2)
-Requirement already satisfied: google-pasta&gt;=0.1.1 in /usr/local/lib/python3.8/dist-packages (from tensorflow) (0.2.0)
-Requirement already satisfied: toml==0.10.* in /usr/local/lib/python3.8/dist-packages (from feast&lt;0.20) (0.10.2)
-Requirement already satisfied: tqdm==4.* in /usr/local/lib/python3.8/dist-packages (from feast&lt;0.20) (4.64.0)
-Requirement already satisfied: fastavro&gt;=1.1.0 in /usr/local/lib/python3.8/dist-packages (from feast&lt;0.20) (1.4.11)
-Requirement already satisfied: tenacity&gt;=7.* in /usr/local/lib/python3.8/dist-packages (from feast&lt;0.20) (8.0.1)
-Requirement already satisfied: tensorflow-metadata&lt;2.0.0,&gt;=1.0.0 in /usr/local/lib/python3.8/dist-packages (from feast&lt;0.20) (1.7.0)
-Requirement already satisfied: Jinja2&gt;=2.0.0 in /usr/local/lib/python3.8/dist-packages (from feast&lt;0.20) (3.1.1)
-Requirement already satisfied: colorama&gt;=0.3.9 in /usr/local/lib/python3.8/dist-packages (from feast&lt;0.20) (0.4.4)
-Requirement already satisfied: jsonschema in /usr/local/lib/python3.8/dist-packages (from feast&lt;0.20) (4.5.1)
-Requirement already satisfied: pandavro==1.5.* in /usr/local/lib/python3.8/dist-packages (from feast&lt;0.20) (1.5.2)
-Requirement already satisfied: uvicorn[standard]&gt;=0.14.0 in /usr/local/lib/python3.8/dist-packages (from feast&lt;0.20) (0.17.6)
-Requirement already satisfied: PyYAML&gt;=5.4.* in /usr/local/lib/python3.8/dist-packages (from feast&lt;0.20) (6.0)
-Requirement already satisfied: mmh3 in /usr/local/lib/python3.8/dist-packages (from feast&lt;0.20) (3.0.0)
-Requirement already satisfied: grpcio-reflection&gt;=1.34.0 in /usr/local/lib/python3.8/dist-packages (from feast&lt;0.20) (1.46.1)
-Requirement already satisfied: fastapi&gt;=0.68.0 in /usr/local/lib/python3.8/dist-packages (from feast&lt;0.20) (0.77.1)
-Requirement already satisfied: proto-plus&lt;1.19.7 in /usr/local/lib/python3.8/dist-packages (from feast&lt;0.20) (1.19.6)
-Requirement already satisfied: pydantic&gt;=1.0.0 in /usr/local/lib/python3.8/dist-packages (from feast&lt;0.20) (1.9.0)
-Requirement already satisfied: dask&lt;2022.02.0,&gt;=2021.* in /usr/local/lib/python3.8/dist-packages (from feast&lt;0.20) (2021.11.2)
-Requirement already satisfied: tabulate==0.8.* in /usr/local/lib/python3.8/dist-packages (from feast&lt;0.20) (0.8.9)
-Requirement already satisfied: googleapis-common-protos==1.52.* in /usr/local/lib/python3.8/dist-packages (from feast&lt;0.20) (1.52.0)
-Requirement already satisfied: google-api-core&gt;=1.23.0 in /usr/local/lib/python3.8/dist-packages (from feast&lt;0.20) (2.7.3)
-Requirement already satisfied: Click&gt;=7.* in /usr/local/lib/python3.8/dist-packages (from feast&lt;0.20) (8.1.2)
-Requirement already satisfied: pyarrow&gt;=4.0.0 in /usr/local/lib/python3.8/dist-packages (from feast&lt;0.20) (5.0.0)
-Requirement already satisfied: pandas&gt;=1.0.0 in /usr/local/lib/python3.8/dist-packages (from feast&lt;0.20) (1.3.5)
-Requirement already satisfied: dill==0.3.* in /usr/local/lib/python3.8/dist-packages (from feast&lt;0.20) (0.3.4)
-Requirement already satisfied: wheel&lt;1.0,&gt;=0.23.0 in /usr/local/lib/python3.8/dist-packages (from astunparse&gt;=1.6.0-&gt;tensorflow) (0.37.1)
-Requirement already satisfied: packaging&gt;=20.0 in /usr/local/lib/python3.8/dist-packages (from dask&lt;2022.02.0,&gt;=2021.*-&gt;feast&lt;0.20) (21.3)
-Requirement already satisfied: toolz&gt;=0.8.2 in /usr/local/lib/python3.8/dist-packages (from dask&lt;2022.02.0,&gt;=2021.*-&gt;feast&lt;0.20) (0.11.2)
-Requirement already satisfied: fsspec&gt;=0.6.0 in /usr/local/lib/python3.8/dist-packages (from dask&lt;2022.02.0,&gt;=2021.*-&gt;feast&lt;0.20) (2022.3.0)
-Requirement already satisfied: cloudpickle&gt;=1.1.1 in /usr/local/lib/python3.8/dist-packages (from dask&lt;2022.02.0,&gt;=2021.*-&gt;feast&lt;0.20) (2.0.0)
-Requirement already satisfied: partd&gt;=0.3.10 in /usr/local/lib/python3.8/dist-packages (from dask&lt;2022.02.0,&gt;=2021.*-&gt;feast&lt;0.20) (1.2.0)
-Requirement already satisfied: starlette==0.19.1 in /usr/local/lib/python3.8/dist-packages (from fastapi&gt;=0.68.0-&gt;feast&lt;0.20) (0.19.1)
-Requirement already satisfied: anyio&lt;5,&gt;=3.4.0 in /usr/local/lib/python3.8/dist-packages (from starlette==0.19.1-&gt;fastapi&gt;=0.68.0-&gt;feast&lt;0.20) (3.5.0)
-Requirement already satisfied: requests&lt;3.0.0dev,&gt;=2.18.0 in /usr/lib/python3/dist-packages (from google-api-core&gt;=1.23.0-&gt;feast&lt;0.20) (2.22.0)
-Requirement already satisfied: google-auth&lt;3.0dev,&gt;=1.25.0 in /usr/local/lib/python3.8/dist-packages (from google-api-core&gt;=1.23.0-&gt;feast&lt;0.20) (2.6.6)
-Requirement already satisfied: MarkupSafe&gt;=2.0 in /usr/local/lib/python3.8/dist-packages (from Jinja2&gt;=2.0.0-&gt;feast&lt;0.20) (2.1.1)
-Requirement already satisfied: pytz&gt;=2017.3 in /usr/local/lib/python3.8/dist-packages (from pandas&gt;=1.0.0-&gt;feast&lt;0.20) (2022.1)
-Requirement already satisfied: python-dateutil&gt;=2.7.3 in /usr/local/lib/python3.8/dist-packages (from pandas&gt;=1.0.0-&gt;feast&lt;0.20) (2.8.2)
-Requirement already satisfied: werkzeug&gt;=0.11.15 in /usr/local/lib/python3.8/dist-packages (from tensorboard&lt;2.9,&gt;=2.8-&gt;tensorflow) (2.1.2)
-Requirement already satisfied: google-auth-oauthlib&lt;0.5,&gt;=0.4.1 in /usr/local/lib/python3.8/dist-packages (from tensorboard&lt;2.9,&gt;=2.8-&gt;tensorflow) (0.4.6)
-Requirement already satisfied: tensorboard-plugin-wit&gt;=1.6.0 in /usr/local/lib/python3.8/dist-packages (from tensorboard&lt;2.9,&gt;=2.8-&gt;tensorflow) (1.8.1)
-Requirement already satisfied: markdown&gt;=2.6.8 in /usr/local/lib/python3.8/dist-packages (from tensorboard&lt;2.9,&gt;=2.8-&gt;tensorflow) (3.3.7)
-Requirement already satisfied: tensorboard-data-server&lt;0.7.0,&gt;=0.6.0 in /usr/local/lib/python3.8/dist-packages (from tensorboard&lt;2.9,&gt;=2.8-&gt;tensorflow) (0.6.1)
-</pre></div>
-</div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Requirement already satisfied: h11&gt;=0.8 in /usr/local/lib/python3.8/dist-packages (from uvicorn[standard]&gt;=0.14.0-&gt;feast&lt;0.20) (0.13.0)
-Requirement already satisfied: asgiref&gt;=3.4.0 in /usr/local/lib/python3.8/dist-packages (from uvicorn[standard]&gt;=0.14.0-&gt;feast&lt;0.20) (3.5.1)
-Requirement already satisfied: websockets&gt;=10.0 in /usr/local/lib/python3.8/dist-packages (from uvicorn[standard]&gt;=0.14.0-&gt;feast&lt;0.20) (10.3)
-Requirement already satisfied: uvloop!=0.15.0,!=0.15.1,&gt;=0.14.0 in /usr/local/lib/python3.8/dist-packages (from uvicorn[standard]&gt;=0.14.0-&gt;feast&lt;0.20) (0.16.0)
-Requirement already satisfied: httptools&gt;=0.4.0 in /usr/local/lib/python3.8/dist-packages (from uvicorn[standard]&gt;=0.14.0-&gt;feast&lt;0.20) (0.4.0)
-Requirement already satisfied: watchgod&gt;=0.6 in /usr/local/lib/python3.8/dist-packages (from uvicorn[standard]&gt;=0.14.0-&gt;feast&lt;0.20) (0.8.2)
-Requirement already satisfied: python-dotenv&gt;=0.13 in /usr/local/lib/python3.8/dist-packages (from uvicorn[standard]&gt;=0.14.0-&gt;feast&lt;0.20) (0.20.0)
-Requirement already satisfied: importlib-resources&gt;=1.4.0 in /usr/local/lib/python3.8/dist-packages (from jsonschema-&gt;feast&lt;0.20) (5.7.1)
-Requirement already satisfied: attrs&gt;=17.4.0 in /usr/local/lib/python3.8/dist-packages (from jsonschema-&gt;feast&lt;0.20) (21.4.0)
-Requirement already satisfied: pyrsistent!=0.17.0,!=0.17.1,!=0.17.2,&gt;=0.14.0 in /usr/local/lib/python3.8/dist-packages (from jsonschema-&gt;feast&lt;0.20) (0.18.1)
-Requirement already satisfied: cachetools&lt;6.0,&gt;=2.0.0 in /usr/local/lib/python3.8/dist-packages (from google-auth&lt;3.0dev,&gt;=1.25.0-&gt;google-api-core&gt;=1.23.0-&gt;feast&lt;0.20) (5.0.0)
-Requirement already satisfied: pyasn1-modules&gt;=0.2.1 in /usr/local/lib/python3.8/dist-packages (from google-auth&lt;3.0dev,&gt;=1.25.0-&gt;google-api-core&gt;=1.23.0-&gt;feast&lt;0.20) (0.2.8)
-Requirement already satisfied: rsa&lt;5,&gt;=3.1.4 in /usr/local/lib/python3.8/dist-packages (from google-auth&lt;3.0dev,&gt;=1.25.0-&gt;google-api-core&gt;=1.23.0-&gt;feast&lt;0.20) (4.8)
-Requirement already satisfied: requests-oauthlib&gt;=0.7.0 in /usr/local/lib/python3.8/dist-packages (from google-auth-oauthlib&lt;0.5,&gt;=0.4.1-&gt;tensorboard&lt;2.9,&gt;=2.8-&gt;tensorflow) (1.3.1)
-Requirement already satisfied: zipp&gt;=3.1.0 in /usr/local/lib/python3.8/dist-packages (from importlib-resources&gt;=1.4.0-&gt;jsonschema-&gt;feast&lt;0.20) (3.8.0)
-Requirement already satisfied: importlib-metadata&gt;=4.4 in /usr/local/lib/python3.8/dist-packages (from markdown&gt;=2.6.8-&gt;tensorboard&lt;2.9,&gt;=2.8-&gt;tensorflow) (4.11.3)
-Requirement already satisfied: pyparsing!=3.0.5,&gt;=2.0.2 in /usr/local/lib/python3.8/dist-packages (from packaging&gt;=20.0-&gt;dask&lt;2022.02.0,&gt;=2021.*-&gt;feast&lt;0.20) (3.0.7)
-Requirement already satisfied: locket in /usr/local/lib/python3.8/dist-packages (from partd&gt;=0.3.10-&gt;dask&lt;2022.02.0,&gt;=2021.*-&gt;feast&lt;0.20) (0.2.1)
-Requirement already satisfied: idna&gt;=2.8 in /usr/lib/python3/dist-packages (from anyio&lt;5,&gt;=3.4.0-&gt;starlette==0.19.1-&gt;fastapi&gt;=0.68.0-&gt;feast&lt;0.20) (2.8)
-Requirement already satisfied: sniffio&gt;=1.1 in /usr/local/lib/python3.8/dist-packages (from anyio&lt;5,&gt;=3.4.0-&gt;starlette==0.19.1-&gt;fastapi&gt;=0.68.0-&gt;feast&lt;0.20) (1.2.0)
-Requirement already satisfied: pyasn1&lt;0.5.0,&gt;=0.4.6 in /usr/local/lib/python3.8/dist-packages (from pyasn1-modules&gt;=0.2.1-&gt;google-auth&lt;3.0dev,&gt;=1.25.0-&gt;google-api-core&gt;=1.23.0-&gt;feast&lt;0.20) (0.4.8)
-Requirement already satisfied: oauthlib&gt;=3.0.0 in /usr/local/lib/python3.8/dist-packages (from requests-oauthlib&gt;=0.7.0-&gt;google-auth-oauthlib&lt;0.5,&gt;=0.4.1-&gt;tensorboard&lt;2.9,&gt;=2.8-&gt;tensorflow) (3.2.0)
-<span class=" -Color -Color-Yellow">WARNING: Running pip as the &#39;root&#39; user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv</span>
-<span class=" -Color -Color-Yellow">WARNING: You are using pip version 22.0.4; however, version 22.1 is available.</span>
-<span class=" -Color -Color-Yellow">You should consider upgrading via the &#39;/usr/bin/python3 -m pip install --upgrade pip&#39; command.</span>
-Note: you may need to restart the kernel to use updated packages.
-</pre></div>
-</div>
-</div>
+<script type="application/javascript">
+            setTimeout(function() {
+                var nbb_cell_id = 1;
+                var nbb_unformatted_code = "%load_ext nb_black\n# for running this example on GPU, install the following libraries\n# %pip install tensorflow \"feast<0.20\" faiss-gpu\n\n# for running this example on CPU, uncomment the following lines\n# %pip install tensorflow-cpu \"feast<0.20\" faiss-cpu\n# %pip uninstall cudf";
+                var nbb_formatted_code = "%load_ext nb_black\n# for running this example on GPU, install the following libraries\n# %pip install tensorflow \"feast<0.20\" faiss-gpu\n\n# for running this example on CPU, uncomment the following lines\n# %pip install tensorflow-cpu \"feast<0.20\" faiss-cpu\n# %pip uninstall cudf";
+                var nbb_cells = Jupyter.notebook.get_cells();
+                for (var i = 0; i < nbb_cells.length; ++i) {
+                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {
+                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {
+                             nbb_cells[i].set_text(nbb_formatted_code);
+                        }
+                        break;
+                    }
+                }
+            }, 500);
+            </script></div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
-<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;TF_GPU_ALLOCATOR&quot;</span><span class="p">]</span><span class="o">=</span><span class="s2">&quot;cuda_malloc_async&quot;</span>
-<span class="kn">import</span> <span class="nn">glob</span>
-<span class="kn">import</span> <span class="nn">gc</span>
 
-<span class="kn">import</span> <span class="nn">nvtabular</span> <span class="k">as</span> <span class="nn">nvt</span>
-<span class="kn">from</span> <span class="nn">nvtabular.ops</span> <span class="kn">import</span> <span class="o">*</span>
-
-<span class="kn">from</span> <span class="nn">merlin.models.utils.example_utils</span> <span class="kn">import</span> <span class="n">workflow_fit_transform</span>
+<span class="kn">from</span> <span class="nn">nvtabular.ops</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Categorify</span><span class="p">,</span>
+    <span class="n">TagAsUserID</span><span class="p">,</span>
+    <span class="n">TagAsItemID</span><span class="p">,</span>
+    <span class="n">TagAsItemFeatures</span><span class="p">,</span>
+    <span class="n">TagAsUserFeatures</span><span class="p">,</span>
+    <span class="n">AddMetadata</span><span class="p">,</span>
+    <span class="n">Filter</span><span class="p">,</span>
+<span class="p">)</span>
 
 <span class="kn">from</span> <span class="nn">merlin.schema.tags</span> <span class="kn">import</span> <span class="n">Tags</span>
 
 <span class="kn">import</span> <span class="nn">merlin.models.tf</span> <span class="k">as</span> <span class="nn">mm</span>
 <span class="kn">from</span> <span class="nn">merlin.io.dataset</span> <span class="kn">import</span> <span class="n">Dataset</span>
 <span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
+
+<span class="c1"># for running this example on CPU, comment out the line below</span>
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;TF_GPU_ALLOCATOR&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;cuda_malloc_async&quot;</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2022-05-13 05:05:20.155250: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:936] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
-2022-05-13 05:05:20.155752: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:936] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
-2022-05-13 05:05:20.155904: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:936] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
-2022-05-13 05:05:20.184146: I tensorflow/core/platform/cpu_feature_guard.cc:151] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  AVX2 FMA
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2022-06-13 15:45:04.158619: I tensorflow/core/platform/cpu_feature_guard.cc:193] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  AVX2 FMA
 To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
-2022-05-13 05:05:20.185178: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:936] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
-2022-05-13 05:05:20.185360: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:936] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
-2022-05-13 05:05:20.185489: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:936] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
-2022-05-13 05:05:20.911906: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:936] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
-2022-05-13 05:05:20.912088: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:936] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
-2022-05-13 05:05:20.912226: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:936] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
-2022-05-13 05:05:20.912338: I tensorflow/core/common_runtime/gpu/gpu_process_state.cc:214] Using CUDA malloc Async allocator for GPU: 0
-2022-05-13 05:05:20.912458: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1525] Created device /job:localhost/replica:0/task:0/device:GPU:0 with 24576 MB memory:  -&gt; device: 0, name: Quadro RTX 8000, pci bus id: 0000:08:00.0, compute capability: 7.5
+2022-06-13 15:45:06.652810: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1532] Created device /job:localhost/replica:0/task:0/device:GPU:0 with 16255 MB memory:  -&gt; device: 0, name: Tesla V100-SXM2-32GB-LS, pci bus id: 0000:06:00.0, compute capability: 7.0
 </pre></div>
 </div>
 </div>
@@ -291,6 +209,7 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># disable INFO and DEBUG logging everywhere</span>
 <span class="kn">import</span> <span class="nn">logging</span>
+
 <span class="n">logging</span><span class="o">.</span><span class="n">disable</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">WARNING</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -301,7 +220,7 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">DATA_FOLDER</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;DATA_FOLDER&quot;</span><span class="p">,</span> <span class="s2">&quot;/workspace/data/&quot;</span><span class="p">)</span>
-<span class="n">output_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">DATA_FOLDER</span><span class="p">,</span> <span class="s1">&#39;processed/ranking&#39;</span><span class="p">)</span>
+<span class="n">output_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">DATA_FOLDER</span><span class="p">,</span> <span class="s2">&quot;processed/ranking&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -326,25 +245,38 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%time</span>
 
-<span class="n">user_id</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;user_id&quot;</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">Categorify</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;int32&#39;</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="n">TagAsUserID</span><span class="p">()</span>
-<span class="n">item_id</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;item_id&quot;</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">Categorify</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;int32&#39;</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="n">TagAsItemID</span><span class="p">()</span>
+<span class="n">user_id</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;user_id&quot;</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">Categorify</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;int32&quot;</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="n">TagAsUserID</span><span class="p">()</span>
+<span class="n">item_id</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;item_id&quot;</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">Categorify</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;int32&quot;</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="n">TagAsItemID</span><span class="p">()</span>
 
-<span class="n">item_features</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;item_category&quot;</span><span class="p">,</span> <span class="s2">&quot;item_shop&quot;</span><span class="p">,</span> <span class="s2">&quot;item_brand&quot;</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">Categorify</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;int32&#39;</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="n">TagAsItemFeatures</span><span class="p">()</span> 
+<span class="n">item_features</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="p">[</span><span class="s2">&quot;item_category&quot;</span><span class="p">,</span> <span class="s2">&quot;item_shop&quot;</span><span class="p">,</span> <span class="s2">&quot;item_brand&quot;</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">Categorify</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;int32&quot;</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="n">TagAsItemFeatures</span><span class="p">()</span>
+<span class="p">)</span>
 
-<span class="n">user_features</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;user_shops&#39;</span><span class="p">,</span> <span class="s1">&#39;user_profile&#39;</span><span class="p">,</span> <span class="s1">&#39;user_group&#39;</span><span class="p">,</span> 
-       <span class="s1">&#39;user_gender&#39;</span><span class="p">,</span> <span class="s1">&#39;user_age&#39;</span><span class="p">,</span> <span class="s1">&#39;user_consumption_2&#39;</span><span class="p">,</span> <span class="s1">&#39;user_is_occupied&#39;</span><span class="p">,</span>
-       <span class="s1">&#39;user_geography&#39;</span><span class="p">,</span> <span class="s1">&#39;user_intentions&#39;</span><span class="p">,</span> <span class="s1">&#39;user_brands&#39;</span><span class="p">,</span> <span class="s1">&#39;user_categories&#39;</span><span class="p">]</span> \
-    <span class="o">&gt;&gt;</span> <span class="n">Categorify</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;int32&#39;</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="n">TagAsUserFeatures</span><span class="p">()</span> 
+<span class="n">user_features</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="p">[</span>
+        <span class="s2">&quot;user_shops&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;user_profile&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;user_group&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;user_gender&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;user_age&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;user_consumption_2&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;user_is_occupied&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;user_geography&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;user_intentions&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;user_brands&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;user_categories&quot;</span><span class="p">,</span>
+    <span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">Categorify</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;int32&quot;</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="n">TagAsUserFeatures</span><span class="p">()</span>
+<span class="p">)</span>
 
 <span class="n">targets</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;click&quot;</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">AddMetadata</span><span class="p">(</span><span class="n">tags</span><span class="o">=</span><span class="p">[</span><span class="n">Tags</span><span class="o">.</span><span class="n">BINARY_CLASSIFICATION</span><span class="p">,</span> <span class="s2">&quot;target&quot;</span><span class="p">])</span>
 
-<span class="n">outputs</span> <span class="o">=</span> <span class="n">user_id</span><span class="o">+</span><span class="n">item_id</span><span class="o">+</span><span class="n">item_features</span><span class="o">+</span><span class="n">user_features</span><span class="o">+</span><span class="n">targets</span>
+<span class="n">outputs</span> <span class="o">=</span> <span class="n">user_id</span> <span class="o">+</span> <span class="n">item_id</span> <span class="o">+</span> <span class="n">item_features</span> <span class="o">+</span> <span class="n">user_features</span> <span class="o">+</span> <span class="n">targets</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>CPU times: user 71 µs, sys: 60 µs, total: 131 µs
-Wall time: 134 µs
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>CPU times: user 242 µs, sys: 102 µs, total: 344 µs
+Wall time: 365 µs
 </pre></div>
 </div>
 </div>
@@ -354,7 +286,9 @@ Wall time: 134 µs
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">merlin.datasets.ecommerce</span> <span class="kn">import</span> <span class="n">transform_aliccp</span>
 
-<span class="n">transform_aliccp</span><span class="p">((</span><span class="n">train</span><span class="p">,</span> <span class="n">valid</span><span class="p">),</span> <span class="n">output_path</span><span class="p">,</span> <span class="n">nvt_workflow</span><span class="o">=</span><span class="n">outputs</span><span class="p">,</span> <span class="n">workflow_name</span><span class="o">=</span><span class="s1">&#39;workflow_ranking&#39;</span><span class="p">)</span>
+<span class="n">transform_aliccp</span><span class="p">(</span>
+    <span class="p">(</span><span class="n">train</span><span class="p">,</span> <span class="n">valid</span><span class="p">),</span> <span class="n">output_path</span><span class="p">,</span> <span class="n">nvt_workflow</span><span class="o">=</span><span class="n">outputs</span><span class="p">,</span> <span class="n">workflow_name</span><span class="o">=</span><span class="s2">&quot;workflow_ranking&quot;</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -373,8 +307,8 @@ Wall time: 134 µs
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># define train and valid dataset objects</span>
-<span class="n">train</span> <span class="o">=</span> <span class="n">Dataset</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="s1">&#39;train&#39;</span><span class="p">,</span> <span class="s1">&#39;*.parquet&#39;</span><span class="p">),</span> <span class="n">part_size</span><span class="o">=</span><span class="s2">&quot;500MB&quot;</span><span class="p">)</span>
-<span class="n">valid</span> <span class="o">=</span> <span class="n">Dataset</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="s1">&#39;valid&#39;</span><span class="p">,</span> <span class="s1">&#39;*.parquet&#39;</span><span class="p">),</span> <span class="n">part_size</span><span class="o">=</span><span class="s2">&quot;500MB&quot;</span><span class="p">)</span>
+<span class="n">train</span> <span class="o">=</span> <span class="n">Dataset</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="s2">&quot;train&quot;</span><span class="p">,</span> <span class="s2">&quot;*.parquet&quot;</span><span class="p">),</span> <span class="n">part_size</span><span class="o">=</span><span class="s2">&quot;500MB&quot;</span><span class="p">)</span>
+<span class="n">valid</span> <span class="o">=</span> <span class="n">Dataset</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="s2">&quot;valid&quot;</span><span class="p">,</span> <span class="s2">&quot;*.parquet&quot;</span><span class="p">),</span> <span class="n">part_size</span><span class="o">=</span><span class="s2">&quot;500MB&quot;</span><span class="p">)</span>
 
 <span class="c1"># define schema object</span>
 <span class="n">schema</span> <span class="o">=</span> <span class="n">train</span><span class="o">.</span><span class="n">schema</span>
@@ -403,7 +337,7 @@ Wall time: 134 µs
     <span class="n">embedding_dim</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span>
     <span class="n">bottom_block</span><span class="o">=</span><span class="n">mm</span><span class="o">.</span><span class="n">MLPBlock</span><span class="p">([</span><span class="mi">128</span><span class="p">,</span> <span class="mi">64</span><span class="p">]),</span>
     <span class="n">top_block</span><span class="o">=</span><span class="n">mm</span><span class="o">.</span><span class="n">MLPBlock</span><span class="p">([</span><span class="mi">128</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">32</span><span class="p">]),</span>
-    <span class="n">prediction_tasks</span><span class="o">=</span><span class="n">mm</span><span class="o">.</span><span class="n">BinaryClassificationTask</span><span class="p">(</span><span class="n">target_column</span><span class="p">,</span> <span class="n">metrics</span><span class="o">=</span><span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">AUC</span><span class="p">()])</span>
+    <span class="n">prediction_tasks</span><span class="o">=</span><span class="n">mm</span><span class="o">.</span><span class="n">BinaryClassificationTask</span><span class="p">(</span><span class="n">target_column</span><span class="p">),</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -411,22 +345,16 @@ Wall time: 134 µs
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">optimizer</span><span class="o">=</span><span class="s1">&#39;adam&#39;</span><span class="p">,</span> <span class="n">run_eagerly</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train</span><span class="p">,</span> <span class="n">validation_data</span><span class="o">=</span><span class="n">valid</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">16</span><span class="o">*</span><span class="mi">1024</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">optimizer</span><span class="o">=</span><span class="s2">&quot;adam&quot;</span><span class="p">,</span> <span class="n">run_eagerly</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">metrics</span><span class="o">=</span><span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">AUC</span><span class="p">()])</span>
+<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train</span><span class="p">,</span> <span class="n">validation_data</span><span class="o">=</span><span class="n">valid</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">16</span> <span class="o">*</span> <span class="mi">1024</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2022-05-13 05:05:22.404065: W tensorflow/python/util/util.cc:368] Sets are not currently considered sequences, but this may change in the future, so consider avoiding using them.
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>5/5 [==============================] - 9s 313ms/step - loss: 0.6931 - auc: 0.4984 - val_loss: 0.6932 - val_auc: 0.5018
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>1/1 [==============================] - 4s 4s/step - auc: 0.4923 - loss: 0.6931 - regularization_loss: 0.0000e+00 - total_loss: 0.6931 - val_auc: 0.4925 - val_loss: 0.6934 - val_regularization_loss: 0.0000e+00 - val_total_loss: 0.6934
-</pre></div>
-</div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2022-05-13 05:05:26.540780: W tensorflow/core/grappler/optimizers/loop_optimizer.cc:907] Skipping loop optimization for Merge node with control input: cond/branch_executed/_13
-</pre></div>
-</div>
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;keras.callbacks.History at 0x7f0a1d51b220&gt;
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;keras.callbacks.History at 0x7f22ea7dbe20&gt;
 </pre></div>
 </div>
 </div>
@@ -435,7 +363,9 @@ Wall time: 134 µs
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># set up the base dir to for feature store</span>
-<span class="n">BASE_DIR</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;BASE_DIR&quot;</span><span class="p">,</span> <span class="s2">&quot;/Merlin/examples/Building-and-deploying-multi-stage-RecSys/&quot;</span><span class="p">)</span>
+<span class="n">BASE_DIR</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+    <span class="s2">&quot;BASE_DIR&quot;</span><span class="p">,</span> <span class="s2">&quot;/Merlin/examples/Building-and-deploying-multi-stage-RecSys/&quot;</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -443,7 +373,7 @@ Wall time: 134 µs
 <p>Let’s save our DLRM model to be able to load back at the deployment stage.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s1">&#39;dlrm&#39;</span><span class="p">))</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s2">&quot;dlrm&quot;</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
@@ -454,7 +384,7 @@ Wall time: 134 µs
 <p>Now we move to the offline retrieval stage. We are going to train a Two-Tower model for item retrieval. To learn more about the Two-tower model you can visit <a class="reference external" href="https://github.com/NVIDIA-Merlin/models/blob/main/examples/05-Retrieval-Model.ipynb">05-Retrieval-Model.ipynb</a>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">output_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">DATA_FOLDER</span><span class="p">,</span> <span class="s1">&#39;processed/retrieval&#39;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">output_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">DATA_FOLDER</span><span class="p">,</span> <span class="s2">&quot;processed/retrieval&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -462,21 +392,39 @@ Wall time: 134 µs
 <p>We select only positive interaction rows where <code class="docutils literal notranslate"><span class="pre">click==1</span></code> in the dataset with <code class="docutils literal notranslate"><span class="pre">Filter()</span></code> operator.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">user_id</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;user_id&quot;</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">Categorify</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;int32&#39;</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="n">TagAsUserID</span><span class="p">()</span>
-<span class="n">item_id</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;item_id&quot;</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">Categorify</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;int32&#39;</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="n">TagAsItemID</span><span class="p">()</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">user_id</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;user_id&quot;</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">Categorify</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;int32&quot;</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="n">TagAsUserID</span><span class="p">()</span>
+<span class="n">item_id</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;item_id&quot;</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">Categorify</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;int32&quot;</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="n">TagAsItemID</span><span class="p">()</span>
 
-<span class="n">item_features</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;item_category&quot;</span><span class="p">,</span> <span class="s2">&quot;item_shop&quot;</span><span class="p">,</span> <span class="s2">&quot;item_brand&quot;</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">Categorify</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;int32&#39;</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="n">TagAsItemFeatures</span><span class="p">()</span>
+<span class="n">item_features</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="p">[</span><span class="s2">&quot;item_category&quot;</span><span class="p">,</span> <span class="s2">&quot;item_shop&quot;</span><span class="p">,</span> <span class="s2">&quot;item_brand&quot;</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">Categorify</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;int32&quot;</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="n">TagAsItemFeatures</span><span class="p">()</span>
+<span class="p">)</span>
 
-<span class="n">user_features</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;user_shops&#39;</span><span class="p">,</span> <span class="s1">&#39;user_profile&#39;</span><span class="p">,</span> <span class="s1">&#39;user_group&#39;</span><span class="p">,</span> 
-       <span class="s1">&#39;user_gender&#39;</span><span class="p">,</span> <span class="s1">&#39;user_age&#39;</span><span class="p">,</span> <span class="s1">&#39;user_consumption_2&#39;</span><span class="p">,</span> <span class="s1">&#39;user_is_occupied&#39;</span><span class="p">,</span>
-       <span class="s1">&#39;user_geography&#39;</span><span class="p">,</span> <span class="s1">&#39;user_intentions&#39;</span><span class="p">,</span> <span class="s1">&#39;user_brands&#39;</span><span class="p">,</span> <span class="s1">&#39;user_categories&#39;</span><span class="p">]</span> \
-        <span class="o">&gt;&gt;</span> <span class="n">Categorify</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;int32&#39;</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="n">TagAsUserFeatures</span><span class="p">()</span> 
+<span class="n">user_features</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="p">[</span>
+        <span class="s2">&quot;user_shops&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;user_profile&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;user_group&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;user_gender&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;user_age&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;user_consumption_2&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;user_is_occupied&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;user_geography&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;user_intentions&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;user_brands&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;user_categories&quot;</span><span class="p">,</span>
+    <span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">Categorify</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;int32&quot;</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="n">TagAsUserFeatures</span><span class="p">()</span>
+<span class="p">)</span>
 
-<span class="n">inputs</span> <span class="o">=</span> <span class="n">user_id</span> <span class="o">+</span> <span class="n">item_id</span> <span class="o">+</span> <span class="n">item_features</span> <span class="o">+</span> <span class="n">user_features</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;click&#39;</span><span class="p">]</span> 
+<span class="n">inputs</span> <span class="o">=</span> <span class="n">user_id</span> <span class="o">+</span> <span class="n">item_id</span> <span class="o">+</span> <span class="n">item_features</span> <span class="o">+</span> <span class="n">user_features</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;click&quot;</span><span class="p">]</span>
 
 <span class="n">outputs</span> <span class="o">=</span> <span class="n">inputs</span> <span class="o">&gt;&gt;</span> <span class="n">Filter</span><span class="p">(</span><span class="n">f</span><span class="o">=</span><span class="k">lambda</span> <span class="n">df</span><span class="p">:</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;click&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
 
-<span class="n">transform_aliccp</span><span class="p">((</span><span class="n">train</span><span class="p">,</span> <span class="n">valid</span><span class="p">),</span> <span class="n">output_path</span><span class="p">,</span> <span class="n">nvt_workflow</span><span class="o">=</span><span class="n">outputs</span><span class="p">,</span> <span class="n">workflow_name</span><span class="o">=</span><span class="s1">&#39;workflow_retrieval&#39;</span><span class="p">)</span>
+<span class="n">transform_aliccp</span><span class="p">(</span>
+    <span class="p">(</span><span class="n">train</span><span class="p">,</span> <span class="n">valid</span><span class="p">),</span>
+    <span class="n">output_path</span><span class="p">,</span>
+    <span class="n">nvt_workflow</span><span class="o">=</span><span class="n">outputs</span><span class="p">,</span>
+    <span class="n">workflow_name</span><span class="o">=</span><span class="s2">&quot;workflow_retrieval&quot;</span><span class="p">,</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -489,8 +437,8 @@ Wall time: 134 µs
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">train_tt</span> <span class="o">=</span> <span class="n">Dataset</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="s1">&#39;train&#39;</span><span class="p">,</span> <span class="s1">&#39;*.parquet&#39;</span><span class="p">))</span>
-<span class="n">valid_tt</span> <span class="o">=</span> <span class="n">Dataset</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="s1">&#39;valid&#39;</span><span class="p">,</span> <span class="s1">&#39;*.parquet&#39;</span><span class="p">))</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">train_tt</span> <span class="o">=</span> <span class="n">Dataset</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="s2">&quot;train&quot;</span><span class="p">,</span> <span class="s2">&quot;*.parquet&quot;</span><span class="p">))</span>
+<span class="n">valid_tt</span> <span class="o">=</span> <span class="n">Dataset</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="s2">&quot;valid&quot;</span><span class="p">,</span> <span class="s2">&quot;*.parquet&quot;</span><span class="p">))</span>
 
 <span class="n">schema</span> <span class="o">=</span> <span class="n">train_tt</span><span class="o">.</span><span class="n">schema</span>
 <span class="n">schema</span> <span class="o">=</span> <span class="n">schema</span><span class="o">.</span><span class="n">select_by_tag</span><span class="p">([</span><span class="n">Tags</span><span class="o">.</span><span class="n">ITEM_ID</span><span class="p">,</span> <span class="n">Tags</span><span class="o">.</span><span class="n">USER_ID</span><span class="p">,</span> <span class="n">Tags</span><span class="o">.</span><span class="n">ITEM</span><span class="p">,</span> <span class="n">Tags</span><span class="o">.</span><span class="n">USER</span><span class="p">])</span>
@@ -502,11 +450,9 @@ Wall time: 134 µs
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">mm</span><span class="o">.</span><span class="n">TwoTowerModel</span><span class="p">(</span>
     <span class="n">schema</span><span class="p">,</span>
-    <span class="n">query_tower</span><span class="o">=</span><span class="n">mm</span><span class="o">.</span><span class="n">MLPBlock</span><span class="p">([</span><span class="mi">128</span><span class="p">,</span> <span class="mi">64</span><span class="p">],</span> <span class="n">no_activation_last_layer</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>        
-    <span class="n">loss</span><span class="o">=</span><span class="s2">&quot;categorical_crossentropy&quot;</span><span class="p">,</span>  
+    <span class="n">query_tower</span><span class="o">=</span><span class="n">mm</span><span class="o">.</span><span class="n">MLPBlock</span><span class="p">([</span><span class="mi">128</span><span class="p">,</span> <span class="mi">64</span><span class="p">],</span> <span class="n">no_activation_last_layer</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
     <span class="n">samplers</span><span class="o">=</span><span class="p">[</span><span class="n">mm</span><span class="o">.</span><span class="n">InBatchSampler</span><span class="p">()],</span>
-    <span class="n">embedding_options</span> <span class="o">=</span> <span class="n">mm</span><span class="o">.</span><span class="n">EmbeddingOptions</span><span class="p">(</span><span class="n">infer_embedding_sizes</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
-    <span class="n">metrics</span><span class="o">=</span><span class="p">[</span><span class="n">mm</span><span class="o">.</span><span class="n">RecallAt</span><span class="p">(</span><span class="mi">10</span><span class="p">),</span> <span class="n">mm</span><span class="o">.</span><span class="n">NDCGAt</span><span class="p">(</span><span class="mi">10</span><span class="p">)]</span>
+    <span class="n">embedding_options</span><span class="o">=</span><span class="n">mm</span><span class="o">.</span><span class="n">EmbeddingOptions</span><span class="p">(</span><span class="n">infer_embedding_sizes</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -514,19 +460,21 @@ Wall time: 134 µs
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">optimizer</span><span class="o">=</span><span class="s1">&#39;adam&#39;</span><span class="p">,</span> <span class="n">run_eagerly</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train_tt</span><span class="p">,</span> <span class="n">validation_data</span><span class="o">=</span><span class="n">valid_tt</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">1024</span><span class="o">*</span><span class="mi">8</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span>
+    <span class="n">optimizer</span><span class="o">=</span><span class="s2">&quot;adam&quot;</span><span class="p">,</span>
+    <span class="n">run_eagerly</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">loss</span><span class="o">=</span><span class="s2">&quot;categorical_crossentropy&quot;</span><span class="p">,</span>
+    <span class="n">metrics</span><span class="o">=</span><span class="p">[</span><span class="n">mm</span><span class="o">.</span><span class="n">RecallAt</span><span class="p">(</span><span class="mi">10</span><span class="p">),</span> <span class="n">mm</span><span class="o">.</span><span class="n">NDCGAt</span><span class="p">(</span><span class="mi">10</span><span class="p">)],</span>
+<span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train_tt</span><span class="p">,</span> <span class="n">validation_data</span><span class="o">=</span><span class="n">valid_tt</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">1024</span> <span class="o">*</span> <span class="mi">8</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>1/1 [==============================] - 4s 4s/step - recall_at_10: 0.0044 - ndcg_10: 0.0023 - loss: 8.6446 - regularization_loss: 0.0000e+00 - total_loss: 8.6446 - val_recall_at_10: 0.0195 - val_ndcg_10: 0.0157 - val_loss: 7.8369 - val_regularization_loss: 0.0000e+00 - val_total_loss: 7.8369
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>5/5 [==============================] - 11s 566ms/step - loss: 8.8953 - recall_at_10: 0.0175 - ndcg_10: 0.0135 - val_loss: 8.8948 - val_recall_at_10: 0.0358 - val_ndcg_10: 0.0339
 </pre></div>
 </div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2022-05-13 05:05:36.207971: W tensorflow/core/grappler/optimizers/loop_optimizer.cc:907] Skipping loop optimization for Merge node with control input: cond/branch_executed/_24
-</pre></div>
-</div>
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;keras.callbacks.History at 0x7f09c84674f0&gt;
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;keras.callbacks.History at 0x7f22db4ec400&gt;
 </pre></div>
 </div>
 </div>
@@ -552,8 +500,11 @@ Wall time: 134 µs
 <p>You should be seeing a message like <i>Creating a new Feast repository in … </i> printed out above. Now, navigate to the <code class="docutils literal notranslate"><span class="pre">feature_repo</span></code> folder and remove the demo parquet file created by default, and <code class="docutils literal notranslate"><span class="pre">examples.py</span></code> file.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s1">&#39;feature_repo&#39;</span><span class="p">,</span> <span class="s1">&#39;example.py&#39;</span><span class="p">))</span>
-<span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s1">&#39;feature_repo/data&#39;</span><span class="p">,</span> <span class="s1">&#39;driver_stats.parquet&#39;</span><span class="p">))</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">feature_repo_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s2">&quot;feature_repo&quot;</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">feature_repo_path</span><span class="si">}</span><span class="s2">/example.py&quot;</span><span class="p">):</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">feature_repo_path</span><span class="si">}</span><span class="s2">/example.py&quot;</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">feature_repo_path</span><span class="si">}</span><span class="s2">/data/driver_stats.parquet&quot;</span><span class="p">):</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">feature_repo_path</span><span class="si">}</span><span class="s2">/data/driver_stats.parquet&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -564,7 +515,7 @@ Wall time: 134 µs
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">query_tower</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">retrieval_block</span><span class="o">.</span><span class="n">query_block</span><span class="p">()</span>
-<span class="n">query_tower</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s1">&#39;query_tower&#39;</span><span class="p">))</span>
+<span class="n">query_tower</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s2">&quot;query_tower&quot;</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
@@ -575,7 +526,12 @@ Wall time: 134 µs
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">merlin.models.utils.dataset</span> <span class="kn">import</span> <span class="n">unique_rows_by_features</span>
-<span class="n">user_features</span> <span class="o">=</span> <span class="n">unique_rows_by_features</span><span class="p">(</span><span class="n">train</span><span class="p">,</span> <span class="n">Tags</span><span class="o">.</span><span class="n">USER</span><span class="p">,</span> <span class="n">Tags</span><span class="o">.</span><span class="n">USER_ID</span><span class="p">)</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">user_features</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">unique_rows_by_features</span><span class="p">(</span><span class="n">train</span><span class="p">,</span> <span class="n">Tags</span><span class="o">.</span><span class="n">USER</span><span class="p">,</span> <span class="n">Tags</span><span class="o">.</span><span class="n">USER_ID</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -684,7 +640,7 @@ Wall time: 134 µs
       <th>4</th>
       <td>5</td>
       <td>5</td>
-      <td>2</td>
+      <td>1</td>
       <td>1</td>
       <td>1</td>
       <td>1</td>
@@ -703,6 +659,7 @@ Wall time: 134 µs
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+
 <span class="n">user_features</span><span class="p">[</span><span class="s2">&quot;datetime&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
 <span class="n">user_features</span><span class="p">[</span><span class="s2">&quot;datetime&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">user_features</span><span class="p">[</span><span class="s2">&quot;datetime&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;datetime64[ns]&quot;</span><span class="p">)</span>
 <span class="n">user_features</span><span class="p">[</span><span class="s2">&quot;created&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
@@ -767,8 +724,8 @@ Wall time: 134 µs
       <td>1</td>
       <td>1</td>
       <td>1</td>
-      <td>2022-05-13 05:05:41.174520</td>
-      <td>2022-05-13 05:05:41.405488</td>
+      <td>2022-06-13 15:46:06.144215</td>
+      <td>2022-06-13 15:46:06.765273</td>
     </tr>
     <tr>
       <th>1</th>
@@ -784,8 +741,8 @@ Wall time: 134 µs
       <td>2</td>
       <td>2</td>
       <td>2</td>
-      <td>2022-05-13 05:05:41.174520</td>
-      <td>2022-05-13 05:05:41.405488</td>
+      <td>2022-06-13 15:46:06.144215</td>
+      <td>2022-06-13 15:46:06.765273</td>
     </tr>
     <tr>
       <th>2</th>
@@ -801,8 +758,8 @@ Wall time: 134 µs
       <td>3</td>
       <td>3</td>
       <td>3</td>
-      <td>2022-05-13 05:05:41.174520</td>
-      <td>2022-05-13 05:05:41.405488</td>
+      <td>2022-06-13 15:46:06.144215</td>
+      <td>2022-06-13 15:46:06.765273</td>
     </tr>
     <tr>
       <th>3</th>
@@ -818,14 +775,14 @@ Wall time: 134 µs
       <td>4</td>
       <td>4</td>
       <td>4</td>
-      <td>2022-05-13 05:05:41.174520</td>
-      <td>2022-05-13 05:05:41.405488</td>
+      <td>2022-06-13 15:46:06.144215</td>
+      <td>2022-06-13 15:46:06.765273</td>
     </tr>
     <tr>
       <th>4</th>
       <td>5</td>
       <td>5</td>
-      <td>2</td>
+      <td>1</td>
       <td>1</td>
       <td>1</td>
       <td>1</td>
@@ -835,8 +792,8 @@ Wall time: 134 µs
       <td>5</td>
       <td>5</td>
       <td>5</td>
-      <td>2022-05-13 05:05:41.174520</td>
-      <td>2022-05-13 05:05:41.405488</td>
+      <td>2022-06-13 15:46:06.144215</td>
+      <td>2022-06-13 15:46:06.765273</td>
     </tr>
   </tbody>
 </table>
@@ -844,14 +801,20 @@ Wall time: 134 µs
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">user_features</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s1">&#39;feature_repo/data&#39;</span><span class="p">,</span> <span class="s1">&#39;user_features.parquet&#39;</span><span class="p">))</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">user_features</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s2">&quot;feature_repo/data&quot;</span><span class="p">,</span> <span class="s2">&quot;user_features.parquet&quot;</span><span class="p">)</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 </div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">item_features</span> <span class="o">=</span> <span class="n">unique_rows_by_features</span><span class="p">(</span><span class="n">train</span><span class="p">,</span> <span class="n">Tags</span><span class="o">.</span><span class="n">ITEM</span><span class="p">,</span> <span class="n">Tags</span><span class="o">.</span><span class="n">ITEM_ID</span><span class="p">)</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">item_features</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">unique_rows_by_features</span><span class="p">(</span><span class="n">train</span><span class="p">,</span> <span class="n">Tags</span><span class="o">.</span><span class="n">ITEM</span><span class="p">,</span> <span class="n">Tags</span><span class="o">.</span><span class="n">ITEM_ID</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -863,7 +826,7 @@ Wall time: 134 µs
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(288, 4)
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(441, 4)
 </pre></div>
 </div>
 </div>
@@ -918,8 +881,8 @@ Wall time: 134 µs
       <td>1</td>
       <td>1</td>
       <td>1</td>
-      <td>2022-05-13 05:05:41.461657</td>
-      <td>2022-05-13 05:05:41.462728</td>
+      <td>2022-06-13 15:46:06.930595</td>
+      <td>2022-06-13 15:46:06.933351</td>
     </tr>
     <tr>
       <th>1</th>
@@ -927,8 +890,8 @@ Wall time: 134 µs
       <td>2</td>
       <td>2</td>
       <td>2</td>
-      <td>2022-05-13 05:05:41.461657</td>
-      <td>2022-05-13 05:05:41.462728</td>
+      <td>2022-06-13 15:46:06.930595</td>
+      <td>2022-06-13 15:46:06.933351</td>
     </tr>
     <tr>
       <th>2</th>
@@ -936,8 +899,8 @@ Wall time: 134 µs
       <td>3</td>
       <td>3</td>
       <td>3</td>
-      <td>2022-05-13 05:05:41.461657</td>
-      <td>2022-05-13 05:05:41.462728</td>
+      <td>2022-06-13 15:46:06.930595</td>
+      <td>2022-06-13 15:46:06.933351</td>
     </tr>
     <tr>
       <th>3</th>
@@ -945,8 +908,8 @@ Wall time: 134 µs
       <td>4</td>
       <td>4</td>
       <td>4</td>
-      <td>2022-05-13 05:05:41.461657</td>
-      <td>2022-05-13 05:05:41.462728</td>
+      <td>2022-06-13 15:46:06.930595</td>
+      <td>2022-06-13 15:46:06.933351</td>
     </tr>
     <tr>
       <th>4</th>
@@ -954,8 +917,8 @@ Wall time: 134 µs
       <td>5</td>
       <td>5</td>
       <td>5</td>
-      <td>2022-05-13 05:05:41.461657</td>
-      <td>2022-05-13 05:05:41.462728</td>
+      <td>2022-06-13 15:46:06.930595</td>
+      <td>2022-06-13 15:46:06.933351</td>
     </tr>
   </tbody>
 </table>
@@ -964,7 +927,9 @@ Wall time: 134 µs
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># save to disk</span>
-<span class="n">item_features</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s1">&#39;feature_repo/data&#39;</span><span class="p">,</span> <span class="s1">&#39;item_features.parquet&#39;</span><span class="p">))</span>
+<span class="n">item_features</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s2">&quot;feature_repo/data&quot;</span><span class="p">,</span> <span class="s2">&quot;item_features.parquet&quot;</span><span class="p">)</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -974,7 +939,9 @@ Wall time: 134 µs
 <h2>Extract and save Item embeddings<a class="headerlink" href="#extract-and-save-item-embeddings" title="Permalink to this headline"></a></h2>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">item_embs</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">item_embeddings</span><span class="p">(</span><span class="n">Dataset</span><span class="p">(</span><span class="n">item_features</span><span class="p">,</span> <span class="n">schema</span><span class="o">=</span><span class="n">schema</span><span class="p">),</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">1024</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">item_embs</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">item_embeddings</span><span class="p">(</span>
+    <span class="n">Dataset</span><span class="p">(</span><span class="n">item_features</span><span class="p">,</span> <span class="n">schema</span><span class="o">=</span><span class="n">schema</span><span class="p">),</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">1024</span>
+<span class="p">)</span>
 <span class="n">item_embs_df</span> <span class="o">=</span> <span class="n">item_embs</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">scheduler</span><span class="o">=</span><span class="s2">&quot;synchronous&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -982,8 +949,10 @@ Wall time: 134 µs
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># select only item_id together with embedding columns </span>
-<span class="n">item_embeddings</span> <span class="o">=</span> <span class="n">item_embs_df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;item_category&#39;</span><span class="p">,</span> <span class="s1">&#39;item_shop&#39;</span><span class="p">,</span> <span class="s1">&#39;item_brand&#39;</span><span class="p">])</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># select only item_id together with embedding columns</span>
+<span class="n">item_embeddings</span> <span class="o">=</span> <span class="n">item_embs_df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span>
+    <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;item_category&quot;</span><span class="p">,</span> <span class="s2">&quot;item_shop&quot;</span><span class="p">,</span> <span class="s2">&quot;item_brand&quot;</span><span class="p">]</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -1040,122 +1009,122 @@ Wall time: 134 µs
     <tr>
       <th>0</th>
       <td>1</td>
-      <td>-0.036093</td>
-      <td>-0.009565</td>
-      <td>-0.012503</td>
-      <td>-0.007734</td>
-      <td>0.023629</td>
-      <td>-0.014002</td>
-      <td>-0.006029</td>
-      <td>0.040088</td>
-      <td>-0.015902</td>
+      <td>-0.014644</td>
+      <td>-0.030120</td>
+      <td>-0.043844</td>
+      <td>-0.032847</td>
+      <td>0.011542</td>
+      <td>-0.023905</td>
+      <td>-0.029672</td>
+      <td>-0.019096</td>
+      <td>0.003238</td>
       <td>...</td>
-      <td>0.035563</td>
-      <td>-0.068939</td>
-      <td>-0.016315</td>
-      <td>0.014175</td>
-      <td>-0.033716</td>
-      <td>-0.015874</td>
-      <td>-0.018918</td>
-      <td>0.010925</td>
-      <td>-0.063575</td>
-      <td>0.009035</td>
+      <td>-0.037217</td>
+      <td>0.038835</td>
+      <td>0.007689</td>
+      <td>0.000896</td>
+      <td>-0.009022</td>
+      <td>-0.010495</td>
+      <td>0.023698</td>
+      <td>0.033870</td>
+      <td>-0.029741</td>
+      <td>-0.030549</td>
     </tr>
     <tr>
       <th>1</th>
       <td>2</td>
-      <td>-0.022504</td>
-      <td>-0.011822</td>
-      <td>0.004332</td>
-      <td>-0.023232</td>
-      <td>-0.015615</td>
-      <td>0.023071</td>
-      <td>-0.035916</td>
-      <td>-0.001758</td>
-      <td>0.005837</td>
+      <td>-0.026403</td>
+      <td>-0.005529</td>
+      <td>-0.025439</td>
+      <td>-0.003412</td>
+      <td>0.005109</td>
+      <td>-0.013113</td>
+      <td>0.029868</td>
+      <td>-0.038708</td>
+      <td>0.003663</td>
       <td>...</td>
-      <td>0.029090</td>
-      <td>-0.007072</td>
-      <td>-0.010224</td>
-      <td>0.001452</td>
-      <td>-0.022393</td>
-      <td>-0.009858</td>
-      <td>-0.034096</td>
-      <td>0.043060</td>
-      <td>-0.059634</td>
-      <td>0.025757</td>
+      <td>-0.030878</td>
+      <td>-0.014543</td>
+      <td>-0.017892</td>
+      <td>0.025364</td>
+      <td>-0.032985</td>
+      <td>-0.006969</td>
+      <td>0.031746</td>
+      <td>-0.003650</td>
+      <td>-0.019432</td>
+      <td>-0.006048</td>
     </tr>
     <tr>
       <th>2</th>
       <td>3</td>
-      <td>0.025350</td>
-      <td>-0.025639</td>
-      <td>0.004433</td>
-      <td>-0.013922</td>
-      <td>0.011171</td>
-      <td>-0.010930</td>
-      <td>-0.021219</td>
-      <td>-0.006252</td>
-      <td>-0.001559</td>
+      <td>-0.031090</td>
+      <td>-0.035648</td>
+      <td>-0.042533</td>
+      <td>-0.020776</td>
+      <td>0.000392</td>
+      <td>-0.001049</td>
+      <td>-0.014174</td>
+      <td>-0.000956</td>
+      <td>-0.053086</td>
       <td>...</td>
-      <td>0.033636</td>
-      <td>-0.012912</td>
-      <td>0.006572</td>
-      <td>-0.025899</td>
-      <td>-0.000171</td>
-      <td>0.003842</td>
-      <td>-0.022592</td>
-      <td>0.006499</td>
-      <td>-0.021269</td>
-      <td>0.011934</td>
+      <td>0.023282</td>
+      <td>0.025333</td>
+      <td>0.016674</td>
+      <td>0.017381</td>
+      <td>-0.007932</td>
+      <td>-0.029791</td>
+      <td>0.007936</td>
+      <td>0.024365</td>
+      <td>-0.033152</td>
+      <td>-0.006021</td>
     </tr>
     <tr>
       <th>3</th>
       <td>4</td>
-      <td>0.016039</td>
-      <td>-0.026762</td>
-      <td>0.027716</td>
-      <td>0.015925</td>
-      <td>0.016512</td>
-      <td>0.000967</td>
-      <td>-0.005151</td>
-      <td>0.045444</td>
-      <td>-0.001235</td>
+      <td>0.021717</td>
+      <td>0.009807</td>
+      <td>-0.005943</td>
+      <td>-0.022264</td>
+      <td>0.023473</td>
+      <td>-0.033276</td>
+      <td>-0.025934</td>
+      <td>-0.023402</td>
+      <td>0.017395</td>
       <td>...</td>
-      <td>0.023222</td>
-      <td>-0.011232</td>
-      <td>0.004542</td>
-      <td>-0.014078</td>
-      <td>-0.023827</td>
-      <td>-0.018675</td>
-      <td>-0.003482</td>
-      <td>0.016900</td>
-      <td>-0.047285</td>
-      <td>0.014240</td>
+      <td>-0.051937</td>
+      <td>0.004534</td>
+      <td>0.017306</td>
+      <td>0.012567</td>
+      <td>0.021283</td>
+      <td>0.006707</td>
+      <td>-0.012907</td>
+      <td>0.037199</td>
+      <td>0.002680</td>
+      <td>-0.035851</td>
     </tr>
     <tr>
       <th>4</th>
       <td>5</td>
-      <td>0.024456</td>
-      <td>-0.026480</td>
-      <td>-0.000111</td>
-      <td>0.006407</td>
-      <td>0.012714</td>
-      <td>-0.030801</td>
-      <td>0.008527</td>
-      <td>0.043447</td>
-      <td>-0.007526</td>
+      <td>0.000333</td>
+      <td>-0.007780</td>
+      <td>-0.028711</td>
+      <td>0.000049</td>
+      <td>0.019983</td>
+      <td>0.008787</td>
+      <td>-0.021814</td>
+      <td>-0.000160</td>
+      <td>-0.031236</td>
       <td>...</td>
-      <td>0.001209</td>
-      <td>-0.013783</td>
-      <td>-0.001773</td>
-      <td>-0.023180</td>
-      <td>-0.019709</td>
-      <td>-0.006395</td>
-      <td>0.016993</td>
-      <td>0.002749</td>
-      <td>-0.042560</td>
-      <td>0.033123</td>
+      <td>0.021217</td>
+      <td>0.053417</td>
+      <td>0.006594</td>
+      <td>0.011942</td>
+      <td>0.005315</td>
+      <td>0.001932</td>
+      <td>-0.020481</td>
+      <td>0.018115</td>
+      <td>-0.002176</td>
+      <td>0.002586</td>
     </tr>
   </tbody>
 </table>
@@ -1165,7 +1134,7 @@ Wall time: 134 µs
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># save to disk</span>
-<span class="n">item_embeddings</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span><span class="s1">&#39;item_embeddings.parquet&#39;</span><span class="p">))</span>
+<span class="n">item_embeddings</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s2">&quot;item_embeddings.parquet&quot;</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
@@ -1176,11 +1145,11 @@ Wall time: 134 µs
 <p>Now we will create our user and item features definitions in the user_features.py and item_features.py files and save these files in the feature_repo.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s1">&#39;feature_repo/&#39;</span><span class="p">,</span><span class="s1">&#39;user_features.py&#39;</span><span class="p">),</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s2">&quot;feature_repo/&quot;</span><span class="p">,</span> <span class="s2">&quot;user_features.py&quot;</span><span class="p">),</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span>
 <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
-<span class="sd">&#39;&#39;&#39;</span>
+    <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">from google.protobuf.duration_pb2 import Duration</span>
-<span class="sd">import datetime </span>
+<span class="sd">import datetime</span>
 <span class="sd">from feast import Entity, Feature, FeatureView, ValueType</span>
 <span class="sd">from feast.infra.offline_stores.file_source import FileSource</span>
 
@@ -1213,7 +1182,9 @@ Wall time: 134 µs
 <span class="sd">    input=user_features,</span>
 <span class="sd">    tags=dict(),</span>
 <span class="sd">)</span>
-<span class="sd">&#39;&#39;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s1">&#39;feature_repo/data/&#39;</span><span class="p">,</span><span class="s1">&#39;user_features.parquet&#39;</span><span class="p">))</span>
+<span class="sd">&quot;&quot;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s2">&quot;feature_repo/data/&quot;</span><span class="p">,</span> <span class="s2">&quot;user_features.parquet&quot;</span><span class="p">)</span>
+    <span class="p">)</span>
 <span class="p">)</span>
 <span class="n">file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 </pre></div>
@@ -1222,11 +1193,11 @@ Wall time: 134 µs
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s1">&#39;feature_repo/&#39;</span><span class="p">,</span><span class="s1">&#39;item_features.py&#39;</span><span class="p">),</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s2">&quot;feature_repo/&quot;</span><span class="p">,</span> <span class="s2">&quot;item_features.py&quot;</span><span class="p">),</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
     <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
-<span class="sd">&#39;&#39;&#39;</span>
+        <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">from google.protobuf.duration_pb2 import Duration</span>
-<span class="sd">import datetime </span>
+<span class="sd">import datetime</span>
 <span class="sd">from feast import Entity, Feature, FeatureView, ValueType</span>
 <span class="sd">from feast.infra.offline_stores.file_source import FileSource</span>
 
@@ -1251,9 +1222,11 @@ Wall time: 134 µs
 <span class="sd">    input=item_features,</span>
 <span class="sd">    tags=dict(),</span>
 <span class="sd">)</span>
-<span class="sd">&#39;&#39;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s1">&#39;feature_repo/data/&#39;</span><span class="p">,</span><span class="s1">&#39;item_features.parquet&#39;</span><span class="p">))</span>
+<span class="sd">&quot;&quot;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s2">&quot;feature_repo/data/&quot;</span><span class="p">,</span> <span class="s2">&quot;item_features.parquet&quot;</span><span class="p">)</span>
+        <span class="p">)</span>
     <span class="p">)</span>
-<span class="n">file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span> 
+<span class="n">file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
@@ -1266,24 +1239,20 @@ Wall time: 134 µs
 </pre></div>
 </div>
 </div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Looking in indexes: https://pypi.org/simple, https://pypi.ngc.nvidia.com
-Requirement already satisfied: seedir in /usr/local/lib/python3.8/dist-packages (0.3.0)
-Requirement already satisfied: emoji in /usr/local/lib/python3.8/dist-packages (from seedir) (1.7.0)
-Requirement already satisfied: natsort in /usr/local/lib/python3.8/dist-packages (from seedir) (8.1.0)
-<span class=" -Color -Color-Yellow">WARNING: Running pip as the &#39;root&#39; user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv</span>
-<span class=" -Color -Color-Yellow">WARNING: You are using pip version 22.0.4; however, version 22.1 is available.</span>
-<span class=" -Color -Color-Yellow">You should consider upgrading via the &#39;/usr/bin/python3 -m pip install --upgrade pip&#39; command.</span>
-
-</pre></div>
-</div>
-</div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">seedir</span> <span class="k">as</span> <span class="nn">sd</span>
-<span class="n">feature_repo_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s1">&#39;feature_repo&#39;</span><span class="p">)</span>
-<span class="n">sd</span><span class="o">.</span><span class="n">seedir</span><span class="p">(</span><span class="n">feature_repo_path</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s1">&#39;lines&#39;</span><span class="p">,</span> <span class="n">itemlimit</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">depthlimit</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">exclude_folders</span><span class="o">=</span><span class="s1">&#39;.ipynb_checkpoints&#39;</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">feature_repo_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s2">&quot;feature_repo&quot;</span><span class="p">)</span>
+<span class="n">sd</span><span class="o">.</span><span class="n">seedir</span><span class="p">(</span>
+    <span class="n">feature_repo_path</span><span class="p">,</span>
+    <span class="n">style</span><span class="o">=</span><span class="s2">&quot;lines&quot;</span><span class="p">,</span>
+    <span class="n">itemlimit</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="n">depthlimit</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+    <span class="n">exclude_folders</span><span class="o">=</span><span class="s2">&quot;.ipynb_checkpoints&quot;</span><span class="p">,</span>
+    <span class="n">sort</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 </div>

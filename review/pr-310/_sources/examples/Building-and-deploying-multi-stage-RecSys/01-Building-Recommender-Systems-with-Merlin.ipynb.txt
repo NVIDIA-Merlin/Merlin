@@ -97,7 +97,7 @@
     "- [Feast](https://docs.feast.dev/): an end-to-end open source feature store library for machine learning\n",
     "- [Faiss](https://github.com/facebookresearch/faiss): a library for efficient similarity search and clustering of dense vectors\n",
     "\n",
-    "You can find more information about `Feast feature store` and `Faiss` libraries in the next notebook. Please follow the instructions in the README.md file to install these libraries."
+    "You can find more information about `Feast feature store` and `Faiss` libraries in the next notebook."
    ]
   },
   {
@@ -120,118 +120,45 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 2,
+   "execution_count": 1,
    "id": "2cd8cc8d-5cc7-4a9f-91e5-3deec6f1fe74",
    "metadata": {},
    "outputs": [
     {
-     "name": "stdout",
-     "output_type": "stream",
-     "text": [
-      "Looking in indexes: https://pypi.org/simple, https://pypi.ngc.nvidia.com\n",
-      "Requirement already satisfied: tensorflow in /usr/local/lib/python3.8/dist-packages (2.8.0)\n",
-      "Requirement already satisfied: feast<0.20 in /usr/local/lib/python3.8/dist-packages (0.19.4)\n",
-      "Requirement already satisfied: faiss-gpu in /usr/local/lib/python3.8/dist-packages (1.7.2)\n",
-      "Requirement already satisfied: wrapt>=1.11.0 in /usr/local/lib/python3.8/dist-packages (from tensorflow) (1.14.1)\n",
-      "Requirement already satisfied: tensorboard<2.9,>=2.8 in /usr/local/lib/python3.8/dist-packages (from tensorflow) (2.8.0)\n",
-      "Requirement already satisfied: six>=1.12.0 in /usr/lib/python3/dist-packages (from tensorflow) (1.14.0)\n",
-      "Requirement already satisfied: tensorflow-io-gcs-filesystem>=0.23.1 in /usr/local/lib/python3.8/dist-packages (from tensorflow) (0.25.0)\n",
-      "Requirement already satisfied: flatbuffers>=1.12 in /usr/local/lib/python3.8/dist-packages (from tensorflow) (2.0)\n",
-      "Requirement already satisfied: protobuf>=3.9.2 in /usr/local/lib/python3.8/dist-packages (from tensorflow) (3.19.4)\n",
-      "Requirement already satisfied: typing-extensions>=3.6.6 in /usr/local/lib/python3.8/dist-packages (from tensorflow) (4.1.1)\n",
-      "Requirement already satisfied: grpcio<2.0,>=1.24.3 in /usr/local/lib/python3.8/dist-packages (from tensorflow) (1.46.1)\n",
-      "Requirement already satisfied: setuptools in /usr/local/lib/python3.8/dist-packages (from tensorflow) (61.0.0)\n",
-      "Requirement already satisfied: absl-py>=0.4.0 in /usr/local/lib/python3.8/dist-packages (from tensorflow) (1.0.0)\n",
-      "Requirement already satisfied: h5py>=2.9.0 in /usr/local/lib/python3.8/dist-packages (from tensorflow) (3.6.0)\n",
-      "Requirement already satisfied: keras<2.9,>=2.8.0rc0 in /usr/local/lib/python3.8/dist-packages (from tensorflow) (2.8.0)\n",
-      "Requirement already satisfied: opt-einsum>=2.3.2 in /usr/local/lib/python3.8/dist-packages (from tensorflow) (3.3.0)\n",
-      "Requirement already satisfied: astunparse>=1.6.0 in /usr/local/lib/python3.8/dist-packages (from tensorflow) (1.6.3)\n",
-      "Requirement already satisfied: termcolor>=1.1.0 in /usr/local/lib/python3.8/dist-packages (from tensorflow) (1.1.0)\n",
-      "Requirement already satisfied: libclang>=9.0.1 in /usr/local/lib/python3.8/dist-packages (from tensorflow) (14.0.1)\n",
-      "Requirement already satisfied: gast>=0.2.1 in /usr/local/lib/python3.8/dist-packages (from tensorflow) (0.5.3)\n",
-      "Requirement already satisfied: tf-estimator-nightly==2.8.0.dev2021122109 in /usr/local/lib/python3.8/dist-packages (from tensorflow) (2.8.0.dev2021122109)\n",
-      "Requirement already satisfied: numpy>=1.20 in /usr/local/lib/python3.8/dist-packages (from tensorflow) (1.21.5)\n",
-      "Requirement already satisfied: keras-preprocessing>=1.1.1 in /usr/local/lib/python3.8/dist-packages (from tensorflow) (1.1.2)\n",
-      "Requirement already satisfied: google-pasta>=0.1.1 in /usr/local/lib/python3.8/dist-packages (from tensorflow) (0.2.0)\n",
-      "Requirement already satisfied: toml==0.10.* in /usr/local/lib/python3.8/dist-packages (from feast<0.20) (0.10.2)\n",
-      "Requirement already satisfied: tqdm==4.* in /usr/local/lib/python3.8/dist-packages (from feast<0.20) (4.64.0)\n",
-      "Requirement already satisfied: fastavro>=1.1.0 in /usr/local/lib/python3.8/dist-packages (from feast<0.20) (1.4.11)\n",
-      "Requirement already satisfied: tenacity>=7.* in /usr/local/lib/python3.8/dist-packages (from feast<0.20) (8.0.1)\n",
-      "Requirement already satisfied: tensorflow-metadata<2.0.0,>=1.0.0 in /usr/local/lib/python3.8/dist-packages (from feast<0.20) (1.7.0)\n",
-      "Requirement already satisfied: Jinja2>=2.0.0 in /usr/local/lib/python3.8/dist-packages (from feast<0.20) (3.1.1)\n",
-      "Requirement already satisfied: colorama>=0.3.9 in /usr/local/lib/python3.8/dist-packages (from feast<0.20) (0.4.4)\n",
-      "Requirement already satisfied: jsonschema in /usr/local/lib/python3.8/dist-packages (from feast<0.20) (4.5.1)\n",
-      "Requirement already satisfied: pandavro==1.5.* in /usr/local/lib/python3.8/dist-packages (from feast<0.20) (1.5.2)\n",
-      "Requirement already satisfied: uvicorn[standard]>=0.14.0 in /usr/local/lib/python3.8/dist-packages (from feast<0.20) (0.17.6)\n",
-      "Requirement already satisfied: PyYAML>=5.4.* in /usr/local/lib/python3.8/dist-packages (from feast<0.20) (6.0)\n",
-      "Requirement already satisfied: mmh3 in /usr/local/lib/python3.8/dist-packages (from feast<0.20) (3.0.0)\n",
-      "Requirement already satisfied: grpcio-reflection>=1.34.0 in /usr/local/lib/python3.8/dist-packages (from feast<0.20) (1.46.1)\n",
-      "Requirement already satisfied: fastapi>=0.68.0 in /usr/local/lib/python3.8/dist-packages (from feast<0.20) (0.77.1)\n",
-      "Requirement already satisfied: proto-plus<1.19.7 in /usr/local/lib/python3.8/dist-packages (from feast<0.20) (1.19.6)\n",
-      "Requirement already satisfied: pydantic>=1.0.0 in /usr/local/lib/python3.8/dist-packages (from feast<0.20) (1.9.0)\n",
-      "Requirement already satisfied: dask<2022.02.0,>=2021.* in /usr/local/lib/python3.8/dist-packages (from feast<0.20) (2021.11.2)\n",
-      "Requirement already satisfied: tabulate==0.8.* in /usr/local/lib/python3.8/dist-packages (from feast<0.20) (0.8.9)\n",
-      "Requirement already satisfied: googleapis-common-protos==1.52.* in /usr/local/lib/python3.8/dist-packages (from feast<0.20) (1.52.0)\n",
-      "Requirement already satisfied: google-api-core>=1.23.0 in /usr/local/lib/python3.8/dist-packages (from feast<0.20) (2.7.3)\n",
-      "Requirement already satisfied: Click>=7.* in /usr/local/lib/python3.8/dist-packages (from feast<0.20) (8.1.2)\n",
-      "Requirement already satisfied: pyarrow>=4.0.0 in /usr/local/lib/python3.8/dist-packages (from feast<0.20) (5.0.0)\n",
-      "Requirement already satisfied: pandas>=1.0.0 in /usr/local/lib/python3.8/dist-packages (from feast<0.20) (1.3.5)\n",
-      "Requirement already satisfied: dill==0.3.* in /usr/local/lib/python3.8/dist-packages (from feast<0.20) (0.3.4)\n",
-      "Requirement already satisfied: wheel<1.0,>=0.23.0 in /usr/local/lib/python3.8/dist-packages (from astunparse>=1.6.0->tensorflow) (0.37.1)\n",
-      "Requirement already satisfied: packaging>=20.0 in /usr/local/lib/python3.8/dist-packages (from dask<2022.02.0,>=2021.*->feast<0.20) (21.3)\n",
-      "Requirement already satisfied: toolz>=0.8.2 in /usr/local/lib/python3.8/dist-packages (from dask<2022.02.0,>=2021.*->feast<0.20) (0.11.2)\n",
-      "Requirement already satisfied: fsspec>=0.6.0 in /usr/local/lib/python3.8/dist-packages (from dask<2022.02.0,>=2021.*->feast<0.20) (2022.3.0)\n",
-      "Requirement already satisfied: cloudpickle>=1.1.1 in /usr/local/lib/python3.8/dist-packages (from dask<2022.02.0,>=2021.*->feast<0.20) (2.0.0)\n",
-      "Requirement already satisfied: partd>=0.3.10 in /usr/local/lib/python3.8/dist-packages (from dask<2022.02.0,>=2021.*->feast<0.20) (1.2.0)\n",
-      "Requirement already satisfied: starlette==0.19.1 in /usr/local/lib/python3.8/dist-packages (from fastapi>=0.68.0->feast<0.20) (0.19.1)\n",
-      "Requirement already satisfied: anyio<5,>=3.4.0 in /usr/local/lib/python3.8/dist-packages (from starlette==0.19.1->fastapi>=0.68.0->feast<0.20) (3.5.0)\n",
-      "Requirement already satisfied: requests<3.0.0dev,>=2.18.0 in /usr/lib/python3/dist-packages (from google-api-core>=1.23.0->feast<0.20) (2.22.0)\n",
-      "Requirement already satisfied: google-auth<3.0dev,>=1.25.0 in /usr/local/lib/python3.8/dist-packages (from google-api-core>=1.23.0->feast<0.20) (2.6.6)\n",
-      "Requirement already satisfied: MarkupSafe>=2.0 in /usr/local/lib/python3.8/dist-packages (from Jinja2>=2.0.0->feast<0.20) (2.1.1)\n",
-      "Requirement already satisfied: pytz>=2017.3 in /usr/local/lib/python3.8/dist-packages (from pandas>=1.0.0->feast<0.20) (2022.1)\n",
-      "Requirement already satisfied: python-dateutil>=2.7.3 in /usr/local/lib/python3.8/dist-packages (from pandas>=1.0.0->feast<0.20) (2.8.2)\n",
-      "Requirement already satisfied: werkzeug>=0.11.15 in /usr/local/lib/python3.8/dist-packages (from tensorboard<2.9,>=2.8->tensorflow) (2.1.2)\n",
-      "Requirement already satisfied: google-auth-oauthlib<0.5,>=0.4.1 in /usr/local/lib/python3.8/dist-packages (from tensorboard<2.9,>=2.8->tensorflow) (0.4.6)\n",
-      "Requirement already satisfied: tensorboard-plugin-wit>=1.6.0 in /usr/local/lib/python3.8/dist-packages (from tensorboard<2.9,>=2.8->tensorflow) (1.8.1)\n",
-      "Requirement already satisfied: markdown>=2.6.8 in /usr/local/lib/python3.8/dist-packages (from tensorboard<2.9,>=2.8->tensorflow) (3.3.7)\n",
-      "Requirement already satisfied: tensorboard-data-server<0.7.0,>=0.6.0 in /usr/local/lib/python3.8/dist-packages (from tensorboard<2.9,>=2.8->tensorflow) (0.6.1)\n"
-     ]
-    },
-    {
-     "name": "stdout",
-     "output_type": "stream",
-     "text": [
-      "Requirement already satisfied: h11>=0.8 in /usr/local/lib/python3.8/dist-packages (from uvicorn[standard]>=0.14.0->feast<0.20) (0.13.0)\n",
-      "Requirement already satisfied: asgiref>=3.4.0 in /usr/local/lib/python3.8/dist-packages (from uvicorn[standard]>=0.14.0->feast<0.20) (3.5.1)\n",
-      "Requirement already satisfied: websockets>=10.0 in /usr/local/lib/python3.8/dist-packages (from uvicorn[standard]>=0.14.0->feast<0.20) (10.3)\n",
-      "Requirement already satisfied: uvloop!=0.15.0,!=0.15.1,>=0.14.0 in /usr/local/lib/python3.8/dist-packages (from uvicorn[standard]>=0.14.0->feast<0.20) (0.16.0)\n",
-      "Requirement already satisfied: httptools>=0.4.0 in /usr/local/lib/python3.8/dist-packages (from uvicorn[standard]>=0.14.0->feast<0.20) (0.4.0)\n",
-      "Requirement already satisfied: watchgod>=0.6 in /usr/local/lib/python3.8/dist-packages (from uvicorn[standard]>=0.14.0->feast<0.20) (0.8.2)\n",
-      "Requirement already satisfied: python-dotenv>=0.13 in /usr/local/lib/python3.8/dist-packages (from uvicorn[standard]>=0.14.0->feast<0.20) (0.20.0)\n",
-      "Requirement already satisfied: importlib-resources>=1.4.0 in /usr/local/lib/python3.8/dist-packages (from jsonschema->feast<0.20) (5.7.1)\n",
-      "Requirement already satisfied: attrs>=17.4.0 in /usr/local/lib/python3.8/dist-packages (from jsonschema->feast<0.20) (21.4.0)\n",
-      "Requirement already satisfied: pyrsistent!=0.17.0,!=0.17.1,!=0.17.2,>=0.14.0 in /usr/local/lib/python3.8/dist-packages (from jsonschema->feast<0.20) (0.18.1)\n",
-      "Requirement already satisfied: cachetools<6.0,>=2.0.0 in /usr/local/lib/python3.8/dist-packages (from google-auth<3.0dev,>=1.25.0->google-api-core>=1.23.0->feast<0.20) (5.0.0)\n",
-      "Requirement already satisfied: pyasn1-modules>=0.2.1 in /usr/local/lib/python3.8/dist-packages (from google-auth<3.0dev,>=1.25.0->google-api-core>=1.23.0->feast<0.20) (0.2.8)\n",
-      "Requirement already satisfied: rsa<5,>=3.1.4 in /usr/local/lib/python3.8/dist-packages (from google-auth<3.0dev,>=1.25.0->google-api-core>=1.23.0->feast<0.20) (4.8)\n",
-      "Requirement already satisfied: requests-oauthlib>=0.7.0 in /usr/local/lib/python3.8/dist-packages (from google-auth-oauthlib<0.5,>=0.4.1->tensorboard<2.9,>=2.8->tensorflow) (1.3.1)\n",
-      "Requirement already satisfied: zipp>=3.1.0 in /usr/local/lib/python3.8/dist-packages (from importlib-resources>=1.4.0->jsonschema->feast<0.20) (3.8.0)\n",
-      "Requirement already satisfied: importlib-metadata>=4.4 in /usr/local/lib/python3.8/dist-packages (from markdown>=2.6.8->tensorboard<2.9,>=2.8->tensorflow) (4.11.3)\n",
-      "Requirement already satisfied: pyparsing!=3.0.5,>=2.0.2 in /usr/local/lib/python3.8/dist-packages (from packaging>=20.0->dask<2022.02.0,>=2021.*->feast<0.20) (3.0.7)\n",
-      "Requirement already satisfied: locket in /usr/local/lib/python3.8/dist-packages (from partd>=0.3.10->dask<2022.02.0,>=2021.*->feast<0.20) (0.2.1)\n",
-      "Requirement already satisfied: idna>=2.8 in /usr/lib/python3/dist-packages (from anyio<5,>=3.4.0->starlette==0.19.1->fastapi>=0.68.0->feast<0.20) (2.8)\n",
-      "Requirement already satisfied: sniffio>=1.1 in /usr/local/lib/python3.8/dist-packages (from anyio<5,>=3.4.0->starlette==0.19.1->fastapi>=0.68.0->feast<0.20) (1.2.0)\n",
-      "Requirement already satisfied: pyasn1<0.5.0,>=0.4.6 in /usr/local/lib/python3.8/dist-packages (from pyasn1-modules>=0.2.1->google-auth<3.0dev,>=1.25.0->google-api-core>=1.23.0->feast<0.20) (0.4.8)\n",
-      "Requirement already satisfied: oauthlib>=3.0.0 in /usr/local/lib/python3.8/dist-packages (from requests-oauthlib>=0.7.0->google-auth-oauthlib<0.5,>=0.4.1->tensorboard<2.9,>=2.8->tensorflow) (3.2.0)\n",
-      "\u001b[33mWARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv\u001b[0m\u001b[33m\n",
-      "\u001b[0m\u001b[33mWARNING: You are using pip version 22.0.4; however, version 22.1 is available.\n",
-      "You should consider upgrading via the '/usr/bin/python3 -m pip install --upgrade pip' command.\u001b[0m\u001b[33m\n",
-      "\u001b[0mNote: you may need to restart the kernel to use updated packages.\n"
-     ]
+     "data": {
+      "application/javascript": [
+       "\n",
+       "            setTimeout(function() {\n",
+       "                var nbb_cell_id = 1;\n",
+       "                var nbb_unformatted_code = \"%load_ext nb_black\\n# for running this example on GPU, install the following libraries\\n# %pip install tensorflow \\\"feast<0.20\\\" faiss-gpu\\n\\n# for running this example on CPU, uncomment the following lines\\n# %pip install tensorflow-cpu \\\"feast<0.20\\\" faiss-cpu\\n# %pip uninstall cudf\";\n",
+       "                var nbb_formatted_code = \"%load_ext nb_black\\n# for running this example on GPU, install the following libraries\\n# %pip install tensorflow \\\"feast<0.20\\\" faiss-gpu\\n\\n# for running this example on CPU, uncomment the following lines\\n# %pip install tensorflow-cpu \\\"feast<0.20\\\" faiss-cpu\\n# %pip uninstall cudf\";\n",
+       "                var nbb_cells = Jupyter.notebook.get_cells();\n",
+       "                for (var i = 0; i < nbb_cells.length; ++i) {\n",
+       "                    if (nbb_cells[i].input_prompt_number == nbb_cell_id) {\n",
+       "                        if (nbb_cells[i].get_text() == nbb_unformatted_code) {\n",
+       "                             nbb_cells[i].set_text(nbb_formatted_code);\n",
+       "                        }\n",
+       "                        break;\n",
+       "                    }\n",
+       "                }\n",
+       "            }, 500);\n",
+       "            "
+      ],
+      "text/plain": [
+       "<IPython.core.display.Javascript object>"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
     }
    ],
    "source": [
-    "%pip install tensorflow \"feast<0.20\" faiss-gpu"
+    "# for running this example on GPU, install the following libraries\n",
+    "# %pip install tensorflow \"feast<0.20\" faiss-gpu\n",
+    "\n",
+    "# for running this example on CPU, uncomment the following lines\n",
+    "# %pip install tensorflow-cpu \"feast<0.20\" faiss-cpu\n",
+    "# %pip uninstall cudf"
    ]
   },
   {
@@ -244,38 +171,33 @@
      "name": "stderr",
      "output_type": "stream",
      "text": [
-      "2022-05-13 05:05:20.155250: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:936] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero\n",
-      "2022-05-13 05:05:20.155752: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:936] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero\n",
-      "2022-05-13 05:05:20.155904: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:936] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero\n",
-      "2022-05-13 05:05:20.184146: I tensorflow/core/platform/cpu_feature_guard.cc:151] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  AVX2 FMA\n",
+      "2022-06-13 15:45:04.158619: I tensorflow/core/platform/cpu_feature_guard.cc:193] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  AVX2 FMA\n",
       "To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.\n",
-      "2022-05-13 05:05:20.185178: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:936] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero\n",
-      "2022-05-13 05:05:20.185360: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:936] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero\n",
-      "2022-05-13 05:05:20.185489: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:936] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero\n",
-      "2022-05-13 05:05:20.911906: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:936] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero\n",
-      "2022-05-13 05:05:20.912088: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:936] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero\n",
-      "2022-05-13 05:05:20.912226: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:936] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero\n",
-      "2022-05-13 05:05:20.912338: I tensorflow/core/common_runtime/gpu/gpu_process_state.cc:214] Using CUDA malloc Async allocator for GPU: 0\n",
-      "2022-05-13 05:05:20.912458: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1525] Created device /job:localhost/replica:0/task:0/device:GPU:0 with 24576 MB memory:  -> device: 0, name: Quadro RTX 8000, pci bus id: 0000:08:00.0, compute capability: 7.5\n"
+      "2022-06-13 15:45:06.652810: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1532] Created device /job:localhost/replica:0/task:0/device:GPU:0 with 16255 MB memory:  -> device: 0, name: Tesla V100-SXM2-32GB-LS, pci bus id: 0000:06:00.0, compute capability: 7.0\n"
      ]
     }
    ],
    "source": [
     "import os\n",
-    "os.environ[\"TF_GPU_ALLOCATOR\"]=\"cuda_malloc_async\"\n",
-    "import glob\n",
-    "import gc\n",
     "\n",
-    "import nvtabular as nvt\n",
-    "from nvtabular.ops import *\n",
-    "\n",
-    "from merlin.models.utils.example_utils import workflow_fit_transform\n",
+    "from nvtabular.ops import (\n",
+    "    Categorify,\n",
+    "    TagAsUserID,\n",
+    "    TagAsItemID,\n",
+    "    TagAsItemFeatures,\n",
+    "    TagAsUserFeatures,\n",
+    "    AddMetadata,\n",
+    "    Filter,\n",
+    ")\n",
     "\n",
     "from merlin.schema.tags import Tags\n",
     "\n",
     "import merlin.models.tf as mm\n",
     "from merlin.io.dataset import Dataset\n",
-    "import tensorflow as tf"
+    "import tensorflow as tf\n",
+    "\n",
+    "# for running this example on CPU, comment out the line below\n",
+    "os.environ[\"TF_GPU_ALLOCATOR\"] = \"cuda_malloc_async\""
    ]
   },
   {
@@ -287,6 +209,7 @@
    "source": [
     "# disable INFO and DEBUG logging everywhere\n",
     "import logging\n",
+    "\n",
     "logging.disable(logging.WARNING)"
    ]
   },
@@ -308,7 +231,7 @@
    "outputs": [],
    "source": [
     "DATA_FOLDER = os.environ.get(\"DATA_FOLDER\", \"/workspace/data/\")\n",
-    "output_path = os.path.join(DATA_FOLDER, 'processed/ranking')"
+    "output_path = os.path.join(DATA_FOLDER, \"processed/ranking\")"
    ]
   },
   {
@@ -366,27 +289,40 @@
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "CPU times: user 71 µs, sys: 60 µs, total: 131 µs\n",
-      "Wall time: 134 µs\n"
+      "CPU times: user 242 µs, sys: 102 µs, total: 344 µs\n",
+      "Wall time: 365 µs\n"
      ]
     }
    ],
    "source": [
     "%%time\n",
     "\n",
-    "user_id = [\"user_id\"] >> Categorify(dtype='int32') >> TagAsUserID()\n",
-    "item_id = [\"item_id\"] >> Categorify(dtype='int32') >> TagAsItemID()\n",
+    "user_id = [\"user_id\"] >> Categorify(dtype=\"int32\") >> TagAsUserID()\n",
+    "item_id = [\"item_id\"] >> Categorify(dtype=\"int32\") >> TagAsItemID()\n",
     "\n",
-    "item_features = [\"item_category\", \"item_shop\", \"item_brand\"] >> Categorify(dtype='int32') >> TagAsItemFeatures() \n",
+    "item_features = (\n",
+    "    [\"item_category\", \"item_shop\", \"item_brand\"] >> Categorify(dtype=\"int32\") >> TagAsItemFeatures()\n",
+    ")\n",
     "\n",
-    "user_features = ['user_shops', 'user_profile', 'user_group', \n",
-    "       'user_gender', 'user_age', 'user_consumption_2', 'user_is_occupied',\n",
-    "       'user_geography', 'user_intentions', 'user_brands', 'user_categories'] \\\n",
-    "    >> Categorify(dtype='int32') >> TagAsUserFeatures() \n",
+    "user_features = (\n",
+    "    [\n",
+    "        \"user_shops\",\n",
+    "        \"user_profile\",\n",
+    "        \"user_group\",\n",
+    "        \"user_gender\",\n",
+    "        \"user_age\",\n",
+    "        \"user_consumption_2\",\n",
+    "        \"user_is_occupied\",\n",
+    "        \"user_geography\",\n",
+    "        \"user_intentions\",\n",
+    "        \"user_brands\",\n",
+    "        \"user_categories\",\n",
+    "    ] >> Categorify(dtype=\"int32\") >> TagAsUserFeatures()\n",
+    ")\n",
     "\n",
     "targets = [\"click\"] >> AddMetadata(tags=[Tags.BINARY_CLASSIFICATION, \"target\"])\n",
     "\n",
-    "outputs = user_id+item_id+item_features+user_features+targets"
+    "outputs = user_id + item_id + item_features + user_features + targets"
    ]
   },
   {
@@ -415,7 +351,9 @@
    "source": [
     "from merlin.datasets.ecommerce import transform_aliccp\n",
     "\n",
-    "transform_aliccp((train, valid), output_path, nvt_workflow=outputs, workflow_name='workflow_ranking')"
+    "transform_aliccp(\n",
+    "    (train, valid), output_path, nvt_workflow=outputs, workflow_name=\"workflow_ranking\"\n",
+    ")"
    ]
   },
   {
@@ -446,8 +384,8 @@
    "outputs": [],
    "source": [
     "# define train and valid dataset objects\n",
-    "train = Dataset(os.path.join(output_path, 'train', '*.parquet'), part_size=\"500MB\")\n",
-    "valid = Dataset(os.path.join(output_path, 'valid', '*.parquet'), part_size=\"500MB\")\n",
+    "train = Dataset(os.path.join(output_path, \"train\", \"*.parquet\"), part_size=\"500MB\")\n",
+    "valid = Dataset(os.path.join(output_path, \"valid\", \"*.parquet\"), part_size=\"500MB\")\n",
     "\n",
     "# define schema object\n",
     "schema = train.schema"
@@ -495,7 +433,7 @@
     "    embedding_dim=64,\n",
     "    bottom_block=mm.MLPBlock([128, 64]),\n",
     "    top_block=mm.MLPBlock([128, 64, 32]),\n",
-    "    prediction_tasks=mm.BinaryClassificationTask(target_column, metrics=[tf.keras.metrics.AUC()])\n",
+    "    prediction_tasks=mm.BinaryClassificationTask(target_column),\n",
     ")"
    ]
   },
@@ -506,30 +444,16 @@
    "metadata": {},
    "outputs": [
     {
-     "name": "stderr",
-     "output_type": "stream",
-     "text": [
-      "2022-05-13 05:05:22.404065: W tensorflow/python/util/util.cc:368] Sets are not currently considered sequences, but this may change in the future, so consider avoiding using them.\n"
-     ]
-    },
-    {
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "1/1 [==============================] - 4s 4s/step - auc: 0.4923 - loss: 0.6931 - regularization_loss: 0.0000e+00 - total_loss: 0.6931 - val_auc: 0.4925 - val_loss: 0.6934 - val_regularization_loss: 0.0000e+00 - val_total_loss: 0.6934\n"
-     ]
-    },
-    {
-     "name": "stderr",
-     "output_type": "stream",
-     "text": [
-      "2022-05-13 05:05:26.540780: W tensorflow/core/grappler/optimizers/loop_optimizer.cc:907] Skipping loop optimization for Merge node with control input: cond/branch_executed/_13\n"
+      "5/5 [==============================] - 9s 313ms/step - loss: 0.6931 - auc: 0.4984 - val_loss: 0.6932 - val_auc: 0.5018\n"
      ]
     },
     {
      "data": {
       "text/plain": [
-       "<keras.callbacks.History at 0x7f0a1d51b220>"
+       "<keras.callbacks.History at 0x7f22ea7dbe20>"
       ]
      },
      "execution_count": 12,
@@ -538,8 +462,8 @@
     }
    ],
    "source": [
-    "model.compile(optimizer='adam', run_eagerly=False)\n",
-    "model.fit(train, validation_data=valid, batch_size=16*1024)"
+    "model.compile(optimizer=\"adam\", run_eagerly=False, metrics=[tf.keras.metrics.AUC()])\n",
+    "model.fit(train, validation_data=valid, batch_size=16 * 1024)"
    ]
   },
   {
@@ -558,7 +482,9 @@
    "outputs": [],
    "source": [
     "# set up the base dir to for feature store\n",
-    "BASE_DIR = os.environ.get(\"BASE_DIR\", \"/Merlin/examples/Building-and-deploying-multi-stage-RecSys/\")"
+    "BASE_DIR = os.environ.get(\n",
+    "    \"BASE_DIR\", \"/Merlin/examples/Building-and-deploying-multi-stage-RecSys/\"\n",
+    ")"
    ]
   },
   {
@@ -576,7 +502,7 @@
    "metadata": {},
    "outputs": [],
    "source": [
-    "model.save(os.path.join(BASE_DIR, 'dlrm'))"
+    "model.save(os.path.join(BASE_DIR, \"dlrm\"))"
    ]
   },
   {
@@ -602,7 +528,7 @@
    "metadata": {},
    "outputs": [],
    "source": [
-    "output_path = os.path.join(DATA_FOLDER, 'processed/retrieval')"
+    "output_path = os.path.join(DATA_FOLDER, \"processed/retrieval\")"
    ]
   },
   {
@@ -629,21 +555,39 @@
     }
    ],
    "source": [
-    "user_id = [\"user_id\"] >> Categorify(dtype='int32') >> TagAsUserID()\n",
-    "item_id = [\"item_id\"] >> Categorify(dtype='int32') >> TagAsItemID()\n",
+    "user_id = [\"user_id\"] >> Categorify(dtype=\"int32\") >> TagAsUserID()\n",
+    "item_id = [\"item_id\"] >> Categorify(dtype=\"int32\") >> TagAsItemID()\n",
     "\n",
-    "item_features = [\"item_category\", \"item_shop\", \"item_brand\"] >> Categorify(dtype='int32') >> TagAsItemFeatures()\n",
+    "item_features = (\n",
+    "    [\"item_category\", \"item_shop\", \"item_brand\"] >> Categorify(dtype=\"int32\") >> TagAsItemFeatures()\n",
+    ")\n",
     "\n",
-    "user_features = ['user_shops', 'user_profile', 'user_group', \n",
-    "       'user_gender', 'user_age', 'user_consumption_2', 'user_is_occupied',\n",
-    "       'user_geography', 'user_intentions', 'user_brands', 'user_categories'] \\\n",
-    "        >> Categorify(dtype='int32') >> TagAsUserFeatures() \n",
+    "user_features = (\n",
+    "    [\n",
+    "        \"user_shops\",\n",
+    "        \"user_profile\",\n",
+    "        \"user_group\",\n",
+    "        \"user_gender\",\n",
+    "        \"user_age\",\n",
+    "        \"user_consumption_2\",\n",
+    "        \"user_is_occupied\",\n",
+    "        \"user_geography\",\n",
+    "        \"user_intentions\",\n",
+    "        \"user_brands\",\n",
+    "        \"user_categories\",\n",
+    "    ] >> Categorify(dtype=\"int32\") >> TagAsUserFeatures()\n",
+    ")\n",
     "\n",
-    "inputs = user_id + item_id + item_features + user_features + ['click'] \n",
+    "inputs = user_id + item_id + item_features + user_features + [\"click\"]\n",
     "\n",
     "outputs = inputs >> Filter(f=lambda df: df[\"click\"] == 1)\n",
     "\n",
-    "transform_aliccp((train, valid), output_path, nvt_workflow=outputs, workflow_name='workflow_retrieval')"
+    "transform_aliccp(\n",
+    "    (train, valid),\n",
+    "    output_path,\n",
+    "    nvt_workflow=outputs,\n",
+    "    workflow_name=\"workflow_retrieval\",\n",
+    ")"
    ]
   },
   {
@@ -653,8 +597,8 @@
    "metadata": {},
    "outputs": [],
    "source": [
-    "train_tt = Dataset(os.path.join(output_path, 'train', '*.parquet'))\n",
-    "valid_tt = Dataset(os.path.join(output_path, 'valid', '*.parquet'))\n",
+    "train_tt = Dataset(os.path.join(output_path, \"train\", \"*.parquet\"))\n",
+    "valid_tt = Dataset(os.path.join(output_path, \"valid\", \"*.parquet\"))\n",
     "\n",
     "schema = train_tt.schema\n",
     "schema = schema.select_by_tag([Tags.ITEM_ID, Tags.USER_ID, Tags.ITEM, Tags.USER])"
@@ -669,11 +613,9 @@
    "source": [
     "model = mm.TwoTowerModel(\n",
     "    schema,\n",
-    "    query_tower=mm.MLPBlock([128, 64], no_activation_last_layer=True),        \n",
-    "    loss=\"categorical_crossentropy\",  \n",
+    "    query_tower=mm.MLPBlock([128, 64], no_activation_last_layer=True),\n",
     "    samplers=[mm.InBatchSampler()],\n",
-    "    embedding_options = mm.EmbeddingOptions(infer_embedding_sizes=True),\n",
-    "    metrics=[mm.RecallAt(10), mm.NDCGAt(10)]\n",
+    "    embedding_options=mm.EmbeddingOptions(infer_embedding_sizes=True),\n",
     ")"
    ]
   },
@@ -687,20 +629,13 @@
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "1/1 [==============================] - 4s 4s/step - recall_at_10: 0.0044 - ndcg_10: 0.0023 - loss: 8.6446 - regularization_loss: 0.0000e+00 - total_loss: 8.6446 - val_recall_at_10: 0.0195 - val_ndcg_10: 0.0157 - val_loss: 7.8369 - val_regularization_loss: 0.0000e+00 - val_total_loss: 7.8369\n"
-     ]
-    },
-    {
-     "name": "stderr",
-     "output_type": "stream",
-     "text": [
-      "2022-05-13 05:05:36.207971: W tensorflow/core/grappler/optimizers/loop_optimizer.cc:907] Skipping loop optimization for Merge node with control input: cond/branch_executed/_24\n"
+      "5/5 [==============================] - 11s 566ms/step - loss: 8.8953 - recall_at_10: 0.0175 - ndcg_10: 0.0135 - val_loss: 8.8948 - val_recall_at_10: 0.0358 - val_ndcg_10: 0.0339\n"
      ]
     },
     {
      "data": {
       "text/plain": [
-       "<keras.callbacks.History at 0x7f09c84674f0>"
+       "<keras.callbacks.History at 0x7f22db4ec400>"
       ]
      },
      "execution_count": 19,
@@ -709,8 +644,13 @@
     }
    ],
    "source": [
-    "model.compile(optimizer='adam', run_eagerly=False)\n",
-    "model.fit(train_tt, validation_data=valid_tt, batch_size=1024*8, epochs=1)"
+    "model.compile(\n",
+    "    optimizer=\"adam\",\n",
+    "    run_eagerly=False,\n",
+    "    loss=\"categorical_crossentropy\",\n",
+    "    metrics=[mm.RecallAt(10), mm.NDCGAt(10)],\n",
+    ")\n",
+    "model.fit(train_tt, validation_data=valid_tt, batch_size=1024 * 8, epochs=1)"
    ]
   },
   {
@@ -747,9 +687,9 @@
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "\r\n",
-      "Creating a new Feast repository in \u001b[1m\u001b[32m/Merlin/examples/Building-and-deploying-multi-stage-RecSys/feature_repo\u001b[0m.\r\n",
-      "\r\n"
+      "\n",
+      "Creating a new Feast repository in \u001b[1m\u001b[32m/Merlin/examples/Building-and-deploying-multi-stage-RecSys/feature_repo\u001b[0m.\n",
+      "\n"
      ]
     }
    ],
@@ -773,8 +713,11 @@
    "metadata": {},
    "outputs": [],
    "source": [
-    "os.remove(os.path.join(BASE_DIR, 'feature_repo', 'example.py'))\n",
-    "os.remove(os.path.join(BASE_DIR, 'feature_repo/data', 'driver_stats.parquet'))"
+    "feature_repo_path = os.path.join(BASE_DIR, \"feature_repo\")\n",
+    "if os.path.exists(f\"{feature_repo_path}/example.py\"):\n",
+    "    os.remove(f\"{feature_repo_path}/example.py\")\n",
+    "if os.path.exists(f\"{feature_repo_path}/data/driver_stats.parquet\"):\n",
+    "    os.remove(f\"{feature_repo_path}/data/driver_stats.parquet\")"
    ]
   },
   {
@@ -793,7 +736,7 @@
    "outputs": [],
    "source": [
     "query_tower = model.retrieval_block.query_block()\n",
-    "query_tower.save(os.path.join(BASE_DIR, 'query_tower'))"
+    "query_tower.save(os.path.join(BASE_DIR, \"query_tower\"))"
    ]
   },
   {
@@ -812,7 +755,12 @@
    "outputs": [],
    "source": [
     "from merlin.models.utils.dataset import unique_rows_by_features\n",
-    "user_features = unique_rows_by_features(train, Tags.USER, Tags.USER_ID).compute().reset_index(drop=True)"
+    "\n",
+    "user_features = (\n",
+    "    unique_rows_by_features(train, Tags.USER, Tags.USER_ID)\n",
+    "    .compute()\n",
+    "    .reset_index(drop=True)\n",
+    ")"
    ]
   },
   {
@@ -921,7 +869,7 @@
        "      <th>4</th>\n",
        "      <td>5</td>\n",
        "      <td>5</td>\n",
-       "      <td>2</td>\n",
+       "      <td>1</td>\n",
        "      <td>1</td>\n",
        "      <td>1</td>\n",
        "      <td>1</td>\n",
@@ -942,7 +890,7 @@
        "1        2           2             1           1            1         1   \n",
        "2        3           3             1           1            1         1   \n",
        "3        4           4             1           1            1         1   \n",
-       "4        5           5             2           1            1         1   \n",
+       "4        5           5             1           1            1         1   \n",
        "\n",
        "   user_consumption_2  user_is_occupied  user_geography  user_intentions  \\\n",
        "0                   1                 1               1                1   \n",
@@ -984,6 +932,7 @@
    "outputs": [],
    "source": [
     "from datetime import datetime\n",
+    "\n",
     "user_features[\"datetime\"] = datetime.now()\n",
     "user_features[\"datetime\"] = user_features[\"datetime\"].astype(\"datetime64[ns]\")\n",
     "user_features[\"created\"] = datetime.now()\n",
@@ -1048,8 +997,8 @@
        "      <td>1</td>\n",
        "      <td>1</td>\n",
        "      <td>1</td>\n",
-       "      <td>2022-05-13 05:05:41.174520</td>\n",
-       "      <td>2022-05-13 05:05:41.405488</td>\n",
+       "      <td>2022-06-13 15:46:06.144215</td>\n",
+       "      <td>2022-06-13 15:46:06.765273</td>\n",
        "    </tr>\n",
        "    <tr>\n",
        "      <th>1</th>\n",
@@ -1065,8 +1014,8 @@
        "      <td>2</td>\n",
        "      <td>2</td>\n",
        "      <td>2</td>\n",
-       "      <td>2022-05-13 05:05:41.174520</td>\n",
-       "      <td>2022-05-13 05:05:41.405488</td>\n",
+       "      <td>2022-06-13 15:46:06.144215</td>\n",
+       "      <td>2022-06-13 15:46:06.765273</td>\n",
        "    </tr>\n",
        "    <tr>\n",
        "      <th>2</th>\n",
@@ -1082,8 +1031,8 @@
        "      <td>3</td>\n",
        "      <td>3</td>\n",
        "      <td>3</td>\n",
-       "      <td>2022-05-13 05:05:41.174520</td>\n",
-       "      <td>2022-05-13 05:05:41.405488</td>\n",
+       "      <td>2022-06-13 15:46:06.144215</td>\n",
+       "      <td>2022-06-13 15:46:06.765273</td>\n",
        "    </tr>\n",
        "    <tr>\n",
        "      <th>3</th>\n",
@@ -1099,14 +1048,14 @@
        "      <td>4</td>\n",
        "      <td>4</td>\n",
        "      <td>4</td>\n",
-       "      <td>2022-05-13 05:05:41.174520</td>\n",
-       "      <td>2022-05-13 05:05:41.405488</td>\n",
+       "      <td>2022-06-13 15:46:06.144215</td>\n",
+       "      <td>2022-06-13 15:46:06.765273</td>\n",
        "    </tr>\n",
        "    <tr>\n",
        "      <th>4</th>\n",
        "      <td>5</td>\n",
        "      <td>5</td>\n",
-       "      <td>2</td>\n",
+       "      <td>1</td>\n",
        "      <td>1</td>\n",
        "      <td>1</td>\n",
        "      <td>1</td>\n",
@@ -1116,8 +1065,8 @@
        "      <td>5</td>\n",
        "      <td>5</td>\n",
        "      <td>5</td>\n",
-       "      <td>2022-05-13 05:05:41.174520</td>\n",
-       "      <td>2022-05-13 05:05:41.405488</td>\n",
+       "      <td>2022-06-13 15:46:06.144215</td>\n",
+       "      <td>2022-06-13 15:46:06.765273</td>\n",
        "    </tr>\n",
        "  </tbody>\n",
        "</table>\n",
@@ -1129,7 +1078,7 @@
        "1        2           2             1           1            1         1   \n",
        "2        3           3             1           1            1         1   \n",
        "3        4           4             1           1            1         1   \n",
-       "4        5           5             2           1            1         1   \n",
+       "4        5           5             1           1            1         1   \n",
        "\n",
        "   user_consumption_2  user_is_occupied  user_geography  user_intentions  \\\n",
        "0                   1                 1               1                1   \n",
@@ -1139,18 +1088,18 @@
        "4                   1                 1               1                5   \n",
        "\n",
        "   user_brands  user_categories                   datetime  \\\n",
-       "0            1                1 2022-05-13 05:05:41.174520   \n",
-       "1            2                2 2022-05-13 05:05:41.174520   \n",
-       "2            3                3 2022-05-13 05:05:41.174520   \n",
-       "3            4                4 2022-05-13 05:05:41.174520   \n",
-       "4            5                5 2022-05-13 05:05:41.174520   \n",
+       "0            1                1 2022-06-13 15:46:06.144215   \n",
+       "1            2                2 2022-06-13 15:46:06.144215   \n",
+       "2            3                3 2022-06-13 15:46:06.144215   \n",
+       "3            4                4 2022-06-13 15:46:06.144215   \n",
+       "4            5                5 2022-06-13 15:46:06.144215   \n",
        "\n",
        "                     created  \n",
-       "0 2022-05-13 05:05:41.405488  \n",
-       "1 2022-05-13 05:05:41.405488  \n",
-       "2 2022-05-13 05:05:41.405488  \n",
-       "3 2022-05-13 05:05:41.405488  \n",
-       "4 2022-05-13 05:05:41.405488  "
+       "0 2022-06-13 15:46:06.765273  \n",
+       "1 2022-06-13 15:46:06.765273  \n",
+       "2 2022-06-13 15:46:06.765273  \n",
+       "3 2022-06-13 15:46:06.765273  \n",
+       "4 2022-06-13 15:46:06.765273  "
       ]
      },
      "execution_count": 26,
@@ -1169,7 +1118,9 @@
    "metadata": {},
    "outputs": [],
    "source": [
-    "user_features.to_parquet(os.path.join(BASE_DIR, 'feature_repo/data', 'user_features.parquet'))"
+    "user_features.to_parquet(\n",
+    "    os.path.join(BASE_DIR, \"feature_repo/data\", \"user_features.parquet\")\n",
+    ")"
    ]
   },
   {
@@ -1179,7 +1130,11 @@
    "metadata": {},
    "outputs": [],
    "source": [
-    "item_features = unique_rows_by_features(train, Tags.ITEM, Tags.ITEM_ID).compute().reset_index(drop=True)"
+    "item_features = (\n",
+    "    unique_rows_by_features(train, Tags.ITEM, Tags.ITEM_ID)\n",
+    "    .compute()\n",
+    "    .reset_index(drop=True)\n",
+    ")"
    ]
   },
   {
@@ -1191,7 +1146,7 @@
     {
      "data": {
       "text/plain": [
-       "(288, 4)"
+       "(441, 4)"
       ]
      },
      "execution_count": 29,
@@ -1258,8 +1213,8 @@
        "      <td>1</td>\n",
        "      <td>1</td>\n",
        "      <td>1</td>\n",
-       "      <td>2022-05-13 05:05:41.461657</td>\n",
-       "      <td>2022-05-13 05:05:41.462728</td>\n",
+       "      <td>2022-06-13 15:46:06.930595</td>\n",
+       "      <td>2022-06-13 15:46:06.933351</td>\n",
        "    </tr>\n",
        "    <tr>\n",
        "      <th>1</th>\n",
@@ -1267,8 +1222,8 @@
        "      <td>2</td>\n",
        "      <td>2</td>\n",
        "      <td>2</td>\n",
-       "      <td>2022-05-13 05:05:41.461657</td>\n",
-       "      <td>2022-05-13 05:05:41.462728</td>\n",
+       "      <td>2022-06-13 15:46:06.930595</td>\n",
+       "      <td>2022-06-13 15:46:06.933351</td>\n",
        "    </tr>\n",
        "    <tr>\n",
        "      <th>2</th>\n",
@@ -1276,8 +1231,8 @@
        "      <td>3</td>\n",
        "      <td>3</td>\n",
        "      <td>3</td>\n",
-       "      <td>2022-05-13 05:05:41.461657</td>\n",
-       "      <td>2022-05-13 05:05:41.462728</td>\n",
+       "      <td>2022-06-13 15:46:06.930595</td>\n",
+       "      <td>2022-06-13 15:46:06.933351</td>\n",
        "    </tr>\n",
        "    <tr>\n",
        "      <th>3</th>\n",
@@ -1285,8 +1240,8 @@
        "      <td>4</td>\n",
        "      <td>4</td>\n",
        "      <td>4</td>\n",
-       "      <td>2022-05-13 05:05:41.461657</td>\n",
-       "      <td>2022-05-13 05:05:41.462728</td>\n",
+       "      <td>2022-06-13 15:46:06.930595</td>\n",
+       "      <td>2022-06-13 15:46:06.933351</td>\n",
        "    </tr>\n",
        "    <tr>\n",
        "      <th>4</th>\n",
@@ -1294,8 +1249,8 @@
        "      <td>5</td>\n",
        "      <td>5</td>\n",
        "      <td>5</td>\n",
-       "      <td>2022-05-13 05:05:41.461657</td>\n",
-       "      <td>2022-05-13 05:05:41.462728</td>\n",
+       "      <td>2022-06-13 15:46:06.930595</td>\n",
+       "      <td>2022-06-13 15:46:06.933351</td>\n",
        "    </tr>\n",
        "  </tbody>\n",
        "</table>\n",
@@ -1303,18 +1258,18 @@
       ],
       "text/plain": [
        "   item_id  item_category  item_shop  item_brand                   datetime  \\\n",
-       "0        1              1          1           1 2022-05-13 05:05:41.461657   \n",
-       "1        2              2          2           2 2022-05-13 05:05:41.461657   \n",
-       "2        3              3          3           3 2022-05-13 05:05:41.461657   \n",
-       "3        4              4          4           4 2022-05-13 05:05:41.461657   \n",
-       "4        5              5          5           5 2022-05-13 05:05:41.461657   \n",
+       "0        1              1          1           1 2022-06-13 15:46:06.930595   \n",
+       "1        2              2          2           2 2022-06-13 15:46:06.930595   \n",
+       "2        3              3          3           3 2022-06-13 15:46:06.930595   \n",
+       "3        4              4          4           4 2022-06-13 15:46:06.930595   \n",
+       "4        5              5          5           5 2022-06-13 15:46:06.930595   \n",
        "\n",
        "                     created  \n",
-       "0 2022-05-13 05:05:41.462728  \n",
-       "1 2022-05-13 05:05:41.462728  \n",
-       "2 2022-05-13 05:05:41.462728  \n",
-       "3 2022-05-13 05:05:41.462728  \n",
-       "4 2022-05-13 05:05:41.462728  "
+       "0 2022-06-13 15:46:06.933351  \n",
+       "1 2022-06-13 15:46:06.933351  \n",
+       "2 2022-06-13 15:46:06.933351  \n",
+       "3 2022-06-13 15:46:06.933351  \n",
+       "4 2022-06-13 15:46:06.933351  "
       ]
      },
      "execution_count": 31,
@@ -1334,7 +1289,9 @@
    "outputs": [],
    "source": [
     "# save to disk\n",
-    "item_features.to_parquet(os.path.join(BASE_DIR, 'feature_repo/data', 'item_features.parquet'))"
+    "item_features.to_parquet(\n",
+    "    os.path.join(BASE_DIR, \"feature_repo/data\", \"item_features.parquet\")\n",
+    ")"
    ]
   },
   {
@@ -1352,7 +1309,9 @@
    "metadata": {},
    "outputs": [],
    "source": [
-    "item_embs = model.item_embeddings(Dataset(item_features, schema=schema), batch_size=1024)\n",
+    "item_embs = model.item_embeddings(\n",
+    "    Dataset(item_features, schema=schema), batch_size=1024\n",
+    ")\n",
     "item_embs_df = item_embs.compute(scheduler=\"synchronous\")"
    ]
   },
@@ -1363,8 +1322,10 @@
    "metadata": {},
    "outputs": [],
    "source": [
-    "# select only item_id together with embedding columns \n",
-    "item_embeddings = item_embs_df.drop(columns=['item_category', 'item_shop', 'item_brand'])"
+    "# select only item_id together with embedding columns\n",
+    "item_embeddings = item_embs_df.drop(\n",
+    "    columns=[\"item_category\", \"item_shop\", \"item_brand\"]\n",
+    ")"
    ]
   },
   {
@@ -1421,122 +1382,122 @@
        "    <tr>\n",
        "      <th>0</th>\n",
        "      <td>1</td>\n",
-       "      <td>-0.036093</td>\n",
-       "      <td>-0.009565</td>\n",
-       "      <td>-0.012503</td>\n",
-       "      <td>-0.007734</td>\n",
-       "      <td>0.023629</td>\n",
-       "      <td>-0.014002</td>\n",
-       "      <td>-0.006029</td>\n",
-       "      <td>0.040088</td>\n",
-       "      <td>-0.015902</td>\n",
+       "      <td>-0.014644</td>\n",
+       "      <td>-0.030120</td>\n",
+       "      <td>-0.043844</td>\n",
+       "      <td>-0.032847</td>\n",
+       "      <td>0.011542</td>\n",
+       "      <td>-0.023905</td>\n",
+       "      <td>-0.029672</td>\n",
+       "      <td>-0.019096</td>\n",
+       "      <td>0.003238</td>\n",
        "      <td>...</td>\n",
-       "      <td>0.035563</td>\n",
-       "      <td>-0.068939</td>\n",
-       "      <td>-0.016315</td>\n",
-       "      <td>0.014175</td>\n",
-       "      <td>-0.033716</td>\n",
-       "      <td>-0.015874</td>\n",
-       "      <td>-0.018918</td>\n",
-       "      <td>0.010925</td>\n",
-       "      <td>-0.063575</td>\n",
-       "      <td>0.009035</td>\n",
+       "      <td>-0.037217</td>\n",
+       "      <td>0.038835</td>\n",
+       "      <td>0.007689</td>\n",
+       "      <td>0.000896</td>\n",
+       "      <td>-0.009022</td>\n",
+       "      <td>-0.010495</td>\n",
+       "      <td>0.023698</td>\n",
+       "      <td>0.033870</td>\n",
+       "      <td>-0.029741</td>\n",
+       "      <td>-0.030549</td>\n",
        "    </tr>\n",
        "    <tr>\n",
        "      <th>1</th>\n",
        "      <td>2</td>\n",
-       "      <td>-0.022504</td>\n",
-       "      <td>-0.011822</td>\n",
-       "      <td>0.004332</td>\n",
-       "      <td>-0.023232</td>\n",
-       "      <td>-0.015615</td>\n",
-       "      <td>0.023071</td>\n",
-       "      <td>-0.035916</td>\n",
-       "      <td>-0.001758</td>\n",
-       "      <td>0.005837</td>\n",
+       "      <td>-0.026403</td>\n",
+       "      <td>-0.005529</td>\n",
+       "      <td>-0.025439</td>\n",
+       "      <td>-0.003412</td>\n",
+       "      <td>0.005109</td>\n",
+       "      <td>-0.013113</td>\n",
+       "      <td>0.029868</td>\n",
+       "      <td>-0.038708</td>\n",
+       "      <td>0.003663</td>\n",
        "      <td>...</td>\n",
-       "      <td>0.029090</td>\n",
-       "      <td>-0.007072</td>\n",
-       "      <td>-0.010224</td>\n",
-       "      <td>0.001452</td>\n",
-       "      <td>-0.022393</td>\n",
-       "      <td>-0.009858</td>\n",
-       "      <td>-0.034096</td>\n",
-       "      <td>0.043060</td>\n",
-       "      <td>-0.059634</td>\n",
-       "      <td>0.025757</td>\n",
+       "      <td>-0.030878</td>\n",
+       "      <td>-0.014543</td>\n",
+       "      <td>-0.017892</td>\n",
+       "      <td>0.025364</td>\n",
+       "      <td>-0.032985</td>\n",
+       "      <td>-0.006969</td>\n",
+       "      <td>0.031746</td>\n",
+       "      <td>-0.003650</td>\n",
+       "      <td>-0.019432</td>\n",
+       "      <td>-0.006048</td>\n",
        "    </tr>\n",
        "    <tr>\n",
        "      <th>2</th>\n",
        "      <td>3</td>\n",
-       "      <td>0.025350</td>\n",
-       "      <td>-0.025639</td>\n",
-       "      <td>0.004433</td>\n",
-       "      <td>-0.013922</td>\n",
-       "      <td>0.011171</td>\n",
-       "      <td>-0.010930</td>\n",
-       "      <td>-0.021219</td>\n",
-       "      <td>-0.006252</td>\n",
-       "      <td>-0.001559</td>\n",
+       "      <td>-0.031090</td>\n",
+       "      <td>-0.035648</td>\n",
+       "      <td>-0.042533</td>\n",
+       "      <td>-0.020776</td>\n",
+       "      <td>0.000392</td>\n",
+       "      <td>-0.001049</td>\n",
+       "      <td>-0.014174</td>\n",
+       "      <td>-0.000956</td>\n",
+       "      <td>-0.053086</td>\n",
        "      <td>...</td>\n",
-       "      <td>0.033636</td>\n",
-       "      <td>-0.012912</td>\n",
-       "      <td>0.006572</td>\n",
-       "      <td>-0.025899</td>\n",
-       "      <td>-0.000171</td>\n",
-       "      <td>0.003842</td>\n",
-       "      <td>-0.022592</td>\n",
-       "      <td>0.006499</td>\n",
-       "      <td>-0.021269</td>\n",
-       "      <td>0.011934</td>\n",
+       "      <td>0.023282</td>\n",
+       "      <td>0.025333</td>\n",
+       "      <td>0.016674</td>\n",
+       "      <td>0.017381</td>\n",
+       "      <td>-0.007932</td>\n",
+       "      <td>-0.029791</td>\n",
+       "      <td>0.007936</td>\n",
+       "      <td>0.024365</td>\n",
+       "      <td>-0.033152</td>\n",
+       "      <td>-0.006021</td>\n",
        "    </tr>\n",
        "    <tr>\n",
        "      <th>3</th>\n",
        "      <td>4</td>\n",
-       "      <td>0.016039</td>\n",
-       "      <td>-0.026762</td>\n",
-       "      <td>0.027716</td>\n",
-       "      <td>0.015925</td>\n",
-       "      <td>0.016512</td>\n",
-       "      <td>0.000967</td>\n",
-       "      <td>-0.005151</td>\n",
-       "      <td>0.045444</td>\n",
-       "      <td>-0.001235</td>\n",
+       "      <td>0.021717</td>\n",
+       "      <td>0.009807</td>\n",
+       "      <td>-0.005943</td>\n",
+       "      <td>-0.022264</td>\n",
+       "      <td>0.023473</td>\n",
+       "      <td>-0.033276</td>\n",
+       "      <td>-0.025934</td>\n",
+       "      <td>-0.023402</td>\n",
+       "      <td>0.017395</td>\n",
        "      <td>...</td>\n",
-       "      <td>0.023222</td>\n",
-       "      <td>-0.011232</td>\n",
-       "      <td>0.004542</td>\n",
-       "      <td>-0.014078</td>\n",
-       "      <td>-0.023827</td>\n",
-       "      <td>-0.018675</td>\n",
-       "      <td>-0.003482</td>\n",
-       "      <td>0.016900</td>\n",
-       "      <td>-0.047285</td>\n",
-       "      <td>0.014240</td>\n",
+       "      <td>-0.051937</td>\n",
+       "      <td>0.004534</td>\n",
+       "      <td>0.017306</td>\n",
+       "      <td>0.012567</td>\n",
+       "      <td>0.021283</td>\n",
+       "      <td>0.006707</td>\n",
+       "      <td>-0.012907</td>\n",
+       "      <td>0.037199</td>\n",
+       "      <td>0.002680</td>\n",
+       "      <td>-0.035851</td>\n",
        "    </tr>\n",
        "    <tr>\n",
        "      <th>4</th>\n",
        "      <td>5</td>\n",
-       "      <td>0.024456</td>\n",
-       "      <td>-0.026480</td>\n",
-       "      <td>-0.000111</td>\n",
-       "      <td>0.006407</td>\n",
-       "      <td>0.012714</td>\n",
-       "      <td>-0.030801</td>\n",
-       "      <td>0.008527</td>\n",
-       "      <td>0.043447</td>\n",
-       "      <td>-0.007526</td>\n",
+       "      <td>0.000333</td>\n",
+       "      <td>-0.007780</td>\n",
+       "      <td>-0.028711</td>\n",
+       "      <td>0.000049</td>\n",
+       "      <td>0.019983</td>\n",
+       "      <td>0.008787</td>\n",
+       "      <td>-0.021814</td>\n",
+       "      <td>-0.000160</td>\n",
+       "      <td>-0.031236</td>\n",
        "      <td>...</td>\n",
-       "      <td>0.001209</td>\n",
-       "      <td>-0.013783</td>\n",
-       "      <td>-0.001773</td>\n",
-       "      <td>-0.023180</td>\n",
-       "      <td>-0.019709</td>\n",
-       "      <td>-0.006395</td>\n",
-       "      <td>0.016993</td>\n",
-       "      <td>0.002749</td>\n",
-       "      <td>-0.042560</td>\n",
-       "      <td>0.033123</td>\n",
+       "      <td>0.021217</td>\n",
+       "      <td>0.053417</td>\n",
+       "      <td>0.006594</td>\n",
+       "      <td>0.011942</td>\n",
+       "      <td>0.005315</td>\n",
+       "      <td>0.001932</td>\n",
+       "      <td>-0.020481</td>\n",
+       "      <td>0.018115</td>\n",
+       "      <td>-0.002176</td>\n",
+       "      <td>0.002586</td>\n",
        "    </tr>\n",
        "  </tbody>\n",
        "</table>\n",
@@ -1545,25 +1506,25 @@
       ],
       "text/plain": [
        "   item_id         0         1         2         3         4         5  \\\n",
-       "0        1 -0.036093 -0.009565 -0.012503 -0.007734  0.023629 -0.014002   \n",
-       "1        2 -0.022504 -0.011822  0.004332 -0.023232 -0.015615  0.023071   \n",
-       "2        3  0.025350 -0.025639  0.004433 -0.013922  0.011171 -0.010930   \n",
-       "3        4  0.016039 -0.026762  0.027716  0.015925  0.016512  0.000967   \n",
-       "4        5  0.024456 -0.026480 -0.000111  0.006407  0.012714 -0.030801   \n",
+       "0        1 -0.014644 -0.030120 -0.043844 -0.032847  0.011542 -0.023905   \n",
+       "1        2 -0.026403 -0.005529 -0.025439 -0.003412  0.005109 -0.013113   \n",
+       "2        3 -0.031090 -0.035648 -0.042533 -0.020776  0.000392 -0.001049   \n",
+       "3        4  0.021717  0.009807 -0.005943 -0.022264  0.023473 -0.033276   \n",
+       "4        5  0.000333 -0.007780 -0.028711  0.000049  0.019983  0.008787   \n",
        "\n",
        "          6         7         8  ...        54        55        56        57  \\\n",
-       "0 -0.006029  0.040088 -0.015902  ...  0.035563 -0.068939 -0.016315  0.014175   \n",
-       "1 -0.035916 -0.001758  0.005837  ...  0.029090 -0.007072 -0.010224  0.001452   \n",
-       "2 -0.021219 -0.006252 -0.001559  ...  0.033636 -0.012912  0.006572 -0.025899   \n",
-       "3 -0.005151  0.045444 -0.001235  ...  0.023222 -0.011232  0.004542 -0.014078   \n",
-       "4  0.008527  0.043447 -0.007526  ...  0.001209 -0.013783 -0.001773 -0.023180   \n",
+       "0 -0.029672 -0.019096  0.003238  ... -0.037217  0.038835  0.007689  0.000896   \n",
+       "1  0.029868 -0.038708  0.003663  ... -0.030878 -0.014543 -0.017892  0.025364   \n",
+       "2 -0.014174 -0.000956 -0.053086  ...  0.023282  0.025333  0.016674  0.017381   \n",
+       "3 -0.025934 -0.023402  0.017395  ... -0.051937  0.004534  0.017306  0.012567   \n",
+       "4 -0.021814 -0.000160 -0.031236  ...  0.021217  0.053417  0.006594  0.011942   \n",
        "\n",
        "         58        59        60        61        62        63  \n",
-       "0 -0.033716 -0.015874 -0.018918  0.010925 -0.063575  0.009035  \n",
-       "1 -0.022393 -0.009858 -0.034096  0.043060 -0.059634  0.025757  \n",
-       "2 -0.000171  0.003842 -0.022592  0.006499 -0.021269  0.011934  \n",
-       "3 -0.023827 -0.018675 -0.003482  0.016900 -0.047285  0.014240  \n",
-       "4 -0.019709 -0.006395  0.016993  0.002749 -0.042560  0.033123  \n",
+       "0 -0.009022 -0.010495  0.023698  0.033870 -0.029741 -0.030549  \n",
+       "1 -0.032985 -0.006969  0.031746 -0.003650 -0.019432 -0.006048  \n",
+       "2 -0.007932 -0.029791  0.007936  0.024365 -0.033152 -0.006021  \n",
+       "3  0.021283  0.006707 -0.012907  0.037199  0.002680 -0.035851  \n",
+       "4  0.005315  0.001932 -0.020481  0.018115 -0.002176  0.002586  \n",
        "\n",
        "[5 rows x 65 columns]"
       ]
@@ -1585,7 +1546,7 @@
    "outputs": [],
    "source": [
     "# save to disk\n",
-    "item_embeddings.to_parquet(os.path.join(BASE_DIR,'item_embeddings.parquet'))"
+    "item_embeddings.to_parquet(os.path.join(BASE_DIR, \"item_embeddings.parquet\"))"
    ]
   },
   {
@@ -1611,11 +1572,11 @@
    "metadata": {},
    "outputs": [],
    "source": [
-    "file = open(os.path.join(BASE_DIR, 'feature_repo/','user_features.py'), \"w\")\n",
+    "file = open(os.path.join(BASE_DIR, \"feature_repo/\", \"user_features.py\"), \"w\")\n",
     "file.write(\n",
-    "'''\n",
+    "    \"\"\"\n",
     "from google.protobuf.duration_pb2 import Duration\n",
-    "import datetime \n",
+    "import datetime\n",
     "from feast import Entity, Feature, FeatureView, ValueType\n",
     "from feast.infra.offline_stores.file_source import FileSource\n",
     "\n",
@@ -1648,7 +1609,9 @@
     "    input=user_features,\n",
     "    tags=dict(),\n",
     ")\n",
-    "'''.format(os.path.join(BASE_DIR, 'feature_repo/data/','user_features.parquet'))\n",
+    "\"\"\".format(\n",
+    "        os.path.join(BASE_DIR, \"feature_repo/data/\", \"user_features.parquet\")\n",
+    "    )\n",
     ")\n",
     "file.close()"
    ]
@@ -1660,11 +1623,11 @@
    "metadata": {},
    "outputs": [],
    "source": [
-    "with open(os.path.join(BASE_DIR, 'feature_repo/','item_features.py'), \"w\") as f:\n",
+    "with open(os.path.join(BASE_DIR, \"feature_repo/\", \"item_features.py\"), \"w\") as f:\n",
     "    f.write(\n",
-    "'''\n",
+    "        \"\"\"\n",
     "from google.protobuf.duration_pb2 import Duration\n",
-    "import datetime \n",
+    "import datetime\n",
     "from feast import Entity, Feature, FeatureView, ValueType\n",
     "from feast.infra.offline_stores.file_source import FileSource\n",
     "\n",
@@ -1689,9 +1652,11 @@
     "    input=item_features,\n",
     "    tags=dict(),\n",
     ")\n",
-    "'''.format(os.path.join(BASE_DIR, 'feature_repo/data/','item_features.parquet'))\n",
+    "\"\"\".format(\n",
+    "            os.path.join(BASE_DIR, \"feature_repo/data/\", \"item_features.parquet\")\n",
+    "        )\n",
     "    )\n",
-    "file.close() "
+    "file.close()"
    ]
   },
   {
@@ -1704,25 +1669,10 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 39,
+   "execution_count": null,
    "id": "57133c1e-18d9-4ccb-9704-cdebd271985e",
    "metadata": {},
-   "outputs": [
-    {
-     "name": "stdout",
-     "output_type": "stream",
-     "text": [
-      "Looking in indexes: https://pypi.org/simple, https://pypi.ngc.nvidia.com\n",
-      "Requirement already satisfied: seedir in /usr/local/lib/python3.8/dist-packages (0.3.0)\n",
-      "Requirement already satisfied: emoji in /usr/local/lib/python3.8/dist-packages (from seedir) (1.7.0)\n",
-      "Requirement already satisfied: natsort in /usr/local/lib/python3.8/dist-packages (from seedir) (8.1.0)\n",
-      "\u001b[33mWARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv\u001b[0m\u001b[33m\n",
-      "\u001b[0m\u001b[33mWARNING: You are using pip version 22.0.4; however, version 22.1 is available.\n",
-      "You should consider upgrading via the '/usr/bin/python3 -m pip install --upgrade pip' command.\u001b[0m\u001b[33m\n",
-      "\u001b[0m"
-     ]
-    }
-   ],
+   "outputs": [],
    "source": [
     "# install seedir\n",
     "!pip install seedir"
@@ -1751,8 +1701,16 @@
    ],
    "source": [
     "import seedir as sd\n",
-    "feature_repo_path = os.path.join(BASE_DIR, 'feature_repo')\n",
-    "sd.seedir(feature_repo_path, style='lines', itemlimit=10, depthlimit=3, exclude_folders='.ipynb_checkpoints', sort=True)"
+    "\n",
+    "feature_repo_path = os.path.join(BASE_DIR, \"feature_repo\")\n",
+    "sd.seedir(\n",
+    "    feature_repo_path,\n",
+    "    style=\"lines\",\n",
+    "    itemlimit=10,\n",
+    "    depthlimit=3,\n",
+    "    exclude_folders=\".ipynb_checkpoints\",\n",
+    "    sort=True,\n",
+    ")"
    ]
   },
   {
@@ -1768,6 +1726,9 @@
   }
  ],
  "metadata": {
+  "interpreter": {
+   "hash": "2758ff992bb32b90e83258e2e763c5fcee80c4002721441c6c0d17c649a641dd"
+  },
   "kernelspec": {
    "display_name": "Python 3 (ipykernel)",
    "language": "python",
