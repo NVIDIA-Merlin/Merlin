@@ -76,7 +76,7 @@ class Smx2Rst:
         each container.
 
         The implementation is to iterate over the containers from
-        the JSON file and create one file for each container.
+        the `table_config.yaml` file and create one file for each container.
 
         Parameters
         ----------
@@ -91,7 +91,7 @@ class Smx2Rst:
             outdir.mkdir(parents=True, exist_ok=True)
             logger.info("   ...done.")
 
-        for container in self.data.keys():
+        for container in self.table_config.keys():
             years = [
                 self.release_pattern.search(x).group(1)
                 for x in self.data[container].keys()
