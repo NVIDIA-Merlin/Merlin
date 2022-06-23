@@ -33,7 +33,7 @@ RUN wget http://www.cmake.org/files/v3.21/cmake-3.21.1.tar.gz && \
 # Install HugeCTR
 ENV LD_LIBRARY_PATH=/usr/local/hugectr/lib:$LD_LIBRARY_PATH \
     LIBRARY_PATH=/usr/local/hugectr/lib:$LIBRARY_PATH \
-    PYTHONPATH=/usr/local/hugectr/lib:$PYTHONPATH
+    SOK_COMPILE_UNIT_TEST=ON
 
 # Arguments "_XXXX" are only valid when $HUGECTR_DEV_MODE==false
 ARG HUGECTR_DEV_MODE=false
@@ -46,13 +46,12 @@ RUN mkdir -p /usr/local/nvidia/lib64 && \
 RUN ln -s /usr/lib/x86_64-linux-gnu/libibverbs.so.1 /usr/lib/x86_64-linux-gnu/libibverbs.so
 
 RUN if [ "$HUGECTR_DEV_MODE" == "false" ]; then \
-        git clone https://${_CI_JOB_TOKEN}${_HUGECTR_REPO} build-env && \
-        pushd build-env && \ 
+        git clone https://${_CI_JOB_TOKEN}${_HUGECTR_REPO} /hugectr && \
+        pushd /hugectr && \
           git checkout ${HUGECTR_VER} && \
           cd sparse_operation_kit && \
           python setup.py install && \
-        popd && \
-        rm -rf build-env; \
+        popd; \
     fi
 
 # Install distributed-embeddings
