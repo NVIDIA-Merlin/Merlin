@@ -1,30 +1,31 @@
 ## What is Merlin for Recommender Systems?
 
-NVIDIA Merlin is a framework for accelerating the entire recommender systems pipeline on the GPU: from data ingestion and training to deployment. Merlin empowers data scientists, machine learning engineers, and researchers to build high-performing recommenders at scale. Merlin includes tools that democratize building deep learning recommenders by addressing common ETL, training, and inference challenges. Each stage of the Merlin pipeline is optimized to support hundreds of terabytes of data, all accessible through easy-to-use APIs. With Merlin, better predictions than traditional methods and increased click-through rates are within reach.
+NVIDIA Merlin is a framework for accelerating the entire recommender systems pipeline on the GPU: from data ingestion and training to deployment. Merlin empowers data scientists, machine learning engineers, and researchers to build high-performing recommenders at scale. Merlin includes tools that democratize building deep learning recommenders by addressing common ETL, training, and inference challenges.  Each stage of the Merlin pipeline offers an easy-to-use API and is optimized to support hundreds of terabytes of data.
 
-The Merlin ecosystem has four main components: Merlin ETL, Merlin Dataloaders and Training, and Merlin Inference.
+The Merlin TensorFlow container allows users to do preprocessing and feature engineering with NVTabular, and then train a deep-learning based recommender system model with TensorFlow, and serve the trained model on Triton Inference Server.
 
-## Merlin TensorFlow
+## About the Merlin TensorFlow Container
 
-The merlin-tensorflow container allows users to do preprocessing and feature engineering with NVTabular, and then train a deep-learning based recommender system model with TensorFlow, and serve the trained model on Triton Inference Server.
+The Merlin Tensorflow container includes the following key components to simplify developing and deploying your recommender system:
 
-As the ETL component of the Merlin ecosystem, NVTabular is a feature engineering and preprocessing library for tabular data designed to quickly and easily manipulate terabyte scale datasets used to train deep learning based recommender systems. The core features are explained in the API documentation and additional information can be found in the GitHub repository.
+* NVTabular performs data preprocessing and feature engineering for tabular data. The library can operate on small and large datasets--scaling to manipulate terabyte-scale datasets that are used to train deep learning recommender systems.
 
-Dataloading is a bottleneck in training deep learning recommender systems models. NVIDIA Merlin accelerates training deep learning recommender systems in two ways: 1) Customized dataloaders speed-up existing TensorFlow training pipelines or 2) using HugeCTR, a dedicated framework written in CUDA C++. This container provides the environment to use NVTabular dataloaders for TensorFlow to accelerate deep learning training for existing TensorFlow pipelines.
+* HugeCTR can train deep learning recommender models and is written in CUDA C++ to provide optimal performance with NVIDIA GPUs. The library is a recommender-specific framework with optimized data loaders that can perform distributed training across multiple GPUs and nodes. HugeCTR provides strategies for scaling large embedding tables beyond available memory.
 
-NVTabular and HugeCTR supports Triton Inference Server to provide GPU-accelerated inference. Triton Inference Server simplifies the deployment of AI models at scale in production. It is an open source inference serving software that lets teams deploy trained AI models from any framework (TensorFlow, TensorRT, PyTorch, ONNX Runtime, or a custom framework), from local storage or Google Cloud Platform or AWS S3 on any GPU- or CPU-based infrastructure (cloud, data center, or edge). The NVTabular ETL workflow and trained deep learning models (TensorFlow or HugeCTR) can be deployed easily with only a few steps to production. Both NVTabular and HugeCTR provide end-to-end examples for deployment: NVTabular examples and HugeCTR examples.
+* Triton Inference Server to provide GPU-accelerated inference. Triton Inference Server simplifies the deployment of AI models at scale in production. The server is an open source inference serving software that enables teams to deploy trained AI models from any framework: TensorFlow, TensorRT, PyTorch, ONNX Runtime, or a custom framework. The server can serve models from local storage or Google Cloud Platform or AWS S3 on any GPU- or CPU-based infrastructure (cloud, data center, or edge). The NVTabular ETL workflow and trained deep learning models (TensorFlow or HugeCTR) can be deployed easily with only a few steps to production.
 
 ## Getting Started
 
-### Launch Merlin TensorFlow Container
+### Launch the Merlin TensorFlow Container
 
-You can pull the training containers with the following command:
+You can launch the Merlin TensorFlow container with the following command:
 
 ```
 docker run --runtime=nvidia --rm -it -p 8888:8888 -p 8797:8787 -p 8796:8786 --ipc=host --cap-add SYS_NICE nvcr.io/nvidia/merlin/merlin-tensorflow:latest /bin/bash
 ```
 
-If you are running on a docker version 19+, change --runtime=nvidia to --gpus all.
+If you have a Docker version less than 19.03, change `--gpus all` to `--runtime=nvidia`.
+
 The container will open a shell when the run command completes execution, you will be responsible for starting the jupyter lab on the docker container. Should look similar to below:
 
 Start the jupyter-lab server:
@@ -68,22 +69,13 @@ For more sample models and their end-to-end instructions for HugeCTR visit the l
 
 ## Learn More
 
-If you are interested in learning more about how NVTabular works under the hood, we have API documentation that outlines in detail the specifics of the calls available within the library.
-The following are the suggested readings for those who want to learn more about HugeCTR.
-
-HugeCTR User Guide: https://github.com/NVIDIA/HugeCTR/blob/master/docs/hugectr_user_guide.md
-
-Questions and Answers: https://github.com/NVIDIA/HugeCTR/blob/master/docs/QAList.md
-
-Sample models and their end-to-end instructions: https://github.com/NVIDIA/HugeCTR/tree/master/samples
-
-NVIDIA Developer Site: https://developer.nvidia.com/nvidia-merlin#getstarted
-
-NVIDIA Developer Blog: https://medium.com/nvidia-merlin
-
-## Contributing
-
-If you wish to contribute to the Merlin library directly please see [Contributing.md](https://github.com/NVIDIA/NVTabular/blob/main/CONTRIBUTING.md). We are particularly interested in contributions or feature requests for feature engineering or preprocessing operations that you have found helpful in your own workflows.
+* [NVTabular Documentation](https://nvidia-merlin.github.io/NVTabular/main/Introduction.html)
+* [HugeCTR Documentation](https://nvidia-merlin.github.io/HugeCTR/master/hugectr_user_guide.html)
+* [NVTabular](https://github.com/nvidia-merlin/nvtabular)
+* [HugeCTR](https://github.com/nvidia-merlin/hugectr)
+* [Triton Inference Server](https://github.com/triton-inference-server/server)
+* [NVIDIA Developer Site](https://developer.nvidia.com/nvidia-merlin#getstarted)
+* [NVIDIA Developer Blog](https://medium.com/nvidia-merlin)
 
 ## License
 
