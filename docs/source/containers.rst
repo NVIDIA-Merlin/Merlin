@@ -13,13 +13,13 @@ The following table identifies the container names, catalog URL, and key Merlin 
    * - Container
      - NGC Catalog URL
      - Key Merlin Components
-   * - merlin-hugectr
+   * - `merlin-hugectr`
      - https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-hugectr
      - Merlin libraries, including HugeCTR
-   * - merlin-tensorflow
+   * - `merlin-tensorflow`
      - https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-tensorflow
      - Merlin libraries, TensorFlow, and HugeCTR Tensorflow Embedding plugin
-   * - merlin-pytorch
+   * - `merlin-pytorch`
      - https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-pytorch
      - Merlin libraries and PyTorch
 
