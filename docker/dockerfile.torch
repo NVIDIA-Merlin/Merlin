@@ -1,11 +1,11 @@
 # syntax=docker/dockerfile:1.2
-ARG MERLIN_VERSION=22.05-pre
-ARG TRITON_VERSION=22.03
-ARG TORCH_VERSION=22.03
+ARG MERLIN_VERSION=22.06
+ARG TRITON_VERSION=22.05
+ARG TORCH_VERSION=22.05
 
 ARG DLFW_IMAGE=nvcr.io/nvidia/pytorch:${TORCH_VERSION}-py3
 ARG FULL_IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-py3
-ARG BASE_IMAGE=merlin/base:${MERLIN_VERSION}
+ARG BASE_IMAGE=nvcr.io/nvstaging/merlin/merlin-base:${MERLIN_VERSION}
 
 FROM ${DLFW_IMAGE} as dlfw
 FROM ${FULL_IMAGE} as triton
@@ -32,6 +32,9 @@ COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/pytorch backends
 COPY --chown=1000:1000 --from=dlfw /opt/conda/lib/python3.8/site-packages/numba /usr/local/lib/python3.8/dist-packages/numba
 COPY --chown=1000:1000 --from=dlfw /opt/conda/lib/python3.8/site-packages/numpy /usr/local/lib/python3.8/dist-packages/numpy
 COPY --chown=1000:1000 --from=dlfw /opt/conda/lib/python3.8/site-packages/torch /usr/local/lib/python3.8/dist-packages/torch
+
+RUN pip install --no-deps fastai fastcore fastprogress fastdownload
+RUN pip install matplotlib
 
 HEALTHCHECK NONE
 CMD ["/bin/bash"]

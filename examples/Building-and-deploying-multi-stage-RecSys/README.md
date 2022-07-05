@@ -7,7 +7,7 @@ The notebooks demonstrate how to use the NVTabular, Merlin Models, and Merlin Sy
 The two example notebooks are structured as follows:
 
 - [Building the Recommender System](01-Building-Recommender-Systems-with-Merlin.ipynb): 
-  - Execute the preprocessing and feature engineering pipeline (ETL) with NVTabular on the GPU.
+  - Execute the preprocessing and feature engineering pipeline (ETL) with NVTabular on the GPU/CPU.
   - Train a ranking and retrieval model with TensorFlow based on the ETL output.
   - Export the saved models, user and item features, and item embeddings.
 
@@ -26,7 +26,7 @@ To run the example notebooks using Docker containers, do the following:
    ```
    docker run -it --gpus all -p 8000:8000 -p 8001:8001 -p 8002:8002 -p 8888:8888 -v <path to your data>:/workspace/data/ --ipc=host <docker container> /bin/bash
    ```
-The container will open a shell when the run command execution is completed.
+The container will open a shell when the run command execution is completed. You can remove the `--gpus all` flag to run the example on CPU.
 
 1. You will have to start JupyterLab on the Docker container. First, install jupyter-lab with the following command if it is missing:
    ```
