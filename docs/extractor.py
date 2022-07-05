@@ -175,7 +175,7 @@ class SupportMatrixExtractor:
             self.contdata[key] = result.replace('"', "").strip()
             if lookup == "SMX_COMPRESSED_SIZE":
                 # pylint: disable=C0209
-                self.contdata[key] = f"{0} GB".format(
+                self.contdata[key] = "{} GB".format(
                     round(int(result) / 1024**3, 2)
                 )  # noqa
         else:
