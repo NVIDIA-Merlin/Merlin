@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import json
+import os
 import shutil
 import tempfile
 from pathlib import Path
@@ -66,6 +67,12 @@ def test_get_from_env():
         assert "bar" in xtr.data["x"]["22.02"].keys()
         assert xtr.data["x"]["22.02"].get("bar") == SupportMatrixExtractor.ERROR
 
+        os.environ["SMX_COMPRESSED_SIZE"] = "7169310137"
+        xtr.get_from_env("SMX_COMPRESSED_SIZE", "compressedSize")
+        assert "compressedSize" in xtr.data["x"]["22.02"].keys()
+        assert xtr.data["x"]["22.02"].get("compressedSize") == "6.68 GB"
+        del os.environ["SMX_COMPRESSED_SIZE"]
+
 
 def test_get_from_cmd():
     with tempfile.TemporaryFile() as f:
@@ -126,7 +133,9 @@ def test_to_json_file():
         xtr.get_from_pip("pip")
         xtr.to_json_file()
         a, b = "", ""
-        with open(SAMPLEAFTERJSON) as fa, open(f.name) as fb:
+        with open(SAMPLEAFTERJSON, encoding="utf-8") as fa, open(
+            f.name, encoding="utf-8"
+        ) as fb:
             a = json.load(fa)
             b = json.load(fb)
             assert a == b
@@ -138,7 +147,9 @@ def test_to_json_file():
         xtr.get_from_pip("pip")
         xtr.to_json_file()
         a, b = "", ""
-        with open(SAMPLEAFTERJSON) as fa, open(f.name) as fb:
+        with open(SAMPLEAFTERJSON, encoding="utf-8") as fa, open(
+            f.name, encoding="utf-8"
+        ) as fb:
             a = json.load(fa)
             b = json.load(fb)
             assert a == b
