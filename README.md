@@ -99,18 +99,18 @@ With Merlin Core, you can:
 
 ## Installation
 
-The development environment for Merlin components can be easily set-up by using `conda`, `pip` or docker containers.
+The simplest way to use Merlin is to run a docker container. NVIDIA GPU Cloud (NCG) provides containers that include all the Merlin component libraries, dependencies, and receive unit and integration testing. For more information, see the [Containers](https://nvidia-merlin.github.io/Merlin/main/containers.html) page.
 
-| Component        | Installation steps                                                                 |
+To develop and contribute to Merlin, review the installation documentation for each component library. The development environment for each Merlin component is easily set up with `conda` or `pip`:
+
+| Component        | Installation Steps                                                                 |
 | ---------------- | ---------------------------------------------------------------------------------- |
-| NVTabular        | https://github.com/NVIDIA-Merlin/NVTabular/blob/main/README.md#installation        |
-| HugeCTR          | https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-hugectr  |
+| HugeCTR          | https://nvidia-merlin.github.io/HugeCTR/master/hugectr_contributor_guide.html      |
+| Merlin Core      | https://github.com/NVIDIA-Merlin/core/blob/main/README.md#installation             |
 | Merlin Models    | https://github.com/NVIDIA-Merlin/models/blob/main/README.md#installation           |
 | Merlin Systems   | https://github.com/NVIDIA-Merlin/systems/blob/main/README.md#installation          |
-| Merlin Core      | https://github.com/NVIDIA-Merlin/core/blob/main/README.md#installation             |
+| NVTabular        | https://github.com/NVIDIA-Merlin/NVTabular/blob/main/README.md#installation        |
 | Transformers4Rec | https://github.com/NVIDIA-Merlin/Transformers4Rec/blob/main/README.md#installation |
-
-Merlin and the Merlin component libraries are available in Docker containers from the NVIDIA GPU Cloud (NCG) catalog. Go [here](https://github.com/NVIDIA-Merlin/Merlin/blob/main/docker/README.md#nvidia-merlin-dockerfiles-and-containers) to learn about Merlin containers.
 
 ## Example Notebooks and Tutorials
 
