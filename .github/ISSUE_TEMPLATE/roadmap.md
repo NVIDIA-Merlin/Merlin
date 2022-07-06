@@ -30,3 +30,6 @@ Example tickets from which you can base your own roadmap issue include:
 - https://github.com/NVIDIA-Merlin/Merlin/issues/258
 - https://github.com/NVIDIA-Merlin/Merlin/issues/279
 
+For Merlin core team:
+[ ] Add this ticket to the roadmap project board ( https://github.com/orgs/NVIDIA-Merlin/projects/14 )
+[ ] Set the status to "Definition" if the sections above are not filled. Move it to planned if sections are filled. 
