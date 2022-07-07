@@ -8,6 +8,8 @@ FROM ${FULL_IMAGE} as triton
 FROM ${IMAGE}
 
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/tensorflow2 backends/tensorflow2/
+COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/pytorch backends/pytorch/
+
 RUN pip install tensorflow-gpu
 RUN pip install torch --extra-index-url https://download.pytorch.org/whl/cu113
 RUN pip install torchmetrics==0.3.2 matplotlib
