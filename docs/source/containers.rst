@@ -7,10 +7,9 @@ Access the catalog of containers at http://ngc.nvidia.com/catalog/containers.
 The following table identifies the container names, catalog URL, and key Merlin components.
 
 .. list-table::
-   :widths: 25 50 25
    :header-rows: 1
 
-   * - Container
+   * - Container Name
      - NGC Catalog URL
      - Key Merlin Components
    * - merlin-hugectr
