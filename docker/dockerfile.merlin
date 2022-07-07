@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.2
-ARG TRITON_VERSION=22.05
+ARG TRITON_VERSION=22.06
 
 ARG FULL_IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-py3
 ARG BASE_IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-py3-min
@@ -86,7 +86,8 @@ RUN pip install cupy-cuda116 nvidia-pyindex pybind11 pytest protobuf transformer
 RUN pip install betterproto cachetools graphviz nvtx scipy sklearn scikit-build
 RUN pip install tritonclient[all]==2.22.0 grpcio-channelz
 RUN pip install git+https://github.com/rapidsai/asvdb.git@main
-RUN pip install xgboost sklearn lightgbm treelite==2.3.0 treelite_runtime==2.3.0
+RUN pip install xgboost lightgbm treelite==2.3.0 treelite_runtime==2.3.0
+RUN pip install lightfm implicit
 RUN pip install numpy==1.21.1 --no-deps
 RUN pip install "cuda-python>=11.5,<12.0"
 
@@ -297,7 +298,9 @@ ENV PYTHONPATH=$PYTHONPATH:/usr/local/lib/python3.8/dist-packages/
 
 RUN pip install --no-cache-dir numpy==1.21.5 jupyterlab pydot testbook
 
-
+ENV JUPYTER_CONFIG_DIR=/tmp/.jupyter
+ENV JUPYTER_DATA_DIR=/tmp/.jupyter
+ENV JUPYTER_RUNTIME_DIR=/tmp/.jupyter
 
 # Add Merlin Repo
 RUN git clone https://github.com/NVIDIA-Merlin/Merlin/ /Merlin
