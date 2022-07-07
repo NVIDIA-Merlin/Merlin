@@ -97,6 +97,21 @@ With Merlin Core, you can:
 - Simplify your code by using a shared API for constructing graphs of data
   transformation operators.
 
+## Installation
+
+The simplest way to use Merlin is to run a docker container. NVIDIA GPU Cloud (NCG) provides containers that include all the Merlin component libraries, dependencies, and receive unit and integration testing. For more information, see the [Containers](https://nvidia-merlin.github.io/Merlin/main/containers.html) page.
+
+To develop and contribute to Merlin, review the installation documentation for each component library. The development environment for each Merlin component is easily set up with `conda` or `pip`:
+
+| Component        | Installation Steps                                                                 |
+| ---------------- | ---------------------------------------------------------------------------------- |
+| HugeCTR          | https://nvidia-merlin.github.io/HugeCTR/master/hugectr_contributor_guide.html      |
+| Merlin Core      | https://github.com/NVIDIA-Merlin/core/blob/main/README.md#installation             |
+| Merlin Models    | https://github.com/NVIDIA-Merlin/models/blob/main/README.md#installation           |
+| Merlin Systems   | https://github.com/NVIDIA-Merlin/systems/blob/main/README.md#installation          |
+| NVTabular        | https://github.com/NVIDIA-Merlin/NVTabular/blob/main/README.md#installation        |
+| Transformers4Rec | https://github.com/NVIDIA-Merlin/Transformers4Rec/blob/main/README.md#installation |
+
 ## Example Notebooks and Tutorials
 
 A collection of [end-to-end examples](./examples/) are available in the form of Jupyter notebooks.
