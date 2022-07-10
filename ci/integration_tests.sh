@@ -2,6 +2,7 @@
 
 container=$1
 devices=$2
+suppress_failures="${3:-1}"
 
 echo "#####################"
 echo "# Integration tests #"
@@ -18,4 +19,9 @@ echo "Run integration tests for NVTabular"
 echo "Run integration tests for Transformers4Rec"
 /transformers4rec/ci/test_integration.sh $container $devices || exit_code=1
 
-exit $exit_code
+if [[ "$suppress_failures" -eq 0 ]]
+then
+    exit 0
+else
+    exit $exit_code
+fi
