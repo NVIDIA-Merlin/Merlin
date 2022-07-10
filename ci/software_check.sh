@@ -10,9 +10,9 @@ echo "##################"
 
 exit_code=0
 
-regex="merlin(.)*-inference"
+regex="merlin-(.)*"
 if [[ ! "$container" =~ $regex ]]; then
-    echo "Check tritonserver for inference containers"
+    echo "Check tritonserver for all Merlin containers"
     which tritonserver || exit_code=1
 fi
 
