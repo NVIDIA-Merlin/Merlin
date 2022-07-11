@@ -61,7 +61,3 @@ RUN if [ "$INSTALL_DISTRIBUTED_EMBEDDINGS" == "true" ]; then \
         cd /distributed_embeddings && git checkout ${TFDE_VER} && \
         make pip_pkg && pip install artifacts/*.whl && make clean; \
     fi
-
-
-HEALTHCHECK NONE
-CMD ["/bin/bash"]
