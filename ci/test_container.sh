@@ -13,5 +13,5 @@ else
 fi
 
 ${ci_script_dir}software_check.sh $container $devices
-${ci_script_dir}unit-tests.sh $container $devices
+${ci_script_dir}unit_tests.sh $container $devices
 ${ci_script_dir}integration_tests.sh $container $devices $suppress_failures
