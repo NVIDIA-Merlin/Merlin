@@ -9,25 +9,44 @@ import pytest
 pytest.importorskip("tensorflow")
 pytest.importorskip("feast")
 pytest.importorskip("faiss")
+# flake8: noqa
+
 
 def test_func():
     with testbook(
         REPO_ROOT
-        / "examples"
-        / "Building-and-deploying-multi-stage-RecSys"
-        / "01-Building-Recommender-Systems-with-Merlin.ipynb",
+        / "examples/Building-and-deploying-multi-stage-RecSys/01-Building-Recommender-Systems-with-Merlin.ipynb",
         execute=False,
+        timeout=450,
     ) as tb1:
         tb1.inject(
             """
             import os
             os.environ["DATA_FOLDER"] = "/tmp/data/"
-            os.environ["NUM_ROWS"] = "10000"
             os.system("mkdir -p /tmp/examples")
             os.environ["BASE_DIR"] = "/tmp/examples/"
             """
         )
-        tb1.execute()
+        tb1.execute_cell(list(range(0, 16)))
+        tb1.execute_cell(list(range(17, 22)))
+        tb1.inject(
+            """
+                from pathlib import Path
+                from merlin.datasets.ecommerce import transform_aliccp
+                
+                import glob
+
+                #transform_aliccp(Path('/raid/data/aliccp'), output_path, nvt_workflow=outputs, workflow_name='workflow_ranking')
+                train = Dataset(sorted(glob.glob('/raid/data/aliccp/train/*.parquet'))[0:2])
+                valid = Dataset(sorted(glob.glob('/raid/data/aliccp/test/*.parquet'))[0:2])
+                
+                transform_aliccp(
+                    (train, valid), output_path, nvt_workflow=outputs, workflow_name="workflow_ranking"
+                )
+        """
+        )
+        tb1.execute_cell(list(range(23, len(tb1.cells))))
+
         assert os.path.isdir("/tmp/examples/dlrm")
         assert os.path.isdir("/tmp/examples/feature_repo")
         assert os.path.isdir("/tmp/examples/query_tower")
@@ -37,10 +56,9 @@ def test_func():
 
     with testbook(
         REPO_ROOT
-        / "examples"
-        / "Building-and-deploying-multi-stage-RecSys"
-        / "02-Deploying-multi-stage-RecSys-with-Merlin-Systems.ipynb",
+        / "examples/Building-and-deploying-multi-stage-RecSys/02-Deploying-multi-stage-RecSys-with-Merlin-Systems.ipynb",
         execute=False,
+        timeout=2400,
     ) as tb2:
         tb2.inject(
             """
