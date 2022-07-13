@@ -7,10 +7,10 @@ assignees: 'EvenOldridge'
 
 ---
 ## Problem:
-A clear description of the problem and how it impacts the customer experience of Merlin users.  Why is this important?  Why/Should we prioritize this work?
+A clear description of the problem and how it impacts the customer experience of Merlin users.  Why is this important?  Why/Should we prioritize this work?  Note that this is problem singular.  Please try to ensure that we're trying to solve one problem and not many.
 
 ## Goal:
-- What is the goal of this work.  Note that this is goal singular.  Please try to ensure that we're trying to solve one problem and not many.
+- What are the goals of this work.  
 - This can also include anti-goals of what this work does not include.  
 - Ideally this takes the form of a bulleted list.
 

@@ -49,7 +49,7 @@ Check that yours edits formatted correctly and read well.
 1. Start Python in a container:
 
   ```shell
-  docker run --rm -it -v $(pwd):/workspace --network=host \
+  docker run --rm -it -v $(pwd):/workspace -w /workspace --network=host \
     python:3.8-buster@sha256:ccc66c06817c2e5b7ecd40db1c4305dea3cd9e48ec29151a593e0dbd76af365e bash
   ```
 

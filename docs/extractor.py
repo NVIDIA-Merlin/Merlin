@@ -48,6 +48,7 @@ import subprocess
 import sys
 from collections import defaultdict
 from datetime import date
+from datetime import datetime as dt
 from pathlib import Path
 
 import yaml
@@ -76,7 +77,7 @@ def open_pr(repo: str, path: str, release: str):
     pr_branch = "docs-smx-" + release.replace(".", "")
 
     content: str
-    with open(path, "r") as f:
+    with open(path, "r", encoding="utf-8") as f:
         content = f.read()
 
     g = Github(token)
@@ -148,7 +149,7 @@ class SupportMatrixExtractor:
             key = lookup
         self.contdata[key] = self.ERROR
         p = subprocess.run(  # nosec B602
-            "bash -c 'source {0}; echo ${{{1}}}'".format(path, lookup),
+            f"bash -c 'source {path}; echo ${{{lookup}}}'",
             shell=True,
             capture_output=True,
             check=False,
@@ -164,7 +165,7 @@ class SupportMatrixExtractor:
             key = lookup
         self.contdata[key] = self.ERROR
         p = subprocess.run(  # nosec B602
-            "bash -c 'echo ${{{0}}}'".format(lookup),
+            f"bash -c 'echo ${{{lookup}}}'",
             shell=True,
             capture_output=True,
             check=False,
@@ -173,8 +174,9 @@ class SupportMatrixExtractor:
         if p.returncode != 1 and not result.isspace():
             self.contdata[key] = result.replace('"', "").strip()
             if lookup == "SMX_COMPRESSED_SIZE":
+                # pylint: disable=C0209
                 self.contdata[key] = "{} GB".format(
-                    round(int(result) / 1024 ** 3, 2)
+                    round(int(result) / 1024**3, 2)
                 )  # noqa
         else:
             logger.info("Failed to get env var: '%s'", lookup)
@@ -189,7 +191,7 @@ class SupportMatrixExtractor:
             key = lookup
         self.contdata[key] = self.ERROR
         p = subprocess.run(  # nosec B602
-            "python -m pip show '{}'".format(lookup),
+            f"python -m pip show '{lookup}'",
             shell=True,
             capture_output=True,
             check=False,
@@ -218,7 +220,7 @@ class SupportMatrixExtractor:
             key = lookup
         self.contdata[key] = self.ERROR
         p = subprocess.run(  # nosec B602
-            "python -c 'import {} as x; print(x.__version__);'".format(lookup),
+            f"python -c 'import {lookup} as x; print(x.__version__);'",
             shell=True,
             capture_output=True,
             check=False,
@@ -240,7 +242,7 @@ class SupportMatrixExtractor:
     def get_from_cmd(self, cmd: str, key: str):
         self.contdata[key] = self.ERROR
         p = subprocess.run(  # nosec B602
-            "bash -c '{}'".format(cmd),
+            f"bash -c '{cmd}'",
             shell=True,
             capture_output=True,
             check=False,
@@ -253,8 +255,9 @@ class SupportMatrixExtractor:
                 smlist = result.split()
                 self.contdata[key] = ", ".join(smlist)
             if key == "size":
+                # pylint: disable=C0209
                 self.contdata[key] = "{} GB".format(
-                    round(int(result) / 1024 ** 3, 2)
+                    round(int(result) / 1024**3, 2)
                 )  # noqa
         else:
             logger.info("Command '%s' failed: %s", cmd, result)
@@ -269,7 +272,7 @@ class SupportMatrixExtractor:
         if not os.path.exists(self.datafile):
             return
 
-        with open(self.datafile) as f:
+        with open(self.datafile, "r", encoding="utf-8") as f:
             self.data = json.load(f)
 
             if self.container_name not in self.data:
@@ -281,7 +284,7 @@ class SupportMatrixExtractor:
 
     def to_json_file(self):
         logger.debug("Storing data to file: '%s'", self.datafile)
-        with open(self.datafile, "w") as f:
+        with open(self.datafile, "w", encoding="utf-8") as f:
             json.dump(self.data, f, sort_keys=True, indent=2)
         logger.debug("...done.")
 
@@ -328,7 +331,7 @@ def main(args):
         sys.exit(1)
 
     sniptext = {}
-    with open(snippetsfile) as f:
+    with open(snippetsfile, "r", encoding="utf-8") as f:
         sniptext = yaml.safe_load(f)
         for k in SupportMatrixExtractor.standard_snippets:
             assert sniptext[k]
@@ -396,19 +399,20 @@ def main(args):
         py_maj = xtr.contdata["python_major"]
         xtr.insert_snippet(
             "base_container",
-            "nvcr.io/nvidia/tensorflow:{}-py{}".format(tf2_img, py_maj),
+            f"nvcr.io/nvidia/tensorflow:{tf2_img}-py{py_maj}",
         )
     elif args.container == "merlin-pytorch-training":
         pt_img = xtr.contdata["nvidia_pytorch"]
         py_maj = xtr.contdata["python_major"]
         xtr.insert_snippet(
             "base_container",
-            "nvcr.io/nvidia/pytorch:{}-py{}".format(pt_img, py_maj),
+            f"nvcr.io/nvidia/pytorch:{pt_img}-py{py_maj}",
         )
     else:
         trtoss = xtr.contdata["base_container"]
-        xtr.insert_snippet("base_container", "Triton version {}".format(trtoss))
+        xtr.insert_snippet("base_container", f"Triton version {trtoss}")
 
+    xtr.insert_snippet("timestamp_utc", dt.utcnow().isoformat())
     xtr.to_json_file()
 
     logger.info(xtr.contdata)
