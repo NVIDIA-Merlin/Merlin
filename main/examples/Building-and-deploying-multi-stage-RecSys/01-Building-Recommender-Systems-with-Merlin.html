@@ -230,7 +230,7 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">merlin.datasets.synthetic</span> <span class="kn">import</span> <span class="n">generate_data</span>
 
-<span class="n">NUM_ROWS</span> <span class="o">=</span> <span class="mi">100000</span>
+<span class="n">NUM_ROWS</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;NUM_ROWS&quot;</span><span class="p">,</span> <span class="mi">100_000</span><span class="p">)</span>
 <span class="n">train</span><span class="p">,</span> <span class="n">valid</span> <span class="o">=</span> <span class="n">generate_data</span><span class="p">(</span><span class="s2">&quot;aliccp-raw&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">NUM_ROWS</span><span class="p">),</span> <span class="n">set_sizes</span><span class="o">=</span><span class="p">(</span><span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">))</span>
 </pre></div>
 </div>
@@ -486,7 +486,8 @@ Wall time: 365 µs
 <p>Before we move onto the next step, we need to create a Feast feature repository.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span><span class="nb">cd</span> <span class="nv">$BASE_DIR</span> <span class="o">&amp;&amp;</span> feast init feature_repo
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>rm -rf <span class="nv">$BASE_DIR</span>/feature_repo
+<span class="o">!</span><span class="nb">cd</span> <span class="nv">$BASE_DIR</span> <span class="o">&amp;&amp;</span> feast init feature_repo
 </pre></div>
 </div>
 </div>
