@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scaling Large Datasets with Criteo &mdash; Merlin  documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/togglebutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/mystnb.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script >let toggleHintShow = 'Click to show';</script>
+        <script >let toggleHintHide = 'Click to hide';</script>
+        <script >let toggleOpenOnPrint = 'true';</script>
+        <script src="../../_static/togglebutton.js"></script>
+        <script >var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Scaling Criteo: Download and Convert" href="01-Download-Convert.html" />
+    <link rel="prev" title="Deploying a Multi-Stage RecSys into Production with Merlin Systems and Triton Inference Server" href="../Building-and-deploying-multi-stage-RecSys/02-Deploying-multi-stage-RecSys-with-Merlin-Systems.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Merlin
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../README.html">Introduction</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">Example Notebooks</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../index.html#inventory">Inventory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#running-the-example-notebooks">Running the Example Notebooks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../getting-started-movielens/index.html">Getting Started using the MovieLens Dataset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Building-and-deploying-multi-stage-RecSys/index.html">Deploying a Multi-Stage Recommender System</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Scaling Large Datasets with Criteo</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="01-Download-Convert.html">Criteo Download and Convert</a></li>
+<li class="toctree-l3"><a class="reference internal" href="02-ETL-with-NVTabular.html">Feature Engineering with NVTabular</a></li>
+<li class="toctree-l3"><a class="reference internal" href="03-Training-with-FastAI.html">Training with FastAI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="03-Training-with-HugeCTR.html">Training with HugeCTR</a></li>
+<li class="toctree-l3"><a class="reference internal" href="03-Training-with-TF.html">Training with TensorFlow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="04-Triton-Inference-with-HugeCTR.html">Serving the HugeCTR Model with Triton</a></li>
+<li class="toctree-l3"><a class="reference internal" href="04-Triton-Inference-with-TF.html">Serving the TensorFlow Model with Triton</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../containers.html">Merlin Containers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../support_matrix/index.html">Merlin Support Matrix</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Merlin</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">NVIDIA Merlin Example Notebooks</a> &raquo;</li>
+      <li>Scaling Large Datasets with Criteo</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="tex2jax_ignore mathjax_ignore section" id="scaling-large-datasets-with-criteo">
+<h1>Scaling Large Datasets with Criteo<a class="headerlink" href="#scaling-large-datasets-with-criteo" title="Permalink to this headline"></a></h1>
+<p>Criteo provides the largest publicly available dataset for recommender systems with a size of 1TB of uncompressed click logs that contain 4 billion examples.
+We demonstrate how to scale NVTabular, as well as:</p>
+<ul class="simple">
+<li><p>Use multiple GPUs and nodes with NVTabular for feature engineering.</p></li>
+<li><p>Train recommender system models with the NVTabular dataloader for PyTorch.</p></li>
+<li><p>Train recommender system models with the NVTabular dataloader for TensorFlow</p></li>
+<li><p>Train recommender system models with HugeCTR using multiple GPUs.</p></li>
+<li><p>Inference with the Triton Inference Server and TensorFlow or HugeCTR.</p></li>
+</ul>
+<p>There are example compose files for use with Docker in the <code class="docutils literal notranslate"><span class="pre">scaling-criteo</span> <span class="pre">&lt;https://github.com/NVIDIA-Merlin/Merlin/tree/main/examples/scaling-criteo&gt;</span></code>_ directory of the Merlin repository on GitHub.
+The compose files enable you to run a pair of training and inference containers.</p>
+<p>Explore the following notebooks:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="01-Download-Convert.html"><span class="doc std std-doc">Download and Convert</span></a></p></li>
+<li><p><a class="reference internal" href="02-ETL-with-NVTabular.html"><span class="doc std std-doc">Feature Engineering with NVTabular</span></a></p></li>
+<li><p><a class="reference internal" href="03-Training-with-FastAI.html"><span class="doc std std-doc">Training with FastAI</span></a></p></li>
+<li><p><a class="reference internal" href="03-Training-with-HugeCTR.html"><span class="doc std std-doc">Training with HugeCTR</span></a></p></li>
+<li><p><a class="reference internal" href="03-Training-with-TF.html"><span class="doc std std-doc">Training with TensorFlow</span></a></p></li>
+<li><p><a class="reference internal" href="04-Triton-Inference-with-HugeCTR.html"><span class="doc std std-doc">Deploy the HugeCTR Model with Triton Inference Server</span></a></p></li>
+<li><p><a class="reference internal" href="04-Triton-Inference-with-TF.html"><span class="doc std std-doc">Deploy the TensorFlow Model with Triton Inference Server</span></a></p></li>
+</ul>
+<div class="toctree-wrapper compound">
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../Building-and-deploying-multi-stage-RecSys/02-Deploying-multi-stage-RecSys-with-Merlin-Systems.html" class="btn btn-neutral float-left" title="Deploying a Multi-Stage RecSys into Production with Merlin Systems and Triton Inference Server" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="01-Download-Convert.html" class="btn btn-neutral float-right" title="Scaling Criteo: Download and Convert" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, NVIDIA.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

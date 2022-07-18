@@ -1,0 +1,541 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Copyright 2021 NVIDIA Corporation. All Rights Reserved.\n",
+    "#\n",
+    "# Licensed under the Apache License, Version 2.0 (the \"License\");\n",
+    "# you may not use this file except in compliance with the License.\n",
+    "# You may obtain a copy of the License at\n",
+    "#\n",
+    "#     http://www.apache.org/licenses/LICENSE-2.0\n",
+    "#\n",
+    "# Unless required by applicable law or agreed to in writing, software\n",
+    "# distributed under the License is distributed on an \"AS IS\" BASIS,\n",
+    "# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n",
+    "# See the License for the specific language governing permissions and\n",
+    "# limitations under the License.\n",
+    "# =============================================================================="
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Scaling Criteo: Training with TensorFlow\n",
+    "\n",
+    "This notebook is created using the latest stable [merlin-tensorflow-training](https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-tensorflow-training/tags) container.\n",
+    "\n",
+    "## Overview\n",
+    "\n",
+    "We observed that TensorFlow training pipelines can be slow as the dataloader is a bottleneck. The native dataloader in TensorFlow randomly sample each item from the dataset, which is very slow. The window dataloader in TensorFlow is not much faster. In our experiments, we are able to speed-up existing TensorFlow pipelines by 9x using a highly optimized dataloader.<br><br>\n",
+    "\n",
+    "We have already discussed the NVTabular dataloader for TensorFlow in more detail in our [Getting Started with Movielens notebooks](https://github.com/NVIDIA/NVTabular/tree/main/examples/getting-started-movielens).<br><br>\n",
+    "\n",
+    "We will use the same techniques to train a deep learning model for the [Criteo 1TB Click Logs dataset](https://ailab.criteo.com/download-criteo-1tb-click-logs-dataset/).\n",
+    "\n",
+    "### Learning objectives\n",
+    "\n",
+    "In this notebook, we learn how to:\n",
+    "\n",
+    "- Use **NVTabular dataloader** with TensorFlow Keras model"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## NVTabular dataloader for TensorFlow\n",
+    "\n",
+    "We’ve identified that the dataloader is one bottleneck in deep learning recommender systems when training pipelines with TensorFlow. The dataloader cannot prepare the next batch fast enough and therefore, the GPU is not fully utilized. \n",
+    "\n",
+    "We developed a highly customized tabular dataloader for accelerating existing pipelines in TensorFlow. In our experiments, we see a speed-up by 9x of the same training workflow with NVTabular dataloader. NVTabular dataloader’s features are:\n",
+    "\n",
+    "- removing bottleneck of item-by-item dataloading\n",
+    "- enabling larger than memory dataset by streaming from disk\n",
+    "- reading data directly into GPU memory and remove CPU-GPU communication\n",
+    "- preparing batch asynchronously in GPU to avoid CPU-GPU communication\n",
+    "- supporting commonly used .parquet format\n",
+    "- easy integration into existing TensorFlow pipelines by using similar API - works with tf.keras models\n",
+    "\n",
+    "More information in our [blogpost](https://medium.com/nvidia-merlin/training-deep-learning-based-recommender-systems-9x-faster-with-tensorflow-cc5a2572ea49)."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# External dependencies\n",
+    "import os\n",
+    "import glob\n",
+    "import time\n",
+    "import nvtabular as nvt"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "We define our base directory, containing the data."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "BASE_DIR = os.environ.get(\"BASE_DIR\", \"/raid/data/criteo\")\n",
+    "input_path = os.environ.get(\"INPUT_DATA_DIR\", os.path.join(BASE_DIR, \"test_dask/output\"))"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Defining Hyperparameters"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "First, we define the data schema and differentiate between single-hot and multi-hot categorical features. Note, that we do not have any numerical input features. "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "(['/raid/data/criteo2/test_dask/output/train/0.5891ce6774804b929d0bcb05f5a2558b.parquet'],\n",
+       " ['/raid/data/criteo2/test_dask/output/valid/0.606080e99a63402f891540e7c01a2963.parquet'])"
+      ]
+     },
+     "execution_count": 4,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "CONTINUOUS_COLUMNS = [\"I\" + str(x) for x in range(1, 14)]\n",
+    "CATEGORICAL_COLUMNS = [\"C\" + str(x) for x in range(1, 27)]\n",
+    "LABEL_COLUMNS = [\"label\"]\n",
+    "COLUMNS = CONTINUOUS_COLUMNS + CATEGORICAL_COLUMNS + LABEL_COLUMNS\n",
+    "BATCH_SIZE = int(os.environ.get(\"BATCH_SIZE\", 64 * 1024))\n",
+    "\n",
+    "# Output from ETL-with-NVTabular\n",
+    "TRAIN_PATHS = sorted(glob.glob(os.path.join(input_path, \"train\", \"*.parquet\")))\n",
+    "VALID_PATHS = sorted(glob.glob(os.path.join(input_path, \"valid\", \"*.parquet\")))\n",
+    "TRAIN_PATHS, VALID_PATHS"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "In the previous notebook, we used NVTabular for ETL and stored the workflow to disk. We can load the NVTabular workflow to extract important metadata for our training pipeline."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "proc = nvt.Workflow.load(os.path.join(input_path, \"workflow\"))"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "The embedding table shows the cardinality of each categorical variable along with its associated embedding size. Each entry is of the form `(cardinality, embedding_size)`. We limit the output cardinality to 16."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "{'C1': (10000000, 16),\n",
+       " 'C10': (10000000, 16),\n",
+       " 'C11': (707291, 16),\n",
+       " 'C12': (218510, 16),\n",
+       " 'C13': (11, 16),\n",
+       " 'C14': (2209, 16),\n",
+       " 'C15': (9798, 16),\n",
+       " 'C16': (72, 16),\n",
+       " 'C17': (4, 16),\n",
+       " 'C18': (954, 16),\n",
+       " 'C19': (15, 16),\n",
+       " 'C2': (29612, 16),\n",
+       " 'C20': (10000000, 16),\n",
+       " 'C21': (4553157, 16),\n",
+       " 'C22': (10000000, 16),\n",
+       " 'C23': (291641, 16),\n",
+       " 'C24': (10904, 16),\n",
+       " 'C25': (91, 16),\n",
+       " 'C26': (35, 16),\n",
+       " 'C3': (15050, 16),\n",
+       " 'C4': (7190, 16),\n",
+       " 'C5': (19547, 16),\n",
+       " 'C6': (4, 16),\n",
+       " 'C7': (6492, 16),\n",
+       " 'C8': (1317, 16),\n",
+       " 'C9': (63, 16)}"
+      ]
+     },
+     "execution_count": 6,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "EMBEDDING_TABLE_SHAPES = nvt.ops.get_embedding_sizes(proc)\n",
+    "for key in EMBEDDING_TABLE_SHAPES.keys():\n",
+    "    EMBEDDING_TABLE_SHAPES[key] = (\n",
+    "        EMBEDDING_TABLE_SHAPES[key][0],\n",
+    "        min(16, EMBEDDING_TABLE_SHAPES[key][1]),\n",
+    "    )\n",
+    "EMBEDDING_TABLE_SHAPES"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Initializing NVTabular Dataloader for Tensorflow"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "We import TensorFlow and some NVTabular TF extensions, such as custom TensorFlow layers supporting multi-hot and the NVTabular TensorFlow data loader."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "os.environ[\"CUDA_VISIBLE_DEVICES\"] = \"0\"\n",
+    "\n",
+    "import tensorflow as tf\n",
+    "\n",
+    "# we can control how much memory to give tensorflow with this environment variable\n",
+    "# IMPORTANT: make sure you do this before you initialize TF's runtime, otherwise\n",
+    "# TF will have claimed all free GPU memory\n",
+    "os.environ[\"TF_MEMORY_ALLOCATION\"] = \"0.5\"  # fraction of free memory\n",
+    "from nvtabular.loader.tensorflow import KerasSequenceLoader, KerasSequenceValidater\n",
+    "from nvtabular.framework_utils.tensorflow import layers"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "First, we take a look on our data loader and how the data is represented as tensors. The NVTabular data loader are initialized as usually and we specify both single-hot and multi-hot categorical features as cat_names. The data loader will automatically recognize the single/multi-hot columns and represent them accordingly."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "train_dataset_tf = KerasSequenceLoader(\n",
+    "    nvt.Dataset(TRAIN_PATHS, part_mem_fraction=0.04),\n",
+    "    batch_size=BATCH_SIZE,\n",
+    "    label_names=LABEL_COLUMNS,\n",
+    "    cat_names=CATEGORICAL_COLUMNS,\n",
+    "    cont_names=CONTINUOUS_COLUMNS,\n",
+    "    engine=\"parquet\",\n",
+    "    shuffle=True,\n",
+    "    parts_per_chunk=1,\n",
+    ")\n",
+    "\n",
+    "valid_dataset_tf = KerasSequenceLoader(\n",
+    "    nvt.Dataset(VALID_PATHS, part_mem_fraction=0.04),\n",
+    "    batch_size=BATCH_SIZE,\n",
+    "    label_names=LABEL_COLUMNS,\n",
+    "    cat_names=CATEGORICAL_COLUMNS,\n",
+    "    cont_names=CONTINUOUS_COLUMNS,\n",
+    "    engine=\"parquet\",\n",
+    "    shuffle=False,\n",
+    "    parts_per_chunk=1,\n",
+    ")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Defining Neural Network Architecture"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "We will define a common neural network architecture for tabular data:\n",
+    "\n",
+    "* Single-hot categorical features are fed into an Embedding Layer\n",
+    "* Each value of a multi-hot categorical features is fed into an Embedding Layer and the multiple Embedding outputs are combined via averaging\n",
+    "* The output of the Embedding Layers are concatenated\n",
+    "* The concatenated layers are fed through multiple feed-forward layers (Dense Layers with ReLU activations)\n",
+    "* The final output is a single number with sigmoid activation function"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "First, we will define some dictionary/lists for our network architecture."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 9,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "inputs = {}  # tf.keras.Input placeholders for each feature to be used\n",
+    "emb_layers = []  # output of all embedding layers, which will be concatenated\n",
+    "num_layers = []  # output of numerical layers"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "We create `tf.keras.Input` tensors for all input features."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 10,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "for col in CATEGORICAL_COLUMNS:\n",
+    "    inputs[col] = tf.keras.Input(name=col, dtype=tf.int32, shape=(1,))\n",
+    "\n",
+    "for col in CONTINUOUS_COLUMNS:\n",
+    "    inputs[col] = tf.keras.Input(name=col, dtype=tf.float32, shape=(1,))"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Next, we initialize Embedding Layers with `tf.feature_column.embedding_column`."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 11,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "for col in CATEGORICAL_COLUMNS:\n",
+    "    emb_layers.append(\n",
+    "        tf.feature_column.embedding_column(\n",
+    "            tf.feature_column.categorical_column_with_identity(\n",
+    "                col, EMBEDDING_TABLE_SHAPES[col][0]\n",
+    "            ),  # Input dimension (vocab size)\n",
+    "            EMBEDDING_TABLE_SHAPES[col][1],  # Embedding output dimension\n",
+    "        )\n",
+    "    )"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "We define `tf.feature_columns` for the continuous input features."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 12,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "for col in CONTINUOUS_COLUMNS:\n",
+    "    num_layers.append(tf.feature_column.numeric_column(col))"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "NVTabular implemented a custom TensorFlow layer `layers.DenseFeatures`, which takes as an input the different `tf.Keras.Input` and pre-initialized `tf.feature_column` and automatically concatenate them into a flat tensor."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 13,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "<KerasTensor: shape=(None, 416) dtype=float32 (created by layer 'dense_features')>"
+      ]
+     },
+     "execution_count": 13,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "emb_layer = layers.DenseFeatures(emb_layers)\n",
+    "x_emb_output = emb_layer(inputs)\n",
+    "x_emb_output"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "We add multiple Dense Layers. Finally, we initialize the `tf.keras.Model` and add the optimizer."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 14,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "x = tf.keras.layers.Dense(128, activation=\"relu\")(x_emb_output)\n",
+    "x = tf.keras.layers.Dense(128, activation=\"relu\")(x)\n",
+    "x = tf.keras.layers.Dense(128, activation=\"relu\")(x)\n",
+    "x = tf.keras.layers.Dense(1, activation=\"sigmoid\", name=\"output\")(x)\n",
+    "\n",
+    "model = tf.keras.Model(inputs=inputs, outputs=x)\n",
+    "model.compile(\"sgd\", \"binary_crossentropy\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# You need to install the dependencies\n",
+    "tf.keras.utils.plot_model(model)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "The plot is similar to the following figure:\n",
+    "\n",
+    "![Model plot](./imgs/keras-model-plot.png)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Training the deep learning model"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "We can train our model with `model.fit`. We need to use a Callback to add the validation dataloader."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 16,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "3046/3046 [==============================] - 103s 32ms/step - loss: 0.1932\n"
+     ]
+    }
+   ],
+   "source": [
+    "EPOCHS = 1\n",
+    "validation_callback = KerasSequenceValidater(valid_dataset_tf)\n",
+    "start = time.time()\n",
+    "history = model.fit(train_dataset_tf, callbacks=[validation_callback], epochs=EPOCHS)\n",
+    "end = time.time() - start\n",
+    "total_rows = train_dataset_tf.num_rows_processed + valid_dataset_tf.num_rows_processed\n",
+    "print(f\"run_time: {end}  - rows:  {total_rows * EPOCHS} - epochs: {EPOCHS} - dl_thru: {(total_rows * EPOCHS) / end}\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "We save the trained model."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 17,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "INFO:tensorflow:Assets written to: /raid/data/criteo2/test_dask/output/model.savedmodel/assets\n"
+     ]
+    }
+   ],
+   "source": [
+    "model.save(os.path.join(input_path, \"model.savedmodel\"))"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3 (ipykernel)",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.8.10"
+  },
+  "merlin": {
+   "containers": [
+    "nvcr.io/nvidia/merlin/merlin-tensorflow-training:latest"
+   ]
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 4
+}
