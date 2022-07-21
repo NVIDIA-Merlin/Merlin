@@ -14,7 +14,7 @@ This example provides an end-to-end pipeline that leverages the Merlin framework
 - Processing the dataset using NVTabular.
 - Training a scoring model using Merlin Models.
 - Training a retrieval model using Merlin Models.
-- Building a feature store with Feast and ANN index with Fiass.
+- Building a feature store with Feast and ANN index with Faiss.
 - Deploying an end-to-end pipeline of retrieval, scoring, and ANN search to Triton Inference Server.
 
 ### [Getting Started with MovieLens](./getting-started-movielens)
