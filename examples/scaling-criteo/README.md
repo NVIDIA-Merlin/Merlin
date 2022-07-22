@@ -19,5 +19,6 @@ Explore the following notebooks:
 - [Training with FastAI](03-Training-with-FastAI.ipynb)
 - [Training with HugeCTR](03-Training-with-HugeCTR.ipynb)
 - [Training with TensorFlow](03-Training-with-TF.ipynb)
+- [Training with Merlin Models](03-Training-with-Merlin-Models.ipynb)
 - [Deploy the HugeCTR Model with Triton Inference Server](04-Triton-Inference-with-HugeCTR.ipynb)
 - [Deploy the TensorFlow Model with Triton Inference Server](04-Triton-Inference-with-TF.ipynb)

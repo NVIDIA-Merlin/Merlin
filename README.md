@@ -119,7 +119,7 @@ The example notebooks demonstrate how to:
 
 - Download and prepare a dataset.
 - Use preprocessing and engineering features.
-- Train deep-learning recommendation models with TensorFlow, PyTorch, FastAI, or HugeCTR.
+- Train deep-learning recommendation models with TensorFlow, PyTorch, FastAI, HugeCTR or Merlin Models.
 - Deploy the models to production with Triton Inference Server.
 
 These examples are based on different datasets and provide a wide range of
