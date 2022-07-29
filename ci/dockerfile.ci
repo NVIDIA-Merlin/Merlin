@@ -1,23 +1,22 @@
 # syntax=docker/dockerfile:1.2
-ARG MERLIN_VERSION=22.05
-ARG TRITON_VERSION=22.03
-ARG IMAGE=nvcr.io/nvstaging/merlin/merlin-inference:${MERLIN_VERSION}
+ARG MERLIN_VERSION=22.06
+ARG TRITON_VERSION=22.05
+ARG IMAGE=nvcr.io/nvstaging/merlin/merlin-hugectr:${MERLIN_VERSION}
 ARG FULL_IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-py3
 
 FROM ${FULL_IMAGE} as triton
 FROM ${IMAGE}
 
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/tensorflow2 backends/tensorflow2/
+COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/pytorch backends/pytorch/
+
 RUN pip install tensorflow-gpu
 RUN pip install torch --extra-index-url https://download.pytorch.org/whl/cu113
 RUN pip install torchmetrics==0.3.2 matplotlib
 RUN pip install fastai fastcore fastprogress fastdownload --no-deps
+# install dependencies for systems testing 
+RUN pip install 'feast<0.20' faiss-gpu 
 
-RUN cd /core && git pull origin main && pip install . --no-deps
-RUN cd /nvtabular && git pull origin main && pip install . --no-deps
-RUN cd /models && git pull origin main && pip install . --no-deps
-RUN cd /systems && git pull origin main && pip install . --no-deps
-ENV PYTHONPATH=/usr/local/hugectr/lib
 
 
 HEALTHCHECK NONE

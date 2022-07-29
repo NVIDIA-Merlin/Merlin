@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.2
-ARG TRITON_VERSION=22.05
+ARG TRITON_VERSION=22.06
 
 ARG FULL_IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-py3
 ARG BASE_IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-py3-min
@@ -58,6 +58,7 @@ RUN apt update -y --fix-missing && \
         libsasl2-2 \
         libssl-dev \
         libtbb-dev \
+        libthrust-dev \
         openssl \
         pkg-config \
         policykit-1 \
@@ -74,12 +75,20 @@ RUN apt update -y --fix-missing && \
 
 RUN ln -s /usr/bin/python3 /usr/bin/python
 
+# Install cmake
+# Required by treelite in pip installs 
+# apt install version too old (3.16.3)
+RUN apt remove --purge cmake -y && wget http://www.cmake.org/files/v3.21/cmake-3.21.1.tar.gz && \
+    tar xf cmake-3.21.1.tar.gz && cd cmake-3.21.1 && ./configure && make && make install
+
 # Install multiple packages
 RUN pip install pandas==1.3.5
 RUN pip install cupy-cuda116 nvidia-pyindex pybind11 pytest protobuf transformers==4.12 tensorflow-metadata
 RUN pip install betterproto cachetools graphviz nvtx scipy sklearn scikit-build
-RUN pip install tritonclient[all]==2.22.0 grpcio-channelz
+RUN pip install tritonclient[all]==2.22.0 grpcio-channelz fiddle wandb
 RUN pip install git+https://github.com/rapidsai/asvdb.git@main
+RUN pip install xgboost lightgbm treelite==2.3.0 treelite_runtime==2.3.0
+RUN pip install lightfm implicit
 RUN pip install numpy==1.21.1 --no-deps
 RUN pip install "cuda-python>=11.5,<12.0"
 
@@ -98,10 +107,6 @@ COPY --chown=1000:1000 --from=triton /usr/bin/serve /usr/bin/.
 
 ENV PATH=/opt/tritonserver/bin:${PATH}:
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/tritonserver/lib
-
-# Install cmake
-RUN apt remove --purge cmake -y && wget http://www.cmake.org/files/v3.21/cmake-3.21.1.tar.gz && \
-    tar xf cmake-3.21.1.tar.gz && cd cmake-3.21.1 && ./configure && make && make install
 
 # Install spdlog
 RUN git clone --branch v1.9.2 https://github.com/gabime/spdlog.git build-env && \
@@ -293,6 +298,10 @@ COPY --chown=1000:1000 --from=build /usr/local/lib/python3.8/dist-packages /usr/
 ENV PYTHONPATH=$PYTHONPATH:/usr/local/lib/python3.8/dist-packages/
 
 RUN pip install --no-cache-dir numpy==1.21.5 jupyterlab pydot testbook
+
+ENV JUPYTER_CONFIG_DIR=/tmp/.jupyter
+ENV JUPYTER_DATA_DIR=/tmp/.jupyter
+ENV JUPYTER_RUNTIME_DIR=/tmp/.jupyter
 
 # Add Merlin Repo
 RUN git clone https://github.com/NVIDIA-Merlin/Merlin/ /Merlin

@@ -61,9 +61,6 @@ RUN pip install --upgrade ipython
 RUN pip install tritonclient[all] grpcio-channelz
 RUN pip install git+https://github.com/rapidsai/asvdb.git@main
 
-# Copy files into the container
-COPY *-hadoop.sh ./
-
 # Install cmake
 RUN apt remove --purge cmake -y && wget http://www.cmake.org/files/v3.21/cmake-3.21.1.tar.gz && \
     tar xf cmake-3.21.1.tar.gz && cd cmake-3.21.1 && ./configure && make && make install
@@ -165,7 +162,10 @@ ${HADOOP_HOME}/share/hadoop/mapreduce/*:\
 ${HADOOP_HOME}/share/hadoop/yarn/*:\
 ${HADOOP_HOME}/share/hadoop/yarn/lib/*
 
-RUN if [[ "${INSTALL_HDFS}" == "true" || "${BUILD_HADOOP}" == "true" ]]; then \
+RUN wget https://raw.githubusercontent.com/NVIDIA-Merlin/HugeCTR/master/sbin/build-hadoop.sh && \
+    wget https://raw.githubusercontent.com/NVIDIA-Merlin/HugeCTR/master/sbin/install-hadoop.sh && \
+    chmod +x *-hadoop.sh && \
+    if [[ "${INSTALL_HDFS}" == "true" || "${BUILD_HADOOP}" == "true" ]]; then \
         ./build-hadoop.sh "${HADOOP_VER}" \
     ; fi && \
     if [[ "${INSTALL_HDFS}" == "true" ]]; then \
@@ -277,6 +277,3 @@ RUN rm /usr/local/cuda/lib64/stubs/libcuda.so.1
 RUN rm -rf /repos
 RUN rm -rf /usr/local/share/jupyter/lab/staging/node_modules/marked
 RUN rm -rf /usr/local/share/jupyter/lab/staging/node_modules/node-fetch
-
-HEALTHCHECK NONE
-CMD ["/bin/bash"]
