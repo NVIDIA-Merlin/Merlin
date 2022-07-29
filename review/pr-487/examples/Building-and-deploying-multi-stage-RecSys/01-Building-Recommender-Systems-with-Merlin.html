@@ -182,13 +182,6 @@
 </pre></div>
 </div>
 </div>
-<div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2022-07-28 14:45:46.631510: I tensorflow/core/platform/cpu_feature_guard.cc:152] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  SSE3 SSE4.1 SSE4.2 AVX
-To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
-2022-07-28 14:45:47.678608: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1525] Created device /job:localhost/replica:0/task:0/device:GPU:0 with 16249 MB memory:  -&gt; device: 0, name: Quadro GV100, pci bus id: 0000:2d:00.0, compute capability: 7.0
-</pre></div>
-</div>
-</div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -309,7 +302,7 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2022-07-28 14:45:50.388784: W tensorflow/python/util/util.cc:368] Sets are not currently considered sequences, but this may change in the future, so consider avoiding using them.
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2022-07-29 16:05:31.324620: W tensorflow/python/util/util.cc:368] Sets are not currently considered sequences, but this may change in the future, so consider avoiding using them.
 </pre></div>
 </div>
 </div>
@@ -327,12 +320,24 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>5/5 [==============================] - 10s 441ms/step - loss: 8.9115 - recall_at_10: 0.0082 - ndcg_at_10: 0.0061 - regularization_loss: 0.0000e+00 - val_loss: 8.9090 - val_recall_at_10: 0.0096 - val_ndcg_at_10: 0.0063 - val_regularization_loss: 0.0000e+00
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>5/5 [==============================] - 10s 444ms/step - loss: 8.9095 - recall_at_10: 0.0059 - ndcg_at_10: 0.0032 - regularization_loss: 0.0000e+00 - val_loss: 8.9096 - val_recall_at_10: 0.0079 - val_ndcg_at_10: 0.0036 - val_regularization_loss: 0.0000e+00
 </pre></div>
 </div>
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;keras.callbacks.History at 0x7f904277b850&gt;
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;keras.callbacks.History at 0x7fda316d5b50&gt;
 </pre></div>
 </div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="exporting-query-user-model">
+<h2>Exporting query (user) model<a class="headerlink" href="#exporting-query-user-model" title="Permalink to this headline"></a></h2>
+<p>We export the query tower to use it later during the model deployment stage with Merlin Systems.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">query_tower</span> <span class="o">=</span> <span class="n">model_tt</span><span class="o">.</span><span class="n">retrieval_block</span><span class="o">.</span><span class="n">query_block</span><span class="p">()</span>
+<span class="n">query_tower</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s2">&quot;query_tower&quot;</span><span class="p">))</span>
+</pre></div>
 </div>
 </div>
 </div>
@@ -384,8 +389,8 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>CPU times: user 305 µs, sys: 38 µs, total: 343 µs
-Wall time: 351 µs
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>CPU times: user 162 µs, sys: 17 µs, total: 179 µs
+Wall time: 183 µs
 </pre></div>
 </div>
 </div>
@@ -396,6 +401,12 @@ Wall time: 351 µs
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">transform_aliccp</span><span class="p">(</span>
     <span class="p">(</span><span class="n">train_raw</span><span class="p">,</span> <span class="n">valid_raw</span><span class="p">),</span> <span class="n">output_path</span><span class="p">,</span> <span class="n">nvt_workflow</span><span class="o">=</span><span class="n">outputs</span><span class="p">,</span> <span class="n">workflow_name</span><span class="o">=</span><span class="s2">&quot;workflow_ranking&quot;</span>
 <span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/usr/local/lib/python3.8/dist-packages/cudf/core/frame.py:384: UserWarning: The deep parameter is ignored and is only included for pandas compatibility.
+  warnings.warn(
 </pre></div>
 </div>
 </div>
@@ -448,10 +459,10 @@ Wall time: 351 µs
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>5/5 [==============================] - 4s 227ms/step - loss: 0.6931 - auc: 0.4982 - regularization_loss: 0.0000e+00 - val_loss: 0.6932 - val_auc: 0.5019 - val_regularization_loss: 0.0000e+00
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>5/5 [==============================] - 4s 231ms/step - loss: 0.6932 - auc: 0.4999 - regularization_loss: 0.0000e+00 - val_loss: 0.6931 - val_auc: 0.5002 - val_regularization_loss: 0.0000e+00
 </pre></div>
 </div>
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;keras.callbacks.History at 0x7f903369a9a0&gt;
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;keras.callbacks.History at 0x7fda1a3b0550&gt;
 </pre></div>
 </div>
 </div>
@@ -491,17 +502,6 @@ Wall time: 351 µs
     <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">feature_repo_path</span><span class="si">}</span><span class="s2">/example.py&quot;</span><span class="p">)</span>
 <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">feature_repo_path</span><span class="si">}</span><span class="s2">/data/driver_stats.parquet&quot;</span><span class="p">):</span>
     <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">feature_repo_path</span><span class="si">}</span><span class="s2">/data/driver_stats.parquet&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-<div class="section" id="exporting-query-user-model">
-<h2>Exporting query (user) model<a class="headerlink" href="#exporting-query-user-model" title="Permalink to this headline"></a></h2>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">query_tower</span> <span class="o">=</span> <span class="n">model_tt</span><span class="o">.</span><span class="n">retrieval_block</span><span class="o">.</span><span class="n">query_block</span><span class="p">()</span>
-<span class="n">query_tower</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s2">&quot;query_tower&quot;</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
@@ -710,8 +710,8 @@ Wall time: 351 µs
       <td>1</td>
       <td>1</td>
       <td>1</td>
-      <td>2022-07-28 14:46:29.651986</td>
-      <td>2022-07-28 14:46:29.653266</td>
+      <td>2022-07-29 16:06:09.642304</td>
+      <td>2022-07-29 16:06:09.643715</td>
     </tr>
     <tr>
       <th>1</th>
@@ -727,8 +727,8 @@ Wall time: 351 µs
       <td>2</td>
       <td>2</td>
       <td>2</td>
-      <td>2022-07-28 14:46:29.651986</td>
-      <td>2022-07-28 14:46:29.653266</td>
+      <td>2022-07-29 16:06:09.642304</td>
+      <td>2022-07-29 16:06:09.643715</td>
     </tr>
     <tr>
       <th>2</th>
@@ -744,8 +744,8 @@ Wall time: 351 µs
       <td>3</td>
       <td>3</td>
       <td>3</td>
-      <td>2022-07-28 14:46:29.651986</td>
-      <td>2022-07-28 14:46:29.653266</td>
+      <td>2022-07-29 16:06:09.642304</td>
+      <td>2022-07-29 16:06:09.643715</td>
     </tr>
     <tr>
       <th>3</th>
@@ -761,8 +761,8 @@ Wall time: 351 µs
       <td>4</td>
       <td>4</td>
       <td>4</td>
-      <td>2022-07-28 14:46:29.651986</td>
-      <td>2022-07-28 14:46:29.653266</td>
+      <td>2022-07-29 16:06:09.642304</td>
+      <td>2022-07-29 16:06:09.643715</td>
     </tr>
     <tr>
       <th>4</th>
@@ -778,8 +778,8 @@ Wall time: 351 µs
       <td>5</td>
       <td>5</td>
       <td>5</td>
-      <td>2022-07-28 14:46:29.651986</td>
-      <td>2022-07-28 14:46:29.653266</td>
+      <td>2022-07-29 16:06:09.642304</td>
+      <td>2022-07-29 16:06:09.643715</td>
     </tr>
   </tbody>
 </table>
@@ -812,7 +812,7 @@ Wall time: 351 µs
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(453, 4)
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(451, 4)
 </pre></div>
 </div>
 </div>
@@ -867,8 +867,8 @@ Wall time: 351 µs
       <td>1</td>
       <td>1</td>
       <td>1</td>
-      <td>2022-07-28 14:46:29.747641</td>
-      <td>2022-07-28 14:46:29.748486</td>
+      <td>2022-07-29 16:06:09.742965</td>
+      <td>2022-07-29 16:06:09.745334</td>
     </tr>
     <tr>
       <th>1</th>
@@ -876,8 +876,8 @@ Wall time: 351 µs
       <td>2</td>
       <td>2</td>
       <td>2</td>
-      <td>2022-07-28 14:46:29.747641</td>
-      <td>2022-07-28 14:46:29.748486</td>
+      <td>2022-07-29 16:06:09.742965</td>
+      <td>2022-07-29 16:06:09.745334</td>
     </tr>
     <tr>
       <th>2</th>
@@ -885,8 +885,8 @@ Wall time: 351 µs
       <td>3</td>
       <td>3</td>
       <td>3</td>
-      <td>2022-07-28 14:46:29.747641</td>
-      <td>2022-07-28 14:46:29.748486</td>
+      <td>2022-07-29 16:06:09.742965</td>
+      <td>2022-07-29 16:06:09.745334</td>
     </tr>
     <tr>
       <th>3</th>
@@ -894,8 +894,8 @@ Wall time: 351 µs
       <td>4</td>
       <td>4</td>
       <td>4</td>
-      <td>2022-07-28 14:46:29.747641</td>
-      <td>2022-07-28 14:46:29.748486</td>
+      <td>2022-07-29 16:06:09.742965</td>
+      <td>2022-07-29 16:06:09.745334</td>
     </tr>
     <tr>
       <th>4</th>
@@ -903,8 +903,8 @@ Wall time: 351 µs
       <td>5</td>
       <td>5</td>
       <td>5</td>
-      <td>2022-07-28 14:46:29.747641</td>
-      <td>2022-07-28 14:46:29.748486</td>
+      <td>2022-07-29 16:06:09.742965</td>
+      <td>2022-07-29 16:06:09.745334</td>
     </tr>
   </tbody>
 </table>
@@ -995,122 +995,122 @@ Wall time: 351 µs
     <tr>
       <th>0</th>
       <td>1</td>
-      <td>-0.011209</td>
-      <td>-0.003091</td>
-      <td>-0.019507</td>
-      <td>-0.002687</td>
-      <td>0.011972</td>
-      <td>-0.021300</td>
-      <td>-0.032583</td>
-      <td>0.004853</td>
-      <td>0.014860</td>
+      <td>0.021452</td>
+      <td>-0.039451</td>
+      <td>-0.027525</td>
+      <td>0.004748</td>
+      <td>-0.038861</td>
+      <td>0.004086</td>
+      <td>-0.015699</td>
+      <td>-0.043150</td>
+      <td>0.009985</td>
       <td>...</td>
-      <td>0.004789</td>
-      <td>0.010169</td>
-      <td>0.001538</td>
-      <td>0.007499</td>
-      <td>-0.031698</td>
-      <td>0.005041</td>
-      <td>-0.010608</td>
-      <td>-0.017708</td>
-      <td>0.028459</td>
-      <td>-0.005681</td>
+      <td>0.004878</td>
+      <td>-0.017287</td>
+      <td>-0.052191</td>
+      <td>-0.039028</td>
+      <td>0.009816</td>
+      <td>0.030303</td>
+      <td>-0.023015</td>
+      <td>0.025190</td>
+      <td>-0.048255</td>
+      <td>-0.004642</td>
     </tr>
     <tr>
       <th>1</th>
       <td>2</td>
-      <td>0.003402</td>
-      <td>-0.017468</td>
-      <td>-0.044606</td>
-      <td>-0.018614</td>
-      <td>0.013404</td>
-      <td>0.035754</td>
-      <td>-0.045333</td>
-      <td>-0.008586</td>
-      <td>-0.001069</td>
+      <td>-0.006522</td>
+      <td>-0.024186</td>
+      <td>-0.014698</td>
+      <td>0.026402</td>
+      <td>-0.038433</td>
+      <td>-0.005294</td>
+      <td>-0.022629</td>
+      <td>0.008153</td>
+      <td>0.027704</td>
       <td>...</td>
-      <td>0.013446</td>
-      <td>0.000704</td>
-      <td>0.004869</td>
-      <td>0.026757</td>
-      <td>0.013619</td>
-      <td>-0.026476</td>
-      <td>-0.012150</td>
-      <td>-0.022430</td>
-      <td>-0.000142</td>
-      <td>-0.001121</td>
+      <td>-0.003684</td>
+      <td>-0.002784</td>
+      <td>-0.006920</td>
+      <td>-0.008715</td>
+      <td>-0.046778</td>
+      <td>0.010102</td>
+      <td>-0.056791</td>
+      <td>0.017473</td>
+      <td>-0.028276</td>
+      <td>-0.014962</td>
     </tr>
     <tr>
       <th>2</th>
       <td>3</td>
-      <td>0.019445</td>
-      <td>-0.007307</td>
-      <td>-0.033769</td>
-      <td>0.028448</td>
-      <td>0.015149</td>
-      <td>0.044320</td>
-      <td>-0.060556</td>
-      <td>-0.025492</td>
-      <td>-0.044191</td>
+      <td>0.015643</td>
+      <td>-0.039508</td>
+      <td>-0.008537</td>
+      <td>-0.006320</td>
+      <td>-0.047506</td>
+      <td>-0.041426</td>
+      <td>0.011790</td>
+      <td>-0.028635</td>
+      <td>0.022870</td>
       <td>...</td>
-      <td>-0.030190</td>
-      <td>-0.007296</td>
-      <td>0.005592</td>
-      <td>0.051516</td>
-      <td>0.012991</td>
-      <td>-0.023061</td>
-      <td>0.006839</td>
-      <td>-0.001478</td>
-      <td>0.067653</td>
-      <td>0.025774</td>
+      <td>0.004367</td>
+      <td>-0.024234</td>
+      <td>-0.035562</td>
+      <td>-0.031195</td>
+      <td>0.067566</td>
+      <td>0.044429</td>
+      <td>0.007656</td>
+      <td>0.018322</td>
+      <td>-0.010219</td>
+      <td>-0.003382</td>
     </tr>
     <tr>
       <th>3</th>
       <td>4</td>
-      <td>-0.014708</td>
-      <td>0.015244</td>
-      <td>-0.062631</td>
-      <td>-0.004068</td>
-      <td>0.032136</td>
-      <td>0.017407</td>
-      <td>-0.067003</td>
-      <td>-0.006915</td>
-      <td>-0.034325</td>
+      <td>0.035367</td>
+      <td>-0.004361</td>
+      <td>-0.004915</td>
+      <td>-0.007458</td>
+      <td>-0.024948</td>
+      <td>-0.022634</td>
+      <td>-0.008486</td>
+      <td>0.002527</td>
+      <td>0.020076</td>
       <td>...</td>
-      <td>-0.046192</td>
-      <td>0.000838</td>
-      <td>-0.010202</td>
-      <td>-0.011279</td>
-      <td>0.036282</td>
-      <td>0.037406</td>
-      <td>-0.040168</td>
-      <td>0.002909</td>
-      <td>-0.027596</td>
-      <td>-0.019525</td>
+      <td>0.040158</td>
+      <td>-0.015545</td>
+      <td>-0.023736</td>
+      <td>0.010247</td>
+      <td>0.027722</td>
+      <td>0.016833</td>
+      <td>0.007536</td>
+      <td>0.004979</td>
+      <td>-0.018067</td>
+      <td>-0.008719</td>
     </tr>
     <tr>
       <th>4</th>
       <td>5</td>
-      <td>0.008686</td>
-      <td>-0.011467</td>
-      <td>-0.040448</td>
-      <td>0.007353</td>
-      <td>-0.022232</td>
-      <td>-0.038102</td>
-      <td>-0.072839</td>
-      <td>0.008757</td>
-      <td>0.017982</td>
+      <td>0.037872</td>
+      <td>-0.031143</td>
+      <td>0.030403</td>
+      <td>0.025478</td>
+      <td>-0.051041</td>
+      <td>0.031561</td>
+      <td>0.002363</td>
+      <td>-0.020428</td>
+      <td>0.011938</td>
       <td>...</td>
-      <td>0.015238</td>
-      <td>0.028096</td>
-      <td>0.020939</td>
-      <td>0.054904</td>
-      <td>0.011474</td>
-      <td>-0.010195</td>
-      <td>0.033874</td>
-      <td>-0.028908</td>
-      <td>0.005968</td>
-      <td>0.036249</td>
+      <td>-0.003469</td>
+      <td>-0.013381</td>
+      <td>0.009062</td>
+      <td>-0.024175</td>
+      <td>-0.010814</td>
+      <td>0.011117</td>
+      <td>-0.011316</td>
+      <td>-0.014056</td>
+      <td>-0.036326</td>
+      <td>-0.001744</td>
     </tr>
   </tbody>
 </table>
