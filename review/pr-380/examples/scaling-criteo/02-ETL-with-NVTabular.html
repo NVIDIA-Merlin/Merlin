@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Scaling Criteo: ETL with NVTabular &mdash; Merlin  documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../../_static/togglebutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/mystnb.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/togglebutton.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
@@ -108,7 +108,7 @@
 </div>
 </div>
 <img alt="http://developer.download.nvidia.com/compute/machine-learning/frameworks/nvidia_logo.png" src="http://developer.download.nvidia.com/compute/machine-learning/frameworks/nvidia_logo.png" />
-<div class="tex2jax_ignore mathjax_ignore section" id="scaling-criteo-etl-with-nvtabular">
+<div class="section" id="scaling-criteo-etl-with-nvtabular">
 <h1>Scaling Criteo: ETL with NVTabular<a class="headerlink" href="#scaling-criteo-etl-with-nvtabular" title="Permalink to this headline"></a></h1>
 <p>This notebook is created using the latest stable <a class="reference external" href="https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-hugectr/tags">merlin-hugectr</a>, <a class="reference external" href="https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-tensorflow/tags">merlin-tensorflow</a>, or <a class="reference external" href="https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-pytorch/tags">merlin-pytorch</a> container.</p>
 <div class="section" id="overview">
@@ -174,10 +174,10 @@
     <span class="n">Clip</span><span class="p">,</span>
     <span class="n">FillMissing</span><span class="p">,</span>
     <span class="n">Normalize</span><span class="p">,</span>
-    <span class="n">AddMetadata</span><span class="p">,</span>
+    <span class="n">AddMetadata</span>
 <span class="p">)</span>
-<span class="kn">from</span> <span class="nn">merlin.schema.tags</span> <span class="kn">import</span> <span class="n">Tags</span>
 <span class="kn">from</span> <span class="nn">nvtabular.utils</span> <span class="kn">import</span> <span class="n">pynvml_mem_size</span><span class="p">,</span> <span class="n">device_mem_size</span>
+<span class="kn">from</span> <span class="nn">merlin.schema.tags</span> <span class="kn">import</span> <span class="n">Tags</span>
 </pre></div>
 </div>
 </div>
@@ -229,12 +229,6 @@
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">train_paths</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">valid_paths</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[&#39;/raid/criteo/tests/crit_int_pq/day_0.parquet&#39;, &#39;/raid/criteo/tests/crit_int_pq/day_1.parquet&#39;, &#39;/raid/criteo/tests/crit_int_pq/day_2.parquet&#39;, &#39;/raid/criteo/tests/crit_int_pq/day_3.parquet&#39;, &#39;/raid/criteo/tests/crit_int_pq/day_4.parquet&#39;, &#39;/raid/criteo/tests/crit_int_pq/day_5.parquet&#39;, &#39;/raid/criteo/tests/crit_int_pq/day_6.parquet&#39;, &#39;/raid/criteo/tests/crit_int_pq/day_7.parquet&#39;, &#39;/raid/criteo/tests/crit_int_pq/day_8.parquet&#39;, &#39;/raid/criteo/tests/crit_int_pq/day_9.parquet&#39;, &#39;/raid/criteo/tests/crit_int_pq/day_10.parquet&#39;, &#39;/raid/criteo/tests/crit_int_pq/day_11.parquet&#39;, &#39;/raid/criteo/tests/crit_int_pq/day_12.parquet&#39;, &#39;/raid/criteo/tests/crit_int_pq/day_13.parquet&#39;, &#39;/raid/criteo/tests/crit_int_pq/day_14.parquet&#39;, &#39;/raid/criteo/tests/crit_int_pq/day_15.parquet&#39;, &#39;/raid/criteo/tests/crit_int_pq/day_16.parquet&#39;, &#39;/raid/criteo/tests/crit_int_pq/day_17.parquet&#39;, &#39;/raid/criteo/tests/crit_int_pq/day_18.parquet&#39;, &#39;/raid/criteo/tests/crit_int_pq/day_19.parquet&#39;, &#39;/raid/criteo/tests/crit_int_pq/day_20.parquet&#39;, &#39;/raid/criteo/tests/crit_int_pq/day_21.parquet&#39;, &#39;/raid/criteo/tests/crit_int_pq/day_22.parquet&#39;]
-[&#39;/raid/criteo/tests/crit_int_pq/day_23.parquet&#39;]
 </pre></div>
 </div>
 </div>
@@ -290,26 +284,6 @@
 </pre></div>
 </div>
 </div>
-<div class="cell_output docutils container">
-<div class="output text_html"><table style="border: 2px solid white;">
-<tr>
-<td style="vertical-align: top; border: 0px solid white">
-<h3 style="text-align: left;">Client</h3>
-<ul style="text-align: left; list-style: none; margin: 0; padding: 0;">
-  <li><b>Scheduler: </b>tcp://127.0.0.1:40677</li>
-  <li><b>Dashboard: </b><a href='http://127.0.0.1:8787/status' target='_blank'>http://127.0.0.1:8787/status</a></li>
-</ul>
-</td>
-<td style="vertical-align: top; border: 0px solid white">
-<h3 style="text-align: left;">Cluster</h3>
-<ul style="text-align: left; list-style:none; margin: 0; padding: 0;">
-  <li><b>Workers: </b>8</li>
-  <li><b>Cores: </b>8</li>
-  <li><b>Memory: </b>0.98 TiB</li>
-</ul>
-</td>
-</tr>
-</table></div></div>
 </div>
 <p>That’s it. We initialized our Dask cluster and NVTabular will execute the workflow on multiple GPUs. Similar, we could define a cluster with multiple nodes.</p>
 </div>
@@ -329,9 +303,9 @@
 <span class="n">COLUMNS</span> <span class="o">=</span> <span class="n">CONTINUOUS_COLUMNS</span> <span class="o">+</span> <span class="n">CATEGORICAL_COLUMNS</span> <span class="o">+</span> <span class="n">LABEL_COLUMNS</span>
 
 <span class="n">num_buckets</span> <span class="o">=</span> <span class="mi">10000000</span>
-<span class="n">categorify_op</span> <span class="o">=</span> <span class="n">Categorify</span><span class="p">(</span><span class="n">out_path</span><span class="o">=</span><span class="n">stats_path</span><span class="p">,</span> <span class="n">max_size</span><span class="o">=</span><span class="n">num_buckets</span><span class="p">)</span>
+<span class="n">categorify_op</span> <span class="o">=</span> <span class="n">Categorify</span><span class="p">(</span><span class="n">out_path</span><span class="o">=</span><span class="n">stats_path</span><span class="p">,</span> <span class="n">max_size</span><span class="o">=</span><span class="n">num_buckets</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;int32&#39;</span><span class="p">)</span>
 <span class="n">cat_features</span> <span class="o">=</span> <span class="n">CATEGORICAL_COLUMNS</span> <span class="o">&gt;&gt;</span> <span class="n">categorify_op</span>
-<span class="n">cont_features</span> <span class="o">=</span> <span class="n">CONTINUOUS_COLUMNS</span> <span class="o">&gt;&gt;</span> <span class="n">FillMissing</span><span class="p">()</span> <span class="o">&gt;&gt;</span> <span class="n">Clip</span><span class="p">(</span><span class="n">min_value</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="n">Normalize</span><span class="p">()</span>
+<span class="n">cont_features</span> <span class="o">=</span> <span class="n">CONTINUOUS_COLUMNS</span> <span class="o">&gt;&gt;</span> <span class="n">FillMissing</span><span class="p">()</span> <span class="o">&gt;&gt;</span> <span class="n">Clip</span><span class="p">(</span><span class="n">min_value</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="n">Normalize</span><span class="p">(</span><span class="n">out_dtype</span><span class="o">=</span><span class="s1">&#39;float32&#39;</span><span class="p">)</span>
 <span class="n">label_features</span> <span class="o">=</span> <span class="n">LABEL_COLUMNS</span> <span class="o">&gt;&gt;</span> <span class="n">AddMetadata</span><span class="p">(</span>
     <span class="n">tags</span><span class="o">=</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">Tags</span><span class="o">.</span><span class="n">BINARY_CLASSIFICATION</span><span class="p">),</span> <span class="s2">&quot;target&quot;</span><span class="p">]</span>
 <span class="p">)</span>
@@ -349,7 +323,7 @@
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">dict_dtypes</span> <span class="o">=</span> <span class="p">{}</span>
 
 <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">CATEGORICAL_COLUMNS</span><span class="p">:</span>
-    <span class="n">dict_dtypes</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">int64</span>
+    <span class="n">dict_dtypes</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">int32</span>
 
 <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">CONTINUOUS_COLUMNS</span><span class="p">:</span>
     <span class="n">dict_dtypes</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span>
@@ -387,12 +361,6 @@
 </pre></div>
 </div>
 </div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>CPU times: user 18.6 s, sys: 2.24 s, total: 20.8 s
-Wall time: 1min 5s
-</pre></div>
-</div>
-</div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -411,12 +379,6 @@ Wall time: 1min 5s
 </pre></div>
 </div>
 </div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>CPU times: user 4.76 s, sys: 2.3 s, total: 7.06 s
-Wall time: 1min 59s
-</pre></div>
-</div>
-</div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -430,12 +392,6 @@ Wall time: 1min 59s
     <span class="n">conts</span><span class="o">=</span><span class="n">CONTINUOUS_COLUMNS</span><span class="p">,</span>
     <span class="n">labels</span><span class="o">=</span><span class="n">LABEL_COLUMNS</span><span class="p">,</span>
 <span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>CPU times: user 436 ms, sys: 140 ms, total: 576 ms
-Wall time: 5.17 s
 </pre></div>
 </div>
 </div>
