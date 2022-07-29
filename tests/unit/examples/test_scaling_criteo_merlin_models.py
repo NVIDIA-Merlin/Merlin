@@ -1,18 +1,15 @@
 import os
 
+import pytest
 from testbook import testbook
-
 from tests.conftest import REPO_ROOT
 
-import pytest
 
 def test_func():
     with testbook(
-        REPO_ROOT
-        / "examples"
-        / "scaling-criteo"
-        / "02-ETL-with-NVTabular.ipynb",
+        REPO_ROOT / "examples" / "scaling-criteo" / "02-ETL-with-NVTabular.ipynb",
         execute=False,
+        timeout=180,
     ) as tb1:
         tb1.inject(
             """
@@ -35,13 +32,14 @@ def test_func():
         assert os.path.isfile("/tmp/output/criteo/train/part_0.parquet")
         assert os.path.isfile("/tmp/output/criteo/valid/part_0.parquet")
         assert os.path.isfile("/tmp/output/criteo/workflow/metadata.json")
-        
+
     with testbook(
         REPO_ROOT
         / "examples"
         / "scaling-criteo"
-        / "03-Training-with-Merlin-Models.ipynb",
+        / "03-Training-with-Merlin-Models-TensorFlow.ipynb",
         execute=False,
+        timeout=180,
     ) as tb2:
         tb2.inject(
             """
@@ -58,7 +56,42 @@ def test_func():
                 "loss",
                 "precision",
                 "recall",
-                "regularization_loss"
+                "regularization_loss",
             ]
         )
         assert os.path.isfile("/tmp/output/criteo/dlrm/saved_model.pb")
+
+    with testbook(
+        REPO_ROOT
+        / "examples"
+        / "scaling-criteo"
+        / "04-Triton-Inference-with-Merlin-Models-TensorFlow.ipynb",
+        execute=False,
+        timeout=180,
+    ) as tb3:
+        tb3.inject(
+            """
+            import os
+            os.environ["BASE_DIR"] = "/tmp/output/criteo/"
+            os.environ["INPUT_FOLDER"] = "/tmp/input/criteo/"
+            """
+        )
+        NUM_OF_CELLS = len(tb3.cells)
+        tb3.execute_cell(list(range(0, NUM_OF_CELLS - 5)))
+        tb3.inject(
+            """
+            import shutil
+            
+            from merlin.systems.triton.utils import run_ensemble_on_tritonserver
+            outputs = ensemble.graph.output_schema.column_names
+            response = run_ensemble_on_tritonserver(
+                "/tmp/output/criteo/ensemble/", outputs, batch.fillna(0), "ensemble_model"
+            )
+            response = [x.tolist()[0] for x in response["label/binary_classification_task"]]
+            shutil.rmtree("/tmp/input/criteo", ignore_errors=True)
+            shutil.rmtree("/tmp/output/criteo", ignore_errors=True)
+            """
+        )
+        tb3.execute_cell(NUM_OF_CELLS - 4)
+        response = tb3.ref("response")
+        assert len(response) == 3
