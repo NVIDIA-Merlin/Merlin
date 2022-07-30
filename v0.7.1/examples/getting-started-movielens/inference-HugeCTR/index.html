@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Inference with HugeCTR Model &mdash; Merlin  documentation</title><link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../../../_static/togglebutton.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/mystnb.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/togglebutton.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
@@ -70,7 +70,7 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <div class="tex2jax_ignore mathjax_ignore section" id="inference-with-hugectr-model">
+  <div class="section" id="inference-with-hugectr-model">
 <h1>Inference with HugeCTR Model<a class="headerlink" href="#inference-with-hugectr-model" title="Permalink to this headline"></a></h1>
 <p>In this folder, we provide two example notebooks, <a class="reference external" href="https://github.com/NVIDIA/NVTabular/tree/main/examples/inference_triton/inference-HugeCTR/movielens-HugeCR.ipynb">movielens-HugeCTR</a> and <a class="reference external" href="https://github.com/NVIDIA/NVTabular/tree/main/examples/inference_triton/inference-HugeCTR/movielens-inference.ipynb">movielens-HugeCTR-inference</a>, and explain the steps to do inference with Merlin Inference API after training a model with HugeCTR framework.</p>
 <div class="section" id="getting-started">
@@ -95,7 +95,7 @@
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">root</span><span class="o">@</span><span class="mi">2</span><span class="n">efa5b50b909</span><span class="p">:</span>
 </pre></div>
 </div>
-<ol class="simple">
+<ol class="arabic simple">
 <li><p>Start the jupyter-lab server by running the following command. In case the container does not have <code class="docutils literal notranslate"><span class="pre">JupyterLab</span></code>, you can easily <a class="reference external" href="https://jupyterlab.readthedocs.io/en/stable/getting_started/installation.html">install</a> it either using conda or pip.</p></li>
 </ol>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">jupyter</span><span class="o">-</span><span class="n">lab</span> <span class="o">--</span><span class="n">allow</span><span class="o">-</span><span class="n">root</span> <span class="o">--</span><span class="n">ip</span><span class="o">=</span><span class="s1">&#39;0.0.0.0&#39;</span> <span class="o">--</span><span class="n">NotebookApp</span><span class="o">.</span><span class="n">token</span><span class="o">=</span><span class="s1">&#39;&lt;password&gt;&#39;</span>
@@ -120,13 +120,13 @@
 </div>
 <div class="section" id="build-and-run-the-triton-inference-server-container">
 <h2>3. Build and Run the Triton Inference Server container:<a class="headerlink" href="#build-and-run-the-triton-inference-server-container" title="Permalink to this headline"></a></h2>
-<ol class="simple">
+<ol class="arabic simple">
 <li><p>Navigate to the <code class="docutils literal notranslate"><span class="pre">nvt_triton</span></code> directory that you saved NVTabular workflow, Tensorflow model and the ensemble model.</p></li>
 </ol>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">&lt;</span><span class="n">path</span> <span class="n">to</span> <span class="n">nvt_triton</span><span class="o">&gt;</span>
 </pre></div>
 </div>
-<ol class="simple">
+<ol class="arabic simple" start="2">
 <li><p>Launch Merlin Triton Inference Server container:</p></li>
 </ol>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>docker run -it --gpus=all --shm-size=1g --ulimit memlock=-1 --ulimit stack=67108864 -p 8000:8000 -p 8001:8001 -p 8002:8002 -v ${PWD}:/model/ nvcr.io/nvidia/merlin/merlin-inference:0.5.1
@@ -136,13 +136,13 @@
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">root</span><span class="o">@</span><span class="mi">02</span><span class="n">d56ff0738f</span><span class="p">:</span><span class="o">/</span><span class="n">opt</span><span class="o">/</span><span class="n">tritonserver</span><span class="c1"># </span>
 </pre></div>
 </div>
-<ol class="simple">
+<ol class="arabic simple" start="3">
 <li><p>Your saved model should be in the <code class="docutils literal notranslate"><span class="pre">/model</span></code> directory. Navigate to the <code class="docutils literal notranslate"><span class="pre">model</span></code> working directory inside the triton server container to check the saved models:</p></li>
 </ol>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="o">/</span><span class="n">model</span>
 </pre></div>
 </div>
-<ol class="simple">
+<ol class="arabic simple" start="4">
 <li><p>Start the triton server and run Triton with the example model repository you just created. Note that you need to provide correct path for the models directory, and <code class="docutils literal notranslate"><span class="pre">movielens.json</span></code> file.</p></li>
 </ol>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">tritonserver</span> <span class="o">--</span><span class="n">model</span><span class="o">-</span><span class="n">repository</span><span class="o">=/</span><span class="n">model</span><span class="o">/</span><span class="n">models</span><span class="o">/</span> <span class="o">--</span><span class="n">backend</span><span class="o">-</span><span class="n">config</span><span class="o">=</span><span class="n">hugectr</span><span class="p">,</span><span class="n">movielens</span><span class="o">=/</span><span class="n">model</span><span class="o">/</span><span class="n">models</span><span class="o">/</span><span class="n">movielens</span><span class="o">/</span><span class="mi">1</span><span class="o">/</span><span class="n">movielens</span><span class="o">.</span><span class="n">json</span> <span class="o">--</span><span class="n">backend</span><span class="o">-</span><span class="n">config</span><span class="o">=</span><span class="n">hugectr</span><span class="p">,</span><span class="n">supportlonglong</span><span class="o">=</span><span class="n">true</span> <span class="o">--</span><span class="n">model</span><span class="o">-</span><span class="n">control</span><span class="o">-</span><span class="n">mode</span><span class="o">=</span><span class="n">explicit</span>

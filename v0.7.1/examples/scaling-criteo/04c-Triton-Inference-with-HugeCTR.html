@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Scaling Criteo: Triton Inference with HugeCTR &mdash; Merlin  documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../../_static/togglebutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/mystnb.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/togglebutton.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
@@ -90,7 +90,7 @@
 </div>
 </div>
 </div>
-<div class="tex2jax_ignore mathjax_ignore section" id="scaling-criteo-triton-inference-with-hugectr">
+<div class="section" id="scaling-criteo-triton-inference-with-hugectr">
 <h1>Scaling Criteo: Triton Inference with HugeCTR<a class="headerlink" href="#scaling-criteo-triton-inference-with-hugectr" title="Permalink to this headline"></a></h1>
 <div class="section" id="overview">
 <h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline"></a></h2>
@@ -146,7 +146,7 @@
 </div>
 </div>
 </div>
-<p>Now we have to create a JSON file for inference which has a similar configuration as our training file. We should remove the solver and optimizer clauses and add the inference clause in the JSON file. The paths of the stored dense model and sparse model(s) should be specified at dense_model_file and sparse_model_file within the inference clause. We need to make some modifications to data in the layers clause. Besides, we need to change the last layer from BinaryCrossEntropyLoss to Sigmoid. The rest of “layers” should be exactly the same as that in the training <a class="reference external" href="http://model.py">model.py</a> file.</p>
+<p>Now we have to create a JSON file for inference which has a similar configuration as our training file. We should remove the solver and optimizer clauses and add the inference clause in the JSON file. The paths of the stored dense model and sparse model(s) should be specified at dense_model_file and sparse_model_file within the inference clause. We need to make some modifications to data in the layers clause. Besides, we need to change the last layer from BinaryCrossEntropyLoss to Sigmoid. The rest of “layers” should be exactly the same as that in the training model.py file.</p>
 <div class="cell tag_flake8-noqa-cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%writefile</span> &#39;./criteo_hugectr/1/criteo.json&#39;
@@ -345,7 +345,7 @@ The script below creates an ensemble triton server model where</p>
 <ul class="simple">
 <li><p>workflow is the the nvtabular workflow used in preprocessing,</p></li>
 <li><p>hugectr_model_path is the HugeCTR model that should be served.</p></li>
-<li><p>This path includes the .model <a class="reference external" href="http://files.name">files.name</a> is the base name of the various triton models</p></li>
+<li><p>This path includes the .model files.name is the base name of the various triton models</p></li>
 <li><p>output_path is the path where is model will be saved to.</p></li>
 <li><p>cats are the categorical column names</p></li>
 <li><p>conts are the continuous column names</p></li>
