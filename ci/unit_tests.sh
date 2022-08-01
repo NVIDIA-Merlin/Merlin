@@ -45,4 +45,8 @@ if [ "$container" == "merlin-tensorflow" ]; then
     pytest -rxs /distributed_embeddings/tests || exit_code=1
 fi
 
+## Test Merlin
+echo "Run unit tests for Merlin"
+cd /Merlin && pytest -rxs tests/unit || exit_code=1
+
 exit $exit_code
