@@ -93,11 +93,11 @@
 <img alt="http://developer.download.nvidia.com/compute/machine-learning/frameworks/nvidia_logo.png" src="http://developer.download.nvidia.com/compute/machine-learning/frameworks/nvidia_logo.png" />
 <div class="section" id="scaling-criteo-triton-inference-with-merlin-models-tensorflow">
 <h1>Scaling Criteo: Triton Inference with Merlin Models TensorFlow<a class="headerlink" href="#scaling-criteo-triton-inference-with-merlin-models-tensorflow" title="Permalink to this headline"></a></h1>
-<p>This notebook is created using the latest stable <a class="reference external" href="https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-tensorflow-training/tags">merlin-tensorflow-training</a> container.</p>
+<p>This notebook is created using the latest stable <a class="reference external" href="https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-tensorflow/tags">merlin-tensorflow</a> container.</p>
 <div class="section" id="overview">
 <h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline"></a></h2>
 <p>In the previous notebook, we processed the <a class="reference internal" href="02-ETL-with-NVTabular.html"><span class="doc std std-doc">criteo dataset with NVTabular</span></a> and <a class="reference internal" href="#"><span class="doc std std-doc">trained a DLRM model with Merlin Model Tensorflow</span></a>. Finally, we want to deploy our pipeline to <a class="reference external" href="https://github.com/triton-inference-server/server">Triton Inference Server (TIS)</a>, which can serve our model in a production environment.</p>
-<p>We can send raw data to the API endpoint. TIS will execute the same NVTabular workflow for feature engineering and predict the processed data with Merlin Models TensorFlow. We deployed the pipeline as an ensemble and receive the predict scores. This notebook is based on the <a class="reference external" href="https://github.com/NVIDIA-Merlin/systems/blob/main/examples/Serving-Ranking-Models-With-Merlin-Systems.ipynb">detailed example</a> in Merlin systems. If you are interested in more details, we recommend to go through the example, first.</p>
+<p>We can send raw data to the API endpoint. TIS will execute the same NVTabular workflow for feature engineering and predict the processed data with Merlin Models TensorFlow. We deploy the pipeline as an ensemble and receive the predict scores. This notebook is based on the Example, <a class="reference external" href="https://github.com/NVIDIA-Merlin/systems/blob/main/examples/Serving-Ranking-Models-With-Merlin-Systems.ipynb">Serving Ranking Models With Merlin Systems</a>, in Merlin systems. If you are interested in more details, we recommend to go through the example, first.</p>
 </div>
 <div class="section" id="learning-objectives">
 <h2>Learning objectives<a class="headerlink" href="#learning-objectives" title="Permalink to this headline"></a></h2>
@@ -161,7 +161,7 @@
 </div>
 </div>
 </div>
-<p>We load the Merlin Models TensorFlow model.</p>
+<p>We load the saved Merlin Models TensorFlow model.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">input_path</span><span class="p">,</span> <span class="s2">&quot;dlrm&quot;</span><span class="p">))</span>
@@ -174,7 +174,7 @@
 <h2>Deploying Ensemble to Triton Inference Server<a class="headerlink" href="#deploying-ensemble-to-triton-inference-server" title="Permalink to this headline"></a></h2>
 <p>We create our prediction pipeline:</p>
 <ul class="simple">
-<li><p>the NVTabular workflow is executed</p></li>
+<li><p>the NVTabular workflow is executed via TransformWorkflow()</p></li>
 <li><p>the TensorFlow model predict the output of the NVTabular workflow</p></li>
 </ul>
 <div class="cell docutils container">
@@ -205,7 +205,7 @@
 </div>
 </div>
 </div>
-<p>After we export the ensemble, we are ready to start the Triton Inference Server. The server is installed in all the Merlin inference containers.  If you are not using one of our containers, then ensure it is installed in your environment. For more information, see the Triton Inference Server <a class="reference external" href="https://github.com/triton-inference-server/server/blob/r22.03/README.md#documentation">documentation</a>.</p>
+<p>After we export the ensemble, we are ready to start the Triton Inference Server. The server is installed in the merlin-tensorflow-container. If you are not using one of our containers, then ensure it is installed in your environment. For more information, see the Triton Inference Server <a class="reference external" href="https://github.com/triton-inference-server/server/blob/r22.03/README.md#documentation">documentation</a>.</p>
 <p>You can start the server by running the following command:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>tritonserver --model-repository<span class="o">=</span>/raid/data/criteo/test_dask/output/ensemble --backend-config<span class="o">=</span>tensorflow,version<span class="o">=</span><span class="m">2</span>
 </pre></div>
@@ -269,7 +269,7 @@
 </div>
 <div class="section" id="summary">
 <h2>Summary<a class="headerlink" href="#summary" title="Permalink to this headline"></a></h2>
-<p>In this example, we deployed a recommender system pipeline as an ensemble. First, NVTabular creates features and afterwards, Merlin Models TensorFlow predicted the processed data. The DLRM architecture was used as a model. This process ensures that the training and production environments use the same feature engineering.</p>
+<p>In this example, we deployed a recommender system pipeline as an ensemble. First, NVTabular created features and afterwards, Merlin Models TensorFlow predicted the processed data. The DLRM architecture was used as a model. This process ensures that the training and production environments use the same feature engineering.</p>
 </div>
 <div class="section" id="next-steps">
 <h2>Next steps<a class="headerlink" href="#next-steps" title="Permalink to this headline"></a></h2>
