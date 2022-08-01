@@ -129,12 +129,12 @@
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>08/01/2022 07:37:55 PM INFO:Loading faiss with AVX2 support.
-08/01/2022 07:37:55 PM INFO:Could not load library with AVX2 support due to:
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>08/01/2022 08:15:13 PM INFO:Loading faiss with AVX2 support.
+08/01/2022 08:15:13 PM INFO:Could not load library with AVX2 support due to:
 ModuleNotFoundError(&quot;No module named &#39;faiss.swigfaiss_avx2&#39;&quot;)
-08/01/2022 07:37:55 PM INFO:Loading faiss.
-08/01/2022 07:37:55 PM INFO:Successfully loaded faiss.
-08/01/2022 07:37:56 PM INFO:init
+08/01/2022 08:15:13 PM INFO:Loading faiss.
+08/01/2022 08:15:13 PM INFO:Successfully loaded faiss.
+08/01/2022 08:15:14 PM INFO:init
 /usr/local/lib/python3.8/dist-packages/cudf/utils/metadata/orc_column_statistics_pb2.py:19: DeprecationWarning: Call to deprecated create function FileDescriptor(). Note: Create unlinked descriptors is going to go away. Please use get/find descriptors from generated code or query the descriptor_pool.
   DESCRIPTOR = _descriptor.FileDescriptor(
 /usr/local/lib/python3.8/dist-packages/cudf/utils/metadata/orc_column_statistics_pb2.py:37: DeprecationWarning: Call to deprecated create function FieldDescriptor(). Note: Create unlinked descriptors is going to go away. Please use get/find descriptors from generated code or query the descriptor_pool.
@@ -203,9 +203,9 @@ ModuleNotFoundError(&quot;No module named &#39;faiss.swigfaiss_avx2&#39;&quot;)
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Materializing <span class=" -Color -Color-Bold -Color-Bold-Green">2</span> feature views from <span class=" -Color -Color-Bold -Color-Bold-Green">1995-01-01 01:01:01+00:00</span> to <span class=" -Color -Color-Bold -Color-Bold-Green">2025-01-01 01:01:01+00:00</span> into the <span class=" -Color -Color-Bold -Color-Bold-Green">sqlite</span> online store.
 
 <span class=" -Color -Color-Bold -Color-Bold-Green">item_features</span>:
-100%|███████████████████████████████████████████████████████████| 239/239 [00:00&lt;00:00, 4328.71it/s]
+100%|███████████████████████████████████████████████████████████| 239/239 [00:00&lt;00:00, 4324.36it/s]
 <span class=" -Color -Color-Bold -Color-Bold-Green">user_features</span>:
-100%|███████████████████████████████████████████████████████████| 255/255 [00:00&lt;00:00, 1399.86it/s]
+100%|███████████████████████████████████████████████████████████| 255/255 [00:00&lt;00:00, 1404.11it/s]
 </pre></div>
 </div>
 </div>
@@ -213,23 +213,9 @@ ModuleNotFoundError(&quot;No module named &#39;faiss.swigfaiss_avx2&#39;&quot;)
 <p>Now, let’s check our feature_repo structure again after we ran <code class="docutils literal notranslate"><span class="pre">apply</span></code> and <code class="docutils literal notranslate"><span class="pre">materialize</span></code> commands.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># set up the base dir to for feature store</span>
-<span class="n">feature_repo_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s1">&#39;feature_repo&#39;</span><span class="p">)</span>
-<span class="n">sd</span><span class="o">.</span><span class="n">seedir</span><span class="p">(</span><span class="n">feature_repo_path</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s1">&#39;lines&#39;</span><span class="p">,</span> <span class="n">itemlimit</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">depthlimit</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">exclude_folders</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;.ipynb_checkpoints&#39;</span><span class="p">,</span> <span class="s1">&#39;__pycache__&#39;</span><span class="p">],</span> <span class="n">sort</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>feature_repo/
-├─__init__.py
-├─data/
-│ ├─item_features.parquet
-│ ├─online_store.db
-│ ├─registry.db
-│ └─user_features.parquet
-├─feature_store.yaml
-├─item_features.py
-└─user_features.py
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># # set up the base dir to for feature store</span>
+<span class="c1"># feature_repo_path = os.path.join(BASE_DIR, &#39;feature_repo&#39;)</span>
+<span class="c1"># sd.seedir(feature_repo_path, style=&#39;lines&#39;, itemlimit=10, depthlimit=5, exclude_folders=[&#39;.ipynb_checkpoints&#39;, &#39;__pycache__&#39;], sort=True)</span>
 </pre></div>
 </div>
 </div>
@@ -333,10 +319,10 @@ Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdo
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2022-08-01 19:38:34.033476: I tensorflow/core/platform/cpu_feature_guard.cc:152] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  SSE3 SSE4.1 SSE4.2 AVX
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2022-08-01 20:01:10.368513: I tensorflow/core/platform/cpu_feature_guard.cc:152] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  SSE3 SSE4.1 SSE4.2 AVX
 To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
-2022-08-01 19:38:35.100917: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1525] Created device /job:localhost/replica:0/task:0/device:GPU:0 with 16249 MB memory:  -&gt; device: 0, name: Quadro GV100, pci bus id: 0000:2d:00.0, compute capability: 7.0
-08/01/2022 07:38:37 PM WARNING:No training configuration found in save file, so the model was *not* compiled. Compile it manually.
+2022-08-01 20:01:11.486337: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1525] Created device /job:localhost/replica:0/task:0/device:GPU:0 with 16249 MB memory:  -&gt; device: 0, name: Quadro GV100, pci bus id: 0000:2d:00.0, compute capability: 7.0
+08/01/2022 08:01:13 PM WARNING:No training configuration found in save file, so the model was *not* compiled. Compile it manually.
 </pre></div>
 </div>
 </div>
@@ -381,6 +367,7 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
     <span class="s2">&quot;user_intentions&quot;</span><span class="p">,</span>
     <span class="s2">&quot;user_brands&quot;</span><span class="p">,</span>
     <span class="s2">&quot;user_categories&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;item_id_seen&quot;</span>
 <span class="p">]</span>
 
 <span class="n">combined_features</span> <span class="o">=</span> <span class="n">item_features</span> <span class="o">&gt;&gt;</span> <span class="n">UnrollFeatures</span><span class="p">(</span>
