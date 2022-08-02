@@ -22,7 +22,7 @@
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Scaling Criteo: Training with FastAI" href="03-Training-with-FastAI.html" />
+    <link rel="next" title="Scaling Criteo: Training with HugeCTR" href="03-Training-with-HugeCTR.html" />
     <link rel="prev" title="Scaling Criteo: Download and Convert" href="01-Download-Convert.html" /> 
 </head>
 
@@ -52,11 +52,8 @@
 <li class="toctree-l2 current"><a class="reference internal" href="index.html">Scaling Large Datasets with Criteo</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="01-Download-Convert.html">Criteo Download and Convert</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">Feature Engineering with NVTabular</a></li>
-<li class="toctree-l3"><a class="reference internal" href="03-Training-with-FastAI.html">Training with FastAI</a></li>
 <li class="toctree-l3"><a class="reference internal" href="03-Training-with-HugeCTR.html">Training with HugeCTR</a></li>
-<li class="toctree-l3"><a class="reference internal" href="03-Training-with-TF.html">Training with TensorFlow</a></li>
 <li class="toctree-l3"><a class="reference internal" href="04-Triton-Inference-with-HugeCTR.html">Serving the HugeCTR Model with Triton</a></li>
-<li class="toctree-l3"><a class="reference internal" href="04-Triton-Inference-with-TF.html">Serving the TensorFlow Model with Triton</a></li>
 </ul>
 </li>
 </ul>
@@ -177,8 +174,10 @@
     <span class="n">Clip</span><span class="p">,</span>
     <span class="n">FillMissing</span><span class="p">,</span>
     <span class="n">Normalize</span><span class="p">,</span>
+    <span class="n">AddMetadata</span>
 <span class="p">)</span>
 <span class="kn">from</span> <span class="nn">nvtabular.utils</span> <span class="kn">import</span> <span class="n">pynvml_mem_size</span><span class="p">,</span> <span class="n">device_mem_size</span>
+<span class="kn">from</span> <span class="nn">merlin.schema.tags</span> <span class="kn">import</span> <span class="n">Tags</span>
 </pre></div>
 </div>
 </div>
@@ -230,12 +229,6 @@
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">train_paths</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">valid_paths</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[&#39;/raid/criteo/tests/crit_int_pq/day_0.parquet&#39;, &#39;/raid/criteo/tests/crit_int_pq/day_1.parquet&#39;, &#39;/raid/criteo/tests/crit_int_pq/day_2.parquet&#39;, &#39;/raid/criteo/tests/crit_int_pq/day_3.parquet&#39;, &#39;/raid/criteo/tests/crit_int_pq/day_4.parquet&#39;, &#39;/raid/criteo/tests/crit_int_pq/day_5.parquet&#39;, &#39;/raid/criteo/tests/crit_int_pq/day_6.parquet&#39;, &#39;/raid/criteo/tests/crit_int_pq/day_7.parquet&#39;, &#39;/raid/criteo/tests/crit_int_pq/day_8.parquet&#39;, &#39;/raid/criteo/tests/crit_int_pq/day_9.parquet&#39;, &#39;/raid/criteo/tests/crit_int_pq/day_10.parquet&#39;, &#39;/raid/criteo/tests/crit_int_pq/day_11.parquet&#39;, &#39;/raid/criteo/tests/crit_int_pq/day_12.parquet&#39;, &#39;/raid/criteo/tests/crit_int_pq/day_13.parquet&#39;, &#39;/raid/criteo/tests/crit_int_pq/day_14.parquet&#39;, &#39;/raid/criteo/tests/crit_int_pq/day_15.parquet&#39;, &#39;/raid/criteo/tests/crit_int_pq/day_16.parquet&#39;, &#39;/raid/criteo/tests/crit_int_pq/day_17.parquet&#39;, &#39;/raid/criteo/tests/crit_int_pq/day_18.parquet&#39;, &#39;/raid/criteo/tests/crit_int_pq/day_19.parquet&#39;, &#39;/raid/criteo/tests/crit_int_pq/day_20.parquet&#39;, &#39;/raid/criteo/tests/crit_int_pq/day_21.parquet&#39;, &#39;/raid/criteo/tests/crit_int_pq/day_22.parquet&#39;]
-[&#39;/raid/criteo/tests/crit_int_pq/day_23.parquet&#39;]
 </pre></div>
 </div>
 </div>
@@ -291,26 +284,6 @@
 </pre></div>
 </div>
 </div>
-<div class="cell_output docutils container">
-<div class="output text_html"><table style="border: 2px solid white;">
-<tr>
-<td style="vertical-align: top; border: 0px solid white">
-<h3 style="text-align: left;">Client</h3>
-<ul style="text-align: left; list-style: none; margin: 0; padding: 0;">
-  <li><b>Scheduler: </b>tcp://127.0.0.1:40677</li>
-  <li><b>Dashboard: </b><a href='http://127.0.0.1:8787/status' target='_blank'>http://127.0.0.1:8787/status</a></li>
-</ul>
-</td>
-<td style="vertical-align: top; border: 0px solid white">
-<h3 style="text-align: left;">Cluster</h3>
-<ul style="text-align: left; list-style:none; margin: 0; padding: 0;">
-  <li><b>Workers: </b>8</li>
-  <li><b>Cores: </b>8</li>
-  <li><b>Memory: </b>0.98 TiB</li>
-</ul>
-</td>
-</tr>
-</table></div></div>
 </div>
 <p>That’s it. We initialized our Dask cluster and NVTabular will execute the workflow on multiple GPUs. Similar, we could define a cluster with multiple nodes.</p>
 </div>
@@ -318,9 +291,6 @@
 <h3>Defining our Preprocessing Pipeline<a class="headerlink" href="#defining-our-preprocessing-pipeline" title="Permalink to this headline"></a></h3>
 <p>At this point, our data still isn’t in a form that’s ideal for consumption by neural networks. The most pressing issues are missing values and the fact that our categorical variables are still represented by random, discrete identifiers, and need to be transformed into contiguous indices that can be leveraged by a learned embedding. Less pressing, but still important for learning dynamics, are the distributions of our continuous variables, which are distributed across multiple orders of magnitude and are uncentered (i.e. E[x] != 0).</p>
 <p>We can fix these issues in a conscise and GPU-accelerated manner with an NVTabular <code class="docutils literal notranslate"><span class="pre">Workflow</span></code>. We explained the NVTabular API in <a class="reference external" href="https://github.com/NVIDIA/NVTabular/tree/main/examples/getting-started-movielens">Getting Started with Movielens notebooks</a> and hope you are familiar with the syntax.</p>
-<div class="section" id="frequency-thresholding">
-<h4>Frequency Thresholding<a class="headerlink" href="#frequency-thresholding" title="Permalink to this headline"></a></h4>
-<p>One interesting thing worth pointing out is that we’re using <em>frequency thresholding</em> in our <code class="docutils literal notranslate"><span class="pre">Categorify</span></code> op. This handy functionality will map all categories which occur in the dataset with some threshold level of infrequency (which we’ve set here to be 15 occurrences throughout the dataset) to the <em>same</em> index, keeping the model from overfitting to sparse signals.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># define our dataset schema</span>
@@ -330,10 +300,14 @@
 <span class="n">COLUMNS</span> <span class="o">=</span> <span class="n">CONTINUOUS_COLUMNS</span> <span class="o">+</span> <span class="n">CATEGORICAL_COLUMNS</span> <span class="o">+</span> <span class="n">LABEL_COLUMNS</span>
 
 <span class="n">num_buckets</span> <span class="o">=</span> <span class="mi">10000000</span>
-<span class="n">categorify_op</span> <span class="o">=</span> <span class="n">Categorify</span><span class="p">(</span><span class="n">out_path</span><span class="o">=</span><span class="n">stats_path</span><span class="p">,</span> <span class="n">max_size</span><span class="o">=</span><span class="n">num_buckets</span><span class="p">)</span>
+<span class="n">categorify_op</span> <span class="o">=</span> <span class="n">Categorify</span><span class="p">(</span><span class="n">out_path</span><span class="o">=</span><span class="n">stats_path</span><span class="p">,</span> <span class="n">max_size</span><span class="o">=</span><span class="n">num_buckets</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;int32&#39;</span><span class="p">)</span>
 <span class="n">cat_features</span> <span class="o">=</span> <span class="n">CATEGORICAL_COLUMNS</span> <span class="o">&gt;&gt;</span> <span class="n">categorify_op</span>
-<span class="n">cont_features</span> <span class="o">=</span> <span class="n">CONTINUOUS_COLUMNS</span> <span class="o">&gt;&gt;</span> <span class="n">FillMissing</span><span class="p">()</span> <span class="o">&gt;&gt;</span> <span class="n">Clip</span><span class="p">(</span><span class="n">min_value</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="n">Normalize</span><span class="p">()</span>
-<span class="n">features</span> <span class="o">=</span> <span class="n">cat_features</span> <span class="o">+</span> <span class="n">cont_features</span> <span class="o">+</span> <span class="n">LABEL_COLUMNS</span>
+<span class="n">cont_features</span> <span class="o">=</span> <span class="n">CONTINUOUS_COLUMNS</span> <span class="o">&gt;&gt;</span> <span class="n">FillMissing</span><span class="p">()</span> <span class="o">&gt;&gt;</span> <span class="n">Clip</span><span class="p">(</span><span class="n">min_value</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="n">Normalize</span><span class="p">(</span><span class="n">out_dtype</span><span class="o">=</span><span class="s1">&#39;float32&#39;</span><span class="p">)</span>
+<span class="n">label_features</span> <span class="o">=</span> <span class="n">LABEL_COLUMNS</span> <span class="o">&gt;&gt;</span> <span class="n">AddMetadata</span><span class="p">(</span>
+    <span class="n">tags</span><span class="o">=</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">Tags</span><span class="o">.</span><span class="n">BINARY_CLASSIFICATION</span><span class="p">),</span> <span class="s2">&quot;target&quot;</span><span class="p">]</span>
+<span class="p">)</span>
+
+<span class="n">features</span> <span class="o">=</span> <span class="n">cat_features</span> <span class="o">+</span> <span class="n">cont_features</span> <span class="o">+</span> <span class="n">label_features</span>
 
 <span class="n">workflow</span> <span class="o">=</span> <span class="n">nvt</span><span class="o">.</span><span class="n">Workflow</span><span class="p">(</span><span class="n">features</span><span class="p">)</span>
 </pre></div>
@@ -346,7 +320,7 @@
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">dict_dtypes</span> <span class="o">=</span> <span class="p">{}</span>
 
 <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">CATEGORICAL_COLUMNS</span><span class="p">:</span>
-    <span class="n">dict_dtypes</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">int64</span>
+    <span class="n">dict_dtypes</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">int32</span>
 
 <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">CONTINUOUS_COLUMNS</span><span class="p">:</span>
     <span class="n">dict_dtypes</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span>
@@ -384,12 +358,6 @@
 </pre></div>
 </div>
 </div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>CPU times: user 18.6 s, sys: 2.24 s, total: 20.8 s
-Wall time: 1min 5s
-</pre></div>
-</div>
-</div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -405,12 +373,6 @@ Wall time: 1min 5s
     <span class="n">conts</span><span class="o">=</span><span class="n">CONTINUOUS_COLUMNS</span><span class="p">,</span>
     <span class="n">labels</span><span class="o">=</span><span class="n">LABEL_COLUMNS</span><span class="p">,</span>
 <span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>CPU times: user 4.76 s, sys: 2.3 s, total: 7.06 s
-Wall time: 1min 59s
 </pre></div>
 </div>
 </div>
@@ -430,12 +392,6 @@ Wall time: 1min 59s
 </pre></div>
 </div>
 </div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>CPU times: user 436 ms, sys: 140 ms, total: 576 ms
-Wall time: 5.17 s
-</pre></div>
-</div>
-</div>
 </div>
 <p>In the next notebooks, we will train a deep learning model. Our training pipeline requires information about the data schema to define the neural network architecture. We will save the NVTabular workflow to disk so that we can restore it in the next notebooks.</p>
 <div class="cell docutils container">
@@ -448,14 +404,13 @@ Wall time: 5.17 s
 </div>
 </div>
 </div>
-</div>
 
 
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="01-Download-Convert.html" class="btn btn-neutral float-left" title="Scaling Criteo: Download and Convert" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="03-Training-with-FastAI.html" class="btn btn-neutral float-right" title="Scaling Criteo: Training with FastAI" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="03-Training-with-HugeCTR.html" class="btn btn-neutral float-right" title="Scaling Criteo: Training with HugeCTR" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

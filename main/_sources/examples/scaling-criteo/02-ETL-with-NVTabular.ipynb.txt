@@ -2,7 +2,7 @@
  "cells": [
   {
    "cell_type": "code",
-   "execution_count": 1,
+   "execution_count": null,
    "metadata": {
     "jupyter": {
      "outputs_hidden": false
@@ -94,7 +94,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 2,
+   "execution_count": null,
    "metadata": {
     "jupyter": {
      "outputs_hidden": false
@@ -121,8 +121,10 @@
     "    Clip,\n",
     "    FillMissing,\n",
     "    Normalize,\n",
+    "    AddMetadata\n",
     ")\n",
-    "from nvtabular.utils import pynvml_mem_size, device_mem_size"
+    "from nvtabular.utils import pynvml_mem_size, device_mem_size\n",
+    "from merlin.schema.tags import Tags"
    ]
   },
   {
@@ -134,7 +136,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 3,
+   "execution_count": null,
    "metadata": {
     "jupyter": {
      "outputs_hidden": false
@@ -174,7 +176,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 4,
+   "execution_count": null,
    "metadata": {},
    "outputs": [],
    "source": [
@@ -190,22 +192,13 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 5,
+   "execution_count": null,
    "metadata": {
     "jupyter": {
      "outputs_hidden": false
     }
    },
-   "outputs": [
-    {
-     "name": "stdout",
-     "output_type": "stream",
-     "text": [
-      "['/raid/criteo/tests/crit_int_pq/day_0.parquet', '/raid/criteo/tests/crit_int_pq/day_1.parquet', '/raid/criteo/tests/crit_int_pq/day_2.parquet', '/raid/criteo/tests/crit_int_pq/day_3.parquet', '/raid/criteo/tests/crit_int_pq/day_4.parquet', '/raid/criteo/tests/crit_int_pq/day_5.parquet', '/raid/criteo/tests/crit_int_pq/day_6.parquet', '/raid/criteo/tests/crit_int_pq/day_7.parquet', '/raid/criteo/tests/crit_int_pq/day_8.parquet', '/raid/criteo/tests/crit_int_pq/day_9.parquet', '/raid/criteo/tests/crit_int_pq/day_10.parquet', '/raid/criteo/tests/crit_int_pq/day_11.parquet', '/raid/criteo/tests/crit_int_pq/day_12.parquet', '/raid/criteo/tests/crit_int_pq/day_13.parquet', '/raid/criteo/tests/crit_int_pq/day_14.parquet', '/raid/criteo/tests/crit_int_pq/day_15.parquet', '/raid/criteo/tests/crit_int_pq/day_16.parquet', '/raid/criteo/tests/crit_int_pq/day_17.parquet', '/raid/criteo/tests/crit_int_pq/day_18.parquet', '/raid/criteo/tests/crit_int_pq/day_19.parquet', '/raid/criteo/tests/crit_int_pq/day_20.parquet', '/raid/criteo/tests/crit_int_pq/day_21.parquet', '/raid/criteo/tests/crit_int_pq/day_22.parquet']\n",
-      "['/raid/criteo/tests/crit_int_pq/day_23.parquet']\n"
-     ]
-    }
-   ],
+   "outputs": [],
    "source": [
     "print(train_paths)\n",
     "print(valid_paths)"
@@ -227,45 +220,13 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 6,
+   "execution_count": null,
    "metadata": {
     "jupyter": {
      "outputs_hidden": false
     }
    },
-   "outputs": [
-    {
-     "data": {
-      "text/html": [
-       "<table style=\"border: 2px solid white;\">\n",
-       "<tr>\n",
-       "<td style=\"vertical-align: top; border: 0px solid white\">\n",
-       "<h3 style=\"text-align: left;\">Client</h3>\n",
-       "<ul style=\"text-align: left; list-style: none; margin: 0; padding: 0;\">\n",
-       "  <li><b>Scheduler: </b>tcp://127.0.0.1:40677</li>\n",
-       "  <li><b>Dashboard: </b><a href='http://127.0.0.1:8787/status' target='_blank'>http://127.0.0.1:8787/status</a></li>\n",
-       "</ul>\n",
-       "</td>\n",
-       "<td style=\"vertical-align: top; border: 0px solid white\">\n",
-       "<h3 style=\"text-align: left;\">Cluster</h3>\n",
-       "<ul style=\"text-align: left; list-style:none; margin: 0; padding: 0;\">\n",
-       "  <li><b>Workers: </b>8</li>\n",
-       "  <li><b>Cores: </b>8</li>\n",
-       "  <li><b>Memory: </b>0.98 TiB</li>\n",
-       "</ul>\n",
-       "</td>\n",
-       "</tr>\n",
-       "</table>"
-      ],
-      "text/plain": [
-       "<Client: 'tcp://127.0.0.1:40677' processes=8 threads=8, memory=0.98 TiB>"
-      ]
-     },
-     "execution_count": 6,
-     "metadata": {},
-     "output_type": "execute_result"
-    }
-   ],
+   "outputs": [],
    "source": [
     "# Dask dashboard\n",
     "dashboard_port = \"8787\"\n",
@@ -325,15 +286,12 @@
     "### Defining our Preprocessing Pipeline\n",
     "At this point, our data still isn't in a form that's ideal for consumption by neural networks. The most pressing issues are missing values and the fact that our categorical variables are still represented by random, discrete identifiers, and need to be transformed into contiguous indices that can be leveraged by a learned embedding. Less pressing, but still important for learning dynamics, are the distributions of our continuous variables, which are distributed across multiple orders of magnitude and are uncentered (i.e. E[x] != 0).\n",
     "\n",
-    "We can fix these issues in a conscise and GPU-accelerated manner with an NVTabular `Workflow`. We explained the NVTabular API in [Getting Started with Movielens notebooks](https://github.com/NVIDIA/NVTabular/tree/main/examples/getting-started-movielens) and hope you are familiar with the syntax.\n",
-    "\n",
-    "#### Frequency Thresholding\n",
-    "One interesting thing worth pointing out is that we're using _frequency thresholding_ in our `Categorify` op. This handy functionality will map all categories which occur in the dataset with some threshold level of infrequency (which we've set here to be 15 occurrences throughout the dataset) to the _same_ index, keeping the model from overfitting to sparse signals."
+    "We can fix these issues in a conscise and GPU-accelerated manner with an NVTabular `Workflow`. We explained the NVTabular API in [Getting Started with Movielens notebooks](https://github.com/NVIDIA/NVTabular/tree/main/examples/getting-started-movielens) and hope you are familiar with the syntax."
    ]
   },
   {
    "cell_type": "code",
-   "execution_count": 7,
+   "execution_count": null,
    "metadata": {
     "jupyter": {
      "outputs_hidden": false
@@ -348,10 +306,14 @@
     "COLUMNS = CONTINUOUS_COLUMNS + CATEGORICAL_COLUMNS + LABEL_COLUMNS\n",
     "\n",
     "num_buckets = 10000000\n",
-    "categorify_op = Categorify(out_path=stats_path, max_size=num_buckets)\n",
+    "categorify_op = Categorify(out_path=stats_path, max_size=num_buckets, dtype='int32')\n",
     "cat_features = CATEGORICAL_COLUMNS >> categorify_op\n",
-    "cont_features = CONTINUOUS_COLUMNS >> FillMissing() >> Clip(min_value=0) >> Normalize()\n",
-    "features = cat_features + cont_features + LABEL_COLUMNS\n",
+    "cont_features = CONTINUOUS_COLUMNS >> FillMissing() >> Clip(min_value=0) >> Normalize(out_dtype='float32')\n",
+    "label_features = LABEL_COLUMNS >> AddMetadata(\n",
+    "    tags=[str(Tags.BINARY_CLASSIFICATION), \"target\"]\n",
+    ")\n",
+    "\n",
+    "features = cat_features + cont_features + label_features\n",
     "\n",
     "workflow = nvt.Workflow(features)"
    ]
@@ -365,7 +327,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 8,
+   "execution_count": null,
    "metadata": {
     "jupyter": {
      "outputs_hidden": false
@@ -376,7 +338,7 @@
     "dict_dtypes = {}\n",
     "\n",
     "for col in CATEGORICAL_COLUMNS:\n",
-    "    dict_dtypes[col] = np.int64\n",
+    "    dict_dtypes[col] = np.int32\n",
     "\n",
     "for col in CONTINUOUS_COLUMNS:\n",
     "    dict_dtypes[col] = np.float32\n",
@@ -387,7 +349,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 9,
+   "execution_count": null,
    "metadata": {
     "jupyter": {
      "outputs_hidden": false
@@ -408,7 +370,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 10,
+   "execution_count": null,
    "metadata": {
     "jupyter": {
      "outputs_hidden": false
@@ -431,18 +393,9 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 11,
+   "execution_count": null,
    "metadata": {},
-   "outputs": [
-    {
-     "name": "stdout",
-     "output_type": "stream",
-     "text": [
-      "CPU times: user 18.6 s, sys: 2.24 s, total: 20.8 s\n",
-      "Wall time: 1min 5s\n"
-     ]
-    }
-   ],
+   "outputs": [],
    "source": [
     "%%time\n",
     "workflow.fit(train_dataset)"
@@ -450,22 +403,13 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 12,
+   "execution_count": null,
    "metadata": {
     "jupyter": {
      "outputs_hidden": false
     }
    },
-   "outputs": [
-    {
-     "name": "stdout",
-     "output_type": "stream",
-     "text": [
-      "CPU times: user 4.76 s, sys: 2.3 s, total: 7.06 s\n",
-      "Wall time: 1min 59s\n"
-     ]
-    }
-   ],
+   "outputs": [],
    "source": [
     "%%time\n",
     "# Add \"write_hugectr_keyset=True\" to \"to_parquet\" if using this ETL Notebook for training with HugeCTR\n",
@@ -483,22 +427,13 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 13,
+   "execution_count": null,
    "metadata": {
     "jupyter": {
      "outputs_hidden": false
     }
    },
-   "outputs": [
-    {
-     "name": "stdout",
-     "output_type": "stream",
-     "text": [
-      "CPU times: user 436 ms, sys: 140 ms, total: 576 ms\n",
-      "Wall time: 5.17 s\n"
-     ]
-    }
-   ],
+   "outputs": [],
    "source": [
     "%%time\n",
     "# Add \"write_hugectr_keyset=True\" to \"to_parquet\" if using this ETL Notebook for training with HugeCTR\n",
@@ -521,7 +456,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 14,
+   "execution_count": null,
    "metadata": {},
    "outputs": [],
    "source": [
