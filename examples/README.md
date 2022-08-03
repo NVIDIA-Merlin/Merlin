@@ -1,7 +1,7 @@
 # NVIDIA Merlin Example Notebooks
 
 We have a collection of Jupyter example notebooks that are based on different datasets to provide end-to-end examples for NVIDIA Merlin.
-These example notebooks demonstrate how to use NVTabular with TensorFlow, PyTorch, and [HugeCTR](https://github.com/NVIDIA/HugeCTR).
+These example notebooks demonstrate how to use NVTabular with TensorFlow, PyTorch, [HugeCTR](https://github.com/NVIDIA/HugeCTR) and [Merlin Models](https://github.com/NVIDIA-Merlin/models).
 Each example provides additional details about the end-to-end workflow, such as includes ETL, training, and inference.
 
 ## Inventory
@@ -14,7 +14,7 @@ This example provides an end-to-end pipeline that leverages the Merlin framework
 - Processing the dataset using NVTabular.
 - Training a scoring model using Merlin Models.
 - Training a retrieval model using Merlin Models.
-- Building a feature store with Feast and ANN index with Fiass.
+- Building a feature store with Feast and ANN index with Faiss.
 - Deploying an end-to-end pipeline of retrieval, scoring, and ANN search to Triton Inference Server.
 
 ### [Getting Started with MovieLens](./getting-started-movielens)
@@ -36,6 +36,7 @@ These notebooks demonstrate how to scale NVTabular:
 - Use multiple GPUs and nodes with NVTabular for ETL.
 - Train recommender system models with the NVTabular dataloader for PyTorch.
 - Train recommender system models with the NVTabular dataloader for TensorFlow.
+- Train recommender system models with the NVTabular dataloader using Merlin Models.
 - Train recommender system models with HugeCTR using a multi-GPU.
 - Inference with the Triton Inference Server and TensorFlow or HugeCTR.
 
