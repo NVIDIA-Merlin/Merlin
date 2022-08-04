@@ -143,7 +143,7 @@
 <a class="reference internal image-reference" href="../../_images/dask-dataframe.svg"><img alt="../../_images/dask-dataframe.svg" src="../../_images/dask-dataframe.svg" width="20%" /></a>
 <p>We use <strong>dask_cudf</strong> to process large datasets as a collection of cuDF dataframes instead of Pandas. CuDF is a GPU DataFrame library for loading, joining, aggregating, filtering, and otherwise manipulating data.
 <br><br>
-<strong>Dask enables easily to schedule tasks for multiple workers: multi-GPU or multi-node. We just need to initialize a Dask cluster (<code class="docutils literal notranslate"><span class="pre">LocalCUDACluster</span></code>) and NVTabular will use the cluster to execture the workflow.</strong></p>
+<strong>Dask enables easily to schedule tasks for multiple workers: multi-GPU or multi-node. We just need to initialize a Dask cluster (<code class="docutils literal notranslate"><span class="pre">LocalCUDACluster</span></code>) and NVTabular will use the cluster to execute the workflow.</strong></p>
 </div>
 </div>
 <div class="section" id="etl-with-nvtabular">
@@ -248,7 +248,7 @@
     <span class="n">NUM_GPUS</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">numba</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">gpus</span><span class="p">)))</span>
 <span class="k">else</span><span class="p">:</span>
     <span class="n">NUM_GPUS</span> <span class="o">=</span> <span class="p">[]</span>
-<span class="n">visible_devices</span> <span class="o">=</span> <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">NUM_GPUS</span><span class="p">])</span>  <span class="c1"># Delect devices to place workers</span>
+<span class="n">visible_devices</span> <span class="o">=</span> <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">NUM_GPUS</span><span class="p">])</span>  <span class="c1"># Select devices to place workers</span>
 <span class="n">device_limit_frac</span> <span class="o">=</span> <span class="mf">0.7</span>  <span class="c1"># Spill GPU-Worker memory to host at this limit.</span>
 <span class="n">device_pool_frac</span> <span class="o">=</span> <span class="mf">0.8</span>
 <span class="n">part_mem_frac</span> <span class="o">=</span> <span class="mf">0.15</span>
@@ -290,7 +290,10 @@
 <div class="section" id="defining-our-preprocessing-pipeline">
 <h3>Defining our Preprocessing Pipeline<a class="headerlink" href="#defining-our-preprocessing-pipeline" title="Permalink to this headline"></a></h3>
 <p>At this point, our data still isn’t in a form that’s ideal for consumption by neural networks. The most pressing issues are missing values and the fact that our categorical variables are still represented by random, discrete identifiers, and need to be transformed into contiguous indices that can be leveraged by a learned embedding. Less pressing, but still important for learning dynamics, are the distributions of our continuous variables, which are distributed across multiple orders of magnitude and are uncentered (i.e. E[x] != 0).</p>
-<p>We can fix these issues in a conscise and GPU-accelerated manner with an NVTabular <code class="docutils literal notranslate"><span class="pre">Workflow</span></code>. We explained the NVTabular API in <a class="reference external" href="https://github.com/NVIDIA/NVTabular/tree/main/examples/getting-started-movielens">Getting Started with Movielens notebooks</a> and hope you are familiar with the syntax.</p>
+<p>We can fix these issues in a concise and GPU-accelerated manner with an NVTabular <code class="docutils literal notranslate"><span class="pre">Workflow</span></code>. We explained the NVTabular API in <a class="reference external" href="https://github.com/NVIDIA/NVTabular/tree/main/examples/getting-started-movielens">Getting Started with Movielens notebooks</a> and hope you are familiar with the syntax.</p>
+<div class="section" id="frequency-thresholding">
+<h4>Frequency Thresholding<a class="headerlink" href="#frequency-thresholding" title="Permalink to this headline"></a></h4>
+<p>One interesting thing worth pointing out is that we’re using <em>frequency thresholding</em> in our <code class="docutils literal notranslate"><span class="pre">Categorify</span></code> op. This handy functionality will map all categories which occur in the dataset with some threshold level of infrequency (which we’ve set here to be 15 occurrences throughout the dataset) to the <em>same</em> index, keeping the model from overfitting to sparse signals.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># define our dataset schema</span>
@@ -398,6 +401,7 @@
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">workflow</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">OUTPUT_DATA_DIR</span><span class="p">,</span> <span class="s2">&quot;workflow&quot;</span><span class="p">))</span>
 </pre></div>
+</div>
 </div>
 </div>
 </div>
