@@ -366,7 +366,7 @@ def main(args):
     xtr.get_from_python("hugectr2onnx")
     xtr.get_from_python("hugectr")
     xtr.get_from_python("sparse_operation_kit")
-    xtr.get_from_pip("tensorflow", "tf")
+    xtr.get_from_python("tensorflow", "tf")
     xtr.get_from_pip("torch", "pytorch")
     xtr.get_from_env("CUBLAS_VERSION", "cublas")
     xtr.get_from_env("CUFFT_VERSION", "cufft")
