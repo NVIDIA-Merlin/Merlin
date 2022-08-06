@@ -25,6 +25,18 @@ COPY --chown=1000:1000 --from=dlfw /usr/local/lib/tensorflow/ /usr/local/lib/ten
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python3.8/dist-packages/horovod /usr/local/lib/python3.8/dist-packages/horovod/
 COPY --chown=1000:1000 --from=dlfw /usr/local/bin/horovodrun /usr/local/bin/horovodrun
 
+# Install dependencies for hps tf plugin
+RUN apt update -y --fix-missing && \
+    apt install -y --no-install-recommends \
+        #   Required to build RocksDB.
+            libgflags-dev \
+            zlib1g-dev libbz2-dev libsnappy-dev liblz4-dev libzstd-dev \
+        #   Required to build RdKafka.
+            zlib1g-dev libzstd-dev \
+            libssl-dev libsasl2-dev && \
+    apt clean && \
+    rm -rf /var/lib/apt/lists/*
+
 # Install cmake
 RUN wget http://www.cmake.org/files/v3.21/cmake-3.21.1.tar.gz && \
     tar xf cmake-3.21.1.tar.gz && cd cmake-3.21.1 && ./configure && make && make install
