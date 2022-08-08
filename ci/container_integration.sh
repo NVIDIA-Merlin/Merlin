@@ -25,7 +25,7 @@ echo "Run integration tests for Transformers4Rec"
 
 ## Test Merlin
 echo "Run integration tests for Merlin"
-cd /Merlin && pytest -rxs tests/integration || exit_code=1
+/Merlin/ci/test_integration.sh $container $devices || exit_code=1
 
 if [[ "$suppress_failures" -eq 0 ]]
 then
