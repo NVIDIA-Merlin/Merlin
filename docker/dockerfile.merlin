@@ -262,6 +262,9 @@ RUN apt update -y --fix-missing && \
 
 RUN ln -s /usr/bin/python3 /usr/bin/python
 
+# CMake
+COPY --chown=1000:1000 --from=build /usr/local/bin/cmake /usr/local/bin/cmake
+
 # Includes
 COPY --chown=1000:1000 --from=build /usr/include /usr/include/
 COPY --chown=1000:1000 --from=build /usr/local/include /usr/local/include/
