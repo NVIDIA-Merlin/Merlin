@@ -265,9 +265,8 @@ RUN apt update -y --fix-missing && \
 
 RUN ln -s /usr/bin/python3 /usr/bin/python
 
-# Install cmake (used by downstream images)
-RUN apt remove --purge cmake -y && wget http://www.cmake.org/files/v3.21/cmake-3.21.1.tar.gz && \
-    tar xf cmake-3.21.1.tar.gz && cd cmake-3.21.1 && ./configure && make -j$(nproc) && make install
+# CMake
+COPY --chown=1000:1000 --from=build /usr/local/bin/cmake /usr/local/bin/cmake
 
 # Includes
 COPY --chown=1000:1000 --from=build /usr/include /usr/include/
