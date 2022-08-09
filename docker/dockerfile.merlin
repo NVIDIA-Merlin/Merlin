@@ -10,7 +10,7 @@ FROM ${BASE_IMAGE} as build
 # Args
 ARG CUDF_VER=v22.04.00
 ARG RMM_VER=v22.02.00
-ARG DASK_CUDA_VER=22.4.00
+ARG DASK_CUDA_VER=22.4.0
 ARG DASK_VER=2022.3.0
 ARG CORE_VER=main
 ARG HUGECTR_VER=master
@@ -185,7 +185,7 @@ RUN git clone https://github.com/rapidsai/cudf.git build-env && cd build-env/ &&
     popd && \
     rm -rf build-env
 
-RUN pip install dask==${DASK_VER} distributed==${DASK_VER} dask[dataframe]==${DASK_VER} dask-cuda==22.4.0
+RUN pip install dask==${DASK_VER} distributed==${DASK_VER} dask[dataframe]==${DASK_VER} dask-cuda==${DASK_CUDA_VER}
 
 # Install NVTabular Triton Backend
 ARG TRITON_VERSION
