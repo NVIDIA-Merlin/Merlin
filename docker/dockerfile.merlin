@@ -265,12 +265,17 @@ RUN apt update -y --fix-missing && \
 
 RUN ln -s /usr/bin/python3 /usr/bin/python
 
+# Install cmake (used by downstream images)
+RUN apt remove --purge cmake -y && wget http://www.cmake.org/files/v3.21/cmake-3.21.1.tar.gz && \
+    tar xf cmake-3.21.1.tar.gz && cd cmake-3.21.1 && ./configure && make -j$(nproc) && make install
+
 # Includes
 COPY --chown=1000:1000 --from=build /usr/include /usr/include/
 COPY --chown=1000:1000 --from=build /usr/local/include /usr/local/include/
 
 # Libraries
 COPY --chown=1000:1000 --from=build /usr/local/lib/lib* /usr/local/lib/
+COPY --chown=1000:1000 --from=build /usr/local/lib/cmake /usr/local/lib/cmake
 COPY --chown=1000:1000 --from=build /usr/lib/x86_64-linux-gnu/libcudf* /usr/lib/x86_64-linux-gnu/
 
 # Binaries
@@ -288,10 +293,6 @@ COPY --chown=1000:1000 --from=triton /opt/tritonserver/repoagents/ repoagents/
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/python backends/python/
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/fil backends/fil/
 COPY --chown=1000:1000 --from=triton /usr/bin/serve /usr/bin/.
-
-# Install cmake (used by downstream images)
-RUN apt remove --purge cmake -y && wget http://www.cmake.org/files/v3.21/cmake-3.21.1.tar.gz && \
-    tar xf cmake-3.21.1.tar.gz && cd cmake-3.21.1 && ./configure && make -j$(nproc) && make install
 
 ENV PATH=/opt/tritonserver/bin:${PATH}:
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/tritonserver/lib
