@@ -4,6 +4,8 @@ import pytest
 from testbook import testbook
 from tests.conftest import REPO_ROOT
 
+pytest.importorskip("tensorflow")
+
 
 def test_func():
     with testbook(
