@@ -12,6 +12,7 @@ pytest.importorskip("faiss")
 # flake8: noqa
 
 
+@pytest.skip("NameError: name 'output_path' is not defined, see https://github.com/NVIDIA-Merlin/Merlin/issues/539")
 def test_func():
     with testbook(
         REPO_ROOT
