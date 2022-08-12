@@ -12,9 +12,6 @@ pytest.importorskip("faiss")
 # flake8: noqa
 
 
-@pytest.mark.skip(
-    "NameError: name 'output_path' is not defined, see https://github.com/NVIDIA-Merlin/Merlin/issues/539"
-)
 def test_func():
     with testbook(
         REPO_ROOT
@@ -31,24 +28,30 @@ def test_func():
             """
         )
         tb1.execute_cell(list(range(0, 16)))
-        tb1.execute_cell(list(range(17, 22)))
+        tb1.execute_cell(list(range(17, 26)))
         tb1.inject(
             """
                 from pathlib import Path
                 from merlin.datasets.ecommerce import transform_aliccp
-                
                 import glob
 
-                #transform_aliccp(Path('/raid/data/aliccp'), output_path, nvt_workflow=outputs, workflow_name='workflow_ranking')
-                train = Dataset(sorted(glob.glob('/raid/data/aliccp/train/*.parquet'))[0:2])
-                valid = Dataset(sorted(glob.glob('/raid/data/aliccp/test/*.parquet'))[0:2])
-                
+                train_min = Dataset(sorted(glob.glob('/raid/data/aliccp/train/*.parquet'))[0:2])
+                valid_min = Dataset(sorted(glob.glob('/raid/data/aliccp/test/*.parquet'))[0:2])
+
                 transform_aliccp(
-                    (train, valid), output_path, nvt_workflow=outputs, workflow_name="workflow_ranking"
+                    (train_min, valid_min), output_path, nvt_workflow=outputs, workflow_name="workflow_retrieval"
                 )
-        """
+            """
         )
-        tb1.execute_cell(list(range(23, len(tb1.cells))))
+        tb1.execute_cell(list(range(27, 41)))
+        tb1.inject(
+            """
+                transform_aliccp(
+                    (train_min, valid_min), output_path, nvt_workflow=outputs, workflow_name="workflow_ranking"
+                )
+            """
+        )
+        tb1.execute_cell(list(range(42, len(tb1.cells))))
 
         assert os.path.isdir("/tmp/examples/dlrm")
         assert os.path.isdir("/tmp/examples/feature_repo")
