@@ -11,10 +11,6 @@ pytest.importorskip("feast")
 pytest.importorskip("faiss")
 
 
-@pytest.mark.skip(
-    "AttributeError: 'NoneType' object has no attribute 'names', "
-    "see https://github.com/NVIDIA-Merlin/Merlin/issues/542"
-)
 def test_func():
     with testbook(
         REPO_ROOT
