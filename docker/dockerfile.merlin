@@ -167,7 +167,7 @@ ENV INSTALL_PREFIX=/usr
 
 RUN git clone --recurse-submodules https://github.com/rapidsai/rmm.git --branch ${RMM_VER} --single-branch build-env && \
     pushd build-env && \
-    ./build.sh librmm rmm && \
+    CXX_FLAGS=-isystem\ /usr/include/thrust ./build.sh librmm rmm && \
     popd && \
     rm -rf build-env
 
