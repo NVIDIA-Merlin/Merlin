@@ -1,0 +1,287 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "a5b71acd",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Copyright 2021 NVIDIA Corporation. All Rights Reserved.\n",
+    "#\n",
+    "# Licensed under the Apache License, Version 2.0 (the \"License\");\n",
+    "# you may not use this file except in compliance with the License.\n",
+    "# You may obtain a copy of the License at\n",
+    "#\n",
+    "#     http://www.apache.org/licenses/LICENSE-2.0\n",
+    "#\n",
+    "# Unless required by applicable law or agreed to in writing, software\n",
+    "# distributed under the License is distributed on an \"AS IS\" BASIS,\n",
+    "# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n",
+    "# See the License for the specific language governing permissions and\n",
+    "# limitations under the License.\n",
+    "# =============================================================================="
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "e1f95be1",
+   "metadata": {},
+   "source": [
+    "<img src=\"http://developer.download.nvidia.com/compute/machine-learning/frameworks/nvidia_logo.png\" style=\"width: 90px; float: right;\">\n",
+    "\n",
+    "# Scaling Criteo: Training with Merlin Models TensorFlow\n",
+    "\n",
+    "This notebook is created using the latest stable [merlin-tensorflow](https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-tensorflow/tags) container.\n",
+    "\n",
+    "\n",
+    "## Overview\n",
+    "\n",
+    "The [Criteo 1TB Click Logs dataset](https://ailab.criteo.com/download-criteo-1tb-click-logs-dataset/) is a popular dataset in the recommender system community as it is one of the largest, public available dataset. It contains ~1.3 TB of uncompressed click logs containing over four billion samples spanning 24 days.\n",
+    "\n",
+    "We will train Facebook's [deep learning recommendation model (DLRM)](https://arxiv.org/abs/1906.00091) architecture with Merlin Models. We will assume you are familiar with Merlin Models' API and features. Otherwise, we recommend to start with the [Merlin Models examples](https://github.com/NVIDIA-Merlin/models/tree/main/examples).\n",
+    "\n",
+    "## Learning objectives\n",
+    "\n",
+    "- Train a DLRM architecture with Merlin Models on a large dataset"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "68941f39",
+   "metadata": {},
+   "source": [
+    "## Training a DLRM model"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "db535904",
+   "metadata": {},
+   "source": [
+    "Let's start with importing the libraries that we'll use in this notebook."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "3b347509",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import os\n",
+    "os.environ[\"TF_GPU_ALLOCATOR\"]=\"cuda_malloc_async\"\n",
+    "\n",
+    "import glob\n",
+    "import time\n",
+    "import merlin.models.tf as mm\n",
+    "from merlin.io.dataset import Dataset\n",
+    "\n",
+    "from merlin.schema import Tags\n",
+    "import tensorflow as tf"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "5b4923fa",
+   "metadata": {},
+   "source": [
+    "Define the path to directories which contains the processed data."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "71f448ee",
+   "metadata": {
+    "scrolled": true
+   },
+   "outputs": [],
+   "source": [
+    "input_path = os.environ.get(\"INPUT_DATA_DIR\", \"/raid/data/criteo/test_dask/output/\")\n",
+    "\n",
+    "# path to processed data\n",
+    "PATH_TO_TRAIN_DATA = sorted(glob.glob(os.path.join(input_path, \"train\", \"*.parquet\")))\n",
+    "PATH_TO_VALID_DATA = sorted(glob.glob(os.path.join(input_path, \"valid\", \"*.parquet\")))\n",
+    "\n",
+    "PATH_TO_TRAIN_DATA, PATH_TO_VALID_DATA"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "74aa21e3",
+   "metadata": {},
+   "source": [
+    "We define some hyperparameters for the model architecture."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "54c35685",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "BATCH_SIZE = int(os.environ.get(\"BATCH_SIZE\", 64 * 1024))\n",
+    "EMBEDDING_SIZE = 8\n",
+    "EPOCHS = 1\n",
+    "LR = 0.01\n",
+    "OPTIMIZER = tf.keras.optimizers.SGD(learning_rate=LR)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "97375902",
+   "metadata": {},
+   "source": [
+    "We will use Merlin Dataset object to initalize the dataloaders. It provides a dataset schema to initialize the model architectures. The [Merlin Models examples](https://github.com/NVIDIA-Merlin/models/tree/main/examples) will explain more details."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "1aab6cfb",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "train = Dataset(PATH_TO_TRAIN_DATA, part_mem_fraction=0.08)\n",
+    "valid = Dataset(PATH_TO_VALID_DATA, part_mem_fraction=0.08)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "edf40eb9",
+   "metadata": {},
+   "source": [
+    "We initalize the DLRM architecture with Merlin Models."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "ce4117ca",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "model = mm.DLRMModel(\n",
+    "    train.schema,\n",
+    "    embedding_dim=EMBEDDING_SIZE,\n",
+    "    bottom_block=mm.MLPBlock([128, EMBEDDING_SIZE]),\n",
+    "    top_block=mm.MLPBlock([128, 64, 32]),\n",
+    "    prediction_tasks=mm.BinaryClassificationTask(\n",
+    "        train.schema.select_by_tag(Tags.TARGET).column_names[0]\n",
+    "    )\n",
+    ")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "598a56da",
+   "metadata": {},
+   "source": [
+    "We compile and train our model."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "52ea88cb",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "%%time\n",
+    "\n",
+    "model.compile(optimizer=OPTIMIZER, run_eagerly=False)\n",
+    "model.fit(train, \n",
+    "          validation_data=valid, \n",
+    "          batch_size=BATCH_SIZE, \n",
+    "          epochs=EPOCHS\n",
+    ")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "04f3cf26",
+   "metadata": {},
+   "source": [
+    "## Evaluate the model\n",
+    "\n",
+    "Finally, we can evaluate our model on the validation dataset."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "db25ed20",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "eval_metrics = model.evaluate(valid, batch_size=BATCH_SIZE, return_dict=True)\n",
+    "eval_metrics"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "79c3d245",
+   "metadata": {},
+   "source": [
+    "## Save the model"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "1b58b134",
+   "metadata": {},
+   "source": [
+    "We save the model to disk."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "b0f9e68c",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "model.save(os.path.join(input_path, \"dlrm\"))"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "c3bdb1e2",
+   "metadata": {},
+   "source": [
+    "## Summary\n",
+    "\n",
+    "We trained Facebook's popular DLRM architecture with only ~5 commands on the large criteo dataset.   \n",
+    "\n",
+    "## Next steps\n",
+    "\n",
+    "[The next step](04-Triton-Inference-with-Merlin-Models-TensorFlow) is to deploy the NVTabular workflow and DLRM model to production.\n",
+    "\n",
+    "If you are interested more in different architecture and training models with Merlin Models, we recommend to check out our [Merlin Models examples](https://github.com/NVIDIA-Merlin/models/)"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3 (ipykernel)",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.8.10"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}
