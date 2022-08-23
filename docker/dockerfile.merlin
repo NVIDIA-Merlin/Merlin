@@ -11,7 +11,7 @@ FROM ${DLFW_IMAGE} as dlfw
 FROM ${BASE_IMAGE} as build
 
 # Args
-ARG DASK_VER=2022.8.0
+ARG DASK_VER=2022.05.1
 ARG CORE_VER=main
 ARG HUGECTR_VER=master
 ARG HUGECTR_BACKEND_VER=main
@@ -85,6 +85,7 @@ RUN pip install lightfm implicit
 RUN pip install numba
 RUN pip install "cuda-python>=11.5,<12.0"
 RUN pip install fsspec==2022.5.0
+RUN pip install pynvml dask==${DASK_VER} distributed==${DASK_VER}
 
 # Triton Server
 WORKDIR /opt/tritonserver
