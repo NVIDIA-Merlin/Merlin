@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.2
 ARG MERLIN_VERSION=22.06
-ARG TRITON_VERSION=22.05
-ARG TENSORFLOW_VERSION=22.05
+ARG TRITON_VERSION=22.07
+ARG TENSORFLOW_VERSION=22.07
 
 ARG DLFW_IMAGE=nvcr.io/nvidia/tensorflow:${TENSORFLOW_VERSION}-tf2-py3
 ARG FULL_IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-py3
@@ -36,10 +36,6 @@ RUN apt update -y --fix-missing && \
             libssl-dev libsasl2-dev && \
     apt clean && \
     rm -rf /var/lib/apt/lists/*
-
-# Install cmake
-RUN wget http://www.cmake.org/files/v3.21/cmake-3.21.1.tar.gz && \
-    tar xf cmake-3.21.1.tar.gz && cd cmake-3.21.1 && ./configure && make && make install
 
 
 # Install HugeCTR
