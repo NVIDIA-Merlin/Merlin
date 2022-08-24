@@ -65,6 +65,7 @@ RUN apt update -y --fix-missing && \
         python3-pip \
         python3-dev \
         rapidjson-dev \
+        nlohmann-json3-dev \
         wget \
         zlib1g-dev && \
     apt autoremove -y && \
@@ -121,6 +122,14 @@ RUN git clone https://github.com/NVIDIA-Merlin/nvtabular_triton_backend.git buil
       cp libtriton_nvtabular.so /opt/tritonserver/backends/nvtabular/ && \
     popd && \
     rm -rf build-env
+
+# Install spdlog
+RUN git clone --branch v1.9.2 https://github.com/gabime/spdlog.git build-env && \
+    pushd build-env && \
+    mkdir build && cd build && cmake .. && make -j && make install && \
+    popd && \
+    rm -rf build-env
+
 
 # Clean up
 RUN rm -rf /repos
