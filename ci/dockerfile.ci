@@ -19,6 +19,14 @@ RUN pip install 'feast<0.20' faiss-gpu
 
 RUN pip install tox
 
+# Update the Merlin repos (to avoid needed to rebuild underlying images to get updates)
+RUN cd /Merlin && git pull origin main
+RUN cd /core/ && git pull origin main && pip install . --no-deps
+RUN cd /nvtabular/ && git pull origin main && pip install . --no-deps
+RUN cd /systems/ && git pull origin main && pip install . --no-deps
+RUN cd /models/ && git pull origin main && pip install . --no-deps
+RUN cd /transformers4rec/ && git pull origin main && pip install . --no-deps
+
 
 HEALTHCHECK NONE
 CMD ["/bin/bash"]
