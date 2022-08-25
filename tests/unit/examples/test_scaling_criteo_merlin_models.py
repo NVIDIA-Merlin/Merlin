@@ -3,6 +3,9 @@ import os
 import pytest
 from testbook import testbook
 from tests.conftest import REPO_ROOT
+from merlin.core.dispatch import get_lib
+from merlin.models.loader.tf_utils import configure_tensorflow
+from merlin.systems.triton.utils import run_ensemble_on_tritonserver
 
 pytest.importorskip("tensorflow")
 
@@ -80,20 +83,24 @@ def test_func():
         )
         NUM_OF_CELLS = len(tb3.cells)
         tb3.execute_cell(list(range(0, NUM_OF_CELLS - 5)))
-        tb3.inject(
-            """
-            import shutil
-            
-            from merlin.systems.triton.utils import run_ensemble_on_tritonserver
-            outputs = ensemble.graph.output_schema.column_names
-            response = run_ensemble_on_tritonserver(
-                "/tmp/output/criteo/ensemble/", outputs, batch.fillna(0), "ensemble_model"
-            )
-            response = [x.tolist()[0] for x in response["label/binary_classification_task"]]
-            shutil.rmtree("/tmp/input/criteo", ignore_errors=True)
-            shutil.rmtree("/tmp/output/criteo", ignore_errors=True)
-            """
+        input_cols = tb3.ref("input_cols")
+        outputs = tb3.ref("output_cols")
+        # read in data for request
+        df_lib = get_lib()
+        in_dtypes = {}
+        for col in input_cols:
+            if col.startswith("C"):
+                in_dtypes[col] = "int64"
+            if col.startswith("I"):
+                in_dtypes[col] = "float64"
+        batch = df_lib.read_parquet(
+            os.path.join("/tmp/output/criteo/", "valid", "part_0.parquet"),
+            num_rows=3,
+            columns=input_cols,
         )
-        tb3.execute_cell(NUM_OF_CELLS - 4)
-        response = tb3.ref("response")
-        assert len(response) == 3
+        batch = batch.astype(in_dtypes)
+        configure_tensorflow()
+        response = run_ensemble_on_tritonserver(
+            "/tmp/output/criteo/ensemble/", outputs, batch, "ensemble_model"
+        )
+        assert len(response["label/binary_classification_task"]) == 3
