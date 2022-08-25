@@ -74,7 +74,7 @@
     "\n",
     "import tritonclient.grpc as grpcclient\n",
     "from nvtabular.workflow import Workflow\n",
-    "\n",
+    "import merlin.models.tf as mm\n",
     "from merlin.schema.tags import Tags\n",
     "from merlin.systems.dag.ops.workflow import TransformWorkflow\n",
     "from merlin.systems.dag.ops.tensorflow import PredictTensorflow\n",
@@ -263,9 +263,7 @@
    "outputs": [],
    "source": [
     "df_lib = get_lib()\n",
-    "\n",
     "input_cols = workflow.input_schema.column_names\n",
-    "\n",
     "# read in data for request\n",
     "batch = df_lib.read_parquet(\n",
     "    os.path.join(sorted(glob.glob(original_data_path + \"/*.parquet\"))[-1]),\n",
