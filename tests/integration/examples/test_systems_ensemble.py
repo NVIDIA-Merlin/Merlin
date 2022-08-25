@@ -5,6 +5,7 @@ import shutil
 import unittest
 from merlin.schema import Schema, ColumnSchema
 from merlin.systems.dag.ops.tensorflow import PredictTensorflow
+from merlin.systems.dag.ops.workflow import TransformWorkflow
 from merlin.systems.dag.ensemble import Ensemble
 from nvtabular.workflow import Workflow
 from nvtabular.ops import (
@@ -17,7 +18,6 @@ from nvtabular.ops import (
     Filter,
     Rename,
 )
-import pytest
 
 from merlin.schema.tags import Tags
 
@@ -26,6 +26,8 @@ from merlin.io.dataset import Dataset
 from merlin.datasets.ecommerce import transform_aliccp
 import tensorflow as tf
 from merlin.datasets.synthetic import generate_data
+
+os.environ["TF_GPU_ALLOCATOR"] = "cuda_malloc_async"
 
 NUM_ROWS = 10_000
 USER_FEATURES = [
@@ -58,7 +60,9 @@ class WidgetTestCase(unittest.TestCase):
         self.retrieval_workflow_path = os.path.join(
             self.base_data_dir, "processed", "retrieval"
         )
-        self.retrieval_nvt_workflow = _retrieval_workflow()
+        self.retrieval_nvt_workflow = _retrieval_workflow(
+            os.path.join(self.base_data_dir, "retrieval_categories")
+        )
 
         # This fits and saves the workflow to the output_path
         transform_aliccp(
@@ -73,7 +77,7 @@ class WidgetTestCase(unittest.TestCase):
             self.base_data_dir, "processed", "ranking"
         )
 
-        self.ranking_nvt_workflow = _retrieval_workflow()
+        self.ranking_nvt_workflow = _ranking_workflow()
         transform_aliccp(
             (train_raw, valid_raw),
             self.ranking_workflow_path,
@@ -96,49 +100,57 @@ class WidgetTestCase(unittest.TestCase):
         # Features come in and get transformed with TransformWorkflow
         # Then get fed into a retrieval model.
         # Items come out.
+        print(">> Training Model")
         retrieval_model = _train_two_tower(
             os.path.join(self.base_data_dir, "processed", "ranking", "train"),
             os.path.join(self.base_data_dir, "processed", "ranking", "valid"),
             os.path.join(self.base_data_dir, "two_tower_model"),
         )
-        retrieval_workflow_op = Workflow.load(self.retrieval_nvt_workflow)
-        retrieval_model_op = PredictTensorflow(retrieval_model)
-        pipeline = retrieval_workflow_op + retrieval_model_op
+        print(">> Building nodes")
 
-        all_integer_columns = list(
-            itertools.chain(*[USER_FEATURES, ITEM_FEATURES, ["user_id", "item_id"]])
-        )
         request_schema = Schema(
-            column_schemas=[ColumnSchema(name=n) for n in all_integer_columns]
+            column_schemas=[ColumnSchema(name=n) for n in USER_FEATURES + ["user_id"]]
         )
+
+        # remove `click` since that's not present at request time.
+        self.retrieval_nvt_workflow.remove_inputs(["click"])
+        tf_op = PredictTensorflow(retrieval_model)
+
+        pipeline = (
+            request_schema.column_names
+            >> TransformWorkflow(self.retrieval_nvt_workflow)
+            >> tf_op
+        )
+
+        print(">> Compiling Ensemble")
         ensemble = Ensemble(pipeline, request_schema)
 
 
-def _retrieval_workflow():
+def _retrieval_workflow(category_out_path):
     user_id = (
         ["user_id"]
-        >> Categorify(dtype="int32", out_path="./categories_tt")
+        >> Categorify(dtype="int32", out_path=category_out_path)
         >> TagAsUserID()
     )
-    item_id = (
-        ["item_id"]
-        >> Categorify(dtype="int32", out_path="./categories_tt")
-        >> TagAsItemID()
-    )
+    # item_id = (
+    #     ["item_id"]
+    #     >> Categorify(dtype="int32", out_path=category_out_path)
+    #     >> TagAsItemID()
+    # )
 
-    item_features = (
-        ITEM_FEATURES
-        >> Categorify(dtype="int32", out_path="./categories_tt")
-        >> TagAsItemFeatures()
-    )
+    # item_features = (
+    #     ITEM_FEATURES
+    #     >> Categorify(dtype="int32", out_path=category_out_path)
+    #     >> TagAsItemFeatures()
+    # )
 
     user_features = (
         USER_FEATURES
-        >> Categorify(dtype="int32", out_path="./categories_tt")
+        >> Categorify(dtype="int32", out_path=category_out_path)
         >> TagAsUserFeatures()
     )
 
-    inputs = user_id + item_id + item_features + user_features + ["click"]
+    inputs = user_id + user_features + ["click"]
 
     outputs = inputs >> Filter(f=lambda df: df["click"] == 1)
     return outputs
@@ -183,6 +195,7 @@ def _train_two_tower(train_data_path, valid_data_path, output_path):
     valid_tt = Dataset(os.path.join(valid_data_path, "*.parquet"))
 
     schema = train_tt.schema
+
     schema = schema.select_by_tag([Tags.ITEM_ID, Tags.USER_ID, Tags.ITEM, Tags.USER])
     model_tt = mm.TwoTowerModel(
         schema,
