@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.2
 ARG MERLIN_VERSION=22.06
-ARG TRITON_VERSION=22.05
-ARG TENSORFLOW_VERSION=22.05
+ARG TRITON_VERSION=22.07
+ARG TENSORFLOW_VERSION=22.07
 
 ARG DLFW_IMAGE=nvcr.io/nvidia/tensorflow:${TENSORFLOW_VERSION}-tf2-py3
 ARG FULL_IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-py3
@@ -25,9 +25,17 @@ COPY --chown=1000:1000 --from=dlfw /usr/local/lib/tensorflow/ /usr/local/lib/ten
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python3.8/dist-packages/horovod /usr/local/lib/python3.8/dist-packages/horovod/
 COPY --chown=1000:1000 --from=dlfw /usr/local/bin/horovodrun /usr/local/bin/horovodrun
 
-# Install cmake
-RUN wget http://www.cmake.org/files/v3.21/cmake-3.21.1.tar.gz && \
-    tar xf cmake-3.21.1.tar.gz && cd cmake-3.21.1 && ./configure && make && make install
+# Install dependencies for hps tf plugin
+RUN apt update -y --fix-missing && \
+    apt install -y --no-install-recommends \
+        #   Required to build RocksDB.
+            libgflags-dev \
+            zlib1g-dev libbz2-dev libsnappy-dev liblz4-dev libzstd-dev \
+        #   Required to build RdKafka.
+            zlib1g-dev libzstd-dev \
+            libssl-dev libsasl2-dev && \
+    apt clean && \
+    rm -rf /var/lib/apt/lists/*
 
 
 # Install HugeCTR
@@ -39,6 +47,7 @@ ENV LD_LIBRARY_PATH=/usr/local/hugectr/lib:$LD_LIBRARY_PATH \
 ARG HUGECTR_DEV_MODE=false
 ARG _HUGECTR_REPO="github.com/NVIDIA-Merlin/HugeCTR.git"
 ARG _CI_JOB_TOKEN=""
+ARG HUGECTR_VER=master
 
 RUN mkdir -p /usr/local/nvidia/lib64 && \
     ln -s /usr/local/cuda/lib64/libcusolver.so /usr/local/nvidia/lib64/libcusolver.so.10
@@ -46,11 +55,16 @@ RUN mkdir -p /usr/local/nvidia/lib64 && \
 RUN ln -s /usr/lib/x86_64-linux-gnu/libibverbs.so.1 /usr/lib/x86_64-linux-gnu/libibverbs.so
 
 RUN if [ "$HUGECTR_DEV_MODE" == "false" ]; then \
-        git clone https://${_CI_JOB_TOKEN}${_HUGECTR_REPO} /hugectr && \
+        git clone --branch ${HUGECTR_VER} --depth 1 https://${_CI_JOB_TOKEN}${_HUGECTR_REPO} /hugectr && \
         pushd /hugectr && \
-          git checkout ${HUGECTR_VER} && \
-          cd sparse_operation_kit && \
-          python setup.py install && \
+	pip install ninja && \
+	git submodule update --init --recursive && \
+        # Install SOK
+        cd sparse_operation_kit && \
+        python setup.py install && \
+        # Install HPS TF plugin
+        cd ../hierarchical_parameter_server && \
+        python setup.py install && \
         popd; \
     fi
 

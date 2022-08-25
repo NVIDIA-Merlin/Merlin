@@ -15,9 +15,17 @@ exit_code=0
 echo "Run integration tests for NVTabular"
 /nvtabular/ci/test_integration.sh $container $devices --report 1 || exit_code=1
 
+# Test Merlin Models
+echo "Run integration tests for Merlin Models"
+/models/ci/test_integration.sh $container $devices || exit_code=1
+
 # Test Transformers4Rec
 echo "Run integration tests for Transformers4Rec"
 /transformers4rec/ci/test_integration.sh $container $devices || exit_code=1
+
+## Test Merlin
+echo "Run integration tests for Merlin"
+/Merlin/ci/test_integration.sh $container $devices || exit_code=1
 
 if [[ "$suppress_failures" -eq 0 ]]
 then

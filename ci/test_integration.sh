@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021, NVIDIA CORPORATION.
+# Copyright (c) 2022, NVIDIA CORPORATION.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,18 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# from functools import lru_cache
 
-from __future__ import absolute_import
+#!/bin/bash
+set -e
 
-from pathlib import Path
+cd /Merlin
 
-import pytest
+container=$1
+devices=$2
 
-REPO_ROOT = Path(__file__).parent.parent
-
-
-def pytest_sessionfinish(session, exitstatus):
-    # if all the tests are skipped, lets not fail the entire CI run
-    if exitstatus == 5:
-        session.exitstatus = 0
+# Run only for Merlin Tensorflow Container
+if [ "$container" == "merlin-tensorflow" ]; then
+    pip install 'feast<0.20' faiss-gpu
+    CUDA_VISIBLE_DEVICES="$devices" TF_GPU_ALLOCATOR=cuda_malloc_async python -m pytest -rxs tests/integration
+fi

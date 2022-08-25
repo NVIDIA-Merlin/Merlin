@@ -12,6 +12,6 @@ else
     ci_script_dir=./
 fi
 
-${ci_script_dir}software_check.sh $container $devices
-${ci_script_dir}unit_tests.sh $container $devices
-${ci_script_dir}integration_tests.sh $container $devices $suppress_failures
+${ci_script_dir}container_software.sh $container $devices
+${ci_script_dir}container_unit.sh $container $devices
+${ci_script_dir}container_integration.sh $container $devices $suppress_failures
