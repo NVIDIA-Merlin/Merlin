@@ -130,6 +130,53 @@ RUN git clone --branch v1.9.2 https://github.com/gabime/spdlog.git build-env && 
     popd && \
     rm -rf build-env
 
+# Install arrow
+ENV ARROW_HOME=/usr
+RUN git clone --branch apache-arrow-7.0.0 --recurse-submodules https://github.com/apache/arrow.git build-env && \
+    pushd build-env && \
+      export PARQUET_TEST_DATA="${PWD}/cpp/submodules/parquet-testing/data" && \
+      export ARROW_TEST_DATA="${PWD}/testing/data" && \
+      pip install -r python/requirements-build.txt && \
+      mkdir cpp/release && \
+      pushd cpp/release && \
+        cmake -DCMAKE_INSTALL_PREFIX=${ARROW_HOME} \
+              -DCMAKE_INSTALL_LIBDIR=lib \
+              -DCMAKE_LIBRARY_PATH=${CUDA_CUDA_LIBRARY} \
+              -DARROW_FLIGHT=ON \
+              -DARROW_GANDIVA=OFF \
+              -DARROW_ORC=ON \
+              -DARROW_WITH_BZ2=ON \
+              -DARROW_WITH_ZLIB=ON \
+              -DARROW_WITH_ZSTD=ON \
+              -DARROW_WITH_LZ4=ON \
+              -DARROW_WITH_SNAPPY=ON \
+              -DARROW_WITH_BROTLI=ON \
+              -DARROW_PARQUET=ON \
+              -DARROW_PYTHON=ON \
+              -DARROW_PLASMA=ON \
+              -DARROW_BUILD_TESTS=ON \
+              -DARROW_CUDA=ON \
+              -DARROW_DATASET=ON \
+              -DARROW_HDFS=ON \
+              -DARROW_S3=ON \ 
+              .. && \
+        make -j$(nproc) && \
+        make install && \
+      popd && \
+      pushd python && \
+        export PYARROW_WITH_PARQUET=ON && \
+        export PYARROW_WITH_CUDA=ON && \
+        export PYARROW_WITH_ORC=ON && \
+        export PYARROW_WITH_DATASET=ON && \
+        export PYARROW_WITH_S3=ON && \
+        export PYARROW_WITH_HDFS=ON && \
+        python setup.py build_ext --build-type=release bdist_wheel && \
+        pip install dist/*.whl --no-deps --force-reinstall && \
+      popd && \
+    popd && \
+    rm -rf build-env
+
+
 
 # Clean up
 RUN rm -rf /repos
@@ -193,6 +240,8 @@ RUN ln -s /usr/bin/python3 /usr/bin/python
 # Includes
 COPY --chown=1000:1000 --from=build /usr/include /usr/include/
 COPY --chown=1000:1000 --from=build /usr/local/include /usr/local/include/
+COPY --chown=1000:1000 --from=build /usr/lib/ /usr/lib/
+
 
 # Binaries
 COPY --chown=1000:1000 --from=build /usr/local/bin /usr/local/bin/
@@ -221,9 +270,10 @@ COPY --chown=1000:1000 --from=build /opt/tritonserver/backends/nvtabular backend
 COPY --chown=1000:1000 --from=build /usr/local/lib/python3.8/dist-packages /usr/local/lib/python3.8/dist-packages/
 ENV PYTHONPATH=$PYTHONPATH:/usr/local/lib/python3.8/dist-packages/
 
+
 # rapids components from the DLFW image
 COPY --chown=1000:1000 --from=dlfw /usr/lib/libcudf* /usr/lib/
-COPY --chown=1000:1000 --from=dlfw /usr/lib/libarrow* /usr/lib/
+# COPY --chown=1000:1000 --from=dlfw /usr/lib/libarrow* /usr/lib/
 COPY --chown=1000:1000 --from=dlfw /usr/lib/libparquet* /usr/lib/
 COPY --chown=1000:1000 --from=dlfw /usr/lib/libnvcomp* /usr/lib/
 COPY --chown=1000:1000 --from=dlfw /usr/include/cudf /usr/include/cudf/
@@ -231,7 +281,7 @@ COPY --chown=1000:1000 --from=dlfw /usr/include/rmm /usr/include/rmm/
 ARG PYTHON_VERSION=3.8
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/rmm /usr/local/lib/python${PYTHON_VERSION}/dist-packages/rmm
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cuda /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cuda
-COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/pyarrow /usr/local/lib/python${PYTHON_VERSION}/dist-packages/pyarrow
+# COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/pyarrow /usr/local/lib/python${PYTHON_VERSION}/dist-packages/pyarrow
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cudf /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cudf
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/dask_cudf /usr/local/lib/python${PYTHON_VERSION}/dist-packages/dask_cudf
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/dask_cuda /usr/local/lib/python${PYTHON_VERSION}/dist-packages/dask_cuda
