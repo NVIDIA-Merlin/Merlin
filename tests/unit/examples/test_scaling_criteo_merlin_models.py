@@ -4,10 +4,11 @@ import pytest
 from testbook import testbook
 from tests.conftest import REPO_ROOT
 from merlin.core.dispatch import get_lib
-from merlin.models.loader.tf_utils import configure_tensorflow
-from merlin.systems.triton.utils import run_ensemble_on_tritonserver
 
 pytest.importorskip("tensorflow")
+
+from merlin.models.loader.tf_utils import configure_tensorflow  # noqa: E402
+from merlin.systems.triton.utils import run_ensemble_on_tritonserver  # noqa: E402
 
 
 def test_func():
