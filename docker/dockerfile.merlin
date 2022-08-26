@@ -273,7 +273,6 @@ ENV PYTHONPATH=$PYTHONPATH:/usr/local/lib/python3.8/dist-packages/
 
 # rapids components from the DLFW image
 COPY --chown=1000:1000 --from=dlfw /usr/lib/libcudf* /usr/lib/
-# COPY --chown=1000:1000 --from=dlfw /usr/lib/libarrow* /usr/lib/
 COPY --chown=1000:1000 --from=dlfw /usr/lib/libparquet* /usr/lib/
 COPY --chown=1000:1000 --from=dlfw /usr/lib/libnvcomp* /usr/lib/
 COPY --chown=1000:1000 --from=dlfw /usr/include/cudf /usr/include/cudf/
@@ -281,7 +280,6 @@ COPY --chown=1000:1000 --from=dlfw /usr/include/rmm /usr/include/rmm/
 ARG PYTHON_VERSION=3.8
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/rmm /usr/local/lib/python${PYTHON_VERSION}/dist-packages/rmm
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cuda /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cuda
-# COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/pyarrow /usr/local/lib/python${PYTHON_VERSION}/dist-packages/pyarrow
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cudf /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cudf
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/dask_cudf /usr/local/lib/python${PYTHON_VERSION}/dist-packages/dask_cudf
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/dask_cuda /usr/local/lib/python${PYTHON_VERSION}/dist-packages/dask_cuda
