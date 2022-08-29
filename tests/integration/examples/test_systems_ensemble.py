@@ -1,11 +1,12 @@
+import subprocess
 import os
-import itertools
 import tempfile
 import shutil
 import unittest
 from merlin.schema import Schema, ColumnSchema
 from merlin.systems.dag.ops.tensorflow import PredictTensorflow
 from merlin.systems.dag.ops.workflow import TransformWorkflow
+from merlin.systems.dag.ops.softmax_sampling import SoftmaxSampling
 from merlin.systems.dag.ensemble import Ensemble
 from nvtabular.workflow import Workflow
 from nvtabular.ops import (
@@ -16,7 +17,6 @@ from nvtabular.ops import (
     TagAsUserFeatures,
     AddMetadata,
     Filter,
-    Rename,
 )
 
 from merlin.schema.tags import Tags
@@ -46,52 +46,71 @@ USER_FEATURES = [
 ITEM_FEATURES = ["item_category", "item_shop", "item_brand"]
 
 
-class WidgetTestCase(unittest.TestCase):
-    def setUp(self):
+class MerlinTestCase(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
         """
         Setup prepares the data to be used
         """
-        self.base_data_dir = tempfile.mkdtemp()
+        cls.base_data_dir = tempfile.mkdtemp()
 
         # GENERATE DATA AND NVT WORKFLOW FOR RETRIEVAL MODEL
         train_raw, valid_raw = generate_data(
             "aliccp-raw", NUM_ROWS, set_sizes=(0.7, 0.3)
         )
-        self.retrieval_workflow_path = os.path.join(
-            self.base_data_dir, "processed", "retrieval"
+        cls.retrieval_workflow_path = os.path.join(
+            cls.base_data_dir, "processed", "retrieval"
         )
-        self.retrieval_nvt_workflow = _retrieval_workflow(
-            os.path.join(self.base_data_dir, "retrieval_categories")
+        cls.retrieval_nvt_workflow = _retrieval_workflow(
+            os.path.join(cls.base_data_dir, "retrieval_categories")
         )
 
-        # This fits and saves the workflow to the output_path
+        # This fits and saves the workflow and the saved data to the MerlinTestCase.retrieval_workflow_path
         transform_aliccp(
             (train_raw, valid_raw),
-            self.retrieval_workflow_path,
-            nvt_workflow=self.retrieval_nvt_workflow,
+            cls.retrieval_workflow_path,
+            nvt_workflow=cls.retrieval_nvt_workflow,
             workflow_name="workflow_retrieval",
         )
 
         # GENERATE DATA AND NVT WORKFLOW FOR RANKING MODEL
-        self.ranking_workflow_path = os.path.join(
-            self.base_data_dir, "processed", "ranking"
+        cls.ranking_workflow_path = os.path.join(
+            cls.base_data_dir, "processed", "ranking"
         )
 
-        self.ranking_nvt_workflow = _ranking_workflow()
+        # Configures a feast feature store. This requires reshaping the train/valid data a bit
+        # and then ingesting into a feature store. It is only used for feature retrieval, not
+        # training
+        cls.feature_store_path = os.path.join(cls.base_data_dir, "feast_feature_store")
+        _configure_feast(cls.feature_store_path,train_raw)
+
+        cls.ranking_nvt_workflow = _ranking_workflow()
         transform_aliccp(
             (train_raw, valid_raw),
-            self.ranking_workflow_path,
-            nvt_workflow=self.ranking_nvt_workflow,
+            cls.ranking_workflow_path,
+            nvt_workflow=cls.ranking_nvt_workflow,
             workflow_name="workflow_ranking",
         )
 
-    def tearDown(self):
-        # Remove the directory after the test
-        shutil.rmtree(self.base_data_dir)
-        # TODO: destroy the feast feature store
+        # Train a two-tower model and save it. This is used by several tests.
+        cls.retrieval_model_path = os.path.join(cls.base_data_dir, "two_tower_model")
+        _train_two_tower(
+            os.path.join(cls.base_data_dir, "processed", "ranking", "train"),
+            os.path.join(cls.base_data_dir, "processed", "ranking", "valid"),
+            cls.retrieval_model_path,
+        )
 
+        # remove `click` since that's not used again.
+        cls.retrieval_nvt_workflow.remove_inputs(["click"])
+
+    @classmethod
+    def tearDownClass(cls):
+        # Remove the directory after the test
+        # This will also destroy the feast feature store(s).
+        shutil.rmtree(cls.base_data_dir)
+       
     def test_training_data_exists(self):
-        for model in [self.retrieval_workflow_path, self.ranking_workflow_path]:
+        for model in [MerlinTestCase.retrieval_workflow_path, MerlinTestCase.ranking_workflow_path]:
             for split in ["train", "valid"]:
                 self.assertTrue(os.path.exists(os.path.join(model, split)))
 
@@ -100,31 +119,107 @@ class WidgetTestCase(unittest.TestCase):
         # Features come in and get transformed with TransformWorkflow
         # Then get fed into a retrieval model.
         # Items come out.
-        print(">> Training Model")
-        retrieval_model = _train_two_tower(
-            os.path.join(self.base_data_dir, "processed", "ranking", "train"),
-            os.path.join(self.base_data_dir, "processed", "ranking", "valid"),
-            os.path.join(self.base_data_dir, "two_tower_model"),
-        )
-        print(">> Building nodes")
 
         request_schema = Schema(
             column_schemas=[ColumnSchema(name=n) for n in USER_FEATURES + ["user_id"]]
         )
 
-        # remove `click` since that's not present at request time.
-        self.retrieval_nvt_workflow.remove_inputs(["click"])
-        tf_op = PredictTensorflow(retrieval_model)
-
         pipeline = (
             request_schema.column_names
-            >> TransformWorkflow(self.retrieval_nvt_workflow)
-            >> tf_op
+            >> TransformWorkflow(MerlinTestCase.retrieval_nvt_workflow)
+            >> PredictTensorflow(MerlinTestCase.retrieval_model_path)
         )
 
-        print(">> Compiling Ensemble")
         ensemble = Ensemble(pipeline, request_schema)
+        # TODO: run ensemble in triton, make a request.
 
+    """
+    def test_nvt_retrieval_with_sampling_ensemble(self):
+        # Builds the most basic ensemble:
+        # Features come in and get transformed with TransformWorkflow
+        # Then get fed into a retrieval model.
+        # Items come out.
+
+        request_schema = Schema(
+            column_schemas=[ColumnSchema(name=n) for n in USER_FEATURES + ["user_id"]]
+        )
+        transform_op = request_schema.column_names >> TransformWorkflow(
+            self.retrieval_nvt_workflow
+        )
+        retrieval_op = transform_op >> PredictTensorflow(self.retrieval_model_path)
+
+        # We need a ranking op here. for it to work.
+
+        ordering_op = transform_op["user_id"] >> SoftmaxSampling(
+            relevance_col=retrieval_op["click/binary_classification_task"],
+            topk=10,
+            temperature=20.0,
+        )
+
+        ensemble = Ensemble(ordering_op, request_schema)
+    """
+
+def _configure_feast(feature_store_path, data_to_ingest: Dataset):
+    # Make the directory if it doesn't exist
+    # Copy user|item_features.py files to the path
+    # Modify the data and store it in the directory
+    # feast init, apply, materialize
+    if not os.path.exists(feature_store_path):
+        os.makedirs(os.path.join(feature_store_path, "data"))
+    with open(os.path.join(feature_store_path, "feature_store.yaml"), "w") as config_file:
+        config_file.write("""
+project: feast_feature_store
+registry: data/registry.db
+provider: local
+online_store:
+    path: data/online_store.db
+""")
+    cwd = os.path.dirname(os.path.abspath(__file__))
+    shutil.copy(os.path.join(cwd, "feast", "item_features.py"), feature_store_path)
+    shutil.copy(os.path.join(cwd, "feast", "user_features.py"), feature_store_path)
+    
+    # Split training data into user / item and add timestamps.
+    from datetime import datetime
+    from merlin.models.utils.dataset import unique_rows_by_features
+
+    user_features = (
+        unique_rows_by_features(data_to_ingest, Tags.USER, Tags.USER_ID)
+        .compute()
+        .reset_index(drop=True)
+    )
+    user_features["datetime"] = datetime.now()
+    user_features["datetime"] = user_features["datetime"].astype("datetime64[ns]")
+    user_features["created"] = datetime.now()
+    user_features["created"] = user_features["created"].astype("datetime64[ns]")
+    user_features.to_parquet(
+        os.path.join(feature_store_path, "data", "user_features.parquet")
+    )
+
+    item_features = (
+        unique_rows_by_features(data_to_ingest, Tags.ITEM, Tags.ITEM_ID)
+        .compute()
+        .reset_index(drop=True)
+    )
+    item_features["datetime"] = datetime.now()
+    item_features["datetime"] = item_features["datetime"].astype("datetime64[ns]")
+    item_features["created"] = datetime.now()
+    item_features["created"] = item_features["created"].astype("datetime64[ns]")
+    item_features.to_parquet(
+        os.path.join(feature_store_path, "data", "item_features.parquet")
+    )
+
+    os.environ.setdefault("FEAST_USER_FEATURES_PATH", os.path.join(feature_store_path, "data", "user_features.parquet"))
+    os.environ.setdefault("FEAST_ITEM_FEATURES_PATH", os.path.join(feature_store_path, "data", "item_features.parquet"))
+    subprocess.run(["feast", "-c", feature_store_path, "apply"])
+    subprocess.run(["feast", "-c", feature_store_path, "materialize", "1995-01-01T01:01:01", "2025-01-01T01:01:01"])
+    
+    # This is a useful place to drop a debugger and manually see what is in feast.
+    # import pdb; pdb.set_trace()
+    # import feast
+    # fs = feast.FeatureStore(feature_store_path)
+    # fs.get_online_features(["user_features:user_shops"], [{"user_id":1}]).to_dict()
+    
+    
 
 def _retrieval_workflow(category_out_path):
     user_id = (
