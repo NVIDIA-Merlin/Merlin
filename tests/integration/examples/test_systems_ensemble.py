@@ -3,12 +3,15 @@ import os
 import tempfile
 import shutil
 import unittest
+import feast
+import numpy as np
+
 from merlin.schema import Schema, ColumnSchema
+from merlin.systems.dag.ops.feast import QueryFeast
 from merlin.systems.dag.ops.tensorflow import PredictTensorflow
 from merlin.systems.dag.ops.workflow import TransformWorkflow
 from merlin.systems.dag.ops.softmax_sampling import SoftmaxSampling
 from merlin.systems.dag.ensemble import Ensemble
-from nvtabular.workflow import Workflow
 from nvtabular.ops import (
     Categorify,
     TagAsUserID,
@@ -82,7 +85,7 @@ class MerlinTestCase(unittest.TestCase):
         # and then ingesting into a feature store. It is only used for feature retrieval, not
         # training
         cls.feature_store_path = os.path.join(cls.base_data_dir, "feast_feature_store")
-        _configure_feast(cls.feature_store_path,train_raw)
+        _configure_feast(cls.feature_store_path, train_raw)
 
         cls.ranking_nvt_workflow = _ranking_workflow()
         transform_aliccp(
@@ -105,12 +108,17 @@ class MerlinTestCase(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        # Remove the directory after the test
-        # This will also destroy the feast feature store(s).
+        """
+        Remove the directory after the test
+        This will also destroy the feast feature store(s).
+        """
         shutil.rmtree(cls.base_data_dir)
-       
+
     def test_training_data_exists(self):
-        for model in [MerlinTestCase.retrieval_workflow_path, MerlinTestCase.ranking_workflow_path]:
+        for model in [
+            MerlinTestCase.retrieval_workflow_path,
+            MerlinTestCase.ranking_workflow_path,
+        ]:
             for split in ["train", "valid"]:
                 self.assertTrue(os.path.exists(os.path.join(model, split)))
 
@@ -133,7 +141,6 @@ class MerlinTestCase(unittest.TestCase):
         ensemble = Ensemble(pipeline, request_schema)
         # TODO: run ensemble in triton, make a request.
 
-    """
     def test_nvt_retrieval_with_sampling_ensemble(self):
         # Builds the most basic ensemble:
         # Features come in and get transformed with TransformWorkflow
@@ -141,23 +148,23 @@ class MerlinTestCase(unittest.TestCase):
         # Items come out.
 
         request_schema = Schema(
-            column_schemas=[ColumnSchema(name=n) for n in USER_FEATURES + ["user_id"]]
-        )
-        transform_op = request_schema.column_names >> TransformWorkflow(
-            self.retrieval_nvt_workflow
-        )
-        retrieval_op = transform_op >> PredictTensorflow(self.retrieval_model_path)
-
-        # We need a ranking op here. for it to work.
-
-        ordering_op = transform_op["user_id"] >> SoftmaxSampling(
-            relevance_col=retrieval_op["click/binary_classification_task"],
-            topk=10,
-            temperature=20.0,
+            column_schemas=[ColumnSchema(name="user_id", dtype=np.int32)]
         )
 
-        ensemble = Ensemble(ordering_op, request_schema)
-    """
+        pipeline = (
+            ["user_id"]
+            >> QueryFeast.from_feature_view(
+                store=feast.FeatureStore(MerlinTestCase.feature_store_path),
+                view="user_features",
+                column="user_id",
+                include_id=True,
+            )
+            >> TransformWorkflow(MerlinTestCase.retrieval_nvt_workflow)
+            >> PredictTensorflow(MerlinTestCase.retrieval_model_path)
+        )
+
+        ensemble = Ensemble(pipeline, request_schema)
+
 
 def _configure_feast(feature_store_path, data_to_ingest: Dataset):
     # Make the directory if it doesn't exist
@@ -166,18 +173,22 @@ def _configure_feast(feature_store_path, data_to_ingest: Dataset):
     # feast init, apply, materialize
     if not os.path.exists(feature_store_path):
         os.makedirs(os.path.join(feature_store_path, "data"))
-    with open(os.path.join(feature_store_path, "feature_store.yaml"), "w") as config_file:
-        config_file.write("""
+    with open(
+        os.path.join(feature_store_path, "feature_store.yaml"), "w"
+    ) as config_file:
+        config_file.write(
+            """
 project: feast_feature_store
 registry: data/registry.db
 provider: local
 online_store:
     path: data/online_store.db
-""")
+"""
+        )
     cwd = os.path.dirname(os.path.abspath(__file__))
     shutil.copy(os.path.join(cwd, "feast", "item_features.py"), feature_store_path)
     shutil.copy(os.path.join(cwd, "feast", "user_features.py"), feature_store_path)
-    
+
     # Split training data into user / item and add timestamps.
     from datetime import datetime
     from merlin.models.utils.dataset import unique_rows_by_features
@@ -208,18 +219,32 @@ online_store:
         os.path.join(feature_store_path, "data", "item_features.parquet")
     )
 
-    os.environ.setdefault("FEAST_USER_FEATURES_PATH", os.path.join(feature_store_path, "data", "user_features.parquet"))
-    os.environ.setdefault("FEAST_ITEM_FEATURES_PATH", os.path.join(feature_store_path, "data", "item_features.parquet"))
+    os.environ.setdefault(
+        "FEAST_USER_FEATURES_PATH",
+        os.path.join(feature_store_path, "data", "user_features.parquet"),
+    )
+    os.environ.setdefault(
+        "FEAST_ITEM_FEATURES_PATH",
+        os.path.join(feature_store_path, "data", "item_features.parquet"),
+    )
     subprocess.run(["feast", "-c", feature_store_path, "apply"])
-    subprocess.run(["feast", "-c", feature_store_path, "materialize", "1995-01-01T01:01:01", "2025-01-01T01:01:01"])
-    
+    subprocess.run(
+        [
+            "feast",
+            "-c",
+            feature_store_path,
+            "materialize",
+            "1995-01-01T01:01:01",
+            "2025-01-01T01:01:01",
+        ]
+    )
+
     # This is a useful place to drop a debugger and manually see what is in feast.
     # import pdb; pdb.set_trace()
     # import feast
     # fs = feast.FeatureStore(feature_store_path)
     # fs.get_online_features(["user_features:user_shops"], [{"user_id":1}]).to_dict()
-    
-    
+
 
 def _retrieval_workflow(category_out_path):
     user_id = (
