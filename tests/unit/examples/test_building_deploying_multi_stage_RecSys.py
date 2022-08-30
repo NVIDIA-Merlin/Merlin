@@ -3,18 +3,19 @@ import os
 from testbook import testbook
 
 from tests.conftest import REPO_ROOT
+from merlin.core.dispatch import get_lib
+from merlin.systems.triton.utils import run_ensemble_on_tritonserver
 
 import pytest
 
 pytest.importorskip("tensorflow")
 pytest.importorskip("feast")
 pytest.importorskip("faiss")
+from merlin.models.loader.tf_utils import configure_tensorflow
+
+# flake8: noqa
 
 
-@pytest.mark.skip(
-    "AttributeError: 'NoneType' object has no attribute 'names', "
-    "see https://github.com/NVIDIA-Merlin/Merlin/issues/542"
-)
 def test_func():
     with testbook(
         REPO_ROOT
@@ -59,19 +60,20 @@ def test_func():
         top_k = tb2.ref("top_k")
         outputs = tb2.ref("outputs")
         assert outputs[0] == "ordered_ids"
-        tb2.inject(
-            """
-            import shutil
-            from merlin.models.loader.tf_utils import configure_tensorflow
-            configure_tensorflow()
-            from merlin.systems.triton.utils import run_ensemble_on_tritonserver
-            response = run_ensemble_on_tritonserver(
-                "/tmp/examples/poc_ensemble", outputs, request, "ensemble_model"
-            )
-            response = [x.tolist()[0] for x in response["ordered_ids"]]
-            shutil.rmtree("/tmp/examples/", ignore_errors=True)
-            """
+
+        df_lib = get_lib()
+
+        # read in data for request
+        batch = df_lib.read_parquet(
+            os.path.join("/tmp/data/processed/retrieval/", "train", "part_0.parquet"),
+            num_rows=1,
+            columns=["user_id"],
         )
-        tb2.execute_cell(NUM_OF_CELLS - 2)
-        response = tb2.ref("response")
+        configure_tensorflow()
+
+        response = run_ensemble_on_tritonserver(
+            "/tmp/examples/poc_ensemble/", outputs, batch, "ensemble_model"
+        )
+        response = response["ordered_ids"]
+
         assert len(response) == top_k
