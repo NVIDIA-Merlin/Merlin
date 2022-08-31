@@ -25,5 +25,5 @@ devices=$2
 # Run only for Merlin Tensorflow Container
 if [ "$container" == "merlin-tensorflow" ]; then
     pip install 'feast<0.20' faiss-gpu
-    CUDA_VISIBLE_DEVICES="$devices" TF_GPU_ALLOCATOR=cuda_malloc_async python -m pytest -rxs tests/integration
+    CUDA_VISIBLE_DEVICES="$devices"  python -m pytest -rxs tests/integration
 fi

@@ -28,7 +28,7 @@ def test_func():
 
             from merlin.datasets.synthetic import generate_data
 
-            train, valid = generate_data("criteo", int(1000000), set_sizes=(0.7, 0.3))
+            train, valid = generate_data("criteo", int(100000), set_sizes=(0.7, 0.3))
 
             train.to_ddf().compute().to_parquet('/tmp/input/criteo/day_0.parquet')
             valid.to_ddf().compute().to_parquet('/tmp/input/criteo/day_1.parquet')
