@@ -10,6 +10,10 @@ echo "#####################"
 
 exit_code=0
 
+## Test Merlin
+echo "Run integration tests for Merlin"
+/Merlin/ci/test_integration.sh $container $devices || exit_code=1
+
 # Test NVTabular 
 ## Not shared storage in blossom yet, inference testing cannot be run
 echo "Run integration tests for NVTabular"
@@ -22,10 +26,6 @@ echo "Run integration tests for Merlin Models"
 # Test Transformers4Rec
 echo "Run integration tests for Transformers4Rec"
 /transformers4rec/ci/test_integration.sh $container $devices || exit_code=1
-
-## Test Merlin
-echo "Run integration tests for Merlin"
-/Merlin/ci/test_integration.sh $container $devices || exit_code=1
 
 if [[ "$suppress_failures" -eq 0 ]]
 then
