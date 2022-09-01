@@ -13,5 +13,6 @@ else
 fi
 
 ${ci_script_dir}container_software.sh $container $devices
-${ci_script_dir}container_unit.sh $container $devices
 ${ci_script_dir}container_integration.sh $container $devices $suppress_failures
+${ci_script_dir}container_unit.sh $container $devices
+
