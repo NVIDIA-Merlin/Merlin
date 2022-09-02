@@ -25,6 +25,7 @@ from nvtabular.ops import (
     AddMetadata,
     Filter,
 )
+from nvtabular.workflow import Workflow
 from merlin.schema.tags import Tags
 
 import merlin.models.tf as mm
@@ -92,7 +93,7 @@ class MerlinTestCase(unittest.TestCase):
 
         (
             cls.retrieval_nvt_workflow_training,
-            _,  # retrieval_nvt_workflow_serving,
+            retrieval_nvt_workflow_serving,
         ) = _retrieval_workflow()
 
         cls.retrieval_workflow_path = os.path.join(
@@ -107,14 +108,9 @@ class MerlinTestCase(unittest.TestCase):
             workflow_name="workflow_retrieval",
         )
 
-        # TODO: This is wrong. The model should only expect user features as inputs, but it is
-        # requiring the item features as well. We should be able to uncomment the two lines below
-        # when it is fixed.
-        cls.retrieval_nvt_workflow_serving = cls.retrieval_nvt_workflow_training
-
         # This also fits the scoring workflow to the same data. Messy!
-        # cls.retrieval_nvt_workflow_serving = Workflow(retrieval_nvt_workflow_serving)
-        # cls.retrieval_nvt_workflow_serving.fit(train_raw)
+        cls.retrieval_nvt_workflow_serving = Workflow(retrieval_nvt_workflow_serving)
+        cls.retrieval_nvt_workflow_serving.fit(train_raw)
 
         # Train and save model.
         cls.query_tower_output_path = os.path.join(cls.base_data_dir, "two_tower_model")
@@ -418,9 +414,9 @@ def _retrieval_workflow():
       vector in the item space.
     """
     user_id = ["user_id"] >> Categorify(dtype="int32") >> TagAsUserID()
-    item_id = ["item_id"] >> Categorify(dtype="int32") >> TagAsUserID()
+    item_id = ["item_id"] >> Categorify(dtype="int32") >> TagAsItemID()
 
-    item_features = ITEM_FEATURES >> Categorify(dtype="int32") >> TagAsUserFeatures()
+    item_features = ITEM_FEATURES >> Categorify(dtype="int32") >> TagAsItemFeatures()
     user_features = USER_FEATURES >> Categorify(dtype="int32") >> TagAsUserFeatures()
 
     training_inputs = user_id + item_id + item_features + user_features + ["click"]
@@ -435,7 +431,6 @@ def _ranking_workflow():
     item_id = ["item_id"] >> Categorify(dtype="int32") >> TagAsItemID()
 
     item_features = ITEM_FEATURES >> Categorify(dtype="int32") >> TagAsItemFeatures()
-
     user_features = USER_FEATURES >> Categorify(dtype="int32") >> TagAsUserFeatures()
 
     targets = ["click"] >> AddMetadata(tags=[Tags.BINARY_CLASSIFICATION, "target"])
