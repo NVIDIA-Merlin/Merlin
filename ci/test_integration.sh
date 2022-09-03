@@ -24,6 +24,6 @@ devices=$2
 
 # Run only for Merlin Tensorflow Container
 if [ "$container" == "merlin-tensorflow" ]; then
-    pip install 'feast<0.20' faiss-gpu
+    pip install 'feast<0.20'
     CUDA_VISIBLE_DEVICES="$devices"  pytest -rxs tests/integration
 fi
