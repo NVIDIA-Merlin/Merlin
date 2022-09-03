@@ -1,7 +1,8 @@
-from google.protobuf.duration_pb2 import Duration
 import os
+
 from feast import Entity, Feature, FeatureView, ValueType
 from feast.infra.offline_stores.file_source import FileSource
+from google.protobuf.duration_pb2 import Duration
 
 # We pass the FileSource path through the environment variable FEAST_ITEM_FEATURES_PATH
 file_source_path = os.getenv("FEAST_ITEM_FEATURES_PATH")
