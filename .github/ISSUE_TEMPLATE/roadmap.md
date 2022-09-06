@@ -18,6 +18,20 @@ A clear description of the problem and how it impacts the customer experience of
 - Ideally this takes the form of a bulleted list.
 -->
 
+## New Functionality
+<!--
+- What new functionality would be required in each library to address the problem and meet the goals?
+- Ideally this takes the form of a bulleted list.
+-->
+- Models
+  - ...
+- Transformers4Rec
+  - ...
+- NVTabular
+  - ...
+- Systems
+  - ...
+
 ## Constraints:
 <!--
 - What are the constraints that might impact the choice of solution?
