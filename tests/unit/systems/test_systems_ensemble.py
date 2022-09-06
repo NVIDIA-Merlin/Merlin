@@ -53,7 +53,7 @@ USER_FEATURES = [
 ITEM_FEATURES = ["item_category", "item_shop", "item_brand"]
 
 
-class MerlinTestCase(unittest.TestCase):
+class RawFeaturesInFeatureStore(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """
@@ -166,8 +166,8 @@ class MerlinTestCase(unittest.TestCase):
     def test_training_data_exists(self):
         # Ensures that train/valid sets have been created.
         for model in [
-            MerlinTestCase.retrieval_workflow_path,
-            MerlinTestCase.ranking_workflow_path,
+            RawFeaturesInFeatureStore.retrieval_workflow_path,
+            RawFeaturesInFeatureStore.ranking_workflow_path,
         ]:
             for split in ["train", "valid"]:
                 self.assertTrue(os.path.exists(os.path.join(model, split)))
@@ -184,63 +184,14 @@ class MerlinTestCase(unittest.TestCase):
 
         pipeline = (
             request_schema.column_names
-            >> TransformWorkflow(MerlinTestCase.retrieval_nvt_workflow_serving)
-            >> PredictTensorflow(MerlinTestCase.query_tower_output_path)
+            >> TransformWorkflow(
+                RawFeaturesInFeatureStore.retrieval_nvt_workflow_serving
+            )
+            >> PredictTensorflow(RawFeaturesInFeatureStore.query_tower_output_path)
         )
 
         Ensemble(pipeline, request_schema)
         # TODO: run ensemble in triton, make a request.
-
-    def test_nvt_retrieval_ensemble_from_feast(self):
-        # Builds the ensemble:
-        # User Id comes in, and we look up user features from Feast.
-        # Features get transformed with TransformWorkflow
-        # Then get fed into a retrieval model.
-        # Items come out.
-
-        request_schema = Schema(
-            column_schemas=[ColumnSchema(name="user_id", dtype=np.int32)]
-        )
-
-        pipeline = (
-            ["user_id"]
-            >> QueryFeast.from_feature_view(
-                store=FeatureStore(MerlinTestCase.feature_store_path),
-                view="user_features",
-                column="user_id",
-                include_id=True,
-            )
-            >> TransformWorkflow(MerlinTestCase.retrieval_nvt_workflow_serving)
-            >> PredictTensorflow(MerlinTestCase.query_tower_output_path)
-        )
-
-        Ensemble(pipeline, request_schema)
-
-    def test_nvt_retrieval_with_faiss_ensemble(self):
-        # Builds the ensemble:
-        # User Id comes in, and we look up user features from Feast.
-        # Features get transformed with TransformWorkflow
-        # Then get fed into a retrieval model.
-        # Items come out.
-
-        request_schema = Schema(
-            column_schemas=[ColumnSchema(name="user_id", dtype=np.int32)]
-        )
-
-        pipeline = (
-            ["user_id"]
-            >> QueryFeast.from_feature_view(
-                store=FeatureStore(MerlinTestCase.feature_store_path),
-                view="user_features",
-                column="user_id",
-                include_id=True,
-            )
-            >> TransformWorkflow(MerlinTestCase.retrieval_nvt_workflow_serving)
-            >> PredictTensorflow(MerlinTestCase.query_tower_output_path)
-            >> QueryFaiss(MerlinTestCase.faiss_index_dir, topk=10)
-        )
-
-        Ensemble(pipeline, request_schema)
 
     def test_whole_ensemble(self):
         # Builds the ensemble:
@@ -256,31 +207,33 @@ class MerlinTestCase(unittest.TestCase):
         user_features_retrieval = (
             ["user_id"]
             >> QueryFeast.from_feature_view(
-                store=FeatureStore(MerlinTestCase.feature_store_path),
+                store=FeatureStore(RawFeaturesInFeatureStore.feature_store_path),
                 view="user_features",
                 column="user_id",
                 include_id=True,
             )
-            >> TransformWorkflow(MerlinTestCase.retrieval_nvt_workflow_serving)
+            >> TransformWorkflow(
+                RawFeaturesInFeatureStore.retrieval_nvt_workflow_serving
+            )
         )
 
         retrieval_pipeline = (
             user_features_retrieval
-            >> PredictTensorflow(MerlinTestCase.query_tower_output_path)
-            >> QueryFaiss(MerlinTestCase.faiss_index_dir, topk=10)
+            >> PredictTensorflow(RawFeaturesInFeatureStore.query_tower_output_path)
+            >> QueryFaiss(RawFeaturesInFeatureStore.faiss_index_dir, topk=10)
         )
 
         item_features_ranking = retrieval_pipeline[
             "candidate_ids"
         ] >> QueryFeast.from_feature_view(
-            store=FeatureStore(MerlinTestCase.feature_store_path),
+            store=FeatureStore(RawFeaturesInFeatureStore.feature_store_path),
             view="item_features",
             column="candidate_ids",
             include_id=True,
         )
 
         user_features_ranking = ["user_id"] >> QueryFeast.from_feature_view(
-            store=FeatureStore(MerlinTestCase.feature_store_path),
+            store=FeatureStore(RawFeaturesInFeatureStore.feature_store_path),
             view="user_features",
             column="user_id",
             include_id=True,
@@ -289,10 +242,10 @@ class MerlinTestCase(unittest.TestCase):
         combined_features_ranking = (
             item_features_ranking
             >> UnrollFeatures("item_id", user_features_ranking[USER_FEATURES])
-            >> TransformWorkflow(MerlinTestCase.ranking_nvt_workflow)
+            >> TransformWorkflow(RawFeaturesInFeatureStore.ranking_nvt_workflow)
         )
         ranking_pipeline = combined_features_ranking >> PredictTensorflow(
-            MerlinTestCase.dlrm_model_path
+            RawFeaturesInFeatureStore.dlrm_model_path
         )
         pipeline = retrieval_pipeline + ranking_pipeline
 

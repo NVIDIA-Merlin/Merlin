@@ -19,7 +19,7 @@ configure_tensorflow()
 def _configure_feast(feature_store_path, data_to_ingest: Dataset):
     """
     This configures a file-based Feast feature store in the directory `feast_feature_store`, which
-    should be a subdirectory of MerlinTestCase.base_data_dir.
+    should be a subdirectory of RawFeaturesInFeatureStore.base_data_dir.
 
     The steps that this takes are:
 
