@@ -15,6 +15,7 @@ FROM ${BASE_IMAGE} as base
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/tensorflow2 backends/tensorflow2/
 
 # Tensorflow dependencies (only)
+# Pinning to pass hugectr sok tests
 RUN pip install tensorflow-gpu==2.9.2 \
     && pip uninstall tensorflow-gpu keras -y
 
