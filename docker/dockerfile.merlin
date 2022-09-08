@@ -53,6 +53,7 @@ RUN apt update -y --fix-missing && \
         libboost-serialization-dev \
         libcurl4-openssl-dev \
         libexpat1-dev \
+        libopenblas-dev \
         libre2-dev \
         libsasl2-2 \
         libssl-dev \
@@ -64,6 +65,7 @@ RUN apt update -y --fix-missing && \
         python3 \
         python3-pip \
         python3-dev \
+        swig \
         rapidjson-dev \
         nlohmann-json3-dev \
         wget \
@@ -87,6 +89,7 @@ RUN pip install numba
 RUN pip install "cuda-python>=11.5,<12.0"
 RUN pip install fsspec==2022.5.0
 RUN pip install pynvml dask==${DASK_VER} distributed==${DASK_VER}
+RUN pip install numpy==1.22.4
 
 # Triton Server
 WORKDIR /opt/tritonserver
@@ -120,6 +123,18 @@ RUN git clone https://github.com/NVIDIA-Merlin/nvtabular_triton_backend.git buil
       && make -j && \
       mkdir -p /opt/tritonserver/backends/nvtabular && \
       cp libtriton_nvtabular.so /opt/tritonserver/backends/nvtabular/ && \
+    popd && \
+    rm -rf build-env
+
+# Install faiss (with sm80 support since the faiss-gpu wheels
+# don't include it https://github.com/kyamagu/faiss-wheels/issues/54)
+RUN git clone --branch v1.7.2 https://github.com/facebookresearch/faiss.git build-env && \
+    pushd build-env && \
+    cmake -B build . -DFAISS_ENABLE_GPU=ON -DFAISS_ENABLE_PYTHON=ON -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_ARCHITECTURES="60;70;80" && \
+    make -C build -j $(nproc) faiss swigfaiss && \
+    pushd build/faiss/python && \
+    python setup.py install && \
+    popd && \
     popd && \
     rm -rf build-env
 
@@ -158,7 +173,7 @@ RUN git clone --branch apache-arrow-7.0.0 --recurse-submodules https://github.co
               -DARROW_CUDA=ON \
               -DARROW_DATASET=ON \
               -DARROW_HDFS=ON \
-              -DARROW_S3=ON \ 
+              -DARROW_S3=ON \
               .. && \
         make -j$(nproc) && \
         make install && \
@@ -217,6 +232,7 @@ RUN apt update -y --fix-missing && \
         libb64-dev \
         libboost-serialization-dev \
         libexpat1-dev \
+        libopenblas-dev \
         libre2-dev \
         libsasl2-2 \
         libssl-dev \
@@ -241,6 +257,7 @@ RUN ln -s /usr/bin/python3 /usr/bin/python
 COPY --chown=1000:1000 --from=build /usr/include /usr/include/
 COPY --chown=1000:1000 --from=build /usr/local/include /usr/local/include/
 COPY --chown=1000:1000 --from=build /usr/lib/ /usr/lib/
+COPY --chown=1000:1000 --from=build /usr/local/lib/ /usr/local/lib/
 
 
 # Binaries
