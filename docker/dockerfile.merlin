@@ -12,14 +12,6 @@ FROM ${BASE_IMAGE} as build
 
 # Args
 ARG DASK_VER=2022.05.1
-ARG CORE_VER=main
-ARG HUGECTR_VER=master
-ARG HUGECTR_BACKEND_VER=main
-ARG MODELS_VER=main
-ARG NVTAB_VER=main
-ARG NVTAB_BACKEND_VER=main
-ARG SYSTEMS_VER=main
-ARG TF4REC_VER=main
 
 # Envs
 ENV CUDA_HOME=/usr/local/cuda
@@ -306,6 +298,13 @@ RUN pip install --no-cache-dir jupyterlab pydot testbook numpy==1.22.4
 ENV JUPYTER_CONFIG_DIR=/tmp/.jupyter
 ENV JUPYTER_DATA_DIR=/tmp/.jupyter
 ENV JUPYTER_RUNTIME_DIR=/tmp/.jupyter
+
+ARG CORE_VER=main
+ARG MODELS_VER=main
+ARG NVTAB_VER=main
+ARG NVTAB_BACKEND_VER=main
+ARG SYSTEMS_VER=main
+ARG TF4REC_VER=main
 
 # Add Merlin Repo
 RUN git clone https://github.com/NVIDIA-Merlin/Merlin/ /Merlin
