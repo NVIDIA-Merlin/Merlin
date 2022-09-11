@@ -10,19 +10,19 @@ FROM ${FULL_IMAGE} as current
 RUN cd /Merlin && git fetch && git checkout main && git pull origin main
 
 # Install Merlin Core main branch
-RUN cd /core/ && git fetch && git checkout main && pip install . --no-deps
+RUN cd /core/ && git fetch && git checkout main && git pull origin main && pip install . --no-deps
 
 # Install NVTabular main branch
-RUN cd /nvtabular/ && git fetch && git checkout main && pip install . --no-deps
+RUN cd /nvtabular/ && git fetch && git checkout main && git pull origin main && pip install . --no-deps
 
 # Install Merlin Systems main branch
-RUN cd /systems/ && git fetch && git checkout main && pip install --no-deps .
+RUN cd /systems/ && git fetch && git checkout main && git pull origin main && pip install --no-deps .
 
 # Install Models main branch
-RUN cd /models/ && git fetch && git checkout main && pip install . --no-deps;
+RUN cd /models/ && git fetch && git checkout main && git pull origin main && pip install . --no-deps;
 
 # Install Transformers4Rec main branch
-RUN cd /transformers4rec/ && git fetch && git checkout main && pip install . --no-deps
+RUN cd /transformers4rec/ && git fetch && git checkout main && git pull origin main && pip install . --no-deps
 
 HEALTHCHECK NONE
 CMD ["/bin/bash"]
