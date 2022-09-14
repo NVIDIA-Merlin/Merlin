@@ -21,8 +21,8 @@ with open("README.md", encoding="utf8") as readme_file:
 setup(
     name="merlin",
     version="0.0.1",
-    packages=find_namespace_packages(include=["merlin*"]),
-    url="https://github.com/NVIDIA-Merlin/systems",
+    packages=[],
+    url="https://github.com/NVIDIA-Merlin/Merlin",
     author="NVIDIA Corporation",
     license="Apache 2.0",
     long_description=long_description,
