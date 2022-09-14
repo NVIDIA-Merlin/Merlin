@@ -1,11 +1,10 @@
 # syntax=docker/dockerfile:1.2
-ARG MERLIN_VERSION=22.06
-ARG TRITON_VERSION=22.05
-ARG IMAGE=nvcr.io/nvstaging/merlin/merlin-hugectr:${MERLIN_VERSION}
+ARG TRITON_VERSION=22.08
+ARG BASE_IMAGE=nvcr.io/nvstaging/merlin/merlin-hugectr:nightly
 ARG FULL_IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-py3
 
 FROM ${FULL_IMAGE} as triton
-FROM ${IMAGE}
+FROM ${BASE_IMAGE}
 
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/tensorflow2 backends/tensorflow2/
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/pytorch backends/pytorch/
