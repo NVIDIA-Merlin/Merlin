@@ -84,7 +84,7 @@ def test_func():
             """
             import shutil
             from merlin.systems.triton.utils import run_ensemble_on_tritonserver
-            outputs = ensemble.graph.output_schema.column_names
+            outputs = ensemble.output_schema.column_names
             response = run_ensemble_on_tritonserver(
                 "/tmp/output/criteo/ensemble/",workflow.input_schema, batch.fillna(0),
                 outputs, "ensemble_model"
