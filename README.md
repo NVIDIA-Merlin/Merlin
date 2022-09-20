@@ -31,7 +31,7 @@ build recommender systems from end to end. With NVIDIA Merlin, you can:
 NVIDIA Merlin consists of the following open source libraries:
 
 **[NVTabular](https://github.com/NVIDIA-Merlin/NVTabular)**
-[![PyPI version shields.io](https://img.shields.io/pypi/v/nvtabular.svg)](https://pypi.python.org/pypi/nvtabular/)
+[![PyPI version shields.io](https://img.shields.io/pypi/v/nvtabular.svg)](https://pypi.org/project/nvtabular/)
 [![ Documentation](https://img.shields.io/badge/documentation-blue.svg)](https://nvidia-merlin.github.io/NVTabular/main/Introduction.html)
 <br> NVTabular is a feature engineering and preprocessing library for tabular
 data. The library can quickly and easily manipulate terabyte-size datasets that
@@ -58,7 +58,7 @@ HugeCTR, you can:
   manner during the training stage.
 
 **[Merlin Models](https://github.com/NVIDIA-Merlin/models)**
-[![PyPI version shields.io](https://img.shields.io/pypi/v/merlin-models.svg)](https://pypi.python.org/pypi/merlin-models/)<br>
+[![PyPI version shields.io](https://img.shields.io/pypi/v/merlin-models.svg)](https://pypi.org/project/merlin-models/)<br>
 The Merlin Models library provides standard models for recommender systems with
 an aim for high-quality implementations that range from classic machine learning
 models to highly-advanced deep learning models. With Merlin Models, you can:
@@ -72,7 +72,7 @@ models to highly-advanced deep learning models. With Merlin Models, you can:
   you can create of new models quickly and easily.
 
 **[Merlin Systems](https://github.com/NVIDIA-Merlin/systems)**
-[![PyPI version shields.io](https://img.shields.io/pypi/v/merlin-systems.svg)](https://pypi.python.org/pypi/merlin-systems/)<br>
+[![PyPI version shields.io](https://img.shields.io/pypi/v/merlin-systems.svg)](https://pypi.org/project/merlin-systems/)<br>
 Merlin Systems provides tools for combining recommendation models with other
 elements of production recommender systems like feature stores, nearest neighbor
 search, and exploration strategies into end-to-end recommendation pipelines that
@@ -86,7 +86,7 @@ can be served with Triton Inference Server. With Merlin Systems, you can:
   in recommender system pipelines.
 
 **[Merlin Core](https://github.com/NVIDIA-Merlin/core)**
-[![PyPI version shields.io](https://img.shields.io/pypi/v/merlin-core.svg)](https://pypi.python.org/pypi/merlin-core/)<br>
+[![PyPI version shields.io](https://img.shields.io/pypi/v/merlin-core.svg)](https://pypi.org/project/merlin-core/)<br>
 Merlin Core provides functionality that is used throughout the Merlin ecosystem.
 With Merlin Core, you can:
 
@@ -99,7 +99,7 @@ With Merlin Core, you can:
 
 ## Installation
 
-The simplest way to use Merlin is to run a docker container. NVIDIA GPU Cloud (NCG) provides containers that include all the Merlin component libraries, dependencies, and receive unit and integration testing. For more information, see the [Containers](https://nvidia-merlin.github.io/Merlin/main/containers.html) page.
+The simplest way to use Merlin is to run a docker container. NVIDIA GPU Cloud (NGC) provides containers that include all the Merlin component libraries, dependencies, and receive unit and integration testing. For more information, see the [Containers](https://nvidia-merlin.github.io/Merlin/main/containers.html) page.
 
 To develop and contribute to Merlin, review the installation documentation for each component library. The development environment for each Merlin component is easily set up with `conda` or `pip`:
 
@@ -130,7 +130,7 @@ real-world use cases.
 **[cuDF](https://github.com/rapidsai/cudf)**<br> Merlin relies on cuDF for
 GPU-accelerated DataFrame operations used in feature engineering.
 
-**[Dask](https://dask.org/)**<br> Merlin relies on Dask to distribute and scale
+**[Dask](https://www.dask.org/)**<br> Merlin relies on Dask to distribute and scale
 feature engineering and preprocessing within NVTabular and to accelerate
 dataloading in Merlin Models and HugeCTR.
 
