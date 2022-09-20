@@ -183,8 +183,8 @@
    "outputs": [],
    "source": [
     "serving_operators = (\n",
-    "    workflow.input_schema.column_names >> \n",
-    "    TransformWorkflow(workflow) >> \n",
+    "    workflow.input_schema.column_names >>\n",
+    "    TransformWorkflow(workflow) >>\n",
     "    PredictTensorflow(model)\n",
     ")"
    ]
@@ -291,7 +291,7 @@
    "source": [
     "# create inputs and outputs\n",
     "inputs = convert_df_to_triton_input(workflow.input_schema, batch.fillna(0), grpcclient.InferInput)\n",
-    "output_cols = ensemble.graph.output_schema.column_names\n",
+    "output_cols = ensemble.output_schema.column_names\n",
     "outputs = [\n",
     "    grpcclient.InferRequestedOutput(col)\n",
     "    for col in output_cols\n",
@@ -333,7 +333,7 @@
    "metadata": {},
    "outputs": [],
    "source": [
-    "for col in ensemble.graph.output_schema.column_names:\n",
+    "for col in ensemble.output_schema.column_names:\n",
     "    print(col, response.as_numpy(col), response.as_numpy(col).shape)"
    ]
   },
