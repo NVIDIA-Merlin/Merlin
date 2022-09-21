@@ -21,7 +21,9 @@
         <script >var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
-    <link rel="search" title="Search" href="../../search.html" /> 
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Scaling Criteo: Triton Inference with HugeCTR" href="04-Triton-Inference-with-HugeCTR.html" />
+    <link rel="prev" title="Scaling Criteo: Training with HugeCTR" href="03-Training-with-HugeCTR.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -40,9 +42,24 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption"><span class="caption-text">Contents</span></p>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../../README.html">Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../index.html">Example Notebooks</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">Example Notebooks</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../index.html#inventory">Inventory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#running-the-example-notebooks">Running the Example Notebooks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../getting-started-movielens/index.html">Getting Started using the MovieLens Dataset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Building-and-deploying-multi-stage-RecSys/index.html">Deploying a Multi-Stage Recommender System</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">Scaling Large Datasets with Criteo</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="01-Download-Convert.html">Criteo Download and Convert</a></li>
+<li class="toctree-l3"><a class="reference internal" href="02-ETL-with-NVTabular.html">Feature Engineering with NVTabular</a></li>
+<li class="toctree-l3"><a class="reference internal" href="03-Training-with-HugeCTR.html">Training with HugeCTR</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Training with Merlin Models and TensorFlow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="04-Triton-Inference-with-HugeCTR.html">Deploy the HugeCTR Model with Triton</a></li>
+<li class="toctree-l3"><a class="reference internal" href="04-Triton-Inference-with-Merlin-Models-TensorFlow.html">Deploy the TensorFlow Model with Triton</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="../../containers.html">Merlin Containers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../support_matrix/index.html">Merlin Support Matrix</a></li>
 </ul>
@@ -61,6 +78,8 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">NVIDIA Merlin Example Notebooks</a> &raquo;</li>
+          <li><a href="index.html">Scaling Large Datasets with Criteo</a> &raquo;</li>
       <li>Scaling Criteo: Training with Merlin Models TensorFlow</li>
       <li class="wy-breadcrumbs-aside">
       </li>
@@ -111,10 +130,9 @@
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
-<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;TF_GPU_ALLOCATOR&quot;</span><span class="p">]</span><span class="o">=</span><span class="s2">&quot;cuda_malloc_async&quot;</span>
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;TF_GPU_ALLOCATOR&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;cuda_malloc_async&quot;</span>
 
 <span class="kn">import</span> <span class="nn">glob</span>
-<span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">import</span> <span class="nn">merlin.models.tf</span> <span class="k">as</span> <span class="nn">mm</span>
 <span class="kn">from</span> <span class="nn">merlin.io.dataset</span> <span class="kn">import</span> <span class="n">Dataset</span>
 
@@ -150,7 +168,7 @@
 </div>
 </div>
 </div>
-<p>We will use Merlin Dataset object to initalize the dataloaders. It provides a dataset schema to initialize the model architectures. The <a class="reference external" href="https://github.com/NVIDIA-Merlin/models/tree/main/examples">Merlin Models examples</a> will explain more details.</p>
+<p>We will use Merlin Dataset object to initialize the dataloaders. It provides a dataset schema to initialize the model architectures. The <a class="reference external" href="https://github.com/NVIDIA-Merlin/models/tree/main/examples">Merlin Models examples</a> will explain more details.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">train</span> <span class="o">=</span> <span class="n">Dataset</span><span class="p">(</span><span class="n">PATH_TO_TRAIN_DATA</span><span class="p">,</span> <span class="n">part_mem_fraction</span><span class="o">=</span><span class="mf">0.08</span><span class="p">)</span>
@@ -159,7 +177,7 @@
 </div>
 </div>
 </div>
-<p>We initalize the DLRM architecture with Merlin Models.</p>
+<p>We initialize the DLRM architecture with Merlin Models.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">mm</span><span class="o">.</span><span class="n">DLRMModel</span><span class="p">(</span>
@@ -181,11 +199,11 @@
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%time</span>
 
 <span class="n">model</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">optimizer</span><span class="o">=</span><span class="n">OPTIMIZER</span><span class="p">,</span> <span class="n">run_eagerly</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train</span><span class="p">,</span> 
-          <span class="n">validation_data</span><span class="o">=</span><span class="n">valid</span><span class="p">,</span> 
-          <span class="n">batch_size</span><span class="o">=</span><span class="n">BATCH_SIZE</span><span class="p">,</span> 
+<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train</span><span class="p">,</span>
+          <span class="n">validation_data</span><span class="o">=</span><span class="n">valid</span><span class="p">,</span>
+          <span class="n">batch_size</span><span class="o">=</span><span class="n">BATCH_SIZE</span><span class="p">,</span>
           <span class="n">epochs</span><span class="o">=</span><span class="n">EPOCHS</span>
-<span class="p">)</span>
+          <span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -220,7 +238,7 @@
 </div>
 <div class="section" id="next-steps">
 <h2>Next steps<a class="headerlink" href="#next-steps" title="Permalink to this headline"></a></h2>
-<p><a class="reference internal" href="04-Triton-Inference-with-Merlin-Models-TensorFlow.html"><span class="doc std std-doc">The next step</span></a> is to deploy the NVTabular workflow and DLRM model to production.</p>
+<p>The next step  is to <a class="reference internal" href="04-Triton-Inference-with-Merlin-Models-TensorFlow.html"><span class="doc std std-doc">deploy the NVTabular workflow and DLRM model</span></a> to production.</p>
 <p>If you are interested more in different architecture and training models with Merlin Models, we recommend to check out our <a class="reference external" href="https://github.com/NVIDIA-Merlin/models/">Merlin Models examples</a></p>
 </div>
 </div>
@@ -228,7 +246,10 @@
 
            </div>
           </div>
-          <footer>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="03-Training-with-HugeCTR.html" class="btn btn-neutral float-left" title="Scaling Criteo: Training with HugeCTR" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="04-Triton-Inference-with-HugeCTR.html" class="btn btn-neutral float-right" title="Scaling Criteo: Triton Inference with HugeCTR" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
 
   <hr/>
 

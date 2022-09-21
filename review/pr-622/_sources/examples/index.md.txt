@@ -1,7 +1,7 @@
 # NVIDIA Merlin Example Notebooks
 
 We have a collection of Jupyter example notebooks that are based on different datasets to provide end-to-end examples for NVIDIA Merlin.
-These example notebooks demonstrate how to use NVTabular with TensorFlow, PyTorch, [HugeCTR](https://github.com/NVIDIA/HugeCTR) and [Merlin Models](https://github.com/NVIDIA-Merlin/models).
+These example notebooks demonstrate how to use NVTabular with TensorFlow, PyTorch, [HugeCTR](https://github.com/NVIDIA-Merlin/HugeCTR) and [Merlin Models](https://github.com/NVIDIA-Merlin/models).
 Each example provides additional details about the end-to-end workflow, such as includes ETL, training, and inference.
 
 ## Inventory
@@ -31,20 +31,19 @@ Many users are familiar with this dataset, so the notebooks focus primarily on t
 ### [Scaling Large Datasets with Criteo](./scaling-criteo)
 
 [Criteo](https://ailab.criteo.com/download-criteo-1tb-click-logs-dataset/) provides the largest publicly available dataset for recommender systems with a size of 1TB of uncompressed click logs that contain 4 billion examples.
-These notebooks demonstrate how to scale NVTabular:
 
-- Use multiple GPUs and nodes with NVTabular for ETL.
-- Train recommender system models with the NVTabular dataloader for PyTorch.
-- Train recommender system models with the NVTabular dataloader for TensorFlow.
-- Train recommender system models with the NVTabular dataloader using Merlin Models.
-- Train recommender system models with HugeCTR using a multi-GPU.
-- Inference with the Triton Inference Server and TensorFlow or HugeCTR.
+These notebooks demonstrate how to scale NVTabular as well as the following:
+
+- Use multiple GPUs and nodes with NVTabular for feature engineering.
+- Train recommender system models with the Merlin Models for TensorFlow.
+- Train recommender system models with HugeCTR using multiple GPUs.
+- Inference with the Triton Inference Server and Merlin Models for TensorFlow or HugeCTR.
 
 ## Running the Example Notebooks
 
 You can run the examples with Docker containers.
 Docker containers are available from the NVIDIA GPU Cloud catalog.
-Access the catalog of containers at <http://ngc.nvidia.com/catalog/containers>.
+Access the catalog of containers at <https://catalog.ngc.nvidia.com/containers>.
 
 Depending on which example you want to run, you should use any one of these Docker containers:
 
