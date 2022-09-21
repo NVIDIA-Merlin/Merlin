@@ -140,41 +140,7 @@
 <span class="kn">from</span> <span class="nn">merlin.systems.dag.ops.softmax_sampling</span> <span class="kn">import</span> <span class="n">SoftmaxSampling</span>
 <span class="kn">from</span> <span class="nn">merlin.systems.dag.ops.tensorflow</span> <span class="kn">import</span> <span class="n">PredictTensorflow</span>
 <span class="kn">from</span> <span class="nn">merlin.systems.dag.ops.unroll_features</span> <span class="kn">import</span> <span class="n">UnrollFeatures</span>
-<span class="kn">from</span> <span class="nn">merlin.systems.triton.utils</span> <span class="kn">import</span> <span class="n">run_triton_server</span><span class="p">,</span> <span class="n">run_ensemble_on_tritonserver</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/usr/local/lib/python3.8/dist-packages/faiss/loader.py:28: DeprecationWarning: distutils Version classes are deprecated. Use packaging.version instead.
-  if LooseVersion(numpy.__version__) &gt;= &quot;1.19&quot;:
-/usr/local/lib/python3.8/dist-packages/setuptools/_distutils/version.py:351: DeprecationWarning: distutils Version classes are deprecated. Use packaging.version instead.
-  other = LooseVersion(other)
-06/13/2022 03:47:43 PM INFO:Loading faiss with AVX2 support.
-06/13/2022 03:47:43 PM INFO:Could not load library with AVX2 support due to:
-ModuleNotFoundError(&quot;No module named &#39;faiss.swigfaiss_avx2&#39;&quot;)
-06/13/2022 03:47:43 PM INFO:Loading faiss.
-06/13/2022 03:47:43 PM INFO:Successfully loaded faiss.
-06/13/2022 03:47:43 PM INFO:init
-/usr/lib/python3.8/site-packages/cudf/utils/metadata/orc_column_statistics_pb2.py:19: DeprecationWarning: Call to deprecated create function FileDescriptor(). Note: Create unlinked descriptors is going to go away. Please use get/find descriptors from generated code or query the descriptor_pool.
-  DESCRIPTOR = _descriptor.FileDescriptor(
-/usr/lib/python3.8/site-packages/cudf/utils/metadata/orc_column_statistics_pb2.py:37: DeprecationWarning: Call to deprecated create function FieldDescriptor(). Note: Create unlinked descriptors is going to go away. Please use get/find descriptors from generated code or query the descriptor_pool.
-  _descriptor.FieldDescriptor(
-/usr/lib/python3.8/site-packages/cudf/utils/metadata/orc_column_statistics_pb2.py:30: DeprecationWarning: Call to deprecated create function Descriptor(). Note: Create unlinked descriptors is going to go away. Please use get/find descriptors from generated code or query the descriptor_pool.
-  _INTEGERSTATISTICS = _descriptor.Descriptor(
-/usr/lib/python3.8/site-packages/dask_cudf/core.py:32: DeprecationWarning: distutils Version classes are deprecated. Use packaging.version instead.
-  DASK_VERSION = LooseVersion(dask.__version__)
-/usr/local/lib/python3.8/dist-packages/tritonclient/grpc/model_config_pb2.py:19: DeprecationWarning: Call to deprecated create function FileDescriptor(). Note: Create unlinked descriptors is going to go away. Please use get/find descriptors from generated code or query the descriptor_pool.
-  DESCRIPTOR = _descriptor.FileDescriptor(
-/usr/local/lib/python3.8/dist-packages/tritonclient/grpc/model_config_pb2.py:33: DeprecationWarning: Call to deprecated create function EnumValueDescriptor(). Note: Create unlinked descriptors is going to go away. Please use get/find descriptors from generated code or query the descriptor_pool.
-  _descriptor.EnumValueDescriptor(
-/usr/local/lib/python3.8/dist-packages/tritonclient/grpc/model_config_pb2.py:27: DeprecationWarning: Call to deprecated create function EnumDescriptor(). Note: Create unlinked descriptors is going to go away. Please use get/find descriptors from generated code or query the descriptor_pool.
-  _DATATYPE = _descriptor.EnumDescriptor(
-/usr/local/lib/python3.8/dist-packages/tritonclient/grpc/model_config_pb2.py:330: DeprecationWarning: Call to deprecated create function FieldDescriptor(). Note: Create unlinked descriptors is going to go away. Please use get/find descriptors from generated code or query the descriptor_pool.
-  _descriptor.FieldDescriptor(
-/usr/local/lib/python3.8/dist-packages/tritonclient/grpc/model_config_pb2.py:323: DeprecationWarning: Call to deprecated create function Descriptor(). Note: Create unlinked descriptors is going to go away. Please use get/find descriptors from generated code or query the descriptor_pool.
-  _MODELRATELIMITER_RESOURCE = _descriptor.Descriptor(
-/usr/local/lib/python3.8/dist-packages/flatbuffers/compat.py:19: DeprecationWarning: the imp module is deprecated in favour of importlib; see the module&#39;s documentation for alternative uses
-  import imp
+<span class="kn">from</span> <span class="nn">merlin.systems.triton.utils</span> <span class="kn">import</span> <span class="n">send_triton_request</span>
 </pre></div>
 </div>
 </div>
@@ -205,13 +171,13 @@ ModuleNotFoundError(&quot;No module named &#39;faiss.swigfaiss_avx2&#39;&quot;)
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/Merlin/examples/Building-and-deploying-multi-stage-RecSys/feature_repo
 /usr/local/lib/python3.8/dist-packages/feast/feature_view.py:100: DeprecationWarning: The argument &#39;input&#39; is being deprecated. Please use &#39;batch_source&#39; instead. Feast 0.13 and onwards will not support the argument &#39;input&#39;.
   warnings.warn(
-Created entity <span class=" -Color -Color-Bold -Color-Bold-Green">user_id</span>
 Created entity <span class=" -Color -Color-Bold -Color-Bold-Green">item_id</span>
-Created feature view <span class=" -Color -Color-Bold -Color-Bold-Green">user_features</span>
+Created entity <span class=" -Color -Color-Bold -Color-Bold-Green">user_id_raw</span>
 Created feature view <span class=" -Color -Color-Bold -Color-Bold-Green">item_features</span>
+Created feature view <span class=" -Color -Color-Bold -Color-Bold-Green">user_features</span>
 
-Created sqlite table <span class=" -Color -Color-Bold -Color-Bold-Green">feature_repo_user_features</span>
 Created sqlite table <span class=" -Color -Color-Bold -Color-Bold-Green">feature_repo_item_features</span>
+Created sqlite table <span class=" -Color -Color-Bold -Color-Bold-Green">feature_repo_user_features</span>
 </pre></div>
 </div>
 </div>
@@ -231,10 +197,10 @@ Created sqlite table <span class=" -Color -Color-Bold -Color-Bold-Green">feature
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Materializing <span class=" -Color -Color-Bold -Color-Bold-Green">2</span> feature views from <span class=" -Color -Color-Bold -Color-Bold-Green">1995-01-01 01:01:01+00:00</span> to <span class=" -Color -Color-Bold -Color-Bold-Green">2025-01-01 01:01:01+00:00</span> into the <span class=" -Color -Color-Bold -Color-Bold-Green">sqlite</span> online store.
 
-<span class=" -Color -Color-Bold -Color-Bold-Green">user_features</span>:
-100%|████████████████████████████████████████████████████████████| 452/452 [00:00&lt;00:00, 593.93it/s]
 <span class=" -Color -Color-Bold -Color-Bold-Green">item_features</span>:
-100%|███████████████████████████████████████████████████████████| 441/441 [00:00&lt;00:00, 1204.47it/s]
+100%|███████████████████████████████████████████████████████████| 437/437 [00:00&lt;00:00, 3870.31it/s]
+<span class=" -Color -Color-Bold -Color-Bold-Green">user_features</span>:
+100%|███████████████████████████████████████████████████████████| 442/442 [00:00&lt;00:00, 1423.30it/s]
 </pre></div>
 </div>
 </div>
@@ -285,18 +251,6 @@ Created sqlite table <span class=" -Color -Color-Bold -Color-Bold-Green">feature
 </div>
 </div>
 </div>
-<p>Create a request schema that we are going to use when sending a request to Triton Inference Server (TIS).</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">request_schema</span> <span class="o">=</span> <span class="n">Schema</span><span class="p">(</span>
-    <span class="p">[</span>
-        <span class="n">ColumnSchema</span><span class="p">(</span><span class="s2">&quot;user_id&quot;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">),</span>
-    <span class="p">]</span>
-<span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
 <p><code class="docutils literal notranslate"><span class="pre">QueryFaiss</span></code> operator creates an interface between a FAISS Approximate Nearest Neighbors (ANN) Index and Triton Inference Server. For a given input query vector, we do an ANN search query to find the ids of top-k nearby nodes in the index.</p>
 <p><code class="docutils literal notranslate"><span class="pre">setup_faiss</span></code> is  a utility function that will create a Faiss index from an embedding vector with using L2 distance.</p>
 <div class="cell docutils container">
@@ -311,7 +265,7 @@ Created sqlite table <span class=" -Color -Color-Bold -Color-Bold-Green">feature
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>WARNING clustering 441 points to 32 centroids: please provide at least 1248 training points
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>WARNING clustering 437 points to 32 centroids: please provide at least 1248 training points
 </pre></div>
 </div>
 </div>
@@ -329,19 +283,12 @@ Created sqlite table <span class=" -Color -Color-Bold -Color-Bold-Green">feature
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">merlin.systems.dag.ops.feast</span> <span class="kn">import</span> <span class="n">QueryFeast</span> 
 
-<span class="n">user_features</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;user_id&quot;</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">QueryFeast</span><span class="o">.</span><span class="n">from_feature_view</span><span class="p">(</span>
+<span class="n">user_features</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;user_id_raw&quot;</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">QueryFeast</span><span class="o">.</span><span class="n">from_feature_view</span><span class="p">(</span>
     <span class="n">store</span><span class="o">=</span><span class="n">feature_store</span><span class="p">,</span>
     <span class="n">view</span><span class="o">=</span><span class="s2">&quot;user_features&quot;</span><span class="p">,</span>
-    <span class="n">column</span><span class="o">=</span><span class="s2">&quot;user_id&quot;</span><span class="p">,</span>
-    <span class="n">include_id</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">column</span><span class="o">=</span><span class="s2">&quot;user_id_raw&quot;</span><span class="p">,</span>
+    <span class="n">include_id</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
 <span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/usr/local/lib/python3.8/dist-packages/merlin/systems/dag/ops/feast.py:15: DeprecationWarning: `np.float` is a deprecated alias for the builtin `float`. To silence this warning, use `float` by itself. Doing this will not modify any behavior and is safe. If you specifically wanted the numpy scalar type, use `np.float64` here.
-Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdocs/release/1.20.0-notes.html#deprecations
-  ValueType.FLOAT: (np.float, False, False),
 </pre></div>
 </div>
 </div>
@@ -374,10 +321,10 @@ Deprecated in NumPy 1.20; for more details and guidance: https://numpy.org/devdo
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2022-06-13 15:48:00.638777: I tensorflow/core/platform/cpu_feature_guard.cc:193] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  AVX2 FMA
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2022-09-14 15:28:46.303447: I tensorflow/core/platform/cpu_feature_guard.cc:194] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  SSE3 SSE4.1 SSE4.2 AVX
 To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
-2022-06-13 15:48:03.008635: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1532] Created device /job:localhost/replica:0/task:0/device:GPU:0 with 16255 MB memory:  -&gt; device: 0, name: Tesla V100-SXM2-32GB-LS, pci bus id: 0000:06:00.0, compute capability: 7.0
-06/13/2022 03:48:05 PM WARNING:No training configuration found in save file, so the model was *not* compiled. Compile it manually.
+2022-09-14 15:28:47.443330: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1532] Created device /job:localhost/replica:0/task:0/device:GPU:0 with 16249 MB memory:  -&gt; device: 0, name: Quadro GV100, pci bus id: 0000:2d:00.0, compute capability: 7.0
+09/14/2022 03:28:49 PM WARNING:No training configuration found in save file, so the model was *not* compiled. Compile it manually.
 </pre></div>
 </div>
 </div>
@@ -433,7 +380,7 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">top_k</span><span class="o">=</span><span class="mi">10</span>
-<span class="n">ordering</span> <span class="o">=</span> <span class="n">combined_features</span><span class="p">[</span><span class="s2">&quot;item_id&quot;</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">SoftmaxSampling</span><span class="p">(</span>
+<span class="n">ordering</span> <span class="o">=</span> <span class="n">combined_features</span><span class="p">[</span><span class="s2">&quot;item_id_raw&quot;</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">SoftmaxSampling</span><span class="p">(</span>
     <span class="n">relevance_col</span><span class="o">=</span><span class="n">ranking</span><span class="p">[</span><span class="s2">&quot;click/binary_classification_task&quot;</span><span class="p">],</span> <span class="n">topk</span><span class="o">=</span><span class="n">top_k</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="mf">20.0</span>
 <span class="p">)</span>
 </pre></div>
@@ -454,6 +401,18 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 </div>
 </div>
 </div>
+<p>Create a request schema that we are going to use when sending a request to Triton Inference Server (TIS).</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">request_schema</span> <span class="o">=</span> <span class="n">Schema</span><span class="p">(</span>
+    <span class="p">[</span>
+        <span class="n">ColumnSchema</span><span class="p">(</span><span class="s2">&quot;user_id_raw&quot;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">),</span>
+    <span class="p">]</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># define the path where all the models and config files exported to</span>
@@ -461,6 +420,15 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 
 <span class="n">ensemble</span> <span class="o">=</span> <span class="n">Ensemble</span><span class="p">(</span><span class="n">ordering</span><span class="p">,</span> <span class="n">request_schema</span><span class="p">)</span>
 <span class="n">ens_config</span><span class="p">,</span> <span class="n">node_configs</span> <span class="o">=</span> <span class="n">ensemble</span><span class="o">.</span><span class="n">export</span><span class="p">(</span><span class="n">export_path</span><span class="p">)</span>
+
+<span class="c1"># return the output column name</span>
+<span class="n">outputs</span> <span class="o">=</span> <span class="n">ensemble</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">output_schema</span><span class="o">.</span><span class="n">column_names</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">outputs</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[&#39;ordered_ids&#39;]
 </pre></div>
 </div>
 </div>
@@ -535,43 +503,49 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 <div class="section" id="retrieving-recommendations-from-triton">
 <h2>Retrieving Recommendations from Triton<a class="headerlink" href="#retrieving-recommendations-from-triton" title="Permalink to this headline"></a></h2>
 <p>Once our models are successfully loaded to the TIS, we can now easily send a request to TIS and get a response for our query with <code class="docutils literal notranslate"><span class="pre">send_triton_request</span></code> utility function.</p>
+<p>Let’s send a request to TIS for a given <code class="docutils literal notranslate"><span class="pre">user_id_raw</span></code> value.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">merlin.systems.triton.utils</span> <span class="kn">import</span> <span class="n">send_triton_request</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># read in data for request</span>
 <span class="kn">from</span> <span class="nn">merlin.core.dispatch</span> <span class="kn">import</span> <span class="n">make_df</span>
 
 <span class="c1"># create a request to be sent to TIS</span>
-<span class="n">request</span> <span class="o">=</span> <span class="n">make_df</span><span class="p">({</span><span class="s2">&quot;user_id&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">]})</span>
-<span class="n">request</span><span class="p">[</span><span class="s2">&quot;user_id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">request</span><span class="p">[</span><span class="s2">&quot;user_id&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
-
-<span class="n">outputs</span> <span class="o">=</span> <span class="n">ensemble</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">output_schema</span><span class="o">.</span><span class="n">column_names</span>
+<span class="n">request</span> <span class="o">=</span> <span class="n">make_df</span><span class="p">({</span><span class="s2">&quot;user_id_raw&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">7</span><span class="p">]})</span>
+<span class="n">request</span><span class="p">[</span><span class="s2">&quot;user_id_raw&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">request</span><span class="p">[</span><span class="s2">&quot;user_id_raw&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>   user_id_raw
+0            7
 </pre></div>
 </div>
 </div>
 </div>
+<p>Let’s return raw item ids from TIS as top-k recommended items per given request.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">response</span> <span class="o">=</span> <span class="n">send_triton_request</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">outputs</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">response</span> <span class="o">=</span> <span class="n">send_triton_request</span><span class="p">(</span><span class="n">request_schema</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">outputs</span><span class="p">)</span>
 <span class="n">response</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>{&#39;ordered_ids&#39;: array([[248],
-        [195],
-        [230],
-        [ 60],
-        [382],
-        [199],
-        [222],
-        [433],
-        [ 71],
-        [151]], dtype=int32)}
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>{&#39;ordered_ids&#39;: array([[117],
+        [415],
+        [228],
+        [985],
+        [ 76],
+        [410],
+        [193],
+        [120],
+        [ 87],
+        [139]], dtype=int32)}
 </pre></div>
 </div>
 </div>
 </div>
-<p>Note that these item ids are encoded values, not the raw original values. We will eventually create the reverse dictionary lookup functionality to be able to map these encoded item ids to their original raw ids with one-line of code. But if you really want to do it now, you can easily map these ids to their original values using the <code class="docutils literal notranslate"><span class="pre">unique.item_id.parquet</span></code> file stored in the <code class="docutils literal notranslate"><span class="pre">categories</span></code> folder.</p>
 <p>That’s it! You finished deploying a multi-stage Recommender Systems on Triton Inference Server using Merlin framework.</p>
 </div>
 </div>
