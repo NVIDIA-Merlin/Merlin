@@ -12,10 +12,6 @@ pytest.importorskip("faiss")
 
 # flake8: noqa
 
-
-@pytest.mark.skip(
-    "'NoneType' returning from faiss operator because of randomly generated data."
-)
 def test_func():
     with testbook(
         REPO_ROOT
@@ -28,7 +24,7 @@ def test_func():
             """
             import os
             os.environ["DATA_FOLDER"] = "/tmp/data/"
-            os.environ["NUM_ROWS"] = "10000"
+            os.environ["NUM_ROWS"] = "100000"
             os.system("mkdir -p /tmp/examples")
             os.environ["BASE_DIR"] = "/tmp/examples/"
             """
@@ -53,6 +49,7 @@ def test_func():
             import os
             os.environ["DATA_FOLDER"] = "/tmp/data/"
             os.environ["BASE_DIR"] = "/tmp/examples/"
+            os.environ["topk_retrieval"] = "20"
             """
         )
         NUM_OF_CELLS = len(tb2.cells)
@@ -68,9 +65,9 @@ def test_func():
             configure_tensorflow()
             df_lib = get_lib()
             batch = df_lib.read_parquet(
-                os.path.join("/tmp/data/processed/retrieval/", "train", "part_0.parquet"),
+                os.path.join("/tmp/data/processed_nvt/", "train", "part_0.parquet"),
                 num_rows=1,
-                columns=["user_id"],
+                columns=["user_id_raw"],
             )
             from merlin.systems.triton.utils import run_ensemble_on_tritonserver
             response = run_ensemble_on_tritonserver(
