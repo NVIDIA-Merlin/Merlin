@@ -131,7 +131,7 @@
     "BASE_DIR = os.environ.get(\"BASE_DIR\", \"/Merlin/examples/Building-and-deploying-multi-stage-RecSys/\")\n",
     "\n",
     "# define feature repo path\n",
-    "feast_repo_path = BASE_DIR + \"feature_repo/\""
+    "feast_repo_path = os.path.join(BASE_DIR, \"feature_repo/\")"
    ]
   },
   {
@@ -260,8 +260,8 @@
    "metadata": {},
    "outputs": [],
    "source": [
-    "if not os.path.isdir(os.path.join(BASE_DIR + 'faiss_index')):\n",
-    "    os.makedirs(os.path.join(BASE_DIR + 'faiss_index'))"
+    "if not os.path.isdir(os.path.join(BASE_DIR, 'faiss_index')):\n",
+    "    os.makedirs(os.path.join(BASE_DIR, 'faiss_index'))"
    ]
   },
   {
@@ -279,9 +279,9 @@
    "metadata": {},
    "outputs": [],
    "source": [
-    "faiss_index_path = BASE_DIR + 'faiss_index' + \"/index.faiss\"\n",
-    "retrieval_model_path = BASE_DIR + \"query_tower/\"\n",
-    "ranking_model_path = BASE_DIR + \"dlrm/\""
+    "faiss_index_path = os.path.join(BASE_DIR, 'faiss_index', \"index.faiss\")\n",
+    "retrieval_model_path = os.path.join(BASE_DIR, \"query_tower/\")\n",
+    "ranking_model_path = os.path.join(BASE_DIR, \"dlrm/\")"
    ]
   },
   {
@@ -312,7 +312,7 @@
     "from merlin.systems.dag.ops.faiss import QueryFaiss, setup_faiss \n",
     "\n",
     "item_embeddings = np.ascontiguousarray(\n",
-    "    pd.read_parquet(BASE_DIR + \"item_embeddings.parquet\").to_numpy()\n",
+    "    pd.read_parquet(os.path.join(BASE_DIR, \"item_embeddings.parquet\")).to_numpy()\n",
     ")\n",
     "setup_faiss(item_embeddings, faiss_index_path)"
    ]
@@ -410,7 +410,9 @@
     }
    ],
    "source": [
-    "topk_retrieval = 100\n",
+    "topk_retrieval = int(\n",
+    "    os.environ.get(\"topk_retrieval\", \"100\")\n",
+    ")\n",
     "retrieval = (\n",
     "    user_features\n",
     "    >> PredictTensorflow(retrieval_model_path)\n",
@@ -542,8 +544,8 @@
    "metadata": {},
    "outputs": [],
    "source": [
-    "if not os.path.isdir(os.path.join(BASE_DIR + 'poc_ensemble')):\n",
-    "    os.makedirs(os.path.join(BASE_DIR + 'poc_ensemble'))"
+    "if not os.path.isdir(os.path.join(BASE_DIR, 'poc_ensemble')):\n",
+    "    os.makedirs(os.path.join(BASE_DIR, 'poc_ensemble'))"
    ]
   },
   {
@@ -584,7 +586,7 @@
    ],
    "source": [
     "# define the path where all the models and config files exported to\n",
-    "export_path = os.path.join(BASE_DIR + 'poc_ensemble')\n",
+    "export_path = os.path.join(BASE_DIR, 'poc_ensemble')\n",
     "\n",
     "ensemble = Ensemble(ordering, request_schema)\n",
     "ens_config, node_configs = ensemble.export(export_path)\n",
