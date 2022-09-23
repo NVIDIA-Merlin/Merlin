@@ -18,6 +18,7 @@ def test_func():
         execute=False,
         timeout=450,
     ) as tb1:
+        NUM_OF_CELLS = len(tb1.cells)
         tb1.inject(
             """
             import os
@@ -42,7 +43,7 @@ def test_func():
                 )
             """
         )
-        tb1.execute_cell(list(range(28, 79)))
+        tb1.execute_cell(list(range(28, NUM_OF_CELLS)))
         assert os.path.isdir("/tmp/examples/query_tower")
         assert os.path.isdir("/tmp/examples/dlrm")
         assert os.path.isdir("/tmp/examples/feature_repo")
