@@ -26,7 +26,7 @@ def test_func():
             os.environ["BASE_DIR"] = "/tmp/examples/"
             """
         )
-        tb1.execute_cell(list(range(0, 27)))
+        tb1.execute_cell(list(range(0, 25)))
         tb1.inject(
             """
                 from pathlib import Path
@@ -42,7 +42,7 @@ def test_func():
                 )
             """
         )
-        tb1.execute_cell(list(range(28, 77)))
+        tb1.execute_cell(list(range(28, 79)))
         assert os.path.isdir("/tmp/examples/query_tower")
         assert os.path.isdir("/tmp/examples/dlrm")
         assert os.path.isdir("/tmp/examples/feature_repo")
@@ -86,5 +86,4 @@ def test_func():
         )
         response = tb2.ref("response")
         assert len(response) == top_k
-        #tb2.execute_cell(NUM_OF_CELLS - 2)
 
