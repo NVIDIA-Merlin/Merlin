@@ -43,6 +43,7 @@ def test_func():
         / "Building-and-deploying-multi-stage-RecSys"
         / "02-Deploying-multi-stage-RecSys-with-Merlin-Systems.ipynb",
         execute=False,
+        timeout=120,
     ) as tb2:
         tb2.inject(
             """
