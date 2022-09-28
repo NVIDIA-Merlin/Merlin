@@ -12,6 +12,7 @@ pytest.importorskip("faiss")
 
 # flake8: noqa
 
+
 def test_func():
     with testbook(
         REPO_ROOT
@@ -31,11 +32,15 @@ def test_func():
         )
         tb1.execute()
         assert os.path.isdir("/tmp/examples/dlrm")
-        assert os.path.isdir("/tmp/examples/feature_repo")
+        assert os.path.isdir("/tmp/examples/feature_store/feature_repo")
         assert os.path.isdir("/tmp/examples/query_tower")
         assert os.path.isfile("/tmp/examples/item_embeddings.parquet")
-        assert os.path.isfile("/tmp/examples/feature_repo/user_features.py")
-        assert os.path.isfile("/tmp/examples/feature_repo/item_features.py")
+        assert os.path.isfile(
+            "/tmp/examples/feature_store/feature_repo/user_features.py"
+        )
+        assert os.path.isfile(
+            "/tmp/examples/feature_store/feature_repo/item_features.py"
+        )
 
     with testbook(
         REPO_ROOT
