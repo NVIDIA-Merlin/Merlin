@@ -1,25 +1,30 @@
 # syntax=docker/dockerfile:1.2
-ARG TRITON_VERSION=22.06
+ARG TRITON_VERSION=22.07
+ARG DLFW_VERSION=22.07
 
 ARG FULL_IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-py3
 ARG BASE_IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-py3-min
+ARG DLFW_IMAGE=nvcr.io/nvidia/tensorflow:${DLFW_VERSION}-tf2-py3
 
 FROM ${FULL_IMAGE} as triton
+FROM ${DLFW_IMAGE} as dlfw
 FROM ${BASE_IMAGE} as build
 
 # Args
-ARG CUDF_VER=v22.04.00
-ARG RMM_VER=v22.02.00
-ARG DASK_CUDA_VER=22.4.00
-ARG DASK_VER=2022.3.0
+ARG DASK_VER=2022.05.1
 ARG CORE_VER=main
-ARG HUGECTR_VER=master
-ARG HUGECTR_BACKEND_VER=main
 ARG MODELS_VER=main
 ARG NVTAB_VER=main
 ARG NVTAB_BACKEND_VER=main
 ARG SYSTEMS_VER=main
 ARG TF4REC_VER=main
+
+ENV CORE_VER=${CORE_VER}
+ENV MODELS_VER=${MODELS_VER}
+ENV NVTAB_VER=${NVTAB_VER}
+ENV NVTAB_BACKEND_VER=${NVTAB_BACKEND_VER}
+ENV SYSTEMS_VER=${SYSTEMS_VER}
+ENV TF4REC_VER=${TF4REC_VER}
 
 # Envs
 ENV CUDA_HOME=/usr/local/cuda
@@ -28,8 +33,6 @@ ENV CUDA_CUDA_LIBRARY=${CUDA_HOME}/lib64/stubs
 ENV DEBIAN_FRONTEND=noninteractive
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64:/usr/local/lib:/repos/dist/lib
 ENV PATH=${CUDA_HOME}/lib64/:${PATH}:${CUDA_HOME}/bin
-ENV PYTHONPATH=/usr/lib/python3.8/site-packages:$PYTHONPATH
-
 
 # Set up NVIDIA package repository
 RUN apt update -y --fix-missing && \
@@ -38,6 +41,7 @@ RUN apt update -y --fix-missing && \
     mv cuda-ubuntu2004.pin /etc/apt/preferences.d/cuda-repository-pin-600 && \
     apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/3bf863cc.pub && \
     add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/ /"
+
 # Install packages
 RUN apt update -y --fix-missing && \
     apt install -y --no-install-recommends \
@@ -54,6 +58,7 @@ RUN apt update -y --fix-missing && \
         libboost-serialization-dev \
         libcurl4-openssl-dev \
         libexpat1-dev \
+        libopenblas-dev \
         libre2-dev \
         libsasl2-2 \
         libssl-dev \
@@ -65,7 +70,9 @@ RUN apt update -y --fix-missing && \
         python3 \
         python3-pip \
         python3-dev \
+        swig \
         rapidjson-dev \
+        nlohmann-json3-dev \
         wget \
         zlib1g-dev && \
     apt autoremove -y && \
@@ -74,22 +81,20 @@ RUN apt update -y --fix-missing && \
 
 RUN ln -s /usr/bin/python3 /usr/bin/python
 
-# Install cmake
-# Required by treelite in pip installs 
-# apt install version too old (3.16.3)
-RUN apt remove --purge cmake -y && wget http://www.cmake.org/files/v3.21/cmake-3.21.1.tar.gz && \
-    tar xf cmake-3.21.1.tar.gz && cd cmake-3.21.1 && ./configure && make && make install
-
 # Install multiple packages
+RUN pip install cmake ninja scikit-build
 RUN pip install pandas==1.3.5
-RUN pip install cupy-cuda116 nvidia-pyindex pybind11 pytest protobuf transformers==4.12 tensorflow-metadata
-RUN pip install betterproto cachetools graphviz nvtx scipy sklearn scikit-build
-RUN pip install tritonclient[all]==2.22.0 grpcio-channelz
+RUN pip install cupy-cuda117 nvidia-pyindex pybind11 pytest protobuf transformers==4.12 tensorflow-metadata
+RUN pip install betterproto cachetools graphviz nvtx scipy sklearn
+RUN pip install tritonclient[all] grpcio-channelz fiddle wandb
 RUN pip install git+https://github.com/rapidsai/asvdb.git@main
 RUN pip install xgboost lightgbm treelite==2.3.0 treelite_runtime==2.3.0
 RUN pip install lightfm implicit
-RUN pip install numpy==1.21.1 --no-deps
+RUN pip install numba
 RUN pip install "cuda-python>=11.5,<12.0"
+RUN pip install fsspec==2022.5.0
+RUN pip install pynvml dask==${DASK_VER} distributed==${DASK_VER}
+RUN pip install numpy==1.22.4
 
 # Triton Server
 WORKDIR /opt/tritonserver
@@ -107,6 +112,37 @@ COPY --chown=1000:1000 --from=triton /usr/bin/serve /usr/bin/.
 ENV PATH=/opt/tritonserver/bin:${PATH}:
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/tritonserver/lib
 
+RUN pip install dask==${DASK_VER} distributed==${DASK_VER} dask[dataframe]==${DASK_VER}
+
+# Install NVTabular Triton Backend
+ARG TRITON_VERSION
+RUN git clone https://github.com/NVIDIA-Merlin/nvtabular_triton_backend.git build-env && \
+    cd build-env && git checkout ${NVTAB_BACKEND_VER} && cd .. && \
+    pushd build-env && \
+      mkdir build && \
+      cd build && \
+      cmake -Dpybind11_DIR=/usr/local/lib/python3.8/dist-packages/pybind11/share/cmake/pybind11 \
+            -D TRITON_COMMON_REPO_TAG="r$TRITON_VERSION"    \
+            -D TRITON_CORE_REPO_TAG="r$TRITON_VERSION"      \
+            -D TRITON_BACKEND_REPO_TAG="r$TRITON_VERSION" .. \
+      && make -j && \
+      mkdir -p /opt/tritonserver/backends/nvtabular && \
+      cp libtriton_nvtabular.so /opt/tritonserver/backends/nvtabular/ && \
+    popd && \
+    rm -rf build-env
+
+# Install faiss (with sm80 support since the faiss-gpu wheels
+# don't include it https://github.com/kyamagu/faiss-wheels/issues/54)
+RUN git clone --branch v1.7.2 https://github.com/facebookresearch/faiss.git build-env && \
+    pushd build-env && \
+    cmake -B build . -DFAISS_ENABLE_GPU=ON -DFAISS_ENABLE_PYTHON=ON -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_ARCHITECTURES="60;70;80" && \
+    make -C build -j $(nproc) faiss swigfaiss && \
+    pushd build/faiss/python && \
+    python setup.py install && \
+    popd && \
+    popd && \
+    rm -rf build-env
+
 # Install spdlog
 RUN git clone --branch v1.9.2 https://github.com/gabime/spdlog.git build-env && \
     pushd build-env && \
@@ -115,8 +151,8 @@ RUN git clone --branch v1.9.2 https://github.com/gabime/spdlog.git build-env && 
     rm -rf build-env
 
 # Install arrow
-ENV ARROW_HOME=/usr/local
-RUN git clone --branch apache-arrow-6.0.0 --recurse-submodules https://github.com/apache/arrow.git build-env && \
+ENV ARROW_HOME=/usr
+RUN git clone --branch apache-arrow-7.0.0 --recurse-submodules https://github.com/apache/arrow.git build-env && \
     pushd build-env && \
       export PARQUET_TEST_DATA="${PWD}/cpp/submodules/parquet-testing/data" && \
       export ARROW_TEST_DATA="${PWD}/testing/data" && \
@@ -160,47 +196,7 @@ RUN git clone --branch apache-arrow-6.0.0 --recurse-submodules https://github.co
     popd && \
     rm -rf build-env
 
-# Install rmm
-ENV INSTALL_PREFIX=/usr
 
-RUN git clone --recurse-submodules https://github.com/rapidsai/rmm.git --branch ${RMM_VER} --single-branch build-env && \
-    pushd build-env && \
-    ./build.sh librmm rmm && \
-    popd && \
-    rm -rf build-env
-
-# Install CUDF
-RUN git clone https://github.com/rapidsai/cudf.git build-env && cd build-env/ && \
-    git checkout ${CUDF_VER} && \
-    git submodule update --init --recursive && \
-    cd .. && \
-    pushd build-env && \
-      export CUDF_HOME=${PWD} && \
-      export CUDF_ROOT=${PWD}/cpp/build/ && \
-      export CMAKE_LIBRARY_PATH=${CUDA_CUDA_LIBRARY} && \
-      export CUDAFLAGS=-Wno-error=unknown-pragmas && \
-      ./build.sh libcudf cudf dask_cudf --allgpuarch --cmake-args=\"-DCUDF_ENABLE_ARROW_S3=OFF\" && \
-    popd && \
-    rm -rf build-env
-
-RUN pip install dask==${DASK_VER} distributed==${DASK_VER} dask[dataframe]==${DASK_VER} dask-cuda==22.4.0
-
-# Install NVTabular Triton Backend
-ARG TRITON_VERSION
-RUN git clone https://github.com/NVIDIA-Merlin/nvtabular_triton_backend.git build-env && \
-    cd build-env && git checkout ${NVTAB_BACKEND_VER} && cd .. && \
-    pushd build-env && \
-      mkdir build && \
-      cd build && \
-      cmake -Dpybind11_DIR=/usr/local/lib/python3.8/dist-packages/pybind11/share/cmake/pybind11 \
-            -D TRITON_COMMON_REPO_TAG="r$TRITON_VERSION"    \
-            -D TRITON_CORE_REPO_TAG="r$TRITON_VERSION"      \
-            -D TRITON_BACKEND_REPO_TAG="r$TRITON_VERSION" .. \
-      && make -j && \
-      mkdir -p /opt/tritonserver/backends/nvtabular && \
-      cp libtriton_nvtabular.so /opt/tritonserver/backends/nvtabular/ && \
-    popd && \
-    rm -rf build-env
 
 # Clean up
 RUN rm -rf /repos
@@ -241,6 +237,7 @@ RUN apt update -y --fix-missing && \
         libb64-dev \
         libboost-serialization-dev \
         libexpat1-dev \
+        libopenblas-dev \
         libre2-dev \
         libsasl2-2 \
         libssl-dev \
@@ -264,10 +261,9 @@ RUN ln -s /usr/bin/python3 /usr/bin/python
 # Includes
 COPY --chown=1000:1000 --from=build /usr/include /usr/include/
 COPY --chown=1000:1000 --from=build /usr/local/include /usr/local/include/
+COPY --chown=1000:1000 --from=build /usr/lib/ /usr/lib/
+COPY --chown=1000:1000 --from=build /usr/local/lib/ /usr/local/lib/
 
-# Libraries
-COPY --chown=1000:1000 --from=build /usr/local/lib/lib* /usr/local/lib/
-COPY --chown=1000:1000 --from=build /usr/lib/x86_64-linux-gnu/libcudf* /usr/lib/x86_64-linux-gnu/
 
 # Binaries
 COPY --chown=1000:1000 --from=build /usr/local/bin /usr/local/bin/
@@ -296,9 +292,31 @@ COPY --chown=1000:1000 --from=build /opt/tritonserver/backends/nvtabular backend
 COPY --chown=1000:1000 --from=build /usr/local/lib/python3.8/dist-packages /usr/local/lib/python3.8/dist-packages/
 ENV PYTHONPATH=$PYTHONPATH:/usr/local/lib/python3.8/dist-packages/
 
-RUN pip install --no-cache-dir numpy==1.21.5 jupyterlab pydot testbook
 
+# rapids components from the DLFW image
+COPY --chown=1000:1000 --from=dlfw /usr/lib/libcudf* /usr/lib/
+COPY --chown=1000:1000 --from=dlfw /usr/lib/libparquet* /usr/lib/
+COPY --chown=1000:1000 --from=dlfw /usr/lib/libnvcomp* /usr/lib/
+COPY --chown=1000:1000 --from=dlfw /usr/include/cudf /usr/include/cudf/
+COPY --chown=1000:1000 --from=dlfw /usr/include/rmm /usr/include/rmm/
+ARG PYTHON_VERSION=3.8
+COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/rmm /usr/local/lib/python${PYTHON_VERSION}/dist-packages/rmm
+COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cuda /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cuda
+COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cudf /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cudf
+COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/dask_cudf /usr/local/lib/python${PYTHON_VERSION}/dist-packages/dask_cudf
+COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/dask_cuda /usr/local/lib/python${PYTHON_VERSION}/dist-packages/dask_cuda
 
+RUN pip install --no-cache-dir jupyterlab pydot testbook numpy==1.22.4
+
+ENV JUPYTER_CONFIG_DIR=/tmp/.jupyter
+ENV JUPYTER_DATA_DIR=/tmp/.jupyter
+ENV JUPYTER_RUNTIME_DIR=/tmp/.jupyter
+
+ARG CORE_VER
+ARG MODELS_VER
+ARG NVTAB_VER
+ARG SYSTEMS_VER
+ARG TF4REC_VER
 
 # Add Merlin Repo
 RUN git clone https://github.com/NVIDIA-Merlin/Merlin/ /Merlin

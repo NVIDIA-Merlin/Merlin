@@ -7,19 +7,40 @@ assignees: 'EvenOldridge'
 
 ---
 ## Problem:
+<!--
 A clear description of the problem and how it impacts the customer experience of Merlin users.  Why is this important?  Why/Should we prioritize this work?  Note that this is problem singular.  Please try to ensure that we're trying to solve one problem and not many.
+-->
 
 ## Goal:
+<!--
 - What are the goals of this work.  
 - This can also include anti-goals of what this work does not include.  
 - Ideally this takes the form of a bulleted list.
+-->
+
+## New Functionality
+<!--
+- What new functionality would be required in each library to address the problem and meet the goals?
+- Ideally this takes the form of a bulleted list.
+-->
+- Models
+  - ...
+- Transformers4Rec
+  - ...
+- NVTabular
+  - ...
+- Systems
+  - ...
 
 ## Constraints:
+<!--
 - What are the constraints that might impact the choice of solution?
 - This can also include non-constraints to clarify if something that would normally be a constraint is not a consideration.
 - Ideally this takes the form of a bulleted list.
+-->
 
 ## Starting Point:
+<!--
 [ ] What tasks need to be completed in order for this work to be considered complete?
 [ ] This takes the form of a series of checkboxes where we can track the work.
 
@@ -33,3 +54,4 @@ Example tickets from which you can base your own roadmap issue include:
 For Merlin core team:
 [ ] Add this ticket to the roadmap project board ( https://github.com/orgs/NVIDIA-Merlin/projects/14 )
 [ ] Set the status to "Definition" if the sections above are not filled. Move it to planned if sections are filled. 
+-->

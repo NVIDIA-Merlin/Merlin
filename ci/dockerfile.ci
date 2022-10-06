@@ -1,20 +1,30 @@
 # syntax=docker/dockerfile:1.2
-ARG MERLIN_VERSION=22.06
-ARG TRITON_VERSION=22.05
-ARG IMAGE=nvcr.io/nvstaging/merlin/merlin-hugectr:${MERLIN_VERSION}
+ARG TRITON_VERSION=22.08
+ARG BASE_IMAGE=nvcr.io/nvstaging/merlin/merlin-hugectr:nightly
 ARG FULL_IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-py3
 
 FROM ${FULL_IMAGE} as triton
-FROM ${IMAGE}
+FROM ${BASE_IMAGE}
 
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/tensorflow2 backends/tensorflow2/
-RUN pip install tensorflow-gpu
+COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/pytorch backends/pytorch/
+
+RUN pip install tensorflow-gpu==2.9.2
 RUN pip install torch --extra-index-url https://download.pytorch.org/whl/cu113
 RUN pip install torchmetrics==0.3.2 matplotlib
 RUN pip install fastai fastcore fastprogress fastdownload --no-deps
 # install dependencies for systems testing 
 RUN pip install 'feast<0.20' faiss-gpu 
 
+RUN pip install tox
+
+# Update the Merlin repos (to avoid needed to rebuild underlying images to get updates)
+RUN cd /Merlin && git pull origin main
+RUN cd /core/ && git pull origin main && pip install . --no-deps
+RUN cd /nvtabular/ && git pull origin main && pip install . --no-deps
+RUN cd /systems/ && git pull origin main && pip install . --no-deps
+RUN cd /models/ && git pull origin main && pip install . --no-deps
+RUN cd /transformers4rec/ && git pull origin main && pip install . --no-deps
 
 
 HEALTHCHECK NONE

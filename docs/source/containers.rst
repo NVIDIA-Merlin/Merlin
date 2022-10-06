@@ -2,15 +2,14 @@ Merlin Containers
 =================
 
 Merlin and the Merlin component libraries are available in Docker containers from the NVIDIA GPU Cloud (NCG) catalog.
-Access the catalog of containers at http://ngc.nvidia.com/catalog/containers.
+Access the catalog of containers at https://catalog.ngc.nvidia.com/containers.
 
 The following table identifies the container names, catalog URL, and key Merlin components.
 
 .. list-table::
-   :widths: 25 50 25
    :header-rows: 1
 
-   * - Container
+   * - Container Name
      - NGC Catalog URL
      - Key Merlin Components
    * - merlin-hugectr

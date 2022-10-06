@@ -1,0 +1,152 @@
+# syntax=docker/dockerfile:1.2
+ARG VERSION=latest
+ARG CONTAINER=merlin-hugectr
+
+ARG FULL_IMAGE=nvcr.io/nvstaging/merlin/${CONTAINER}:${VERSION}
+
+FROM ${FULL_IMAGE} as current
+
+ARG CONTAINER
+
+# Add Merlin Repo
+RUN cd /Merlin && git checkout main && git pull origin main
+
+# Install Merlin Core main branch
+RUN cd /core/ && git checkout main && git pull origin main && pip install . --no-deps
+
+# Install NVTabular main branch
+RUN cd /nvtabular/ && git checkout main && git pull origin main && pip install . --no-deps
+
+# Install Merlin Systems main branch
+RUN cd /systems/ && git checkout main && git pull origin main && pip install . --no-deps
+
+# Install Models main branch
+RUN cd /models/ && git checkout main && git pull origin main && pip install . --no-deps
+
+# Install Transformers4Rec main branch
+RUN cd /transformers4rec/ && git checkout main && git pull origin main && pip install . --no-deps
+
+
+# -----------------------------------------------------------------------------
+#    HugeCTR + Dependencies
+
+# Optional dependency: Build and install protocol buffers and Hadoop/HDFS.
+ARG INSTALL_HDFS=false
+ARG _HUGECTR_BACKEND_REPO="github.com/triton-inference-server/hugectr_backend.git"
+ARG HUGECTR_DEV_MODE=false
+ARG _HUGECTR_REPO="github.com/NVIDIA-Merlin/HugeCTR.git"
+ARG _CI_JOB_TOKEN=""
+ARG HUGECTR_VER=master
+ARG HUGECTR_BACKEND_VER=main
+ARG HUGECTR_HOME=/usr/local/hugectr
+ARG INSTALL_DISTRIBUTED_EMBEDDINGS=true
+
+RUN if [[ ${CONTAINER} == *"hugectr" ]]; then \
+        ln -s /usr/local/cuda/lib64/stubs/libcuda.so /usr/local/cuda/lib64/stubs/libcuda.so.1; \
+    fi
+
+RUN if [[ ${CONTAINER} == *"hugectr" ]]; then \
+        export HADOOP_HOME=/opt/hadoop && \
+        export PATH=${PATH}:${HADOOP_HOME}/bin:${HADOOP_HOME}/sbin \
+            HDFS_NAMENODE_USER=root \
+            HDFS_SECONDARYNAMENODE_USER=root \
+            HDFS_DATANODE_USER=root \
+            YARN_RESOURCEMANAGER_USER=root \
+            YARN_NODEMANAGER_USER=root \
+            LIBHDFS_OPTS='-Djdk.lang.processReaperUseDefaultStackSize=true' \
+            UCX_ERROR_SIGNALS='' \
+            CLASSPATH=${CLASSPATH}:\
+            ${HADOOP_HOME}/etc/hadoop/*:\
+            ${HADOOP_HOME}/share/hadoop/common/*:\
+            ${HADOOP_HOME}/share/hadoop/common/lib/*:\
+            ${HADOOP_HOME}/share/hadoop/hdfs/*:\
+            ${HADOOP_HOME}/share/hadoop/hdfs/lib/*:\
+            ${HADOOP_HOME}/share/hadoop/mapreduce/*:\
+            ${HADOOP_HOME}/share/hadoop/yarn/*:\
+            ${HADOOP_HOME}/share/hadoop/yarn/lib/*; \
+        rm -rf /hugectr && \
+        if [[ "${HUGECTR_DEV_MODE}" == "false" ]]; then \
+            git clone --branch ${HUGECTR_VER} --depth 1 https://${_CI_JOB_TOKEN}${_HUGECTR_REPO} /hugectr && \
+            cd /hugectr && \
+            git submodule update --init --recursive && \
+            mkdir build && \
+            cd build && \
+            if [[ "${INSTALL_HDFS}" == "false" ]]; then \
+                cmake -DCMAKE_BUILD_TYPE=Release -DSM="60;61;70;75;80" -DENABLE_INFERENCE=ON .. \
+            ; else \
+                cmake -DCMAKE_BUILD_TYPE=Release -DSM="60;61;70;75;80" -DENABLE_INFERENCE=ON -DENABLE_HDFS=ON ..; \
+            fi && \
+            make -j$(nproc) && \
+            make install && \
+            rm -rf ./* && \
+            chmod +x ${HUGECTR_HOME}/bin/* ${HUGECTR_HOME}/lib/*.so; \
+        fi && \
+        if [[ "${HUGECTR_DEV_MODE}" == "false" ]]; then \
+            cd /hugectr && \
+            git submodule update --init --recursive && \
+            rm -rf build && \
+            mkdir build && \
+            cd build && \
+            LD_LIBRARY_PATH=/usr/local/cuda/lib64/stubs/:$LD_LIBRARY_PATH && \
+            if [[ "${INSTALL_HDFS}" == "false" ]]; then \
+                cmake -DCMAKE_BUILD_TYPE=Release -DSM="60;61;70;75;80" -DENABLE_MULTINODES=ON .. \
+            ; else \
+                cmake -DCMAKE_BUILD_TYPE=Release -DSM="60;61;70;75;80" -DENABLE_MULTINODES=ON -DENABLE_HDFS=ON ..; \
+            fi && \
+            make -j$(nproc) && \
+            make install && \
+            rm -rf ./* && \
+            chmod +x ${HUGECTR_HOME}/bin/* ${HUGECTR_HOME}/lib/*.so && \
+            cd ../onnx_converter && \
+            python setup.py install; \
+        fi && \
+        if [ "${HUGECTR_DEV_MODE}" == "false" ]; then \
+            git clone --branch ${HUGECTR_BACKEND_VER} --depth 1 https://${_CI_JOB_TOKEN}${_HUGECTR_BACKEND_REPO} /repos/hugectr_triton_backend && \
+            mkdir /repos/hugectr_triton_backend/build && \
+            cd /repos/hugectr_triton_backend/build && \
+            cmake \
+                -DCMAKE_INSTALL_PREFIX:PATH=${HUGECTR_HOME} \
+                -DTRITON_COMMON_REPO_TAG="r${TRTOSS_VERSION}" \
+                -DTRITON_CORE_REPO_TAG="r${TRTOSS_VERSION}" \
+                -DTRITON_BACKEND_REPO_TAG="r${TRTOSS_VERSION}" .. && \
+            make -j$(nproc) && \
+            make install && \
+            cd ../.. && \
+            rm -rf hugectr_triton_backend && \
+            chmod +x ${HUGECTR_HOME}/lib/*.so ${HUGECTR_HOME}/backends/hugectr/*.so; \
+        fi && \
+        ln -s ${HUGECTR_HOME}/backends/hugectr /opt/tritonserver/backends/hugectr && \
+        rm /usr/local/cuda/lib64/stubs/libcuda.so.1 && \
+        rm -rf /repos /usr/local/share/jupyter/lab/staging/node_modules/marked \
+            /usr/local/share/jupyter/lab/staging/node_modules/node-fetch; \
+    fi
+
+
+RUN if [[ ${CONTAINER} == *"tensorflow" ]]; then \
+        export LD_LIBRARY_PATH=/usr/local/hugectr/lib:$LD_LIBRARY_PATH \
+        LIBRARY_PATH=/usr/local/hugectr/lib:$LIBRARY_PATH \
+        SOK_COMPILE_UNIT_TEST=ON && \
+        rm -rf /hugectr /distributed_embeddings && \
+        if [ "$HUGECTR_DEV_MODE" == "false" ]; then \
+            git clone --branch ${HUGECTR_VER} --depth 1 https://${_HUGECTR_REPO} /hugectr && \
+            pushd /hugectr && \
+            pip install ninja && \
+            git submodule update --init --recursive && \
+            # Install SOK
+            cd sparse_operation_kit && \
+            python setup.py install && \
+            # Install HPS TF plugin
+            cd ../hierarchical_parameter_server && \
+            python setup.py install && \
+            popd; \
+        fi && \
+        if [ "$INSTALL_DISTRIBUTED_EMBEDDINGS" == "true" ]; then \
+            git clone https://github.com/NVIDIA-Merlin/distributed-embeddings.git /distributed_embeddings/ && \
+            cd /distributed_embeddings && git checkout ${TFDE_VER} && \
+            make pip_pkg && pip install artifacts/*.whl && make clean; \
+        fi; \      
+    fi
+
+HEALTHCHECK NONE
+CMD ["/bin/bash"]
+ENTRYPOINT ["/opt/nvidia/nvidia_entrypoint.sh"]
