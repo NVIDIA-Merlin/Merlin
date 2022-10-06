@@ -12,6 +12,7 @@ pytest.importorskip("faiss")
 
 # flake8: noqa
 
+
 def test_func():
     with testbook(
         REPO_ROOT
@@ -25,7 +26,7 @@ def test_func():
             import os
             os.environ["DATA_FOLDER"] = "/tmp/data/"
             os.environ["NUM_ROWS"] = "100000"
-            os.system("mkdir -p /tmp/examples")
+            os.system("mkdir -p /tmp/examples/feature_repo/data")
             os.environ["BASE_DIR"] = "/tmp/examples/"
             """
         )
