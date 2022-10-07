@@ -12,6 +12,7 @@ pytest.importorskip("faiss")
 
 # flake8: noqa
 
+
 def test_func():
     with testbook(
         REPO_ROOT
@@ -20,6 +21,11 @@ def test_func():
         / "01-Building-Recommender-Systems-with-Merlin.ipynb",
         execute=False,
     ) as tb1:
+        tb1.inject(
+            """
+            !pip install feast==0.19.4
+            """
+        )
         tb1.inject(
             """
             import os
