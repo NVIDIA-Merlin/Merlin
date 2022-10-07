@@ -13,7 +13,7 @@ pytest.importorskip("faiss")
 # flake8: noqa
 
 
-def test_func():
+def test_func(tmpdir):
     with testbook(
         REPO_ROOT
         / "examples"
@@ -22,21 +22,21 @@ def test_func():
         execute=False,
     ) as tb1:
         tb1.inject(
-            """
+            f"""
             import os
-            os.environ["DATA_FOLDER"] = "/tmp/data/"
+            os.environ["DATA_FOLDER"] = "{tmpdir}/data/"
             os.environ["NUM_ROWS"] = "100000"
-            os.system("mkdir -p /tmp/examples/feature_repo/data")
-            os.environ["BASE_DIR"] = "/tmp/examples/"
+            os.system("mkdir -p {tmpdir}/examples/feature_repo/data")
+            os.environ["BASE_DIR"] = "{tmpdir}/examples/"
             """
         )
         tb1.execute()
-        assert os.path.isdir("/tmp/examples/dlrm")
-        assert os.path.isdir("/tmp/examples/feature_repo")
-        assert os.path.isdir("/tmp/examples/query_tower")
-        assert os.path.isfile("/tmp/examples/item_embeddings.parquet")
-        assert os.path.isfile("/tmp/examples/feature_repo/user_features.py")
-        assert os.path.isfile("/tmp/examples/feature_repo/item_features.py")
+        assert os.path.isdir(f"{tmpdir}/examples/dlrm")
+        assert os.path.isdir(f"{tmpdir}/examples/feature_repo")
+        assert os.path.isdir(f"{tmpdir}/examples/query_tower")
+        assert os.path.isfile(f"{tmpdir}/examples/item_embeddings.parquet")
+        assert os.path.isfile(f"{tmpdir}/examples/feature_repo/user_features.py")
+        assert os.path.isfile(f"{tmpdir}/examples/feature_repo/item_features.py")
 
     with testbook(
         REPO_ROOT
@@ -47,10 +47,10 @@ def test_func():
         timeout=120,
     ) as tb2:
         tb2.inject(
-            """
+            f"""
             import os
-            os.environ["DATA_FOLDER"] = "/tmp/data/"
-            os.environ["BASE_DIR"] = "/tmp/examples/"
+            os.environ["DATA_FOLDER"] = "{tmpdir}/data/"
+            os.environ["BASE_DIR"] = "{tmpdir}/examples/"
             os.environ["topk_retrieval"] = "20"
             """
         )
@@ -60,23 +60,23 @@ def test_func():
         outputs = tb2.ref("outputs")
         assert outputs[0] == "ordered_ids"
         tb2.inject(
-            """
+            f"""
             import shutil
             from merlin.core.dispatch import get_lib
             from merlin.models.loader.tf_utils import configure_tensorflow
             configure_tensorflow()
             df_lib = get_lib()
             batch = df_lib.read_parquet(
-                os.path.join("/tmp/data/processed_nvt/", "train", "part_0.parquet"),
+                os.path.join("{tmpdir}/data/processed_nvt/", "train", "part_0.parquet"),
                 num_rows=1,
                 columns=["user_id_raw"],
             )
             from merlin.systems.triton.utils import run_ensemble_on_tritonserver
             response = run_ensemble_on_tritonserver(
-                "/tmp/examples/poc_ensemble", ensemble.graph.input_schema, batch, outputs,  "ensemble_model"
+                "{tmpdir}/examples/poc_ensemble", ensemble.graph.input_schema, batch, outputs,  "ensemble_model"
             )
             response = [x.tolist()[0] for x in response["ordered_ids"]]
-            shutil.rmtree("/tmp/examples/", ignore_errors=True)
+            shutil.rmtree("{tmpdir}/examples/", ignore_errors=True)
             """
         )
         tb2.execute_cell(NUM_OF_CELLS - 2)
