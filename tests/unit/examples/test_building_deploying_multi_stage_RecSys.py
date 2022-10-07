@@ -35,7 +35,7 @@ def test_func(tmpdir):
         tb1.inject(
             f"""
             os.system("mkdir -p {tmpdir}/examples/feature_repo/data")
-            find {tmpdir}/examples/feature_repo/ -name "feature_store.yaml" | xargs cp -t {tmpdir}/examples/feature_repo/
+            os.system("find {tmpdir}/examples/feature_repo/ -name "feature_store.yaml" | xargs cp -t {tmpdir}/examples/feature_repo/")
             """
         )
         tb1.execute_cell(list(range(57, NUM_OF_CELLS)))
