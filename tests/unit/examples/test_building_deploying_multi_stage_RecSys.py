@@ -26,7 +26,7 @@ def test_func(tmpdir):
             import os
             os.environ["DATA_FOLDER"] = "{tmpdir}/data/"
             os.environ["NUM_ROWS"] = "100000"
-            os.system("mkdir -p {tmpdir}/examples/feature_repo/data")
+            os.system("mkdir -p {tmpdir}/examples/")
             os.environ["BASE_DIR"] = "{tmpdir}/examples/"
             """
         )
