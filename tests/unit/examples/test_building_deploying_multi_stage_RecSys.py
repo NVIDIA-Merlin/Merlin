@@ -34,8 +34,13 @@ def test_func(tmpdir):
         tb1.execute_cell(list(range(0, 57)))
         tb1.inject(
             f"""
+            import shutil
             os.system("mkdir -p {tmpdir}/examples/feature_repo/data")
-            os.system("find {tmpdir}/examples/feature_repo/ -name "feature_store.yaml" | xargs % cp % {tmpdir}/examples/feature_repo/")
+            path = "{tmpdir}/examples/feature_repo/"
+            name = "feature_store.yaml"
+            for root, dirs, files in os.walk(path):
+                if name in files:
+                    shutil.copy(os.path.join(root,name), path)
             """
         )
         tb1.execute_cell(list(range(57, NUM_OF_CELLS)))
