@@ -36,6 +36,8 @@ def test_func(tmpdir):
             f"""
             !mkdir -p {tmpdir}/examples/feature_repo/data
             !find {tmpdir}/examples/feature_repo/ -name "feature_store.yaml" | xargs cp -t {tmpdir}/examples/feature_repo/
+            !rm -rf {tmpdir}/examples/feature_repo/feature_repo/
+            !rm {tmpdir}/examples/feature_repo/bootstrap.py
             """
         )
         tb1.execute_cell(list(range(57, NUM_OF_CELLS)))
@@ -84,7 +86,6 @@ def test_func(tmpdir):
                 "{tmpdir}/examples/poc_ensemble", ensemble.graph.input_schema, batch, outputs,  "ensemble_model"
             )
             response = [x.tolist()[0] for x in response["ordered_ids"]]
-            shutil.rmtree("{tmpdir}/examples/", ignore_errors=True)
             """
         )
         tb2.execute_cell(NUM_OF_CELLS - 2)
