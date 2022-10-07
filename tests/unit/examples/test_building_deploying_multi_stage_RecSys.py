@@ -30,7 +30,14 @@ def test_func(tmpdir):
             os.environ["BASE_DIR"] = "{tmpdir}/examples/"
             """
         )
-        tb1.execute()
+        NUM_OF_CELLS = len(tb1.cells)
+        tb1.execute_cell(list(range(0, NUM_OF_CELLS - 57)))
+        tb1.inject(
+            f"""
+            os.system("mkdir -p {tmpdir}/examples/feature_repo/data")
+            """
+        )
+        tb1.execute_cell(list(range(57, NUM_OF_CELLS)))
         assert os.path.isdir(f"{tmpdir}/examples/dlrm")
         assert os.path.isdir(f"{tmpdir}/examples/feature_repo")
         assert os.path.isdir(f"{tmpdir}/examples/query_tower")
