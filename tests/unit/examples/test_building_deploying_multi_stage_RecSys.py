@@ -31,7 +31,7 @@ def test_func(tmpdir):
             """
         )
         NUM_OF_CELLS = len(tb1.cells)
-        tb1.execute_cell(list(range(0, NUM_OF_CELLS - 57)))
+        tb1.execute_cell(list(range(0, 57)))
         tb1.inject(
             f"""
             os.system("mkdir -p {tmpdir}/examples/feature_repo/data")
