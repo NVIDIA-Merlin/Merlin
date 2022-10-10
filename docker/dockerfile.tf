@@ -71,9 +71,9 @@ RUN if [ "$HUGECTR_DEV_MODE" == "false" ]; then \
 
 # Install distributed-embeddings
 ARG INSTALL_DISTRIBUTED_EMBEDDINGS=true
-ARG TFDE_VER=main
+ARG TFDE_VER=v0.2
 RUN if [ "$INSTALL_DISTRIBUTED_EMBEDDINGS" == "true" ]; then \
-        git clone --recurse-submodules https://github.com/NVIDIA-Merlin/distributed-embeddings.git /distributed_embeddings/ && \
-        cd /distributed_embeddings && git checkout ${TFDE_VER} && \
+        git clone https://github.com/NVIDIA-Merlin/distributed-embeddings.git /distributed_embeddings/ && \
+        cd /distributed_embeddings && git checkout ${TFDE_VER} && git submodule update --init --recursive && \
         make pip_pkg && pip install artifacts/*.whl && make clean; \
     fi
