@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.2
-ARG MERLIN_VERSION=22.06
-ARG TRITON_VERSION=22.07
-ARG TORCH_VERSION=22.07
+ARG MERLIN_VERSION=22.10
+ARG TRITON_VERSION=22.09
+ARG TORCH_VERSION=22.09
 
 ARG DLFW_IMAGE=nvcr.io/nvidia/pytorch:${TORCH_VERSION}-py3
 ARG FULL_IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-py3
@@ -29,6 +29,7 @@ RUN pip install --no-cache-dir --no-deps torch torchmetrics \
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/pytorch backends/pytorch
 
 # DLFW Python packages
+COPY --chown=1000:1000 --from=dlfw /usr/local/cuda-11.8/targets/x86_64-linux/lib/libcupti.so.11.8 /usr/local/cuda-11.8/targets/x86_64-linux/lib/libcupti.so.11.8
 COPY --chown=1000:1000 --from=dlfw /opt/conda/lib/python3.8/site-packages/numba /usr/local/lib/python3.8/dist-packages/numba
 COPY --chown=1000:1000 --from=dlfw /opt/conda/lib/python3.8/site-packages/numpy /usr/local/lib/python3.8/dist-packages/numpy
 COPY --chown=1000:1000 --from=dlfw /opt/conda/lib/python3.8/site-packages/torch /usr/local/lib/python3.8/dist-packages/torch
