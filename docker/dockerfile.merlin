@@ -91,7 +91,7 @@ RUN pip install git+https://github.com/rapidsai/asvdb.git@main
 RUN pip install xgboost lightgbm treelite==2.3.0 treelite_runtime==2.3.0
 RUN pip install lightfm implicit
 RUN pip install "cuda-python>=11.5,<12.0"
-RUN pip install fsspec==2022.5.0
+RUN pip install fsspec==2022.5.0 llvmlite
 RUN pip install pynvml dask==${DASK_VER} distributed==${DASK_VER}
 RUN pip install numpy==1.22.4
 
@@ -130,17 +130,17 @@ RUN git clone https://github.com/NVIDIA-Merlin/nvtabular_triton_backend.git buil
     popd && \
     rm -rf build-env
 
-# Install faiss (with sm80 support since the faiss-gpu wheels
-# don't include it https://github.com/kyamagu/faiss-wheels/issues/54)
-RUN git clone --branch v1.7.2 https://github.com/facebookresearch/faiss.git build-env && \
-    pushd build-env && \
-    cmake -B build . -DFAISS_ENABLE_GPU=ON -DFAISS_ENABLE_PYTHON=ON -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_ARCHITECTURES="60;70;80" && \
-    make -C build -j $(nproc) faiss swigfaiss && \
-    pushd build/faiss/python && \
-    python setup.py install && \
-    popd && \
-    popd && \
-    rm -rf build-env
+# # Install faiss (with sm80 support since the faiss-gpu wheels
+# # don't include it https://github.com/kyamagu/faiss-wheels/issues/54)
+# RUN git clone --branch v1.7.2 https://github.com/facebookresearch/faiss.git build-env && \
+#     pushd build-env && \
+#     cmake -B build . -DFAISS_ENABLE_GPU=ON -DFAISS_ENABLE_PYTHON=ON -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_ARCHITECTURES="60;70;80" && \
+#     make -C build -j $(nproc) faiss swigfaiss && \
+#     pushd build/faiss/python && \
+#     python setup.py install && \
+#     popd && \
+#     popd && \
+#     rm -rf build-env
 
 # Install spdlog
 RUN git clone --branch v1.9.2 https://github.com/gabime/spdlog.git build-env && \
