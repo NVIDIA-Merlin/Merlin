@@ -1,7 +1,3 @@
-"""
-Modified from
-https://github.com/NVIDIA-Merlin/Merlin/blob/main/examples/getting-started-movielens/03-Training-with-TF.ipynb
-"""
 import argparse
 import json
 import logging
@@ -118,7 +114,7 @@ def train():
     valid_dataset = nvt.Dataset(valid_path)
 
     output_path = tempfile.mkdtemp()
-    workflow_path = os.path.join(args.model_dir, "workflow")
+    workflow_path = os.path.join(output_path, "workflow")
 
     workflow.fit(train_dataset)
     workflow.transform(train_dataset).to_parquet(
@@ -131,11 +127,9 @@ def train():
     workflow.save(workflow_path)
     logger.info(f"Workflow saved to {workflow_path}.")
 
-    # define train and valid dataset objects
     train_data = merlin.io.Dataset(os.path.join(output_path, "train", "*.parquet"))
     valid_data = merlin.io.Dataset(os.path.join(output_path, "valid", "*.parquet"))
 
-    # define schema object
     schema = train_data.schema
     target_column = schema.select_by_tag(Tags.TARGET).column_names[0]
 
@@ -161,11 +155,11 @@ def train():
         verbose=2,
     )
 
-    model_path = os.path.join(args.model_dir, "dlrm")
+    model_path = os.path.join(output_path, "dlrm")
     model.save(model_path)
     logger.info(f"Model saved to {model_path}.")
 
-    # We remove the label columns from it's inputs.
+    # We remove the label columns from its inputs.
     # This removes all columns with the TARGET tag from the workflow.
     # We do this because we need to set the workflow to only require the
     # features needed to predict, not train, when creating an inference
@@ -174,7 +168,7 @@ def train():
     workflow.remove_inputs(label_columns)
 
     ensemble = create_ensemble(workflow, model)
-    ensemble_path = os.path.join(args.model_dir, "ensemble")
+    ensemble_path = os.path.join(args.model_dir)
     ensemble.export(ensemble_path)
     logger.info(f"Ensemble graph saved to {ensemble_path}.")
 
