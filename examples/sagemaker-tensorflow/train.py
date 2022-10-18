@@ -168,7 +168,7 @@ def train():
     workflow.remove_inputs(label_columns)
 
     ensemble = create_ensemble(workflow, model)
-    ensemble_path = os.path.join(args.model_dir)
+    ensemble_path = args.model_dir
     ensemble.export(ensemble_path)
     logger.info(f"Ensemble graph saved to {ensemble_path}.")
 
