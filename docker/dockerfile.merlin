@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.2
-ARG TRITON_VERSION=22.09
-ARG DLFW_VERSION=22.09
+ARG TRITON_VERSION=22.08
+ARG DLFW_VERSION=22.08
 
 ARG FULL_IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-py3
 ARG BASE_IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-py3-min
@@ -11,7 +11,7 @@ FROM ${DLFW_IMAGE} as dlfw
 FROM ${BASE_IMAGE} as build
 
 # Args
-ARG DASK_VER=2022.07.1
+ARG DASK_VER=2022.05.1
 ARG CORE_VER=main
 ARG MODELS_VER=main
 ARG NVTAB_VER=main
@@ -35,7 +35,7 @@ ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/cuda/extra
 ENV PATH=${CUDA_HOME}/lib64/:${PATH}:${CUDA_HOME}/bin
 
 # Set up NVIDIA package repository
-RUN apt clean && apt update -y --fix-missing && \
+RUN apt update -y --fix-missing && \
     apt install -y --no-install-recommends software-properties-common && \
     wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-ubuntu2004.pin && \
     mv cuda-ubuntu2004.pin /etc/apt/preferences.d/cuda-repository-pin-600 && \
@@ -90,8 +90,9 @@ RUN pip install tritonclient[all] grpcio-channelz fiddle wandb
 RUN pip install git+https://github.com/rapidsai/asvdb.git@main
 RUN pip install xgboost lightgbm treelite==2.3.0 treelite_runtime==2.3.0
 RUN pip install lightfm implicit
+RUN pip install numba
 RUN pip install "cuda-python>=11.5,<12.0"
-RUN pip install fsspec==2022.5.0
+RUN pip install fsspec==2022.5.0 llvmlite
 RUN pip install pynvml dask==${DASK_VER} distributed==${DASK_VER}
 RUN pip install numpy==1.22.4
 
@@ -148,6 +149,54 @@ RUN git clone --branch v1.9.2 https://github.com/gabime/spdlog.git build-env && 
     mkdir build && cd build && cmake .. && make -j && make install && \
     popd && \
     rm -rf build-env
+
+# Install arrow
+ENV ARROW_HOME=/usr
+RUN git clone --branch apache-arrow-7.0.0 --recurse-submodules https://github.com/apache/arrow.git build-env && \
+    pushd build-env && \
+      export PARQUET_TEST_DATA="${PWD}/cpp/submodules/parquet-testing/data" && \
+      export ARROW_TEST_DATA="${PWD}/testing/data" && \
+      pip install -r python/requirements-build.txt && \
+      mkdir cpp/release && \
+      pushd cpp/release && \
+        cmake -DCMAKE_INSTALL_PREFIX=${ARROW_HOME} \
+              -DCMAKE_INSTALL_LIBDIR=lib \
+              -DCMAKE_LIBRARY_PATH=${CUDA_CUDA_LIBRARY} \
+              -DARROW_FLIGHT=ON \
+              -DARROW_GANDIVA=OFF \
+              -DARROW_ORC=ON \
+              -DARROW_WITH_BZ2=ON \
+              -DARROW_WITH_ZLIB=ON \
+              -DARROW_WITH_ZSTD=ON \
+              -DARROW_WITH_LZ4=ON \
+              -DARROW_WITH_SNAPPY=ON \
+              -DARROW_WITH_BROTLI=ON \
+              -DARROW_PARQUET=ON \
+              -DARROW_PYTHON=ON \
+              -DARROW_PLASMA=ON \
+              -DARROW_BUILD_TESTS=ON \
+              -DARROW_CUDA=ON \
+              -DARROW_DATASET=ON \
+              -DARROW_HDFS=ON \
+              -DARROW_S3=ON \
+              .. && \
+        make -j$(nproc) && \
+        make install && \
+      popd && \
+      pushd python && \
+        export PYARROW_WITH_PARQUET=ON && \
+        export PYARROW_WITH_CUDA=ON && \
+        export PYARROW_WITH_ORC=ON && \
+        export PYARROW_WITH_DATASET=ON && \
+        export PYARROW_WITH_S3=ON && \
+        export PYARROW_WITH_HDFS=ON && \
+        python setup.py build_ext --build-type=release bdist_wheel && \
+        pip install dist/*.whl --no-deps --force-reinstall && \
+      popd && \
+    popd && \
+    rm -rf build-env
+
+
 
 # Clean up
 RUN rm -rf /repos
@@ -214,7 +263,7 @@ COPY --chown=1000:1000 --from=build /usr/include /usr/include/
 COPY --chown=1000:1000 --from=build /usr/local/include /usr/local/include/
 COPY --chown=1000:1000 --from=build /usr/lib/ /usr/lib/
 COPY --chown=1000:1000 --from=build /usr/local/lib/ /usr/local/lib/
-COPY --chown=1000:1000 --from=triton /usr/lib/x86_64-linux-gnu/libdcgm.so.2 /usr/lib/x86_64-linux-gnu/libdcgm.so.2
+
 
 # Binaries
 COPY --chown=1000:1000 --from=build /usr/local/bin /usr/local/bin/
@@ -231,6 +280,7 @@ COPY --chown=1000:1000 --from=triton /opt/tritonserver/repoagents/ repoagents/
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/python backends/python/
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/fil backends/fil/
 COPY --chown=1000:1000 --from=triton /usr/bin/serve /usr/bin/.
+COPY --chown=1000:1000 --from=triton /usr/lib/x86_64-linux-gnu/libdcgm.so.2 /usr/lib/x86_64-linux-gnu/libdcgm.so.2
 
 ENV PATH=/opt/tritonserver/bin:${PATH}:
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/tritonserver/lib
@@ -246,16 +296,13 @@ ENV PYTHONPATH=$PYTHONPATH:/usr/local/lib/python3.8/dist-packages/
 
 # rapids components from the DLFW image
 COPY --chown=1000:1000 --from=dlfw /usr/lib/libcudf* /usr/lib/
-COPY --chown=1000:1000 --from=dlfw /usr/lib/libarrow* /usr/lib/
 COPY --chown=1000:1000 --from=dlfw /usr/lib/libparquet* /usr/lib/
 COPY --chown=1000:1000 --from=dlfw /usr/lib/libnvcomp* /usr/lib/
 COPY --chown=1000:1000 --from=dlfw /usr/include/cudf /usr/include/cudf/
 COPY --chown=1000:1000 --from=dlfw /usr/include/rmm /usr/include/rmm/
 ARG PYTHON_VERSION=3.8
-COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/numba /usr/local/lib/python${PYTHON_VERSION}/dist-packages/numba
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/rmm /usr/local/lib/python${PYTHON_VERSION}/dist-packages/rmm
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cuda /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cuda
-COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/pyarrow /usr/local/lib/python${PYTHON_VERSION}/dist-packages/pyarrow
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cudf /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cudf
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/dask_cudf /usr/local/lib/python${PYTHON_VERSION}/dist-packages/dask_cudf
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/dask_cuda /usr/local/lib/python${PYTHON_VERSION}/dist-packages/dask_cuda
