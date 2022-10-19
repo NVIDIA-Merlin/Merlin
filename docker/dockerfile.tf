@@ -77,3 +77,5 @@ RUN if [ "$INSTALL_DISTRIBUTED_EMBEDDINGS" == "true" ]; then \
         cd /distributed_embeddings && git checkout ${TFDE_VER} && git submodule update --init --recursive && \
         make pip_pkg && pip install artifacts/*.whl && make clean; \
     fi
+
+ENV FORCE_TF_AVAILABLE=true
