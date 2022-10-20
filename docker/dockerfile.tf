@@ -21,13 +21,13 @@ RUN pip install tensorflow-gpu==2.9.2 transformers==4.23.1\
 
 # DLFW Tensorflow packages
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python3.8/dist-packages/tensorflow /usr/local/lib/python3.8/dist-packages/tensorflow/
-COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python3.8/dist-packages/tensorflow-2.9.1+nv22.08.dist-info /usr/local/lib/python3.8/dist-packages/tensorflow-2.9.1+nv22.08.dist-info/
+COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python3.8/dist-packages/tensorflow-*.dist-info /usr/local/lib/python3.8/dist-packages/tensorflow.dist-info/
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python3.8/dist-packages/keras /usr/local/lib/python3.8/dist-packages/keras/
-COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python3.8/dist-packages/keras-2.9.0.dist-info /usr/local/lib/python3.8/dist-packages/keras-2.9.0.dist-info/
+COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python3.8/dist-packages/keras-*.dist-info /usr/local/lib/python3.8/dist-packages/keras.dist-info/
 COPY --chown=1000:1000 --from=dlfw /usr/local/bin/saved_model_cli /usr/local/bin/saved_model_cli
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/tensorflow/ /usr/local/lib/tensorflow/
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python3.8/dist-packages/horovod /usr/local/lib/python3.8/dist-packages/horovod/
-COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python3.8/dist-packages/horovod-0.25.0+nv22.08.dist-info /usr/local/lib/python3.8/dist-packages/horovod-0.25.0+nv22.08.dist-info/
+COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python3.8/dist-packages/horovod-*.dist-info /usr/local/lib/python3.8/dist-packages/horovod.dist-info/
 COPY --chown=1000:1000 --from=dlfw /usr/local/bin/horovodrun /usr/local/bin/horovodrun
 
 # Install dependencies for hps tf plugin
