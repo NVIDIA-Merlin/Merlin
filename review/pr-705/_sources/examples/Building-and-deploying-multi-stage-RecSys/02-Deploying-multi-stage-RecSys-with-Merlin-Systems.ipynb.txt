@@ -1,0 +1,817 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "id": "8c3403a6",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Copyright 2021 NVIDIA Corporation. All Rights Reserved.\n",
+    "#\n",
+    "# Licensed under the Apache License, Version 2.0 (the \"License\");\n",
+    "# you may not use this file except in compliance with the License.\n",
+    "# You may obtain a copy of the License at\n",
+    "#\n",
+    "#     http://www.apache.org/licenses/LICENSE-2.0\n",
+    "#\n",
+    "# Unless required by applicable law or agreed to in writing, software\n",
+    "# distributed under the License is distributed on an \"AS IS\" BASIS,\n",
+    "# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n",
+    "# See the License for the specific language governing permissions and\n",
+    "# limitations under the License.\n",
+    "# ================================"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "03166488-1651-4025-84ed-4e9e5db34933",
+   "metadata": {},
+   "source": [
+    "<img src=\"https://developer.download.nvidia.com/notebooks/dlsw-notebooks/merlin_merlin_02-deploying-multi-stage-recsys-with-merlin-systems/nvidia_logo.png\" style=\"width: 90px; float: right;\">\n",
+    "\n",
+    "## Deploying a Multi-Stage RecSys into Production with Merlin Systems and Triton Inference Server\n",
+    "\n",
+    "This notebook is created using the latest stable [merlin-tensorflow](https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-tensorflow/tags) container. \n",
+    "\n",
+    "At this point, when you reach out to this notebook, we expect that you have already executed the first notebook `01-Building-Recommender-Systems-with-Merlin.ipynb` and exported all the required files and models. \n",
+    "\n",
+    "We are going to generate recommended items for a given user query (user_id) by following the steps described in the figure below."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "38d75184-cd24-4fe3-90f4-d76028626576",
+   "metadata": {},
+   "source": [
+    "![tritonensemble](../images/triton_ensemble.png)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "da9dadb5-6eec-4a1b-99f9-929523f5cc07",
+   "metadata": {},
+   "source": [
+    "Merlin Systems library have the set of operators to be able to serve multi-stage recommender systems built with Tensorflow on [Triton Inference Server](https://github.com/triton-inference-server/server)(TIS) easily and efficiently. Below, we will go through these operators and demonstrate their usage in serving a multi-stage system on Triton."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "538677a3-acc6-48f6-acb6-d5bb5fe2e2d2",
+   "metadata": {},
+   "source": [
+    "### Import required libraries and functions"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "a27e18d7-b3e4-481c-b69e-23193b212c56",
+   "metadata": {},
+   "source": [
+    "At this step, we assume you already installed feast and faiss-gpu (or -cpu) libraries when running the first notebook `01-Building-Recommender-Systems-with-Merlin.ipynb`. \n",
+    "\n",
+    "In case you need to install them for running this example on GPU, execute the following script in a cell.\n",
+    "```\n",
+    "%pip install \"feast<0.20\" faiss-gpu\n",
+    "```\n",
+    "or the following script in a cell for CPU.\n",
+    "```\n",
+    "%pip install tensorflow-cpu \"feast<0.20\" faiss-cpu\n",
+    "```"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "4db1b5f1-c8fa-4e03-8744-1197873c5bee",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import os\n",
+    "import numpy as np\n",
+    "import pandas as pd\n",
+    "import feast\n",
+    "import faiss\n",
+    "import seedir as sd\n",
+    "from nvtabular import ColumnSchema, Schema\n",
+    "\n",
+    "from merlin.systems.dag.ensemble import Ensemble\n",
+    "from merlin.systems.dag.ops.session_filter import FilterCandidates\n",
+    "from merlin.systems.dag.ops.softmax_sampling import SoftmaxSampling\n",
+    "from merlin.systems.dag.ops.tensorflow import PredictTensorflow\n",
+    "from merlin.systems.dag.ops.unroll_features import UnrollFeatures\n",
+    "from merlin.systems.triton.utils import send_triton_request"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "55ead20e-c573-462e-9aa2-c3494bf0129f",
+   "metadata": {},
+   "source": [
+    "### Register our features on feature store"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "e2ac115e-4794-4a69-a962-8481f6e86df3",
+   "metadata": {},
+   "source": [
+    "The Feast feature registry is a central catalog of all the feature definitions and their related metadata(read more [here](https://docs.feast.dev/getting-started/architecture-and-components/registry)). We have defined our user and item features definitions in the `user_features.py` and  `item_features.py` files. With FeatureView() users can register data sources in their organizations into Feast, and then use those data sources for both training and online inference. In the `user_features.py` and `item_features.py` files, we are telling Feast where to find user and item features.\n",
+    "\n",
+    "Before we move on to the next steps, we need to perform `feast apply`command as directed below.  With that, we register our features, we can apply the changes to create our feature registry and store all entity and feature view definitions in a local SQLite online store called `online_store.db`."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "id": "66c02d67-df45-4869-8262-647cba77efcb",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "BASE_DIR = os.environ.get(\"BASE_DIR\", \"/Merlin/examples/Building-and-deploying-multi-stage-RecSys/\")\n",
+    "\n",
+    "# define feature repo path\n",
+    "feast_repo_path = os.path.join(BASE_DIR, \"feature_repo/\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "id": "e5fa545b-a979-4216-b176-ffd70d66e69d",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "/Merlin/examples/Building-and-deploying-multi-stage-RecSys/feature_repo\n",
+      "/usr/local/lib/python3.8/dist-packages/feast/feature_view.py:100: DeprecationWarning: The argument 'input' is being deprecated. Please use 'batch_source' instead. Feast 0.13 and onwards will not support the argument 'input'.\n",
+      "  warnings.warn(\n",
+      "Created entity \u001b[1m\u001b[32mitem_id\u001b[0m\n",
+      "Created entity \u001b[1m\u001b[32muser_id_raw\u001b[0m\n",
+      "Created feature view \u001b[1m\u001b[32mitem_features\u001b[0m\n",
+      "Created feature view \u001b[1m\u001b[32muser_features\u001b[0m\n",
+      "\n",
+      "Created sqlite table \u001b[1m\u001b[32mfeature_repo_item_features\u001b[0m\n",
+      "Created sqlite table \u001b[1m\u001b[32mfeature_repo_user_features\u001b[0m\n",
+      "\n"
+     ]
+    }
+   ],
+   "source": [
+    "%cd $feast_repo_path\n",
+    "!feast apply"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "c641fcd2-bd11-4569-80d4-2ae5e01a5cad",
+   "metadata": {},
+   "source": [
+    "### Loading features from offline store into an online store \n",
+    "\n",
+    "After we execute `apply` and registered our features and created our online local store, now we need to perform [materialization](https://docs.feast.dev/how-to-guides/running-feast-in-production) operation. This is done to keep our online store up to date and get it ready for prediction. For that we need to run a job that loads feature data from our feature view sources into our online store. As we add new features to our offline stores, we can continuously materialize them to keep our online store up to date by finding the latest feature values for each user. \n",
+    "\n",
+    "When you run the `feast materialize ..` command below, you will see a message <i>Materializing 2 feature views from 1995-01-01 01:01:01+00:00 to 2025-01-01 01:01:01+00:00 into the sqlite online store </i>  will be printed out.\n",
+    "\n",
+    "Note that materialization step takes some time.. "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "id": "52dacbbc-bdb6-4f7a-b202-3802050f0362",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Materializing \u001b[1m\u001b[32m2\u001b[0m feature views from \u001b[1m\u001b[32m1995-01-01 01:01:01+00:00\u001b[0m to \u001b[1m\u001b[32m2025-01-01 01:01:01+00:00\u001b[0m into the \u001b[1m\u001b[32msqlite\u001b[0m online store.\n",
+      "\n",
+      "\u001b[1m\u001b[32mitem_features\u001b[0m:\n",
+      "100%|███████████████████████████████████████████████████████████| 437/437 [00:00<00:00, 3870.31it/s]\n",
+      "\u001b[1m\u001b[32muser_features\u001b[0m:\n",
+      "100%|███████████████████████████████████████████████████████████| 442/442 [00:00<00:00, 1423.30it/s]\n"
+     ]
+    }
+   ],
+   "source": [
+    "!feast materialize 1995-01-01T01:01:01 2025-01-01T01:01:01"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "8fcc26e6-f6f3-4e44-bf3c-3b8e66dc9fd6",
+   "metadata": {},
+   "source": [
+    "Now, let's check our feature_repo structure again after we ran `apply` and `materialize` commands."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "id": "9caba4e3-e6e0-4e2f-b51d-cd3456fd4a63",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "feature_repo/\n",
+      "├─__init__.py\n",
+      "├─data/\n",
+      "│ ├─item_features.parquet\n",
+      "│ ├─online_store.db\n",
+      "│ ├─registry.db\n",
+      "│ └─user_features.parquet\n",
+      "├─feature_store.yaml\n",
+      "├─item_features.py\n",
+      "└─user_features.py\n"
+     ]
+    }
+   ],
+   "source": [
+    "# set up the base dir to for feature store\n",
+    "feature_repo_path = os.path.join(BASE_DIR, 'feature_repo')\n",
+    "sd.seedir(feature_repo_path, style='lines', itemlimit=10, depthlimit=5, exclude_folders=['.ipynb_checkpoints', '__pycache__'], sort=True)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "e768637c-0a4d-404b-8b58-7182fef0ab0e",
+   "metadata": {},
+   "source": [
+    "### Set up Faiss index, create feature store client and objects for the Triton ensemble"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "efada1e1-2556-4a26-b0ba-9cb96b3b151f",
+   "metadata": {},
+   "source": [
+    "Create a folder for faiss index path"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "id": "96b7adc1-623b-41df-b1f9-dd4086a15bc9",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "if not os.path.isdir(os.path.join(BASE_DIR, 'faiss_index')):\n",
+    "    os.makedirs(os.path.join(BASE_DIR, 'faiss_index'))"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "2aa037c0-7dad-427c-98bb-3da413e8fd14",
+   "metadata": {},
+   "source": [
+    "Define paths for ranking model, retrieval model, and faiss index path"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "id": "23ba59b5-08c3-44b5-86f2-e63dec6893af",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "faiss_index_path = os.path.join(BASE_DIR, 'faiss_index', \"index.faiss\")\n",
+    "retrieval_model_path = os.path.join(BASE_DIR, \"query_tower/\")\n",
+    "ranking_model_path = os.path.join(BASE_DIR, \"dlrm/\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "8b996019-bd2a-44e0-b004-4f412b300d63",
+   "metadata": {},
+   "source": [
+    "`QueryFaiss` operator creates an interface between a FAISS Approximate Nearest Neighbors (ANN) Index and Triton Inference Server. For a given input query vector, we do an ANN search query to find the ids of top-k nearby nodes in the index.\n",
+    "\n",
+    "`setup_faiss` is  a utility function that will create a Faiss index from an embedding vector with using L2 distance."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 9,
+   "id": "0b6cc5bf-d07c-4963-a748-6e2b4827ee36",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "WARNING clustering 437 points to 32 centroids: please provide at least 1248 training points\n"
+     ]
+    }
+   ],
+   "source": [
+    "from merlin.systems.dag.ops.faiss import QueryFaiss, setup_faiss \n",
+    "\n",
+    "item_embeddings = np.ascontiguousarray(\n",
+    "    pd.read_parquet(os.path.join(BASE_DIR, \"item_embeddings.parquet\")).to_numpy()\n",
+    ")\n",
+    "setup_faiss(item_embeddings, faiss_index_path)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "46697177-512a-473e-8cca-9fe51d3daa03",
+   "metadata": {},
+   "source": [
+    "Create feature store client."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 10,
+   "id": "3bc00e04-c70c-4882-9952-66f4dbb97bdc",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "feature_store = feast.FeatureStore(feast_repo_path)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "5c45df06-0cbe-4b52-ac1f-786e763895d7",
+   "metadata": {},
+   "source": [
+    "Fetch user features with `QueryFeast` operator from the feature store. `QueryFeast` operator is responsible for ensuring that our feast feature store can communicate correctly with tritonserver for the ensemble feast feature look ups."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 11,
+   "id": "3decbe7b-03e3-4978-baac-03f6a0b078c9",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from merlin.systems.dag.ops.feast import QueryFeast \n",
+    "\n",
+    "user_features = [\"user_id_raw\"] >> QueryFeast.from_feature_view(\n",
+    "    store=feature_store,\n",
+    "    view=\"user_features\",\n",
+    "    column=\"user_id_raw\",\n",
+    "    include_id=False,\n",
+    ")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "27e25be7-3ff0-49c2-a3fc-03ec4d615e77",
+   "metadata": {},
+   "source": [
+    "Retrieve top-K candidate items using `retrieval model` that are relevant for a given user. We use `PredictTensorflow()` operator that takes a tensorflow model and packages it correctly for TIS to run with the tensorflow backend."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 12,
+   "id": "21139caa-3a51-42e6-b006-21a92c95f1bc",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "<function tensorflow.python.dlpack.dlpack.from_dlpack(dlcapsule)>"
+      ]
+     },
+     "execution_count": 12,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "# prevent TF to claim all GPU memory\n",
+    "from merlin.models.loader.tf_utils import configure_tensorflow\n",
+    "\n",
+    "configure_tensorflow()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 13,
+   "id": "47c2d9b1-51dc-4549-977d-d7941ee6486c",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "2022-09-14 15:28:46.303447: I tensorflow/core/platform/cpu_feature_guard.cc:194] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  SSE3 SSE4.1 SSE4.2 AVX\n",
+      "To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.\n",
+      "2022-09-14 15:28:47.443330: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1532] Created device /job:localhost/replica:0/task:0/device:GPU:0 with 16249 MB memory:  -> device: 0, name: Quadro GV100, pci bus id: 0000:2d:00.0, compute capability: 7.0\n",
+      "09/14/2022 03:28:49 PM WARNING:No training configuration found in save file, so the model was *not* compiled. Compile it manually.\n"
+     ]
+    }
+   ],
+   "source": [
+    "topk_retrieval = int(\n",
+    "    os.environ.get(\"topk_retrieval\", \"100\")\n",
+    ")\n",
+    "retrieval = (\n",
+    "    user_features\n",
+    "    >> PredictTensorflow(retrieval_model_path)\n",
+    "    >> QueryFaiss(faiss_index_path, topk=topk_retrieval)\n",
+    ")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "8ce4429c-1fe1-4304-bcdf-badebe3b5485",
+   "metadata": {},
+   "source": [
+    "Fetch item features for the candidate items that are retrieved from the retrieval step above from the feature store."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 14,
+   "id": "b270f663-0ae1-4356-acd4-5f8c986abf4d",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "item_features = retrieval[\"candidate_ids\"] >> QueryFeast.from_feature_view(\n",
+    "    store=feature_store,\n",
+    "    view=\"item_features\",\n",
+    "    column=\"candidate_ids\",\n",
+    "    output_prefix=\"item\",\n",
+    "    include_id=True,\n",
+    ")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "304a4d09-db05-4666-b520-75dbbbc7ab17",
+   "metadata": {},
+   "source": [
+    "Merge the user features and items features to create the all set of combined features that were used in model training using `UnrollFeatures` operator which takes a target column and joins the \"unroll\" columns to the target. This helps when broadcasting a series of user features to a set of items."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 15,
+   "id": "eb0ef434-03a5-4a36-afb9-e19a43243c64",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "user_features_to_unroll = [\n",
+    "    \"user_id\",\n",
+    "    \"user_shops\",\n",
+    "    \"user_profile\",\n",
+    "    \"user_group\",\n",
+    "    \"user_gender\",\n",
+    "    \"user_age\",\n",
+    "    \"user_consumption_2\",\n",
+    "    \"user_is_occupied\",\n",
+    "    \"user_geography\",\n",
+    "    \"user_intentions\",\n",
+    "    \"user_brands\",\n",
+    "    \"user_categories\",\n",
+    "]\n",
+    "\n",
+    "combined_features = item_features >> UnrollFeatures(\n",
+    "    \"item_id\", user_features[user_features_to_unroll]\n",
+    ")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "7fb0ce66-6b6c-43be-885e-a5435c3bbd9e",
+   "metadata": {},
+   "source": [
+    "Rank the combined features using the trained ranking model, which is a DLRM model for this example. We feed the path of the ranking model to `PredictTensorflow()` operator."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 16,
+   "id": "ce31723e-af4d-4827-bb60-3a9fafcd9da6",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "ranking = combined_features >> PredictTensorflow(ranking_model_path)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "7f86fa47-de61-4007-ab55-9076e12ce963",
+   "metadata": {},
+   "source": [
+    "For the ordering we use `SoftmaxSampling()` operator. This operator sorts all inputs in descending order given the input ids and prediction introducing some randomization into the ordering by sampling items from the softmax of the predicted relevance scores, and finally returns top-k ordered items."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 17,
+   "id": "7f65598b-e3e7-4238-a73e-19d00c3deb26",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "top_k=10\n",
+    "ordering = combined_features[\"item_id_raw\"] >> SoftmaxSampling(\n",
+    "    relevance_col=ranking[\"click/binary_classification_task\"], topk=top_k, temperature=20.0\n",
+    ")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "f4e2e389-d884-44a1-8e32-4916a0eb43cf",
+   "metadata": {},
+   "source": [
+    "### Export Graph as Ensemble\n",
+    "The last step is to create the ensemble artifacts that TIS can consume. To make these artifacts import the Ensemble class. This class  represents an entire ensemble consisting of multiple models that run sequentially in TIS initiated by an inference request. It is responsible with interpreting the graph and exporting the correct files for TIS.\n",
+    "\n",
+    "When we create an Ensemble object we feed the graph and a schema representing the starting input of the graph.  After we create the ensemble object, we export the graph, supplying an export path for the `ensemble.export()` function. This returns an ensemble config which represents the entire inference pipeline and a list of node-specific configs."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "50bc2e4f-5e58-4ad4-8ae5-d79ad286978f",
+   "metadata": {},
+   "source": [
+    "Create the folder to export the models and config files."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 18,
+   "id": "b28c452f-543c-45a4-9995-130ca6919669",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "if not os.path.isdir(os.path.join(BASE_DIR, 'poc_ensemble')):\n",
+    "    os.makedirs(os.path.join(BASE_DIR, 'poc_ensemble'))"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "a061bd82-e553-4823-8d14-3ae88a458c14",
+   "metadata": {},
+   "source": [
+    "Create a request schema that we are going to use when sending a request to Triton Inference Server (TIS)."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 19,
+   "id": "9c8b7b94-5559-4587-a272-4d9de2d53dd1",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "request_schema = Schema(\n",
+    "    [\n",
+    "        ColumnSchema(\"user_id_raw\", dtype=np.int32),\n",
+    "    ]\n",
+    ")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 20,
+   "id": "6c64d686-aed5-42f8-b517-482b4237c69f",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "['ordered_ids']\n"
+     ]
+    }
+   ],
+   "source": [
+    "# define the path where all the models and config files exported to\n",
+    "export_path = os.path.join(BASE_DIR, 'poc_ensemble')\n",
+    "\n",
+    "ensemble = Ensemble(ordering, request_schema)\n",
+    "ens_config, node_configs = ensemble.export(export_path)\n",
+    "\n",
+    "# return the output column name\n",
+    "outputs = ensemble.graph.output_schema.column_names\n",
+    "print(outputs)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "276eedd8-5dc0-4ad0-8725-c8da60fea693",
+   "metadata": {},
+   "source": [
+    "Let's check our export_path structure"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 21,
+   "id": "89182219-40a6-458c-af0e-7a8e83f364aa",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "poc_ensemble/\n",
+      "├─0_queryfeast/\n",
+      "│ ├─1/\n",
+      "│ │ └─model.py\n",
+      "│ └─config.pbtxt\n",
+      "├─1_predicttensorflow/\n",
+      "│ ├─1/\n",
+      "│ │ └─model.savedmodel/\n",
+      "│ │   ├─assets/\n",
+      "│ │   ├─keras_metadata.pb\n",
+      "│ │   ├─saved_model.pb\n",
+      "│ │   └─variables/\n",
+      "│ │     ├─variables.data-00000-of-00001\n",
+      "│ │     └─variables.index\n",
+      "│ └─config.pbtxt\n",
+      "├─2_queryfaiss/\n",
+      "│ ├─1/\n",
+      "│ │ ├─index.faiss/\n",
+      "│ │ │ └─index.faiss\n",
+      "│ │ └─model.py\n",
+      "│ └─config.pbtxt\n",
+      "├─3_queryfeast/\n",
+      "│ ├─1/\n",
+      "│ │ └─model.py\n",
+      "│ └─config.pbtxt\n",
+      "├─4_unrollfeatures/\n",
+      "│ ├─1/\n",
+      "│ │ └─model.py\n",
+      "│ └─config.pbtxt\n",
+      "├─5_predicttensorflow/\n",
+      "│ ├─1/\n",
+      "│ │ └─model.savedmodel/\n",
+      "│ │   ├─assets/\n",
+      "│ │   ├─keras_metadata.pb\n",
+      "│ │   ├─saved_model.pb\n",
+      "│ │   └─variables/\n",
+      "│ │     ├─variables.data-00000-of-00001\n",
+      "│ │     └─variables.index\n",
+      "│ └─config.pbtxt\n",
+      "├─6_softmaxsampling/\n",
+      "│ ├─1/\n",
+      "│ │ └─model.py\n",
+      "│ └─config.pbtxt\n",
+      "└─ensemble_model/\n",
+      "  ├─1/\n",
+      "  └─config.pbtxt\n"
+     ]
+    }
+   ],
+   "source": [
+    "sd.seedir(export_path, style='lines', itemlimit=10, depthlimit=5, exclude_folders=['.ipynb_checkpoints', '__pycache__'], sort=True)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "fe7962cc-f26d-4a4a-b5a3-d214e0f37456",
+   "metadata": {
+    "tags": []
+   },
+   "source": [
+    "### Starting Triton Server"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "8c07c620-7d6c-4275-87fe-e5b94335bdb9",
+   "metadata": {},
+   "source": [
+    "It is time to deploy all the models as an ensemble model to Triton Inference Serve [TIS](https://github.com/triton-inference-server). After we export the ensemble, we are ready to start the TIS. You can start triton server by using the following command on your terminal:\n",
+    "\n",
+    "```\n",
+    "tritonserver --model-repository=/ensemble_export_path/ --backend-config=tensorflow,version=2\n",
+    "```\n",
+    "\n",
+    "For the `--model-repository` argument, specify the same path as the `export_path` that you specified previously in the `ensemble.export` method. This command will launch the server and load all the models to the server. Once all the models are loaded successfully, you should see `READY` status printed out in the terminal for each loaded model."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "6c0a798f-6abf-4cbb-87f8-f60a6e757092",
+   "metadata": {},
+   "source": [
+    "### Retrieving Recommendations from Triton"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "3b0794b1-b9e0-4508-bf6e-cc823ac5c693",
+   "metadata": {},
+   "source": [
+    "Once our models are successfully loaded to the TIS, we can now easily send a request to TIS and get a response for our query with `send_triton_request` utility function. "
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "af9efbde-4dac-42f1-9ace-096f75bac2b5",
+   "metadata": {},
+   "source": [
+    "Let's send a request to TIS for a given `user_id_raw` value."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 22,
+   "id": "d08a8975-9c32-467b-99ec-df66319f854b",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "   user_id_raw\n",
+      "0            7\n"
+     ]
+    }
+   ],
+   "source": [
+    "# read in data for request\n",
+    "from merlin.core.dispatch import make_df\n",
+    "\n",
+    "# create a request to be sent to TIS\n",
+    "request = make_df({\"user_id_raw\": [7]})\n",
+    "request[\"user_id_raw\"] = request[\"user_id_raw\"].astype(np.int32)\n",
+    "print(request)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "28e9e27f-6658-4302-b142-08b05215e48f",
+   "metadata": {},
+   "source": [
+    "Let's return raw item ids from TIS as top-k recommended items per given request."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 25,
+   "id": "74ec62f2-5935-45c6-8058-e1cdade6f80f",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "{'ordered_ids': array([[117],\n",
+       "        [415],\n",
+       "        [228],\n",
+       "        [985],\n",
+       "        [ 76],\n",
+       "        [410],\n",
+       "        [193],\n",
+       "        [120],\n",
+       "        [ 87],\n",
+       "        [139]], dtype=int32)}"
+      ]
+     },
+     "execution_count": 25,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "response = send_triton_request(request_schema, request, outputs)\n",
+    "response"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "b4605dbe-5f97-4b31-8ee4-ce7c1cb69d97",
+   "metadata": {},
+   "source": [
+    "That's it! You finished deploying a multi-stage Recommender Systems on Triton Inference Server using Merlin framework."
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3 (ipykernel)",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.8.10"
+  },
+  "merlin": {
+   "containers": [
+    "nvcr.io/nvidia/merlin/merlin-tensorflow-inference:latest"
+   ]
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}
