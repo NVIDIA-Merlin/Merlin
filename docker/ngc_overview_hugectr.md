@@ -55,7 +55,7 @@ Table 1: Merlin Containers
 
 ## Examples and Tutorials
 
-We provide a collection of examples, use cases, and tutorials for [NVTabular](https://github.com/NVIDIA/NVTabular/tree/main/examples) and [HugeCTR](https://github.com/NVIDIA/HugeCTR/tree/master/notebooks) as Jupyter notebooks in our repository. These Jupyter notebooks are based on the following datasets:
+We provide a collection of examples, use cases, and tutorials for [NVTabular](https://github.com/NVIDIA/NVTabular/tree/main/examples) and [HugeCTR](https://github.com/NVIDIA/HugeCTR/tree/main/notebooks) as Jupyter notebooks in our repository. These Jupyter notebooks are based on the following datasets:
 - MovieLens
 - Outbrain Click Prediction
 - Criteo Click Ads Prediction
@@ -69,7 +69,7 @@ We provide a collection of examples, use cases, and tutorials for [NVTabular](ht
 - Integrating NVTabular with HugeCTR
 - Deploying to inference with Triton
 
-For more sample models and their end-to-end instructions for HugeCTR visit the link: https://github.com/NVIDIA/HugeCTR/tree/master/samples
+For more sample models and their end-to-end instructions for HugeCTR visit the link: https://github.com/NVIDIA/HugeCTR/tree/main/samples
 
 ## Learn More
 
