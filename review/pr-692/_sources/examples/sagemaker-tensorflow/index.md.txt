@@ -22,8 +22,21 @@ in this repository or example notebooks in
 
 ## Running the Example Notebook
 
-You can run the example notebook either from your local environment or from
-a Sagemaker notebook instance.
-To run it locally, you need to configure basic AWS settings.
+You can run the example notebook with Docker containers.
+See [Running the Example Notebooks](../README.md#running-the-example-notebooks)
+for more details.
+
+Additionally, you need to configure basic AWS settings.
 For setting up AWS credentials, we refer you to
 [AWS documentations](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html).
+After you configure basic AWS settings, you can mount your AWS credentials
+by adding `-v $HOME/.aws:/root/.aws` to your docker command in Step 1 of
+[Running the Example Notebooks](../README.md#running-the-example-notebooks):
+```shell
+docker run --gpus all --rm -it \
+  -p 8888:8888 -p 8797:8787 -p 8796:8786 --ipc=host \
+  -v $HOME/.aws:/root/.aws \
+  <docker container> /bin/bash
+```
+and follow the remaining steps in
+[Running the Example Notebooks](../README.md#running-the-example-notebooks).

@@ -92,11 +92,23 @@ in this repository or example notebooks in
 <a class="reference external" href="https://github.com/NVIDIA-Merlin/models/tree/main/examples">Merlin Models</a>.</p>
 <div class="section" id="running-the-example-notebook">
 <h2>Running the Example Notebook<a class="headerlink" href="#running-the-example-notebook" title="Permalink to this headline"></a></h2>
-<p>You can run the example notebook either from your local environment or from
-a Sagemaker notebook instance.
-To run it locally, you need to configure basic AWS settings.
+<p>You can run the example notebook with Docker containers.
+See <span class="xref myst">Running the Example Notebooks</span>
+for more details.</p>
+<p>Additionally, you need to configure basic AWS settings.
 For setting up AWS credentials, we refer you to
-<a class="reference external" href="https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html">AWS documentations</a>.</p>
+<a class="reference external" href="https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html">AWS documentations</a>.
+After you configure basic AWS settings, you can mount your AWS credentials
+by adding <code class="docutils literal notranslate"><span class="pre">-v</span> <span class="pre">$HOME/.aws:/root/.aws</span></code> to your docker command in Step 1 of
+<span class="xref myst">Running the Example Notebooks</span>:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>docker run --gpus all --rm -it <span class="se">\</span>
+  -p <span class="m">8888</span>:8888 -p <span class="m">8797</span>:8787 -p <span class="m">8796</span>:8786 --ipc<span class="o">=</span>host <span class="se">\</span>
+  -v <span class="nv">$HOME</span>/.aws:/root/.aws <span class="se">\</span>
+  &lt;docker container&gt; /bin/bash
+</pre></div>
+</div>
+<p>and follow the remaining steps in
+<span class="xref myst">Running the Example Notebooks</span>.</p>
 </div>
 </div>
 
