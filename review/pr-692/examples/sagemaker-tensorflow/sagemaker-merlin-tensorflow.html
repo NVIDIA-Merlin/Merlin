@@ -523,7 +523,11 @@ Here, we create a Sagemaker session that we will use to perform our Sagemaker op
 </div>
 </div>
 <p>We can call <code class="docutils literal notranslate"><span class="pre">Estimator.fit()</span></code> to start training on Sagemaker. Here, we use a <code class="docutils literal notranslate"><span class="pre">g4dn</span></code> GPU instance that are equipped with NVIDIA T4 GPUs.
-Our training script <code class="docutils literal notranslate"><span class="pre">train.py</span></code> is passed to the Estimator through the <code class="docutils literal notranslate"><span class="pre">entry_point</span></code> parameter, and we can adjust our hyperparameters in the <code class="docutils literal notranslate"><span class="pre">hyperparameters</span></code>.
+Our training script <code class="docutils literal notranslate"><span class="pre">train.py</span></code> is passed to the Estimator through the <code class="docutils literal notranslate"><span class="pre">entry_point</span></code> parameter.
+Behind the scenes, the Sagemaker Python SDK will upload the training script specified in the<code class="docutils literal notranslate"><span class="pre">entry_point</span></code> field (<code class="docutils literal notranslate"><span class="pre">train.py</span></code> in our case)
+to the S3 bucket and set the <code class="docutils literal notranslate"><span class="pre">SAGEMAKER_PROGRAM</span></code> environment variable in the training instance to the S3 location so that the training instance
+can download the training script on S3 to the training instance.
+We also adjust our hyperparameters in the <code class="docutils literal notranslate"><span class="pre">hyperparameters</span></code> field.
 We have uploaded our training dataset to our S3 bucket in the previous code cell, and the S3 URLs to our training and validation sets are passed into the <code class="docutils literal notranslate"><span class="pre">fit()</span></code> method.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">

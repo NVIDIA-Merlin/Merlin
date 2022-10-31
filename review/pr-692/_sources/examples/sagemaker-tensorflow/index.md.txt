@@ -5,7 +5,7 @@ and deployed in the SageMaker environment.
 The following notebook will show you how to use NVIDIA Merlin for training and
 inference in the SageMaker environment.
 
-- [Training and Serving Merlin on AWS SageMaker]
+- [Training and Serving Merlin on AWS SageMaker](sagemaker-merlin-tensorflow.ipynb)
 
 It assumes that readers are familiar wtth some basic concepts in NVIDIA Merlin,
 such as:
@@ -22,7 +22,9 @@ in this repository or example notebooks in
 
 ## Running the Example Notebook
 
-You can run the example notebook with Docker containers.
+You can run the example notebook with the latest stable
+[merlin-tensorflow](https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-tensorflow/tags)
+container.
 See [Running the Example Notebooks](../README.md#running-the-example-notebooks)
 for more details.
 
