@@ -14,7 +14,8 @@ RUN pip install torch --extra-index-url https://download.pytorch.org/whl/cu113
 RUN pip install torchmetrics==0.3.2 matplotlib
 RUN pip install fastai fastcore fastprogress fastdownload --no-deps
 # install dependencies for systems testing 
-RUN pip install 'feast<0.20' faiss-gpu 
+RUN pip install 'feast<0.20' faiss-gpu
+RUN HOROVOD_GPU_OPERATIONS=NCCL python -m pip install --no-cache-dir horovod && horovodrun --check-build
 
 RUN pip install tox
 
