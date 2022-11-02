@@ -265,6 +265,10 @@ class SupportMatrixExtractor:
     def insert_snippet(self, key: str, snip: str):
         self.contdata[key] = snip
 
+    def precise_override(self, key: str, oldval: str, newval: str):
+        if key in self.contdata and self.contdata[key] == oldval:
+            self.insert_snippet(key, newval)
+
     def to_json(self):
         return json.dumps(self.data, sort_keys=True)
 
@@ -363,6 +367,8 @@ def main(args):
     xtr.get_from_pip("merlin.core")
     xtr.get_from_pip("merlin.systems")
     xtr.get_from_pip("merlin.models")
+    xtr.get_from_pip("merlin.dataloader")
+    xtr.get_from_python("distributed_embeddings")
     xtr.get_from_python("hugectr2onnx")
     xtr.get_from_python("hugectr")
     xtr.get_from_python("sparse_operation_kit")
@@ -412,12 +418,13 @@ def main(args):
         trtoss = xtr.contdata["base_container"]
         xtr.insert_snippet("base_container", f"Triton version {trtoss}")
 
+    if version == "22.10":
+        xtr.precise_override("hugectr", "4.0.0", "4.1.1")
+
     xtr.insert_snippet("timestamp_utc", dt.utcnow().isoformat())
     xtr.to_json_file()
 
-    logger.info(xtr.contdata)
-
-    logger.info(xtr.data)
+    logger.info(json.dumps(xtr.contdata, sort_keys=True, indent=2))
 
 
 def parse_args():
