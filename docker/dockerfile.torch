@@ -22,8 +22,8 @@ RUN apt update -y --fix-missing && \
 
 # Torch Metrics (without torch)
 RUN pip install --no-cache-dir --no-deps torch torchmetrics \
-    && if [ -d /usr/local/lib/python3.8/dist-packages/torch ]; then rm -r /usr/local/lib/python3.8/dist-packages/torch; fi \
-    && if [ -d /usr/local/lib/python3.8/dist-packages/caffe2 ]; then rm -r /usr/local/lib/python3.8/dist-packages/caffe2; fi
+    && rm -rf /usr/local/lib/python3.8/dist-packages/torch \
+    && rm -rf /usr/local/lib/python3.8/dist-packages/caffe2
 
 # Triton Torch backend
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/pytorch backends/pytorch
