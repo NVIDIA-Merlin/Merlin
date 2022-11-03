@@ -91,6 +91,22 @@ def test_insert_snippet():
         assert "99.99" in xtr.data["x"]["22.02"].get("release")
 
 
+def test_precise_override():
+    with tempfile.TemporaryFile() as f:
+        xtr = SupportMatrixExtractor("x", "22.02", f.name)
+        xtr.insert_snippet("release", "99.99")
+        xtr.precise_override("release", "99.99", "42")
+        assert "42" in xtr.data["x"]["22.02"].get("release")
+
+        xtr.insert_snippet("spam", "99.99")
+        xtr.precise_override("spam", "88.88", "42")
+        assert "42" not in xtr.data["x"]["22.02"].get("spam")
+        assert "99.99" in xtr.data["x"]["22.02"].get("spam")
+
+        xtr.precise_override("blah", "99.99", "42")
+        assert "blah" not in xtr.data["x"]["22.02"]
+
+
 def test_to_json():
     with tempfile.NamedTemporaryFile() as f:
         xtr = SupportMatrixExtractor("x", "22.02", f.name)
