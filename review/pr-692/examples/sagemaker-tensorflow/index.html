@@ -60,8 +60,8 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Training and Serving Merlin on AWS SageMaker</li>
+      <li><a href="../../index.html" class="icon icon-home"></a></li>
+      <li class="breadcrumb-item active">Training and Serving Merlin on AWS SageMaker</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -72,19 +72,19 @@
              
   <div class="section" id="training-and-serving-merlin-on-aws-sagemaker">
 <h1>Training and Serving Merlin on AWS SageMaker<a class="headerlink" href="#training-and-serving-merlin-on-aws-sagemaker" title="Permalink to this headline"></a></h1>
-<p>With AWS Sagemaker, you can package your own models that can then be trained
-and deployed in the SageMaker environment.
-The following notebook will show you how to use NVIDIA Merlin for training and
+<p>With AWS Sagemaker, you can package your own models that you can train and
+deploy in the SageMaker environment.
+The following notebook shows you how to use NVIDIA Merlin for training and
 inference in the SageMaker environment.</p>
 <ul class="simple">
 <li><p><a class="reference internal" href="sagemaker-merlin-tensorflow.html"><span class="doc std std-doc">Training and Serving Merlin on AWS SageMaker</span></a></p></li>
 </ul>
-<p>It assumes that readers are familiar wtth some basic concepts in NVIDIA Merlin,
-such as:</p>
+<p>This notebook assumes that readers are familiar with some basic concepts in
+NVIDIA Merlin, such as:</p>
 <ul class="simple">
-<li><p>Using NVTabular to GPU-accelerate preprocessing and feature engineering,</p></li>
-<li><p>Training a ranking model using Merlin Models, and</p></li>
-<li><p>Inference with the Triton Inference Server and Merlin Models for Tensorflow.</p></li>
+<li><p>Using NVTabular to GPU-accelerate preprocessing and feature engineering.</p></li>
+<li><p>Training a ranking model using Merlin Models.</p></li>
+<li><p>Making Inference with the Triton Inference Server and Merlin Models for Tensorflow.</p></li>
 </ul>
 <p>To learn more about these concepts in NVIDIA Merlin, see for example
 <span class="xref myst">Deploying a Multi-Stage Recommender System</span>
@@ -98,10 +98,11 @@ container.
 See <span class="xref myst">Running the Example Notebooks</span>
 for more details.</p>
 <p>Additionally, you need to configure basic AWS settings.
-For setting up AWS credentials, we refer you to
-<a class="reference external" href="https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html">AWS documentations</a>.
+For setting up AWS credentials, refer to
+<a class="reference external" href="https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html">Configuring the AWS CLI</a>
+in the AWS documentation.
 After you configure basic AWS settings, you can mount your AWS credentials
-by adding <code class="docutils literal notranslate"><span class="pre">-v</span> <span class="pre">$HOME/.aws:/root/.aws</span></code> to your docker command in Step 1 of
+by adding <code class="docutils literal notranslate"><span class="pre">-v</span> <span class="pre">$HOME/.aws:/root/.aws</span></code> to your Docker command in Step 1 of
 <span class="xref myst">Running the Example Notebooks</span>:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>docker run --gpus all --rm -it <span class="se">\</span>
   -p <span class="m">8888</span>:8888 -p <span class="m">8797</span>:8787 -p <span class="m">8796</span>:8786 --ipc<span class="o">=</span>host <span class="se">\</span>
