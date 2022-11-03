@@ -44,7 +44,7 @@ logger.addHandler(logging.StreamHandler(sys.stdout))
 
 def parse_args():
     """
-    Parse arguments passed from the SageMaker API to the container
+    Parse arguments passed from the SageMaker API to the container.
     """
 
     parser = argparse.ArgumentParser()
@@ -115,7 +115,7 @@ def create_ensemble(workflow, model):
 
 def train():
     """
-    Train the Merlin model
+    Train the Merlin model.
     """
     train_path = os.path.join(args.train_dir, "*.parquet")
     valid_path = os.path.join(args.valid_dir, "*.parquet")
