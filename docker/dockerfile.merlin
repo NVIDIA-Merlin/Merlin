@@ -18,6 +18,7 @@ ARG NVTAB_VER=main
 ARG NVTAB_BACKEND_VER=main
 ARG SYSTEMS_VER=main
 ARG TF4REC_VER=main
+ARG DL_VER=main
 
 ENV CORE_VER=${CORE_VER}
 ENV MODELS_VER=${MODELS_VER}
@@ -318,6 +319,7 @@ ARG MODELS_VER
 ARG NVTAB_VER
 ARG SYSTEMS_VER
 ARG TF4REC_VER
+ARG DL_VER
 
 # Add Merlin Repo
 RUN git clone https://github.com/NVIDIA-Merlin/Merlin/ /Merlin
@@ -325,6 +327,11 @@ RUN git clone https://github.com/NVIDIA-Merlin/Merlin/ /Merlin
 # Install Merlin Core
 RUN git clone https://github.com/NVIDIA-Merlin/core.git /core/ && \
     cd /core/ && git checkout ${CORE_VER} && pip install . --no-deps
+
+# Install Merlin Dataloader
+RUN git clone https://github.com/NVIDIA-Merlin/dataloader.git /dataloader/ && \
+    cd /dataloader/ && git checkout ${DL_VER} && pip install . --no-deps
+
 
 # Install NVTabular
 ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
