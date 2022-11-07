@@ -81,6 +81,18 @@ In the following case, the `cuparse` key is a mistake and should have been
 jq 'walk(if type == "object" then del(.cuparse) else . end)' < data.json > x
 ```
 
+### Add a field for all releases
+
+```shell
+jq --sort-keys 'walk(if type == "object" and has("base_container") then
+    . += {"distributed_embeddings":"Not applicable"}
+  else . 
+  end)' < docs/data.json > x
+
+# Always check your work.
+diff x docs/data.json
+```
+
 ### View a container for a release
 
 ```shell
