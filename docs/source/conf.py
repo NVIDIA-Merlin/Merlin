@@ -53,7 +53,8 @@ suppress_warnings = ["etoc.toctree", "myst.header", "misc.highlighting_failure"]
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = []
+html_static_path = ["_static"]
+html_css_files = ["css/custom.css"]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
