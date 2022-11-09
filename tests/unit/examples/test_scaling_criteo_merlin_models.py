@@ -59,6 +59,7 @@ def test_func():
                 "precision",
                 "recall",
                 "regularization_loss",
+                "loss_batch",
             ]
         )
         assert os.path.isfile("/tmp/output/criteo/dlrm/saved_model.pb")
