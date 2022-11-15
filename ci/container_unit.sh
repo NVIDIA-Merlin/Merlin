@@ -26,6 +26,10 @@ echo "Run unit tests for Models"
 pip install coverage || exit_code=1
 cd /models/ && ci/test_unit.sh $container $devices || exit_code=1
 
+## Test Dataloaders
+echo "Run unit tests for Dataloader"
+cd /dataloader/ && pytest -rxs tests/unit || exit_code=1
+
 ## Test Systems
 echo "Run unit tests for Systems"
 cd /systems && pytest -rxs tests/unit || exit_code=1
