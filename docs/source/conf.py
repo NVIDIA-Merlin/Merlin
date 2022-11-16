@@ -74,6 +74,7 @@ html_theme_options = {
     "navigation_depth": 3,
     "analytics_id": "G-NVJ1Y1YJHK",
 }
+html_copy_source = False
 html_show_sourcelink = False
 
 # Whitelist pattern for tags (set to None to ignore all tags)
