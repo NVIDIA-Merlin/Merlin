@@ -56,6 +56,7 @@
 <li class="toctree-l1"><a class="reference internal" href="examples/index.html">Example Notebooks</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Merlin DAG</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#dag-terminology">DAG Terminology</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#syntax-and-sample-code">Syntax and Sample Code</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="containers.html">Merlin Containers</a></li>
@@ -93,7 +94,9 @@
 <h2>DAG Terminology<a class="headerlink" href="#dag-terminology" title="Permalink to this headline"></a></h2>
 <dl class="simple myst">
 <dt>node</dt><dd><p>A node in the DAG is a group of columns and at least one <em>operator</em>.
-The columns are specified with a <em>column selector</em>.</p>
+The columns are specified with a <em>column selector</em>.
+A node has an <em>input schema</em> and an <em>output schema</em>.
+Resolution of the schemas is delayed until you run <code class="docutils literal notranslate"><span class="pre">fit</span></code> or <code class="docutils literal notranslate"><span class="pre">transform</span></code> on a dataset.</p>
 </dd>
 <dt>column selector</dt><dd><p>A column selector specifies the columns to select from a dataset using column names or <em>tags</em>.</p>
 </dd>
@@ -107,10 +110,33 @@ Each column has its own schema that identifies the column name and can specify <
 </dd>
 <dt>tag</dt><dd><p>A Merlin tag categorizes information about a column.
 Adding a tag to a column enables you to select columns for operations by tag rather than name.</p>
-<p>For example, you can add the <code class="docutils literal notranslate"><span class="pre">USER_ID</span></code> and <code class="docutils literal notranslate"><span class="pre">ITEM_ID</span></code> tags to columns.
+<p>For example, you can add the <code class="docutils literal notranslate"><span class="pre">USER</span></code> and <code class="docutils literal notranslate"><span class="pre">ITEM</span></code> tags to columns.
 Modeling and inference operations can use that information to act accordingly on the dataset.</p>
 </dd>
 </dl>
+</div>
+<div class="section" id="syntax-and-sample-code">
+<h2>Syntax and Sample Code<a class="headerlink" href="#syntax-and-sample-code" title="Permalink to this headline"></a></h2>
+<p>The following code block shows the typical syntax for building a workflow that operates on DAG components.</p>
+<p class="rubric">Syntax</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">result</span> <span class="o">=</span> <span class="p">[</span><span class="n">column_selector</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">op1</span> <span class="o">&gt;&gt;</span> <span class="n">op2</span> <span class="o">&gt;&gt;</span> <span class="o">...</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>Starting with the <code class="docutils literal notranslate"><span class="pre">column_selector</span></code>, the brackets group one or more column selectors that identify columns in the input data.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">op1</span></code> and <code class="docutils literal notranslate"><span class="pre">op2</span></code> represent operators.
+When an operator performs its operation on the input data, the operator returns a node.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">result</span></code> object is the graph.
+It contains the sequence of operations to perform.</p>
+<p class="rubric">Sample Code</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">item_features</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="p">[</span><span class="s2">&quot;item_category&quot;</span><span class="p">,</span> <span class="s2">&quot;item_shop&quot;</span><span class="p">,</span> <span class="s2">&quot;item_brand&quot;</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">Categorify</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;int32&quot;</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="n">TagAsItemFeatures</span><span class="p">()</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>In the sample code, the column selector is created by specifying the item-related column names.</p>
+<p>The <a class="reference external" href="https://nvidia-merlin.github.io/NVTabular/main/generated/nvtabular.ops.Categorify.html#nvtabular.ops.Categorify" title="(in NVTabular)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Categorify</span></code></a> operator transforms the categorical features into unique integer values, adds the <a class="reference external" href="https://nvidia-merlin.github.io/core/main/api/merlin.schema.html#merlin.schema.Tags.CATEGORICAL" title="(in Merlin Core)"><code class="xref py py-attr docutils literal notranslate"><span class="pre">CATEGORICAL</span></code></a> tag, and returns a node.</p>
+<p>The <a class="reference external" href="https://nvidia-merlin.github.io/NVTabular/main/generated/nvtabular.ops.TagAsItemFeatures.html#nvtabular.ops.TagAsItemFeatures" title="(in NVTabular)"><code class="xref py py-class docutils literal notranslate"><span class="pre">TagAsItemFeatures</span></code></a> operator applies the <a class="reference external" href="https://nvidia-merlin.github.io/core/main/api/merlin.schema.html#merlin.schema.Tags.ITEM" title="(in Merlin Core)"><code class="xref py py-attr docutils literal notranslate"><span class="pre">ITEM</span></code></a> tag and returns a node.</p>
+<p>When the <code class="docutils literal notranslate"><span class="pre">item_features</span></code> variable is included in a transformation and applied to input data, it will traverse the nodes in order and apply the data transformation and tagging.</p>
 </div>
 </div>
 
