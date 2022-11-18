@@ -19,6 +19,7 @@ ARG NVTAB_BACKEND_VER=main
 ARG SYSTEMS_VER=main
 ARG TF4REC_VER=main
 ARG DL_VER=main
+ARG MERLIN_VER=main
 
 ENV CORE_VER=${CORE_VER}
 ENV MODELS_VER=${MODELS_VER}
@@ -26,6 +27,7 @@ ENV NVTAB_VER=${NVTAB_VER}
 ENV NVTAB_BACKEND_VER=${NVTAB_BACKEND_VER}
 ENV SYSTEMS_VER=${SYSTEMS_VER}
 ENV TF4REC_VER=${TF4REC_VER}
+ENV MERLIN_VER=${MERLIN_VER}
 
 # Envs
 ENV CUDA_HOME=/usr/local/cuda
@@ -320,9 +322,10 @@ ARG NVTAB_VER
 ARG SYSTEMS_VER
 ARG TF4REC_VER
 ARG DL_VER
-
+ARG MERLIN_VER
 # Add Merlin Repo
-RUN git clone https://github.com/NVIDIA-Merlin/Merlin/ /Merlin
+RUN git clone https://github.com/NVIDIA-Merlin/Merlin/ /Merlin && \
+    cd /Merlin/ && git checkout ${MERLIN_VER}
 
 # Install Merlin Core
 RUN git clone https://github.com/NVIDIA-Merlin/core.git /core/ && \
