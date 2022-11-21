@@ -14,7 +14,7 @@ RUN pip install torch --extra-index-url https://download.pytorch.org/whl/cu113
 RUN pip install torchmetrics==0.3.2 matplotlib
 RUN pip install fastai fastcore fastprogress fastdownload --no-deps
 # install dependencies for systems testing 
-RUN pip install pytest-cov pytest-xdist sphinx-multiversion; pip install -r /nvtabular/requirements-dev.txt
+RUN pip install pytest-cov pytest-xdist sphinx-multiversion; pip install -r /nvtabular/requirements/dev.txt
 RUN pip install astroid==2.5.6 'feast<0.20' xgboost sklearn lightgbm treelite==2.3.0 treelite_runtime==2.3.0
 RUN echo 'import sphinx.domains' >> /usr/local/lib/python3.8/dist-packages/sphinx/__init__.py
 RUN HOROVOD_GPU_OPERATIONS=NCCL python -m pip install --no-cache-dir horovod && horovodrun --check-build

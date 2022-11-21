@@ -4,6 +4,10 @@ on:
   pull_request:
     branches: [main]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number  || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ${{ matrix.os }}
@@ -13,44 +17,20 @@ jobs:
         os: [ubuntu-latest]
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install Ubuntu packages
-        run: |
-          sudo apt-get update -y
-          sudo apt-get install -y --no-install-recommends pandoc
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip setuptools==59.4.0 wheel
           python -m pip install -r docs/requirements-doc.txt
-          python -m pip install Markdown==3.3.7
-      #- name: Lint with flake8
-      #  run: |
-      #    flake8 .
-      #- name: Lint with black
-      #  run: |
-      #    black --check .
-      #- name: Lint with isort
-      #  run: |
-      #    isort -c .
-      #- name: Lint with interrogate
-      #  run: |
-      #    interrogate --config=pyproject.toml
-      #- name: Lint with codespell
-      #  run: |
-      #    codespell
-      #- name: Run unittests
-      #  run: |
-      #    python -m pytest -rxs tests/unit/
-      # Build docs, TODO: treat warnings as errors, SPHINXOPTS="-W -q"
       - name: Building docs
         run: |
           make -C docs html
       - name: Upload HTML
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: html-build-artifact
           path: docs/build/html
@@ -63,7 +43,7 @@ jobs:
           echo ${{ github.event.pull_request.merged }} > ./pr/merged.txt
           echo ${{ github.event.action }}              > ./pr/action.txt
       - name: Upload PR information
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: pr
           path: pr/
