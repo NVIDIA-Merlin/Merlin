@@ -24,6 +24,7 @@ pipeline {
                 sh """#!/bin/bash
 set -e
 printenv
+nvidia-smi
 
 rm -rf $HOME/.cudf/
 export TF_MEMORY_ALLOCATION="0.1"
