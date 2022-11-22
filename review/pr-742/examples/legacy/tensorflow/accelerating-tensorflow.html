@@ -1,0 +1,1435 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Training Tabular Deep Learning Models with Keras on GPU &mdash; Merlin  documentation</title><link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/mystnb.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/togglebutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/custom.css" type="text/css" />
+    <link rel="canonical" href="https://nvidia-merlin.github.io/Merlin/main/examples/legacy/tensorflow/accelerating-tensorflow.html" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script >let toggleHintShow = 'Click to show';</script>
+        <script >let toggleHintHide = 'Click to hide';</script>
+        <script >let toggleOpenOnPrint = 'true';</script>
+        <script src="../../../_static/togglebutton.js"></script>
+        <script >var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="banner">
+    <p class="banner">
+      Beginning in January 2023, versions for all NVIDIA Merlin projects
+      will change from semantic versioning like <code>4.0</code>
+      to calendar versioning like <code>23.01</code>.</p>
+  </div>
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> Merlin
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../README.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../index.html">Example Notebooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../containers.html">Merlin Containers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../support_matrix/index.html">Merlin Support Matrix</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Merlin</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a></li>
+      <li class="breadcrumb-item active">Training Tabular Deep Learning Models with Keras on GPU</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Copyright 2021 NVIDIA Corporation. All Rights Reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+<span class="c1"># ==============================================================================</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="training-tabular-deep-learning-models-with-keras-on-gpu">
+<h1>Training Tabular Deep Learning Models with Keras on GPU<a class="headerlink" href="#training-tabular-deep-learning-models-with-keras-on-gpu" title="Permalink to this headline"></a></h1>
+<p>Deep learning has revolutionized the fields of computer vision (CV) and natural language processing (NLP) in the last few years, providing a fast and general framework for solving a host of difficult problems with unprecedented accuracy. Part and parcel of this revolution has been the development of APIs like <a class="reference external" href="https://www.tensorflow.org/api_docs/python/tf/keras">Keras</a> for NVIDIA GPUs, allowing practitioners to quickly iterate on new and interesting ideas and receive feedback on their efficacy in shorter and shorter intervals.</p>
+<p>One class of problem which has remained largely immune to this revolution, however, is the class involving tabular data. Part of this difficulty is that, unlike CV or NLP, where different datasets are underlied by similar phenomena and therefore can be solved with similar mechanisms, “tabular datasets” span a vast array of phenomena, semantic meanings, and problem statements, from product and video recommendation to particle discovery and loan default prediction. This diversity makes universally useful components difficult to find or even define, and is only exacerbated by the notorious lack of standard, industrial-scale benchmark datasets in the tabular space. As a result, deep learning models are frequently bested by their machine learning analogues on these important tasks, particularly on smaller scale datasets.</p>
+<p>Yet this diversity is also what makes tools like Keras all the more valuable. Architecture components can be quickly swapped in and out for different tasks like the implementation details they are, and new components can be built and tested with ease. Importantly, domain experts can interact with models at a high level and build <em>a priori</em> knowledge into model architectures, without having to spend their time becoming Python programming wizrds.</p>
+<p>However, most out-of-the-box APIs suffer from a lack of acceleration that reduces the rate at which new components can be tested and makes production deployment of deep learning systems cost-prohibitive. In this example, we will walk through some recent advancements made by NVIDIA’s <a class="reference external" href="https://github.com/nvidia/nvtabular">NVTabular</a> data loading library that can alleviate existing bottlenecks and bring to bear the full power of GPU acceleration.</p>
+<div class="section" id="what-to-keep-an-eye-out-for">
+<h2>What to Keep an Eye Out For<a class="headerlink" href="#what-to-keep-an-eye-out-for" title="Permalink to this headline"></a></h2>
+<p>The point of this walkthrough will be to show how common components of existing TensorFlow tabular-learning pipelines can be drop-in replaced by NVTabular components for cheap-as-free acceleration with minimal overhead. To do this, we’ll start by examining a pipeline for fitting the <a class="reference external" href="https://arxiv.org/abs/1906.00091">DLRM</a> architecture on the <a class="reference external" href="https://ailab.criteo.com/download-criteo-1tb-click-logs-dataset/">Criteo Terabyte Dataset</a> using Keras/TensorFlow’s native tools on both on CPU and GPU, and discuss why the acceleration we observe on GPU is not particularly impressive. Then we’ll examine what an identical pipeline would look like using NVTabular and why it overcomes those bottlenecks.</p>
+<p>Since the Criteo Terabyte Dataset is large, and you and I both have better things to do than sit around for hours waiting to train a model we have no intention of ever using, I’ll restrict the training to 1000 steps in order to illustrate the similarities in convergence and the expected acceleration. Of course, there may well exist alternative choices of architectures and hyperparameters that will lead to better or faster convergence, but I trust that you, clever data scientist that you are, are more than capable of finding these yourself should you wish. I intend only to demonstrate how NVTabular can help you achieve that convergence more quickly, in the hopes that you will find it easy to apply the same methods to the dataset that really matters: your own.</p>
+<p>I will assume at least some familiarity with the relevant tabular deep learning methods (in particular what I mean by “tabular data” and how it is distinct from, say, image data; continuous vs. categorical variables; learned categorical embeddings; and online vs. offline preprocessing) and a passing familiarity with TensorFlow and Keras. If you are green or rusty on any of this points, it won’t make this discussion illegible, but I’ll put links in the relevant places just in case.</p>
+<p>The structure will be building, step-by-step, the necessary functions that a dataset-agnostic pipeline might need in order to train a model in Keras. In each function, we’ll include an <code class="docutils literal notranslate"><span class="pre">accelerated</span></code> kwarg that will be used to show the difference between what such a function might look like in native TensorFlow vs. using NVTabular. Let’s start here by doing our imports and defining some hyperparameters for training (which won’t change from one implementation to the next).</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">filterfalse</span>
+<span class="kn">import</span> <span class="nn">re</span>
+
+<span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
+<span class="kn">from</span> <span class="nn">tensorflow.keras.mixed_precision</span> <span class="kn">import</span> <span class="n">experimental</span> <span class="k">as</span> <span class="n">mixed_precision</span>
+
+<span class="c1"># this is a good habit to get in now: TensorFlow&#39;s default behavior</span>
+<span class="c1"># is to claim all of the GPU memory that it can for itself. This</span>
+<span class="c1"># is a problem when it needs to run alongside another GPU library</span>
+<span class="c1"># like NVTabular. To get around this, NVTabular will configure</span>
+<span class="c1"># TensorFlow to use this fraction of available GPU memory up front.</span>
+<span class="c1"># Make sure, however, that you do this before you do anything</span>
+<span class="c1"># with TensorFlow: as soon as it&#39;s initialized, that memory is gone</span>
+<span class="c1"># for good</span>
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;TF_MEMORY_ALLOCATION&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;0.5&quot;</span>
+<span class="kn">import</span> <span class="nn">nvtabular</span> <span class="k">as</span> <span class="nn">nvt</span>
+<span class="kn">from</span> <span class="nn">nvtabular.loader.tensorflow</span> <span class="kn">import</span> <span class="n">KerasSequenceLoader</span>
+<span class="kn">from</span> <span class="nn">nvtabular.framework_utils.tensorflow</span> <span class="kn">import</span> <span class="n">layers</span><span class="p">,</span> <span class="n">make_feature_column_workflow</span>
+
+<span class="c1"># import custom callback for monitoring throughput</span>
+<span class="kn">from</span> <span class="nn">callbacks</span> <span class="kn">import</span> <span class="n">ThroughputLogger</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">DATA_DIR</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;DATA_DIR&quot;</span><span class="p">,</span> <span class="s2">&quot;/data&quot;</span><span class="p">)</span>
+<span class="n">TFRECORD_DIR</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;TFRECORD_DIR&quot;</span><span class="p">,</span> <span class="s2">&quot;/tfrecords&quot;</span><span class="p">)</span>
+<span class="n">LOG_DIR</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;LOG_DIR&quot;</span><span class="p">,</span> <span class="s2">&quot;logs/&quot;</span><span class="p">)</span>
+
+<span class="n">TFRECORDS</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">TFRECORD_DIR</span><span class="p">,</span> <span class="s2">&quot;train&quot;</span><span class="p">,</span> <span class="s2">&quot;*.tfrecords&quot;</span><span class="p">)</span>
+<span class="n">PARQUETS</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">DATA_DIR</span><span class="p">,</span> <span class="s2">&quot;train&quot;</span><span class="p">,</span> <span class="s2">&quot;*.parquet&quot;</span><span class="p">)</span>
+
+<span class="c1"># TODO: reimplement the preproc from criteo-example here</span>
+<span class="c1"># Alternatively, make criteo its own folder, and split preproc</span>
+<span class="c1"># and training into separate notebooks, then execute the</span>
+<span class="c1"># preproc notebook from here?</span>
+<span class="n">NUMERIC_FEATURE_NAMES</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;I</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">14</span><span class="p">)]</span>
+<span class="n">CATEGORICAL_FEATURE_NAMES</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;C</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">27</span><span class="p">)]</span>
+<span class="n">CATEGORY_COUNTS</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="mi">7599500</span><span class="p">,</span>
+    <span class="mi">33521</span><span class="p">,</span>
+    <span class="mi">17022</span><span class="p">,</span>
+    <span class="mi">7339</span><span class="p">,</span>
+    <span class="mi">20046</span><span class="p">,</span>
+    <span class="mi">3</span><span class="p">,</span>
+    <span class="mi">7068</span><span class="p">,</span>
+    <span class="mi">1377</span><span class="p">,</span>
+    <span class="mi">63</span><span class="p">,</span>
+    <span class="mi">5345303</span><span class="p">,</span>
+    <span class="mi">561810</span><span class="p">,</span>
+    <span class="mi">242827</span><span class="p">,</span>
+    <span class="mi">11</span><span class="p">,</span>
+    <span class="mi">2209</span><span class="p">,</span>
+    <span class="mi">10616</span><span class="p">,</span>
+    <span class="mi">100</span><span class="p">,</span>
+    <span class="mi">4</span><span class="p">,</span>
+    <span class="mi">968</span><span class="p">,</span>
+    <span class="mi">14</span><span class="p">,</span>
+    <span class="mi">7838519</span><span class="p">,</span>
+    <span class="mi">2580502</span><span class="p">,</span>
+    <span class="mi">6878028</span><span class="p">,</span>
+    <span class="mi">298771</span><span class="p">,</span>
+    <span class="mi">11951</span><span class="p">,</span>
+    <span class="mi">97</span><span class="p">,</span>
+    <span class="mi">35</span><span class="p">,</span>
+<span class="p">]</span>
+<span class="n">LABEL_NAME</span> <span class="o">=</span> <span class="s2">&quot;label&quot;</span>
+
+<span class="c1"># optimization params</span>
+<span class="n">BATCH_SIZE</span> <span class="o">=</span> <span class="mi">65536</span>
+<span class="n">STEPS</span> <span class="o">=</span> <span class="mi">1000</span>
+<span class="n">LEARNING_RATE</span> <span class="o">=</span> <span class="mf">0.001</span>
+
+<span class="c1"># architecture params</span>
+<span class="n">EMBEDDING_DIM</span> <span class="o">=</span> <span class="mi">8</span>
+<span class="n">TOP_MLP_HIDDEN_DIMS</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1024</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="mi">256</span><span class="p">]</span>
+<span class="n">BOTTOM_MLP_HIDDEN_DIMS</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1024</span><span class="p">,</span> <span class="mi">1024</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="mi">256</span><span class="p">]</span>
+
+<span class="c1"># I&#39;ll get sloppy with warnings because just like</span>
+<span class="c1"># Steven Tyler sometimes you gotta live on the edge</span>
+<span class="n">tf</span><span class="o">.</span><span class="n">get_logger</span><span class="p">()</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="s2">&quot;ERROR&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="what-does-your-data-look-like">
+<h2>What Does Your Data Look Like<a class="headerlink" href="#what-does-your-data-look-like" title="Permalink to this headline"></a></h2>
+<p>As we discussed before, “tabular data” is an umbrella term referring to data collected from a vast array of problems and phenomena. Perhaps Bob’s dataset has 192 features, 54 of which are continuous variables recorded as 32 bit floating point numbers, and the remainder of which are categorical variables which he has encoded as strings. Alice, on the other hand, may have a dataset consisting of 3271 features, most of which are continuous, but a handful of which are integer IDs which can take on one of millions of possible values. We can’t expect the same model to be able to handle this kind of variety unless we give it some description of what sorts of inputs to expect.</p>
+<p>Moreover, the format in which the data gets read from disk will rarely be the one the model finds useful. Bob’s string categories will be of no use to a neural network which lives in the world of continuous functions of real numbers; they will need to be converted to integer lookup table indices before being ingested. For certain types of these <strong>transformations</strong>, Bob may want to do this conversion once, up front, before training begins, and then be done with it. However, this may not always be possible. Bob may wish to hyperparameter search over the parameters of such a transformation (if, for instance, he is using a hash function to map to indices and wants to play with the number of buckets to use). Or perhaps he wants to retain the pre-transformed values, but finds the cost of storing an entire second dataset of the transformed values prohibitive. In this case, he’ll need to perform the transformations <em>online</em>, between when the data is read from disk and when it gets fed to the network.</p>
+<p>Finally, in the case of categorical variables, these lookup indices will need to, well, <em>look up</em> an embedding vector that finally puts us in the continuous space our network prefers. Therefore, we also need to define how large of an embedding vector we want to use for a given feature.</p>
+<p>TensorFlow provides a convenient module to record this information about the names of features to expect, their type (categorical or numeric), their data type, common transformations to perform on them, and the size of embedding table to use in the case of categorical variables: the <a class="reference external" href="https://www.tensorflow.org/tutorials/structured_data/feature_columns"><code class="docutils literal notranslate"><span class="pre">feature_column</span></code> module</a>. (Note: as of <a class="reference external" href="https://github.com/tensorflow/tensorflow/releases/tag/v2.3.0-rc0">TensorFlow 2.3</a> these are being deprecated and replaced with Keras layers with similar functionality. Most of the arguments made here will still apply, the code will just look a bit different.) These objects provide both stateless representations of feature information, as well as the code that performs the transformations and embeddings at train time.</p>
+<p>While <code class="docutils literal notranslate"><span class="pre">feature_column</span></code>s are a handy and robust representation format, their transformation and embedding implementations are poorly suited for GPUs. We’ll see how this looks in terms of TensorFlow profile traces later, but the upshot comes down to two basic points:</p>
+<ul class="simple">
+<li><p>Many of the transformations involve ops that either don’t have a GPU kernel, or have one which is unoptimized. The involvement of ops without GPU kernels means that you’re spending a lot of your train step moving data around to the device which can run the current op. Many of the ops that <em>do</em> have a GPU kernel are small and don’t involve much math, which drowns the math-hungry parallel computing model of GPUs in kernel launch overhead.</p></li>
+<li><p>The embeddings use sparse tensor machinery that is unoptimized on GPUs and is unnecessary for one-hot categoricals, the only type we’ll focus on here. This is a good time to mention that the techniques we’ll cover today <em>do not generalize to multi-hot categorical data</em>, which isn’t currently supported by NVTabular. However, there is active work to support this being done and we hope to have it seamlessly integrated in the near future.</p></li>
+</ul>
+<p>As we’ll see later, one difficulty in addressing the second issue is that the same Keras layer which performs the embeddings <em>also</em> performs the transformations, so even if you know that all your categoricals are one-hot and want to build an accelerated embedding layer that leverages this information, you would be out of luck on a layer which can just perform whatever transformations you might need. One way to get around this is to move your transformations to NVTabular, which will do them all on the GPU at data-loading time, so that all Keras needs to handle is the embedding using a layer like the <code class="docutils literal notranslate"><span class="pre">tf.keras.layers.DenseFeatures</span></code>, or, even more accelerated, NVTabular’s equivalent <code class="docutils literal notranslate"><span class="pre">layers.DenseFeatures</span></code> layer.</p>
+<p>The good news is, as of NVTabular 0.2, you don’t need to change the feature columns you use to represent your inputs and preprocessing in order to enjoy GPU acceleration. The <code class="docutils literal notranslate"><span class="pre">make_feature_column_workflow</span></code> utility will take care of creating an NVTabular <code class="docutils literal notranslate"><span class="pre">Workflow</span></code> object which will perform all of the requisite preprocessing on the GPU, then pass the preprocessed columns to TensorFlow tensors.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">get_feature_columns</span><span class="p">():</span>
+    <span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">feature_column</span><span class="o">.</span><span class="n">numeric_column</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,))</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">NUMERIC_FEATURE_NAMES</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">feature_name</span><span class="p">,</span> <span class="n">count</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">CATEGORICAL_FEATURE_NAMES</span><span class="p">,</span> <span class="n">CATEGORY_COUNTS</span><span class="p">):</span>
+        <span class="n">categorical_column</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">feature_column</span><span class="o">.</span><span class="n">categorical_column_with_hash_bucket</span><span class="p">(</span>
+            <span class="n">feature_name</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="mf">0.75</span> <span class="o">*</span> <span class="n">count</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">int64</span>
+        <span class="p">)</span>
+        <span class="n">embedding_column</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">feature_column</span><span class="o">.</span><span class="n">embedding_column</span><span class="p">(</span><span class="n">categorical_column</span><span class="p">,</span> <span class="n">EMBEDDING_DIM</span><span class="p">)</span>
+        <span class="n">columns</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">embedding_column</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">columns</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="a-data-by-any-other-format-tfrecords-and-tabular-representation">
+<h2>A Data By Any Other Format: TFRecords and Tabular Representation<a class="headerlink" href="#a-data-by-any-other-format-tfrecords-and-tabular-representation" title="Permalink to this headline"></a></h2>
+<p>By running the Criteo preprocessing example above, we generated a dataset in the parquet data format. Why Parquet? Well, besides the fact that NVTabular can read parquet files exceptionally quickly, parquet is a widely used tabular data format that can be read by libraries like Pandas or CuDF to quickly search, filter, and manipulate data using high level abstractions.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">cudf</span>
+<span class="kn">import</span> <span class="nn">glob</span>
+
+<span class="n">filename</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">DATA_DIR</span><span class="p">,</span> <span class="s2">&quot;train&quot;</span><span class="p">,</span> <span class="s2">&quot;*.parquet&quot;</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">cudf</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">num_rows</span><span class="o">=</span><span class="mi">1000000</span><span class="p">)</span>
+<span class="n">df</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>I5</th>
+      <th>I4</th>
+      <th>I6</th>
+      <th>I11</th>
+      <th>I2</th>
+      <th>I8</th>
+      <th>I12</th>
+      <th>I13</th>
+      <th>I1</th>
+      <th>I3</th>
+      <th>...</th>
+      <th>C16</th>
+      <th>C2</th>
+      <th>C17</th>
+      <th>C25</th>
+      <th>C3</th>
+      <th>C26</th>
+      <th>C9</th>
+      <th>C13</th>
+      <th>C14</th>
+      <th>label</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>-0.898195</td>
+      <td>-1.059381</td>
+      <td>-0.488376</td>
+      <td>-0.910574</td>
+      <td>0.406506</td>
+      <td>0.991578</td>
+      <td>1.030196</td>
+      <td>0.039582</td>
+      <td>-0.363446</td>
+      <td>0.113603</td>
+      <td>...</td>
+      <td>76</td>
+      <td>5611</td>
+      <td>1</td>
+      <td>45</td>
+      <td>5884</td>
+      <td>12</td>
+      <td>36</td>
+      <td>8</td>
+      <td>512</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>2.595875</td>
+      <td>0.674505</td>
+      <td>-0.488376</td>
+      <td>1.589269</td>
+      <td>0.881184</td>
+      <td>-1.092583</td>
+      <td>0.211819</td>
+      <td>1.143488</td>
+      <td>0.387689</td>
+      <td>0.323043</td>
+      <td>...</td>
+      <td>68</td>
+      <td>32452</td>
+      <td>1</td>
+      <td>61</td>
+      <td>7465</td>
+      <td>23</td>
+      <td>36</td>
+      <td>5</td>
+      <td>142</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>-0.113255</td>
+      <td>1.034299</td>
+      <td>-0.488376</td>
+      <td>0.410145</td>
+      <td>0.898900</td>
+      <td>0.917925</td>
+      <td>0.198978</td>
+      <td>-0.213917</td>
+      <td>1.099744</td>
+      <td>-0.156412</td>
+      <td>...</td>
+      <td>58</td>
+      <td>4183</td>
+      <td>3</td>
+      <td>45</td>
+      <td>715</td>
+      <td>23</td>
+      <td>36</td>
+      <td>2</td>
+      <td>1199</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>-0.898195</td>
+      <td>-1.059381</td>
+      <td>-0.488376</td>
+      <td>-0.910574</td>
+      <td>0.099380</td>
+      <td>-1.092583</td>
+      <td>-0.495383</td>
+      <td>0.236211</td>
+      <td>-1.311273</td>
+      <td>0.323043</td>
+      <td>...</td>
+      <td>0</td>
+      <td>3149</td>
+      <td>0</td>
+      <td>61</td>
+      <td>6167</td>
+      <td>6</td>
+      <td>62</td>
+      <td>4</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>-0.898195</td>
+      <td>-1.059381</td>
+      <td>-0.488376</td>
+      <td>-0.910574</td>
+      <td>0.561786</td>
+      <td>-1.092583</td>
+      <td>-0.043296</td>
+      <td>-1.181990</td>
+      <td>-1.311273</td>
+      <td>-1.187559</td>
+      <td>...</td>
+      <td>0</td>
+      <td>3149</td>
+      <td>0</td>
+      <td>45</td>
+      <td>7419</td>
+      <td>6</td>
+      <td>36</td>
+      <td>2</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>999995</th>
+      <td>-0.898195</td>
+      <td>-1.059381</td>
+      <td>-0.488376</td>
+      <td>-0.910574</td>
+      <td>1.146024</td>
+      <td>-1.092583</td>
+      <td>0.327294</td>
+      <td>-1.181990</td>
+      <td>-1.311273</td>
+      <td>-1.187559</td>
+      <td>...</td>
+      <td>0</td>
+      <td>10231</td>
+      <td>0</td>
+      <td>61</td>
+      <td>13518</td>
+      <td>23</td>
+      <td>36</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>999996</th>
+      <td>-0.898195</td>
+      <td>-1.059381</td>
+      <td>-0.488376</td>
+      <td>-0.910574</td>
+      <td>0.574969</td>
+      <td>0.733282</td>
+      <td>-0.717885</td>
+      <td>-1.181990</td>
+      <td>0.263033</td>
+      <td>-1.187559</td>
+      <td>...</td>
+      <td>76</td>
+      <td>12699</td>
+      <td>1</td>
+      <td>61</td>
+      <td>896</td>
+      <td>13</td>
+      <td>9</td>
+      <td>1</td>
+      <td>512</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>999997</th>
+      <td>-0.402953</td>
+      <td>1.149989</td>
+      <td>-0.488376</td>
+      <td>-0.077293</td>
+      <td>-0.033020</td>
+      <td>2.420449</td>
+      <td>1.056442</td>
+      <td>-0.571204</td>
+      <td>-0.837359</td>
+      <td>-0.536978</td>
+      <td>...</td>
+      <td>0</td>
+      <td>15240</td>
+      <td>0</td>
+      <td>61</td>
+      <td>7290</td>
+      <td>13</td>
+      <td>21</td>
+      <td>7</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>999998</th>
+      <td>0.092289</td>
+      <td>0.988406</td>
+      <td>-0.488376</td>
+      <td>-0.077293</td>
+      <td>-0.267567</td>
+      <td>-0.333486</td>
+      <td>0.442404</td>
+      <td>1.925359</td>
+      <td>-0.210880</td>
+      <td>1.289434</td>
+      <td>...</td>
+      <td>0</td>
+      <td>528</td>
+      <td>0</td>
+      <td>61</td>
+      <td>8663</td>
+      <td>6</td>
+      <td>36</td>
+      <td>5</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>999999</th>
+      <td>-0.898195</td>
+      <td>0.272316</td>
+      <td>0.407738</td>
+      <td>-0.910574</td>
+      <td>-2.140079</td>
+      <td>-0.333486</td>
+      <td>-0.684663</td>
+      <td>1.314574</td>
+      <td>1.464903</td>
+      <td>1.414765</td>
+      <td>...</td>
+      <td>76</td>
+      <td>24626</td>
+      <td>1</td>
+      <td>8</td>
+      <td>4736</td>
+      <td>12</td>
+      <td>21</td>
+      <td>1</td>
+      <td>512</td>
+      <td>0</td>
+    </tr>
+  </tbody>
+</table>
+<p>1000000 rows × 40 columns</p>
+</div></div></div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># do some filtering or whatever</span>
+<span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;C18&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">228</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>I5</th>
+      <th>I4</th>
+      <th>I6</th>
+      <th>I11</th>
+      <th>I2</th>
+      <th>I8</th>
+      <th>I12</th>
+      <th>I13</th>
+      <th>I1</th>
+      <th>I3</th>
+      <th>...</th>
+      <th>C16</th>
+      <th>C2</th>
+      <th>C17</th>
+      <th>C25</th>
+      <th>C3</th>
+      <th>C26</th>
+      <th>C9</th>
+      <th>C13</th>
+      <th>C14</th>
+      <th>label</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>-0.898195</td>
+      <td>-1.059381</td>
+      <td>-0.488376</td>
+      <td>-0.910574</td>
+      <td>0.406506</td>
+      <td>0.991578</td>
+      <td>1.030196</td>
+      <td>0.039582</td>
+      <td>-0.363446</td>
+      <td>0.113603</td>
+      <td>...</td>
+      <td>76</td>
+      <td>5611</td>
+      <td>1</td>
+      <td>45</td>
+      <td>5884</td>
+      <td>12</td>
+      <td>36</td>
+      <td>8</td>
+      <td>512</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>-0.898195</td>
+      <td>-1.059381</td>
+      <td>-0.488376</td>
+      <td>-0.910574</td>
+      <td>0.099380</td>
+      <td>-1.092583</td>
+      <td>-0.495383</td>
+      <td>0.236211</td>
+      <td>-1.311273</td>
+      <td>0.323043</td>
+      <td>...</td>
+      <td>0</td>
+      <td>3149</td>
+      <td>0</td>
+      <td>61</td>
+      <td>6167</td>
+      <td>6</td>
+      <td>62</td>
+      <td>4</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>-0.898195</td>
+      <td>-1.059381</td>
+      <td>-0.488376</td>
+      <td>-0.910574</td>
+      <td>0.561786</td>
+      <td>-1.092583</td>
+      <td>-0.043296</td>
+      <td>-1.181990</td>
+      <td>-1.311273</td>
+      <td>-1.187559</td>
+      <td>...</td>
+      <td>0</td>
+      <td>3149</td>
+      <td>0</td>
+      <td>45</td>
+      <td>7419</td>
+      <td>6</td>
+      <td>36</td>
+      <td>2</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>-0.898195</td>
+      <td>-1.059381</td>
+      <td>-0.488376</td>
+      <td>-0.910574</td>
+      <td>-0.187813</td>
+      <td>1.165454</td>
+      <td>2.195199</td>
+      <td>1.871938</td>
+      <td>-1.311273</td>
+      <td>2.065346</td>
+      <td>...</td>
+      <td>0</td>
+      <td>12554</td>
+      <td>0</td>
+      <td>8</td>
+      <td>13182</td>
+      <td>6</td>
+      <td>36</td>
+      <td>6</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>-0.898195</td>
+      <td>-0.542999</td>
+      <td>0.407738</td>
+      <td>-0.910574</td>
+      <td>-2.140079</td>
+      <td>-0.574419</td>
+      <td>-0.581672</td>
+      <td>-1.181990</td>
+      <td>-0.837359</td>
+      <td>-1.187559</td>
+      <td>...</td>
+      <td>0</td>
+      <td>24999</td>
+      <td>0</td>
+      <td>61</td>
+      <td>5079</td>
+      <td>13</td>
+      <td>36</td>
+      <td>6</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>999985</th>
+      <td>-0.898195</td>
+      <td>-1.059381</td>
+      <td>-0.488376</td>
+      <td>-0.910574</td>
+      <td>0.083191</td>
+      <td>-0.574419</td>
+      <td>1.745785</td>
+      <td>-0.213917</td>
+      <td>-0.837359</td>
+      <td>-0.156412</td>
+      <td>...</td>
+      <td>0</td>
+      <td>13613</td>
+      <td>0</td>
+      <td>24</td>
+      <td>6240</td>
+      <td>6</td>
+      <td>21</td>
+      <td>3</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>999986</th>
+      <td>-0.898195</td>
+      <td>0.067703</td>
+      <td>0.931930</td>
+      <td>-0.910574</td>
+      <td>0.486195</td>
+      <td>-0.765658</td>
+      <td>-1.964434</td>
+      <td>0.930981</td>
+      <td>0.770305</td>
+      <td>1.063082</td>
+      <td>...</td>
+      <td>0</td>
+      <td>7452</td>
+      <td>0</td>
+      <td>45</td>
+      <td>8665</td>
+      <td>11</td>
+      <td>36</td>
+      <td>2</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>999990</th>
+      <td>-0.898195</td>
+      <td>-1.059381</td>
+      <td>-0.488376</td>
+      <td>-0.910574</td>
+      <td>-0.210349</td>
+      <td>-1.092583</td>
+      <td>1.758998</td>
+      <td>-1.181990</td>
+      <td>-0.837359</td>
+      <td>-1.187559</td>
+      <td>...</td>
+      <td>60</td>
+      <td>22810</td>
+      <td>3</td>
+      <td>61</td>
+      <td>16817</td>
+      <td>23</td>
+      <td>36</td>
+      <td>6</td>
+      <td>1614</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>999992</th>
+      <td>0.492124</td>
+      <td>1.426266</td>
+      <td>-0.488376</td>
+      <td>0.410145</td>
+      <td>0.322983</td>
+      <td>-1.092583</td>
+      <td>0.473773</td>
+      <td>-0.213917</td>
+      <td>-0.560138</td>
+      <td>-0.156412</td>
+      <td>...</td>
+      <td>0</td>
+      <td>31072</td>
+      <td>0</td>
+      <td>61</td>
+      <td>3920</td>
+      <td>6</td>
+      <td>21</td>
+      <td>5</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>999993</th>
+      <td>-0.898195</td>
+      <td>1.039733</td>
+      <td>-0.488376</td>
+      <td>-0.910574</td>
+      <td>0.325448</td>
+      <td>-0.247494</td>
+      <td>0.073857</td>
+      <td>0.930981</td>
+      <td>2.196103</td>
+      <td>0.638853</td>
+      <td>...</td>
+      <td>76</td>
+      <td>8228</td>
+      <td>1</td>
+      <td>45</td>
+      <td>4708</td>
+      <td>6</td>
+      <td>62</td>
+      <td>6</td>
+      <td>512</td>
+      <td>0</td>
+    </tr>
+  </tbody>
+</table>
+<p>499183 rows × 40 columns</p>
+</div></div></div>
+</div>
+<p>This is great news for data scientists: formats like parquet are the bread and butter of any sort of data exploration. You almost certainly want to keep at least <em>one</em> version of your dataset in a format like this. If your dataset is large enough, and storage gets expensive, it’s probably the <em>only</em> format you want to keep your dataset in.</p>
+<p>Unfortunately, TensorFlow does not have fast native readers for formats like this that can read larger-than-memory datasets in an online fashion. TensorFlow’s preferred, and fastest, data format is the <a class="reference external" href="https://www.tensorflow.org/tutorials/load_data/tfrecord">TFRecord</a>, a binary format which associates all field names and their values with every example in your dataset. For tabular data, where small float or int features have a smaller memory footprint than string field names, the memory footprint of such a representation can get really big, really fast.</p>
+<p>More importantly, TFRecords require reading and parsing in batches using user-provided data schema descriptions. This makes doing the sorts of manipulations described above difficult, if not near impossible, and requires an enormous amount of work to change the values corresponding to a single field in your dataset. For this reason, you almost never want to use TFRecords as the <em>only</em> means of representing your data, which means you have generate and store an entire copy of your dataset every time it needs to update. This can take an enormous amount of time and resources that prolong the time from the conception of a feature to testing it in a model.</p>
+<p>The main advantage of TFRecords is the speed with which TensorFlow can read them (and its APIs for doing this online), and their support for multi-hot categorical features. While NVTabular is still working on addressing the latter, we’ll show below that reading parquet files in batch using NVTabular is substantially faster than the existing TFRecord readers. In order to do this, we’ll need to generate a TFRecord version of the parquet dataset we generated before. I’m going to restrict this to generating just the 1000 steps we’ll need to do our training demo, but if you have a few days and a couple terabytes of storage lying around feel free to run the whole thing.</p>
+<p>Don’t worry too much about the code below: it’s a bit dense (and frankly still isn’t fully robust to string features) and doesn’t have much to do with what follows. I’m sure there are ways to make it cleaner/faster/etc., but If anything, it should make clear how nontrivial the process of building and writing TFRecords is. I’m also going to keep it commented out for now since the disk space required is so high, and the casual user clicking through cells might accidentally exhaust their allotment. If you feel like running the comparisons below to keep me honest, uncomment this cell and run it first.</p>
+<p>The last thing I’ll note is that the astute and experienced TensorFlow user will at this point object that there exist ways to make reading TFRecords for tabular data faster than what I’m about to present. Among these are pre-batching examples (which, I would point out, more or less enforces a fixed valency for all categorical features) and combining all fixed valency categorical and continuous features into vectorized fields in records which can all be parsed at once. And while it’s true that methods like this will accelerate TFRecord reading, they still fail to overtake NVTabular’s parquet reader. Perhaps more importantly (at least from my workflow-centric view), they only compound the problems I’ve outlined so far of the difficulty of doing data analysis with TFRecords, and would almost certainly require the code below to be even more brittle and complicated. And this is actually a point worth emphasizing: with NVTabular data loading, you’re getting better performance <em>and</em> less programming overhead, the holy grail of GPU-based DL software.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># import multiprocessing as mp</span>
+<span class="c1"># from glob import glob</span>
+<span class="c1"># from itertools import repeat</span>
+<span class="c1"># from tqdm.notebook import trange</span>
+
+<span class="c1"># def pool_initializer(num_cols, cat_cols):</span>
+<span class="c1">#     global numeric_columns</span>
+<span class="c1">#     global categorical_columns</span>
+<span class="c1">#     numeric_columns = num_cols</span>
+<span class="c1">#     categorical_columns = cat_cols</span>
+
+<span class="c1"># def build_and_serialize_example(data):</span>
+<span class="c1">#     numeric_values, categorical_values = data</span>
+<span class="c1">#     feature = {}</span>
+<span class="c1">#     if numeric_values is not None:</span>
+<span class="c1">#         feature.update({</span>
+<span class="c1">#             col: tf.train.Feature(float_list=tf.train.FloatList(value=[float(val)]))</span>
+<span class="c1">#                 for col, val in zip(numeric_columns, numeric_values)</span>
+<span class="c1">#     })</span>
+<span class="c1">#     if categorical_values is not None:</span>
+<span class="c1">#         feature.update({</span>
+<span class="c1">#             col: tf.train.Feature(int64_list=tf.train.Int64List(value=[int(val)]))</span>
+<span class="c1">#                 for col, val in zip(categorical_columns, categorical_values)</span>
+<span class="c1">#     })</span>
+<span class="c1">#     return tf.train.Example(features=tf.train.Features(feature=feature)).SerializeToString()</span>
+
+<span class="c1"># def get_writer(write_dir, file_idx):</span>
+<span class="c1">#     filename = str(file_idx).zfill(5) + &#39;.tfrecords&#39;</span>
+<span class="c1">#     return tf.io.TFRecordWriter(os.path.join(write_dir, filename))</span>
+
+
+<span class="c1"># _EXAMPLES_PER_RECORD = 20000000</span>
+<span class="c1"># write_dir = os.path.dirname(TFRECORDS)</span>
+<span class="c1"># if not os.path.exists(write_dir):</span>
+<span class="c1">#     os.makedirs(write_dir)</span>
+<span class="c1"># file_idx, example_idx = 0, 0</span>
+<span class="c1"># writer = get_writer(write_dir, file_idx)</span>
+
+<span class="c1"># do_break = False</span>
+<span class="c1"># column_names = [NUMERIC_FEATURE_NAMES, CATEGORICAL_FEATURE_NAMES+[LABEL_NAME]]</span>
+<span class="c1"># with mp.Pool(8, pool_initializer, column_names) as pool:</span>
+<span class="c1">#     fnames = glob(PARQUETS)</span>
+<span class="c1">#     dataset = nvt.Dataset(fnames)</span>
+<span class="c1">#     pbar = trange(BATCH_SIZE*STEPS)</span>
+
+<span class="c1">#     for df in dataset.to_iter():</span>
+<span class="c1">#         data = []</span>
+<span class="c1">#         for col_names in column_names:</span>
+<span class="c1">#             if len(col_names) == 0:</span>
+<span class="c1">#                 data.append(repeat(None))</span>
+<span class="c1">#             else:</span>
+<span class="c1">#                 data.append(df[col_names].to_pandas().values)</span>
+<span class="c1">#         data = zip(*data)</span>
+
+<span class="c1">#         record_map = pool.imap(build_and_serialize_example, data, chunksize=200)</span>
+<span class="c1">#         for record in record_map:</span>
+<span class="c1">#             writer.write(record)</span>
+<span class="c1">#             example_idx += 1</span>
+
+<span class="c1">#             if example_idx == _EXAMPLES_PER_RECORD:</span>
+<span class="c1">#                 writer.close()</span>
+<span class="c1">#                 file_idx += 1</span>
+<span class="c1">#                 writer = get_writer(file_idx)</span>
+<span class="c1">#                 example_idx = 0</span>
+<span class="c1">#             pbar.update(1)</span>
+<span class="c1">#             if pbar.n == BATCH_SIZE*STEPS:</span>
+<span class="c1">#                 do_break = True</span>
+<span class="c1">#                 break</span>
+<span class="c1">#         if do_break:</span>
+<span class="c1">#             del df</span>
+<span class="c1">#             break</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Ok, now that we have our data set up the way that we need it, we’re ready to get training! TensorFlow provides a handy utility for building an online dataloader that we’ll use to parse the tfrecords. Meanwhile, on the NVTablar side, we’ll use the <code class="docutils literal notranslate"><span class="pre">KerasSequenceLoader</span></code> for reading chunks of parquet files. We’ll also use a the <code class="docutils literal notranslate"><span class="pre">make_feature_column_workflow</span></code> to build an NVTabular <code class="docutils literal notranslate"><span class="pre">Workflow</span></code> that handles hash bucketing online on the GPU. It will also return a simplified set of feature columns that <em>don’t</em> include the preprocessing steps.</p>
+<p>Take a look below to see the similarities in the API. What’s great about using NVTabular <code class="docutils literal notranslate"><span class="pre">Workflow</span></code>s for online preprocessing is that it makes doing arbitrary preprocessing reasonably simple by using <code class="docutils literal notranslate"><span class="pre">DFlambda</span></code> ops, and the <code class="docutils literal notranslate"><span class="pre">Op</span></code> class API allows for extension to more complicated, stat-driven preprocessing as well.</p>
+<p>One potentially important difference between these dataset classes is the way in which shuffling is handled. The TensorFlow data loader maintains a buffer of size <code class="docutils literal notranslate"><span class="pre">shuffle_buffer_size</span></code> from which batch elements are randomly selected, with the buffer then sequentially replenished by the next <code class="docutils literal notranslate"><span class="pre">batch_size</span></code> elements in the TFRecord. Large shuffle buffers, while allowing for better epoch-to-epoch randomness and hence generalization, can be hard to maintain given the slow read times. The limitation this enforces on your buffer size isn’t as big a deal for datasets which are uniformly shuffled in the TFRecord and only require one or two epochs to converge, but many datasets are ordered by some feature (whether it’s time or some categorical groupby), and in this case the windowed shuffle buffer can lead to biased sampling and hence poorer quality gradients.</p>
+<p>On the other hand, the <code class="docutils literal notranslate"><span class="pre">KerasSequenceLoader</span></code> manages shuffling by loading in chunks of data from different parts of the full dataset, concatenating them and then shuffling, then iterating through this super-chunk sequentially in batches. The number of “parts” of the dataset that get sample, or “partitions”, is controlled by the <code class="docutils literal notranslate"><span class="pre">parts_per_chunk</span></code> kwarg, while the size of each one of these parts is controlled by the <code class="docutils literal notranslate"><span class="pre">buffer_size</span></code> kwarg, which refers to a fraction of available GPU memory. Using more chunks leads to better randomness, especially at the epoch level where physically disparate samples can be brought into the same batch, but can impact throughput if you use too many. In any case, the speed of the parquet reader makes feasible buffer sizes much larger.</p>
+<p>The key thing to keep in mind is due to the asynchronus nature of the data loader, there will be <code class="docutils literal notranslate"><span class="pre">parts_per_chunk*buffer_size*3</span></code> rows of data floating around the GPU at any one time, so your goal should be to balance <code class="docutils literal notranslate"><span class="pre">parts_per_chunk</span></code> and <code class="docutils literal notranslate"><span class="pre">buffer_size</span></code> in such a way to leverage as much GPU memory as possible without going out-of-memory (OOM) and while still meeting your randomness and throughput needs.</p>
+<p>Finally, remember that once the data is loaded, it doesn’t just pass to TensorFlow untouched: we also apply concatenation, shuffling, and preprocessing operations which will take memory to execute. The takeaway is that just because TensorFlow is only occupying 50% of the GPU memory, don’t expect that this implies that we can algebraically balance <code class="docutils literal notranslate"><span class="pre">parts_per_chunk</span></code> and <code class="docutils literal notranslate"><span class="pre">buffer_size</span></code> to exactly occupy the remaining 50%. This might take a bit of tuning for your workload, but once you know the right combination you can use it forever. (Or at least until you get a bigger GPU!)</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">make_dataset</span><span class="p">(</span><span class="n">file_pattern</span><span class="p">,</span> <span class="n">columns</span><span class="p">,</span> <span class="n">accelerated</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="c1"># make a tfrecord features dataset</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">accelerated</span><span class="p">:</span>
+        <span class="c1"># feature spec tells us how to parse tfrecords</span>
+        <span class="c1"># using FixedLenFeatures keeps from using sparse machinery,</span>
+        <span class="c1"># but obviously wouldn&#39;t extend to multi-hot categoricals</span>
+        <span class="n">feature_spec</span> <span class="o">=</span> <span class="p">{</span><span class="n">LABEL_NAME</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">FixedLenFeature</span><span class="p">((</span><span class="mi">1</span><span class="p">,),</span> <span class="n">tf</span><span class="o">.</span><span class="n">int64</span><span class="p">)}</span>
+        <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">columns</span><span class="p">:</span>
+            <span class="n">column</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">column</span><span class="p">,</span> <span class="s2">&quot;categorical_column&quot;</span><span class="p">,</span> <span class="n">column</span><span class="p">)</span>
+            <span class="n">dtype</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">column</span><span class="p">,</span> <span class="s2">&quot;dtype&quot;</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+            <span class="n">feature_spec</span><span class="p">[</span><span class="n">column</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">FixedLenFeature</span><span class="p">((</span><span class="mi">1</span><span class="p">,),</span> <span class="n">dtype</span><span class="p">)</span>
+
+        <span class="n">dataset</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">experimental</span><span class="o">.</span><span class="n">make_batched_features_dataset</span><span class="p">(</span>
+            <span class="n">file_pattern</span><span class="p">,</span>
+            <span class="n">BATCH_SIZE</span><span class="p">,</span>
+            <span class="n">feature_spec</span><span class="p">,</span>
+            <span class="n">label_key</span><span class="o">=</span><span class="n">LABEL_NAME</span><span class="p">,</span>
+            <span class="n">num_epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">shuffle_buffer_size</span><span class="o">=</span><span class="mi">4</span> <span class="o">*</span> <span class="n">BATCH_SIZE</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="c1"># make an nvtabular KerasSequenceLoader and add</span>
+    <span class="c1"># a hash bucketing workflow for online preproc</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">online_workflow</span><span class="p">,</span> <span class="n">columns</span> <span class="o">=</span> <span class="n">make_feature_column_workflow</span><span class="p">(</span><span class="n">columns</span><span class="p">,</span> <span class="n">LABEL_NAME</span><span class="p">)</span>
+        <span class="n">train_paths</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">file_pattern</span><span class="p">)</span>
+        <span class="n">dataset</span> <span class="o">=</span> <span class="n">nvt</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">train_paths</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="s2">&quot;parquet&quot;</span><span class="p">)</span>
+        <span class="n">online_workflow</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
+        <span class="n">ds</span> <span class="o">=</span> <span class="n">KerasSequenceLoader</span><span class="p">(</span>
+            <span class="n">online_workflow</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">dataset</span><span class="p">),</span>
+            <span class="n">batch_size</span><span class="o">=</span><span class="n">BATCH_SIZE</span><span class="p">,</span>
+            <span class="n">label_names</span><span class="o">=</span><span class="p">[</span><span class="n">LABEL_NAME</span><span class="p">],</span>
+            <span class="n">feature_columns</span><span class="o">=</span><span class="n">columns</span><span class="p">,</span>
+            <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">buffer_size</span><span class="o">=</span><span class="mf">0.06</span><span class="p">,</span>
+            <span class="n">parts_per_chunk</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">ds</span><span class="p">,</span> <span class="n">columns</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="living-in-the-continuous-world">
+<h3>Living In The Continuous World<a class="headerlink" href="#living-in-the-continuous-world" title="Permalink to this headline"></a></h3>
+<p>So at this point, we have a description of our dataset schema contained in our <code class="docutils literal notranslate"><span class="pre">feature_column</span></code>s, and we have a <code class="docutils literal notranslate"><span class="pre">dataset</span></code> object which can load some particular materialization of this schema (our dataset) in an online fashion (with the bytes encoding that materialization organized according to either the TFRecord or Parquet standard).</p>
+<p>Once the data is loaded, it needs to get run through a neural network, which will use them to produce predictions of interaction likelihoods, compare its predictions to the labelled answers, and improve its future guesses using this comparison through the magic of backpropogation. Easy as pie.</p>
+<p>Unfortunately, the magic of backpropogation relies on a trick of calculus which, by its nature, requires that the functions represented by the neural network are <em>continuous</em>. Whether or not you fully understand exactly what that means, you can probably imagine that this is incongrous with the <em>categorical</em> features our dataset contains. Less fundamentally, but from an equally practical standpoint, much of the algebra that our network will perform on our tabular features goes much (read: <em>MUCH</em>) faster if we do it in parallel as matrix algebra.</p>
+<p>For these reasons, we’ll want to convert our tabular continuous and categorical features into purely continuous vectors that can be consumed by the network and processed efficiently. For categorical features, this means using the categorical index to lookup a (typically learned) vector from some lower-dimensional space to pass to the network. The exact mechanism by which your network embeds and combines these values will depend on your choice of architecture. But the fundamental operation of looking up and concatenating (or stacking) is ubiquitous across almost all tabular deep learning architectures.</p>
+<p>The go-to Keras layer for doing this sort of operation is the <code class="docutils literal notranslate"><span class="pre">DenseFeatures</span></code> layer, which will also perform any transformations defined by your <code class="docutils literal notranslate"><span class="pre">feature_column</span></code>s. The downside of using the <code class="docutils literal notranslate"><span class="pre">DenseFeatures</span></code> layer, as we’ll investigate more fully in a bit, is that its GPU performance is handicapped by the use of lots of small ops for doing things that aren’t necessarily worth doing on an accelerator like a GPU e.g. checking for in-range values. This drowns the compute itself in kernel launch overhead. Moreover, <code class="docutils literal notranslate"><span class="pre">DenseFeatures</span></code> has no mechanism for identifying one-hot categorical features, instead using <code class="docutils literal notranslate"><span class="pre">SparseTensor</span></code> machinery for all categorical columns for the sake of robustness. Many sparse TensorFlow ops aren’t optimized for GPU, particularly for leveraging those Tensor Cores you’re paying for by using mixed precision compute, and this further bottlenecks GPU performance.</p>
+<p>Because we’re now doing all our transformations in NVTabular, and we <em>know</em> all of our categorical features are one-hot, we can use a better-optimized embedding layer, NVTabular’s <code class="docutils literal notranslate"><span class="pre">DenseFeatures</span></code> layer, that leverages this information. Below, we’ll see how we can use such a layer to implement the input ingestion pattern of the DLRM architecture. Note how the numeric and categorical features are handled entirely separately: this is a peculiarity of DLRM, and it’s worth noting that our <code class="docutils literal notranslate"><span class="pre">DenseFeatures</span></code> layer makes no assumptions about the combinations of categorical and continuous inputs. As a helpful exercise, I would encourage the reader to think of <em>other</em> input ingestion patterns that might capture information that DLRM’s does not, and use these same building blocks to mock up an example.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">DLRMEmbedding</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Layer</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">columns</span><span class="p">,</span> <span class="n">accelerated</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">is_cat</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">col</span><span class="p">:</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">col</span><span class="p">,</span> <span class="s2">&quot;categorical_column&quot;</span><span class="p">)</span>  <span class="c1"># noqa</span>
+        <span class="n">embedding_columns</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="n">is_cat</span><span class="p">,</span> <span class="n">columns</span><span class="p">))</span>
+        <span class="n">numeric_columns</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">filterfalse</span><span class="p">(</span><span class="n">is_cat</span><span class="p">,</span> <span class="n">columns</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">categorical_feature_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">col</span><span class="o">.</span><span class="n">categorical_column</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">embedding_columns</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">numeric_feature_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">col</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">numeric_columns</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">accelerated</span><span class="p">:</span>
+            <span class="c1"># need DenseFeatures layer to perform transformations,</span>
+            <span class="c1"># so we&#39;re stuck with the whole thing</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">categorical_densifier</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">DenseFeatures</span><span class="p">(</span><span class="n">embedding_columns</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">categorical_reshape</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Reshape</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">embedding_columns</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">numeric_densifier</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">DenseFeatures</span><span class="p">(</span><span class="n">numeric_columns</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># otherwise we can do a much faster embedding that</span>
+            <span class="c1"># doesn&#39;t break out the SparseTensor machinery</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">categorical_densifier</span> <span class="o">=</span> <span class="n">layers</span><span class="o">.</span><span class="n">DenseFeatures</span><span class="p">(</span>
+                <span class="n">embedding_columns</span><span class="p">,</span> <span class="n">aggregation</span><span class="o">=</span><span class="s2">&quot;stack&quot;</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">categorical_reshape</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">numeric_densifier</span> <span class="o">=</span> <span class="n">layers</span><span class="o">.</span><span class="n">DenseFeatures</span><span class="p">(</span><span class="n">numeric_columns</span><span class="p">,</span> <span class="n">aggregation</span><span class="o">=</span><span class="s2">&quot;concat&quot;</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">DLRMEmbedding</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">call</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Expected a dict!&quot;</span><span class="p">)</span>
+
+        <span class="n">categorical_inputs</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">inputs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">categorical_feature_names</span><span class="p">}</span>
+        <span class="n">numeric_inputs</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">inputs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">numeric_feature_names</span><span class="p">}</span>
+
+        <span class="n">fm_x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">categorical_densifier</span><span class="p">(</span><span class="n">categorical_inputs</span><span class="p">)</span>
+        <span class="n">dense_x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">numeric_densifier</span><span class="p">(</span><span class="n">numeric_inputs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">categorical_reshape</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">fm_x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">categorical_reshape</span><span class="p">(</span><span class="n">fm_x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">fm_x</span><span class="p">,</span> <span class="n">dense_x</span>
+
+    <span class="k">def</span> <span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># I&#39;m going to be lazy here. Sue me.</span>
+        <span class="k">return</span> <span class="p">{}</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="putting-our-differences-aside">
+<h3>Putting Our Differences Aside<a class="headerlink" href="#putting-our-differences-aside" title="Permalink to this headline"></a></h3>
+<p>As a practical matter, that <em>does it</em> for the differences between a typical TensorFlow pipeline and an NVTabular accelerated pipeline. Let’s review where they’ve diverged so far:</p>
+<ul class="simple">
+<li><p>We needed different feature columns because we’re no longer using TensorFlow’s transformation code for the hash bucketing</p></li>
+<li><p>We needed a different data loader because we’re reading parquet files instead of tfrecords (and using NVTabular to hash that data online)</p></li>
+<li><p>We needed a different embedding layer because the existing one is suboptimal and we don’t need most of its functionality</p></li>
+</ul>
+<p>Once the data is ready to be consumed by the network, we really <em>shouldn’t</em> be doing anything different. So from here on out we’ll just define the DLRM architecture using Keras, and then define a training function which uses the components we’ve built so far to string together a functional training run! Note that we’ll use a layer implemented by NVTabular, <code class="docutils literal notranslate"><span class="pre">DotProductInteraction</span></code>, which computes the FM component of the DLRM architecture (and can generalize to parameterized variants of the interactions proposed in the <a class="reference external" href="https://arxiv.org/abs/1905.09433">FibiNet</a> architecture as well).</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">ReLUMLP</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Layer</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dims</span><span class="p">,</span> <span class="n">output_activation</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layers</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">dim</span> <span class="ow">in</span> <span class="n">dims</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="s2">&quot;relu&quot;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">dims</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">activation</span><span class="o">=</span><span class="n">output_activation</span><span class="p">))</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ReLUMLP</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">call</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">layer</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">x</span>
+
+    <span class="k">def</span> <span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;dims&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">layer</span><span class="o">.</span><span class="n">units</span> <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="p">],</span>
+            <span class="s2">&quot;output_activation&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">activation</span><span class="p">,</span>
+        <span class="p">}</span>
+
+
+<span class="k">class</span> <span class="nc">DLRM</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Layer</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">embedding_dim</span><span class="p">,</span> <span class="n">top_mlp_hidden_dims</span><span class="p">,</span> <span class="n">bottom_mlp_hidden_dims</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">top_mlp</span> <span class="o">=</span> <span class="n">ReLUMLP</span><span class="p">(</span><span class="n">top_mlp_hidden_dims</span> <span class="o">+</span> <span class="p">[</span><span class="n">embedding_dim</span><span class="p">],</span> <span class="s2">&quot;linear&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;top_mlp&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bottom_mlp</span> <span class="o">=</span> <span class="n">ReLUMLP</span><span class="p">(</span><span class="n">bottom_mlp_hidden_dims</span> <span class="o">+</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;linear&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;bottom_mlp&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">interaction</span> <span class="o">=</span> <span class="n">layers</span><span class="o">.</span><span class="n">DotProductInteraction</span><span class="p">()</span>
+
+        <span class="c1"># adding in an activation layer for stability for mixed precision training</span>
+        <span class="c1"># not strictly necessary, but worth pointing out</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">activation</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Activation</span><span class="p">(</span><span class="s2">&quot;sigmoid&quot;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;float32&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">double_check</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Lambda</span><span class="p">(</span>
+            <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">clip_by_value</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;float32&quot;</span>
+        <span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">DLRM</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">call</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">):</span>
+        <span class="n">dense_x</span><span class="p">,</span> <span class="n">fm_x</span> <span class="o">=</span> <span class="n">inputs</span>
+        <span class="n">dense_x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">top_mlp</span><span class="p">(</span><span class="n">dense_x</span><span class="p">)</span>
+        <span class="n">dense_x_expanded</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">dense_x</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">x</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">fm_x</span><span class="p">,</span> <span class="n">dense_x_expanded</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">interaction</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">x</span><span class="p">,</span> <span class="n">dense_x</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bottom_mlp</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+        <span class="c1"># stuff I&#39;m adding in for mixed precision stability</span>
+        <span class="c1"># not actually related to DLRM at all</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">activation</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">double_check</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">x</span>
+
+    <span class="k">def</span> <span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;embedding_dim&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">top_mlp</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">units</span><span class="p">,</span>
+            <span class="s2">&quot;top_mlp_hidden_dims&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">layer</span><span class="o">.</span><span class="n">units</span> <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">top_mlp</span><span class="o">.</span><span class="n">layers</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]],</span>
+            <span class="s2">&quot;bottom_mlp_hidden_dims&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">layer</span><span class="o">.</span><span class="n">units</span> <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">bottom_mlp</span><span class="o">.</span><span class="n">layers</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]],</span>
+        <span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>This is an ugly little function I have for giving a more useful reporting of the model parameter count, since the embedding parameters will dominate the total count yet account for very little of the actual learning capacity. Unless you’re curious, just execute the cell and keep moving.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">print_param_counts</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
+    <span class="c1"># I want to go on record as saying I abhor</span>
+    <span class="c1"># importing inside a function, but I didn&#39;t want to</span>
+    <span class="c1"># make anyone think these imports were strictly</span>
+    <span class="c1"># *necessary* for a normal training pipeline</span>
+    <span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">reduce</span>
+
+    <span class="n">num_embedding_params</span><span class="p">,</span> <span class="n">num_network_params</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">weight</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">trainable_weights</span><span class="p">:</span>
+        <span class="n">weight_param_count</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">x</span> <span class="o">*</span> <span class="n">y</span><span class="p">,</span> <span class="n">weight</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s2">&quot;/embedding_weights:[0-9]+$&quot;</span><span class="p">,</span> <span class="n">weight</span><span class="o">.</span><span class="n">name</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">num_embedding_params</span> <span class="o">+=</span> <span class="n">weight_param_count</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">num_network_params</span> <span class="o">+=</span> <span class="n">weight_param_count</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Embedding parameter count: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">num_embedding_params</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Non-embedding parameter count: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">num_network_params</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>We’ll also include some callbacks to use TensorFlow’s incredible TensorBoard tool, both to track training metrics and to profile our GPU performance to diagnose and remove bottlenecks. We’ll also use a custom summary metric to monitor throughput in samples per second, to get a sense for the acceleration our improvements bring us. I’m building a function for this just because, like the function above, it’s not strictly <em>necessary</em>, particularly the throughput hook, so I don’t want to muddle the clarity of the actual training function by doing this there.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">get_callbacks</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">accelerated</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="n">run_name</span> <span class="o">=</span> <span class="n">device</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="p">(</span><span class="s2">&quot;accelerated&quot;</span> <span class="k">if</span> <span class="n">accelerated</span> <span class="k">else</span> <span class="s2">&quot;native&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">mixed_precision</span><span class="o">.</span><span class="n">global_policy</span><span class="p">()</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;mixed_float16&quot;</span><span class="p">:</span>
+        <span class="n">run_name</span> <span class="o">+=</span> <span class="s2">&quot;_mixed-precision&quot;</span>
+
+    <span class="n">log_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">LOG_DIR</span><span class="p">,</span> <span class="n">run_name</span><span class="p">)</span>
+    <span class="n">file_writer</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">summary</span><span class="o">.</span><span class="n">create_file_writer</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">log_dir</span><span class="p">,</span> <span class="s2">&quot;metrics&quot;</span><span class="p">))</span>
+    <span class="n">file_writer</span><span class="o">.</span><span class="n">set_as_default</span><span class="p">()</span>
+
+    <span class="c1"># note that we&#39;re going to be doing some profiling from batches 90-100, and so</span>
+    <span class="c1"># should expect to see a throughput dip there (since both the profiling itself</span>
+    <span class="c1"># and the export of the stats it gathers will eat up time). Thus, as a rule,</span>
+    <span class="c1"># it&#39;s not always necessary or desirable to be profiling every training run</span>
+    <span class="c1"># you do</span>
+    <span class="k">return</span> <span class="p">[</span>
+        <span class="n">ThroughputLogger</span><span class="p">(</span><span class="n">BATCH_SIZE</span><span class="p">),</span>
+        <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">callbacks</span><span class="o">.</span><span class="n">TensorBoard</span><span class="p">(</span><span class="n">log_dir</span><span class="p">,</span> <span class="n">update_freq</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">profile_batch</span><span class="o">=</span><span class="s2">&quot;90,100&quot;</span><span class="p">),</span>
+    <span class="p">]</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>So, finally, below we will define our training pipeline from end to end. Take a look at the comments to see how each component we’ve built so far plugs in. What’s great about such a pipeline is that it’s more or less agnostic to what the schema returned by <code class="docutils literal notranslate"><span class="pre">get_feature_columns</span></code> looks like (subject of course to the constraint that there are no multi-hot categorical or vectorized continuous features, which aren’t supported yet). In fact, from a certain point of view it would make sense to make the columns and filenames an <em>input</em> to this function (and possibly even the architecture itself as well). But I’ll leave that level of robustness to you for when you build your own pipeline.</p>
+<p>The last thing I’ll mention is that we’re just going to do training below. The validation picture gets slightly complicated by the fact that <code class="docutils literal notranslate"><span class="pre">model.fit</span></code> doesn’t accept Keras <code class="docutils literal notranslate"><span class="pre">Sequence</span></code> objects as validation data. To support this, we’ve built an extremely lightweight Keras callback to handle validation, <code class="docutils literal notranslate"><span class="pre">KerasSequenceValidater</span></code>. To see how to use it, consult the <span class="xref myst">Rossmann Store Sales example notebook</span> in the directory above this, and consider extending its functionality to support more exotic validation metrics.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">fit_a_model</span><span class="p">(</span><span class="n">accelerated</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">cpu</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="c1"># get our columns to describe our dataset</span>
+    <span class="n">columns</span> <span class="o">=</span> <span class="n">get_feature_columns</span><span class="p">()</span>
+
+    <span class="c1"># build a dataset from those descriptions</span>
+    <span class="n">file_pattern</span> <span class="o">=</span> <span class="n">PARQUETS</span> <span class="k">if</span> <span class="n">accelerated</span> <span class="k">else</span> <span class="n">TFRECORDS</span>
+    <span class="n">train_dataset</span><span class="p">,</span> <span class="n">columns</span> <span class="o">=</span> <span class="n">make_dataset</span><span class="p">(</span><span class="n">file_pattern</span><span class="p">,</span> <span class="n">columns</span><span class="p">,</span> <span class="n">accelerated</span><span class="o">=</span><span class="n">accelerated</span><span class="p">)</span>
+
+    <span class="c1"># build our Keras model, using column descriptions to build input tensors</span>
+    <span class="n">inputs</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">columns</span><span class="p">:</span>
+        <span class="n">column</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">column</span><span class="p">,</span> <span class="s2">&quot;categorical_column&quot;</span><span class="p">,</span> <span class="n">column</span><span class="p">)</span>
+        <span class="n">dtype</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">column</span><span class="p">,</span> <span class="s2">&quot;dtype&quot;</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+        <span class="nb">input</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">Input</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">column</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="n">inputs</span><span class="p">[</span><span class="n">column</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="nb">input</span>
+
+    <span class="n">fm_x</span><span class="p">,</span> <span class="n">dense_x</span> <span class="o">=</span> <span class="n">DLRMEmbedding</span><span class="p">(</span><span class="n">columns</span><span class="p">,</span> <span class="n">accelerated</span><span class="o">=</span><span class="n">accelerated</span><span class="p">)(</span><span class="n">inputs</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">DLRM</span><span class="p">(</span><span class="n">EMBEDDING_DIM</span><span class="p">,</span> <span class="n">TOP_MLP_HIDDEN_DIMS</span><span class="p">,</span> <span class="n">BOTTOM_MLP_HIDDEN_DIMS</span><span class="p">)([</span><span class="n">dense_x</span><span class="p">,</span> <span class="n">fm_x</span><span class="p">])</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">Model</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">inputs</span><span class="o">.</span><span class="n">values</span><span class="p">()),</span> <span class="n">outputs</span><span class="o">=</span><span class="n">x</span><span class="p">)</span>
+
+    <span class="c1"># compile our Keras model with our desired loss, optimizer, and metrics</span>
+    <span class="n">optimizer</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">optimizers</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="n">LEARNING_RATE</span><span class="p">)</span>
+    <span class="n">metrics</span> <span class="o">=</span> <span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">AUC</span><span class="p">(</span><span class="n">curve</span><span class="o">=</span><span class="s2">&quot;ROC&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;auroc&quot;</span><span class="p">)]</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">optimizer</span><span class="p">,</span> <span class="s2">&quot;binary_crossentropy&quot;</span><span class="p">,</span> <span class="n">metrics</span><span class="o">=</span><span class="n">metrics</span><span class="p">)</span>
+    <span class="n">print_param_counts</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+
+    <span class="c1"># name our run and grab our callbacks</span>
+    <span class="n">device</span> <span class="o">=</span> <span class="s2">&quot;cpu&quot;</span> <span class="k">if</span> <span class="n">cpu</span> <span class="k">else</span> <span class="s2">&quot;gpu&quot;</span>
+    <span class="n">callbacks</span> <span class="o">=</span> <span class="n">get_callbacks</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">accelerated</span><span class="o">=</span><span class="n">accelerated</span><span class="p">)</span>
+
+    <span class="c1"># now fit the model</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train_dataset</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">steps_per_epoch</span><span class="o">=</span><span class="n">STEPS</span><span class="p">,</span> <span class="n">callbacks</span><span class="o">=</span><span class="n">callbacks</span><span class="p">)</span>
+
+    <span class="c1"># just because I&#39;m doing multiple runs back-to-back, I&#39;m going to</span>
+    <span class="c1"># clear the Keras session to free up memory now that we&#39;re done.</span>
+    <span class="c1"># You don&#39;t need to do this in a typical training script</span>
+    <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">clear_session</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>One particularly cool feature of TensorFlow’s TensorBoard tool is that we can embed it directly into this notebook. This way, we can monitor training metrics, including throughput, as well as take a look at the in-depth profiles the most recent versions of TensorBoard can generate, without every having to leave the comfort of this browser tab.</p>
+<p>One particularly cool feature of TensorFlow’s TensorBoard tool is that we can embed it directly into this notebook. This way, we can monitor training metrics, including throughput, as well as take a look at the in-depth profiles the most recent versions of TensorBoard can generate, without every having to leave the comfort of this browser tab.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">LOG_DIR</span><span class="p">):</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">LOG_DIR</span><span class="p">)</span>
+
+<span class="o">%</span><span class="k">load_ext</span> tensorboard
+<span class="o">%</span><span class="k">tensorboard</span> --logdir /home/docker/logs --host 0.0.0.0
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Reusing TensorBoard on port 6006 (pid 370), started 0:01:41 ago. (Use &#39;!kill 370&#39; to kill it.)
+</pre></div>
+</div>
+<div class="output text_html">
+      <iframe id="tensorboard-frame-5bc20f560ebc98fb" width="100%" height="800" frameborder="0">
+      </iframe>
+      <script>
+        (function() {
+          const frame = document.getElementById("tensorboard-frame-5bc20f560ebc98fb");
+          const url = new URL("/", window.location);
+          const port = 6006;
+          if (port) {
+            url.port = port;
+          }
+          frame.src = url;
+        })();
+      </script>
+    </div></div>
+</div>
+<p>We’ll start by doing a training run on CPU using all the default TensorFlow tools. Since I’m less concerned about profiling this run, we’ll just note the throughput and then move on.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;/CPU:0&quot;</span><span class="p">):</span>
+    <span class="n">fit_a_model</span><span class="p">(</span><span class="n">accelerated</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">cpu</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Embedding parameter count: 188746160
+Non-embedding parameter count: 2747145
+1000/1000 [==============================] - 2483s 2s/step - loss: 0.1317 - auroc: 0.7485
+</pre></div>
+</div>
+</div>
+</div>
+<p>Next, let’s do the exact same run, but this time on GPU. This will give us some indication of the “out-of-the-box” acceleration generated by GPU-based training. To spoil the surprise, we’ll find that it’s not particularly impressive, and we’ll start to get an indication of <em>why</em> that is.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fit_a_model</span><span class="p">(</span><span class="n">accelerated</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Embedding parameter count: 188746160
+Non-embedding parameter count: 2747145
+1000/1000 [==============================] - 406s 406ms/step - loss: 0.1307 - auroc: 0.7474
+</pre></div>
+</div>
+</div>
+</div>
+<p>If you look at the “Throughput” metric in your TensorBoard instance above, you should see something like this
+<img alt="../../../_images/cpu-native_vs_gpu-native.PNG" src="../../../_images/cpu-native_vs_gpu-native.PNG" /></img></p>
+<p>This shows a roughly 3-4x improvement in throughput attained simply by moving native TensorFlow code from CPU to GPU. While this is OK, anyone who has ever trained a convolutional model on both CPU and GPU will be disappointed by that figure. Shouldn’t parallel computing be able to help a lot more than that?</p>
+<p>To understand why this is, switch to the “Profile” tab on Tensorboard and take a look at the trace view for your <code class="docutils literal notranslate"><span class="pre">gpu_native</span></code> model
+<img alt="../../../_images/gpu-native-trace.PNG" src="../../../_images/gpu-native-trace.PNG" /></img></p>
+<p>This trace view shows us when individual ops take place during the course of a training step, which piece of hardware (CPU or GPU, aka the “host” or “device”) is used to execute them, and how long that execution takes. This is useful because it not only can show us which ops are taking the longest (and so motivate ways to accelerate or remove them), but also when ops aren’t running at all! Let’s zoom in on this portion of one training step.
+<img alt="../../../_images/gpu-native-trace-zoom.PNG" src="../../../_images/gpu-native-trace-zoom.PNG" /></img></p>
+<p>Here we see compute being done by the GPU for the first ~120 ms of our training step. Notice anything missing?</p>
+<p>The issue here is that many of the ops being implemented by <code class="docutils literal notranslate"><span class="pre">feature_column</span></code>s either don’t have GPU kernels, requiring data to be passed back and forth between the host and the GPU, or are so small as to not be worth a kernel launch in the first place. Moreover, the <code class="docutils literal notranslate"><span class="pre">categorical_column_with_hash_bucket</span></code>’s in particular implements a costly string mapping for integer categories before hashing.</p>
+<p>Taken together, these deficiencies provide a enormous drag on GPU acceleration. By contrast, NVTabular’s fast parquet data loaders get your data on the GPU as soon as possible, and use super fast GPU-based preprocessing operations to keep it their waiting to be consumed by your network. By leveraging this fact to write faster, more efficient embedding layers, we can shift the training bottleneck to the math-heavy matrix algebra GPUs are best at.</p>
+<p>With this in mind, let’s try training with NVTabular’s accelerated tools and get a sense for the speed up we can expect.</p>
+<p>Next, let’s do the exact same run, but this time on GPU. This will give us some indication of the “out-of-the-box” acceleration generated by GPU-based training. We’ll see that it’s not particularly impressive (around 4x or so), and we’ll start to get an indication of <em>why</em> that is.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fit_a_model</span><span class="p">(</span><span class="n">accelerated</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Embedding parameter count: 188746160
+Non-embedding parameter count: 2747145
+1000/1000 [==============================] - 160s 160ms/step - loss: 0.1290 - auroc: 0.7666
+</pre></div>
+</div>
+</div>
+</div>
+<p>Our “Throughput” metric should now look like
+<img alt="../../../_images/cpu-native_vs_gpu-native_vs_gpu-accelerated.PNG" src="../../../_images/cpu-native_vs_gpu-native_vs_gpu-accelerated.PNG" /></img></p>
+<p>The first thing to note is that this gets us a 2.5-3x boost over native GPU performance, translating to a ~10x improvement over CPU. That’s beginning to get closer to the value we should expect GPU training to bring. To get a picture of why this is, let’s take a look at the trace view again
+<img alt="../../../_images/gpu-accelerated-trace.PNG" src="../../../_images/gpu-accelerated-trace.PNG" /></img></p>
+<p>There’s almost no blank space on the GPU portion of the trace, and the ops that <em>are</em> on the trace actually occupy a reasonable amount of time, more effectively leveraging GPU resources. You can see this if you watch the output of <code class="docutils literal notranslate"><span class="pre">nvidia-smi</span></code> during training too: GPU utilization is higher and more consistent when using NVTabular for training, which is great, since usually you’re paying for the whole GPU whether you’re utilizing it all or not. Think of this as just getting more bang for your buck.</p>
+<p>The story doesn’t end here, either. If you’re using a Volta, T4, or Ampere GPU, you have silicon optimized for FP16 compute called Tensor Cores. This lower precision compute is particularly valuable if the majority of your training time is spent on math heavy ops like matrix multiplications. Since we saw that using NVTabular for data loading and preprocessing moves the training bottleneck from data loading to network compute, we should expect to see some pretty good throughput gains from switching to <strong>mixed precision</strong> training. Luckily, Keras has APIs that make changing this compute style extremely simple.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># update our precision policy to use mixed</span>
+<span class="n">policy</span> <span class="o">=</span> <span class="n">mixed_precision</span><span class="o">.</span><span class="n">Policy</span><span class="p">(</span><span class="s2">&quot;mixed_float16&quot;</span><span class="p">)</span>
+<span class="n">mixed_precision</span><span class="o">.</span><span class="n">set_policy</span><span class="p">(</span><span class="n">policy</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>So now let’s compare the advantage wrought by mixed precision training in both the native and accelerated pipelines. One thing I’ll note right now is that this architecture has some stability issues in lower precision, and the loss may diverge or nan-out. Increasing numeric stability across model architectures is an ongoing project for NVIDIA, and coverage for most popular tabular architectures and their components should be there soon. So while from a practical standpoint mixed precision compute may not be able to help you <em>today</em>, it’s still good to know that it’s a powerful options to keep an eye on for the near future.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fit_a_model</span><span class="p">(</span><span class="n">accelerated</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Embedding parameter count: 188746160
+Non-embedding parameter count: 2747145
+1000/1000 [==============================] - 394s 394ms/step - loss: 0.6790 - auroc: 0.4979
+</pre></div>
+</div>
+</div>
+</div>
+<p>Now our “Throughput” metric should show
+<img alt="../../../_images/cpu-native_vs_gpu-native_vs_gpu-accelerated_vs_gpu-native-mp.PNG" src="../../../_images/cpu-native_vs_gpu-native_vs_gpu-accelerated_vs_gpu-native-mp.PNG" /></img></p>
+<p>As we expected, adding mixed precision compute to the native pipeline doesn’t help much, since our training was bottlenecked by things like CPU compute, data transfer, and kernel overhead, none of which reduced-precision GPU compute does anything to address. Let’s see what the gains look like when we remove these bottlenecks using NVTabular.</p>
+<p>Looking at the “Throughput” metric in the “Scalars” tab of TensorBoard, we should something like this:</p>
+<p>As we expected, adding mixed precision compute to the native pipeline doesn’t help much, since our training was bottlenecked by things like CPU compute, data transfer, and kernel overhead, none of which reduced-precision GPU compute does anything to address. Let’s see what the gains look like when we remove these bottlenecks using NVTabular.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fit_a_model</span><span class="p">(</span><span class="n">accelerated</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Embedding parameter count: 188746160
+Non-embedding parameter count: 2747145
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/opt/conda/envs/rapids/lib/python3.7/site-packages/tensorflow/python/framework/indexed_slices.py:432: UserWarning: Converting sparse IndexedSlices to a dense Tensor of unknown shape. This may consume a large amount of memory.
+  &quot;Converting sparse IndexedSlices to a dense Tensor of unknown shape. &quot;
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>1000/1000 [==============================] - 82s 82ms/step - loss: 0.2073 - auroc: 0.5284
+</pre></div>
+</div>
+</div>
+</div>
+<p>Now our “Throughput” metric should look like this:
+<img alt="../../../_images/cpu-native_vs_gpu-native_vs_gpu-accelerated_vs_gpu-native-mp_vs_gpu-accelerated-mp.PNG" src="../../../_images/cpu-native_vs_gpu-native_vs_gpu-accelerated_vs_gpu-native-mp_vs_gpu-accelerated-mp.PNG" /></img></p>
+<p>By adding in two lines of code to our accelerated pipeline, we can get an over 2x additional improvement in throughput! And again, this should stand to reason, since removing the data loading and preprocessing bottlenecks now makes the most costly parts of our pipeline the matrix multiplies in the dense layers, which are ripe for acceleration via FP16.</p>
+<p>Take for example the matmul in the second layer of the bottom MLP. We can take find it on the trace view and click on it for a timing breakdown at full precision:
+<img alt="../../../_images/full-precision-matmul.PNG" src="../../../_images/full-precision-matmul.PNG" /></img></p>
+<p>So it takes around 9 ms to run. Let’s take a look at the same measurement when using mixed precision:
+<img alt="../../../_images/mixed-precision-matmul.PNG" src="../../../_images/mixed-precision-matmul.PNG" /></img>
+That’s a factor of over 6x improvement! Not bad for an extra line or two of code.</p>
+<p>As a final tip for interested mixed precision users, the particularly astute observer might have noticed that the matmul in the first layer of the bottom MLP (the <code class="docutils literal notranslate"><span class="pre">dense_4</span></code> layer) didn’t enjoy the same level acceleration as the one in this second layer. Why is that?</p>
+<p>This is getting a bit beyond the scope of this tutorial, but it’s worth noting here that reduced precision kernels require all relevant dimensions to be multiples of 16 in order to be accelerated. The dimension of the input to the bottom MLP, however, can’t be controlled directly and is decided by the size of your data. For example, if you have $N$ categorical features and an embedding dimension of $k$, in the DLRM architecture the dimension of this vector will be $\frac{(N+1)N}{2} + k$. As an exercise, try padding this vector with 0s to the nearest multiple of 16 and see what sort of acceleration FP16 compute provides then.</p>
+</div>
+</div>
+</div>
+<div class="section" id="conclusions">
+<h1>Conclusions<a class="headerlink" href="#conclusions" title="Permalink to this headline"></a></h1>
+<p>Keras represents an incredibly robust and powerful way to rapidly iterate on new ideas for representing relationships between variables in tabular deep learning models, leading to better learning and, hopefully, to a better understanding of the systems we’re trying to model. However, inefficiencies in certain modules related to data loading and preprocessing have so far limited the ability of GPUs to provide useful acceleration to these models. By leveraging NVTabular to replace these modules, we can not only achieve stellar acceleration with minimal coding overhead, but also shift our training bottlenecks in order to introduce the possibility of further acceleration farther down the pipeline.</p>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, NVIDIA.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-NVJ1Y1YJHK"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-NVJ1Y1YJHK', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>
