@@ -32,7 +32,7 @@ cd /dataloader/ && pytest -rxs tests/unit || exit_code=1
 
 ## Test Systems
 echo "Run unit tests for Systems"
-cd /systems && pytest -rxs tests/unit || exit_code=1
+cd /systems && ci/test_unit.sh $container $devices || exit_code=1
 
 ## Test HugeCTR
 if [ "$container" == "merlin-hugectr" ]; then
