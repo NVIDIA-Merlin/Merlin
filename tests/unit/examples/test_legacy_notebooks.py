@@ -33,7 +33,7 @@ import cudf  # noqa: E402
 import nvtabular.tools.data_gen as datagen  # noqa: E402
 from tests.conftest import get_cuda_cluster  # noqa: E402
 
-TEST_PATH = dirname(dirname(realpath(__file__)))
+TEST_PATH = dirname(dirname(dirname(realpath(__file__))))
 
 triton = pytest.importorskip("nvtabular.inference.triton")
 data_conversions = pytest.importorskip("nvtabular.inference.triton.data_conversions")
