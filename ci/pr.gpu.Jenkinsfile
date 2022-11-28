@@ -23,6 +23,7 @@ pipeline {
             steps {
                 sh """#!/bin/bash
                 echo 'dummy stage'
+                exit 1
                 """
             }
         }
