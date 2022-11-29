@@ -93,6 +93,10 @@ RUN pip install "cmake<3.25.0"
 COPY requirements.merlin requirements.txt
 RUN pip install -r requirements.txt
 
+# Re-install Python packages that may have the wrong version installed by other packages
+RUN pip install dask==${DASK_VER} distributed==${DASK_VER}
+RUN pip install numpy==1.22.4
+
 # Triton Server
 WORKDIR /opt/tritonserver
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/LICENSE .
