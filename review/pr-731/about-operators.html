@@ -58,7 +58,10 @@
 <li class="toctree-l2"><a class="reference internal" href="about-dag.html">Graph Concepts</a></li>
 <li class="toctree-l2"><a class="reference internal" href="about-schema.html">About the Merlin Schema</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">About Merlin Operators</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#understanding-operators">Understanding Operators</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#operators-and-columns-column-selector">Operators and Columns: Column Selector</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#how-to-build-an-operator">How to Build an Operator</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#reference-documentation">Reference Documentation</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="about-model-blocks.html">About Merlin Model Blocks</a></li>
@@ -94,9 +97,82 @@
              
   <div class="section" id="about-merlin-operators">
 <h1>About Merlin Operators<a class="headerlink" href="#about-merlin-operators" title="Permalink to this headline"></a></h1>
+<div class="contents local topic" id="contents">
+<ul class="simple">
+<li><p><a class="reference internal" href="#understanding-operators" id="id1">Understanding Operators</a></p></li>
+<li><p><a class="reference internal" href="#operators-and-columns-column-selector" id="id2">Operators and Columns: Column Selector</a></p></li>
+<li><p><a class="reference internal" href="#how-to-build-an-operator" id="id3">How to Build an Operator</a></p></li>
+<li><p><a class="reference internal" href="#reference-documentation" id="id4">Reference Documentation</a></p></li>
+</ul>
+</div>
+<div class="section" id="understanding-operators">
+<h2>Understanding Operators<a class="headerlink" href="#understanding-operators" title="Permalink to this headline"></a></h2>
+<p>Merlin uses Operators to perform computation on datasets such as normalizing continuous variables, bucketing continuous variables, clipping variables between minimum and maximum values, and so on.</p>
+<p>An Operator implements two key methods:</p>
+<dl class="simple myst">
+<dt>Fit</dt><dd><p>The <code class="docutils literal notranslate"><span class="pre">fit</span></code> method performs any pre-computation steps that are required before operating on data.</p>
+<p>For example, the <code class="docutils literal notranslate"><span class="pre">Normalize</span></code> Operator normalizes the values of a continuous column between 0 and 1.
+The <code class="docutils literal notranslate"><span class="pre">fit</span></code> method determines the minimum and maximum values.</p>
+<p>The method is optional.
+For example, the <code class="docutils literal notranslate"><span class="pre">Bucketize</span></code> and <code class="docutils literal notranslate"><span class="pre">Clip</span></code> Operators do not implement the method because you specify the bucket boundaries or the minimum and maximum values for clipping.
+These Operators do not need to access the data to perform any pre-computation steps.</p>
+</dd>
+<dt>Transform</dt><dd><p>The <code class="docutils literal notranslate"><span class="pre">transform</span></code> method operates on the dataset such as normalizing values, bucketing, or clipping.</p>
+</dd>
+</dl>
+<p>Another difference between the two methods is that the <code class="docutils literal notranslate"><span class="pre">fit</span></code> method accepts a Merlin dataset object and the <code class="docutils literal notranslate"><span class="pre">transform</span></code> method accepts a DataFrame object.
+The difference is an implementation detail—the <code class="docutils literal notranslate"><span class="pre">fit</span></code> method must access all the data and the <code class="docutils literal notranslate"><span class="pre">transform</span></code> method processes each part of the dataset one at a time.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Typical signature of a fit method.</span>
+<span class="k">def</span> <span class="nf">fit</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span>
+    <span class="n">selector</span><span class="p">:</span> <span class="n">ColumnSelector</span><span class="p">,</span>
+    <span class="n">dataset</span><span class="p">:</span> <span class="n">Dataset</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span>
+
+<span class="c1"># Typical signature of a transform method.</span>
+<span class="k">def</span> <span class="nf">transform</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span>
+    <span class="n">selector</span><span class="p">:</span> <span class="n">ColumnSelector</span><span class="p">,</span>
+    <span class="n">df</span><span class="p">:</span> <span class="n">DataFrame</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFrame</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="operators-and-columns-column-selector">
+<h2>Operators and Columns: Column Selector<a class="headerlink" href="#operators-and-columns-column-selector" title="Permalink to this headline"></a></h2>
+<p>In most cases, you want an Operator to process a subset of the columns in your input dataset.
+Both the <code class="docutils literal notranslate"><span class="pre">fit</span></code> and <code class="docutils literal notranslate"><span class="pre">transform</span></code> methods have a <code class="docutils literal notranslate"><span class="pre">selector</span></code> argument that specifies the columns to operate on.
+Merlin uses a <code class="docutils literal notranslate"><span class="pre">ColumnSelector</span></code> class to represent the columns.</p>
+<p>The simplest column selector is a list of strings that specify some column names.
+In the following sample code, <code class="docutils literal notranslate"><span class="pre">[&quot;col1&quot;,</span> <span class="pre">&quot;col2&quot;]</span></code> become an instance of a <code class="docutils literal notranslate"><span class="pre">ColumnSelector</span></code> class.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">result</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;col1&quot;</span><span class="p">,</span> <span class="s2">&quot;col2&quot;</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">SomeOperator</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Column selectors also offer a more powerful and flexible way to specify columns.
+You can specify the input columns to an Operator with tags.
+In the following sample code, the Operator processes all the continuous variables in a dataset.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">result</span> <span class="o">=</span> <span class="p">[</span><span class="n">Tags</span><span class="o">.</span><span class="n">CONTINUOUS</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">SomeOperator</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Using tags to create a column selector offers the following advantages:</p>
+<ul class="simple">
+<li><p>Enables you to apply several Operators to the same kind of columns, such as categorical or continuous variables.</p></li>
+<li><p>Reduces code maintenance by enabling your code to automatically operate on newly added columns in a dataset.</p></li>
+<li><p>Simplifies code by avoiding lists of strings for column names.</p></li>
+</ul>
+</div>
 <div class="section" id="how-to-build-an-operator">
 <h2>How to Build an Operator<a class="headerlink" href="#how-to-build-an-operator" title="Permalink to this headline"></a></h2>
-<p>FIXME</p>
+<p>Blah.</p>
+</div>
+<div class="section" id="reference-documentation">
+<h2>Reference Documentation<a class="headerlink" href="#reference-documentation" title="Permalink to this headline"></a></h2>
+<ul class="simple">
+<li><p><a class="reference external" href="https://nvidia-merlin.github.io/core/main/api/merlin.dag.html#merlin.dag.BaseOperator" title="(in Merlin Core)"><code class="xref py py-class docutils literal notranslate"><span class="pre">merlin.dag.BaseOperator</span></code></a></p></li>
+<li><p><a class="reference external" href="https://nvidia-merlin.github.io/core/main/api/merlin.dag.html#merlin.dag.ColumnSelector" title="(in Merlin Core)"><code class="xref py py-class docutils literal notranslate"><span class="pre">merlin.dag.ColumnSelector</span></code></a></p></li>
+<li><p><a class="reference external" href="https://nvidia-merlin.github.io/core/main/api/merlin.schema.html#merlin.schema.Tags" title="(in Merlin Core)"><code class="xref py py-class docutils literal notranslate"><span class="pre">merlin.schema.Tags</span></code></a></p></li>
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">merlin.io.DataSet</span></code></p></li>
+</ul>
 </div>
 </div>
 
