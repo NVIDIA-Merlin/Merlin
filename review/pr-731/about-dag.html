@@ -56,8 +56,8 @@
 <li class="toctree-l1"><a class="reference internal" href="examples/index.html">Example Notebooks</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="technical-concepts.html">Merlin Technical Concepts</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Graph Concepts</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#dag-terminology">DAG Terminology</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#syntax-and-sample-code">Syntax and Sample Code</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#graph-terminology">Graph Terminology</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#understanding-operators-columns-nodes-and-schema">Understanding Operators, Columns, Nodes, and Schema</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="about-schema.html">About the Merlin Schema</a></li>
@@ -95,10 +95,16 @@
              
   <div class="section" id="about-the-merlin-directed-acyclic-graph">
 <h1>About the Merlin Directed Acyclic Graph<a class="headerlink" href="#about-the-merlin-directed-acyclic-graph" title="Permalink to this headline"></a></h1>
+<div class="contents local topic" id="contents">
+<ul class="simple">
+<li><p><a class="reference internal" href="#graph-terminology" id="id1">Graph Terminology</a></p></li>
+<li><p><a class="reference internal" href="#understanding-operators-columns-nodes-and-schema" id="id2">Understanding Operators, Columns, Nodes, and Schema</a></p></li>
+</ul>
+</div>
 <p>Merlin uses a directed acyclic graph (DAG) to represent operations on data such as filtering or bucketing and to represent operations in a recommender system such as creating an ensemble or filtering candidate items during inference.</p>
 <p>Understanding the Merlin DAG is helpful if you want to develop your own operator (Op) or building a recommender system with Merlin.</p>
-<div class="section" id="dag-terminology">
-<h2>DAG Terminology<a class="headerlink" href="#dag-terminology" title="Permalink to this headline"></a></h2>
+<div class="section" id="graph-terminology">
+<h2>Graph Terminology<a class="headerlink" href="#graph-terminology" title="Permalink to this headline"></a></h2>
 <dl class="simple myst">
 <dt>node</dt><dd><p>A node in the DAG is a group of columns and at least one <em>operator</em>.
 The columns are specified with a <em>column selector</em>.
@@ -122,28 +128,38 @@ Modeling and inference operations can use that information to act accordingly on
 </dd>
 </dl>
 </div>
-<div class="section" id="syntax-and-sample-code">
-<h2>Syntax and Sample Code<a class="headerlink" href="#syntax-and-sample-code" title="Permalink to this headline"></a></h2>
-<p>The following code block shows the typical syntax for building a workflow that operates on DAG components.</p>
-<p class="rubric">Syntax</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">result</span> <span class="o">=</span> <span class="p">[</span><span class="n">column_selector</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">op1</span> <span class="o">&gt;&gt;</span> <span class="n">op2</span> <span class="o">&gt;&gt;</span> <span class="o">...</span><span class="p">;</span>
+<div class="section" id="understanding-operators-columns-nodes-and-schema">
+<h2>Understanding Operators, Columns, Nodes, and Schema<a class="headerlink" href="#understanding-operators-columns-nodes-and-schema" title="Permalink to this headline"></a></h2>
+<p>Merlin enables you to chain together Operators with the <code class="docutils literal notranslate"><span class="pre">&gt;&gt;</span></code> syntax to create feature-processing workflows.
+The <code class="docutils literal notranslate"><span class="pre">&gt;&gt;</span></code> syntax means “take the output of the left-hand side and feed it into the input of the right-hand side.”</p>
+<p>You can specify an explicit list of columns to run an Operator on just the specified columns.
+The following code block shows the syntax for explicit column names:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">result</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;col1&quot;</span><span class="p">,</span> <span class="s2">&quot;col2&quot;</span><span class="p">,]</span> <span class="o">&gt;&gt;</span> <span class="n">SomeOperator</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Starting with the <code class="docutils literal notranslate"><span class="pre">column_selector</span></code>, the brackets group one or more column selectors that identify columns in the input data.</p>
-<p>The <code class="docutils literal notranslate"><span class="pre">op1</span></code> and <code class="docutils literal notranslate"><span class="pre">op2</span></code> represent operators.
-When an operator performs its operation on the input data, the operator returns a node.</p>
-<p>The <code class="docutils literal notranslate"><span class="pre">result</span></code> object is the graph.
-It contains the sequence of operations to perform.</p>
-<p class="rubric">Sample Code</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">item_features</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="p">[</span><span class="s2">&quot;item_category&quot;</span><span class="p">,</span> <span class="s2">&quot;item_shop&quot;</span><span class="p">,</span> <span class="s2">&quot;item_brand&quot;</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">Categorify</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;int32&quot;</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="n">TagAsItemFeatures</span><span class="p">()</span>
-<span class="p">)</span>
+<p>Or, you can use the <code class="docutils literal notranslate"><span class="pre">&gt;&gt;</span></code> syntax between Operators to run one Operator on all the output columns from the preceding Operator:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">result</span> <span class="o">=</span> <span class="n">AnOperator</span><span class="p">(</span><span class="o">...</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="n">OtherOperator</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>In the sample code, the column selector is created by specifying the item-related column names.</p>
-<p>The <a class="reference external" href="https://nvidia-merlin.github.io/NVTabular/main/generated/nvtabular.ops.Categorify.html#nvtabular.ops.Categorify" title="(in NVTabular)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Categorify</span></code></a> operator transforms the categorical features into unique integer values, adds the <a class="reference external" href="https://nvidia-merlin.github.io/core/main/api/merlin.schema.html#merlin.schema.Tags.CATEGORICAL" title="(in Merlin Core)"><code class="xref py py-attr docutils literal notranslate"><span class="pre">CATEGORICAL</span></code></a> tag, and returns a node.</p>
-<p>The <a class="reference external" href="https://nvidia-merlin.github.io/NVTabular/main/generated/nvtabular.ops.TagAsItemFeatures.html#nvtabular.ops.TagAsItemFeatures" title="(in NVTabular)"><code class="xref py py-class docutils literal notranslate"><span class="pre">TagAsItemFeatures</span></code></a> operator applies the <a class="reference external" href="https://nvidia-merlin.github.io/core/main/api/merlin.schema.html#merlin.schema.Tags.ITEM" title="(in Merlin Core)"><code class="xref py py-attr docutils literal notranslate"><span class="pre">ITEM</span></code></a> tag and returns a node.</p>
-<p>When the <code class="docutils literal notranslate"><span class="pre">item_features</span></code> variable is included in a transformation and applied to input data, it will traverse the nodes in order and apply the data transformation and tagging.</p>
+<p>Chaining Operators together builds a graph.
+The following figure shows how each node in the graph has an Operator.</p>
+<p><img alt="A directed graph with two nodes. The first node is a Selection Operator and selects columns &quot;col1&quot; and &quot;col2.&quot; The second node receives the two columns as its input. The second node has a fictional SomeOperator Operator." src="_images/graph_simple.svg" /></p>
+<p>Each node in a graph has an input schema and an output schema that describe the columns that go into an Operator and the columns that go out of an Operator.
+The following figure represents an Operator that adds <code class="docutils literal notranslate"><span class="pre">colB</span></code> to a dataset.</p>
+<p><img alt="Part of a directed graph that shows the input schema to a fictional SomeOperator Operator as &quot;colA&quot;. The fictional Operator adds adds &quot;colB&quot; and the result is an output schema with &quot;colA&quot; and &quot;colB.&quot;" src="_images/graph_schema.svg" /></p>
+<p>In practice, the workflow does not know which columns are processed or produced immediately when Merlin builds the graph.
+This is for two reasons:</p>
+<ol class="arabic">
+<li><p>Merlin enables you to build graphs that process categories of columns.
+The categories are specified by <em>tags</em> instead of an explicit list of column names.</p>
+<p>For example, you can select the continuous columns from your dataset with code like the following example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">Tags</span><span class="o">.</span><span class="n">CONTINUOUS</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">Operator</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+<li><p>You can chain Operators together into a graph, such as an NVTabular workflow, before you specify a dataset.
+The graph, Operators, and schema do not know which columns will be selected by tag until the software accesses the dataset and determines the column names.</p></li>
+</ol>
 </div>
 </div>
 
