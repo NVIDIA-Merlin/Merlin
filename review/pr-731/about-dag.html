@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>About the Merlin Directed Acyclic Graph &mdash; Merlin  documentation</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <title>About the Merlin Graph &mdash; Merlin  documentation</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/mystnb.css" type="text/css" />
       <link rel="stylesheet" href="_static/togglebutton.css" type="text/css" />
@@ -55,9 +55,11 @@
 <li class="toctree-l1"><a class="reference internal" href="README.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples/index.html">Example Notebooks</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="technical-concepts.html">Merlin Technical Concepts</a><ul class="current">
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Graph Concepts</a><ul>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">About the Merlin Graph</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#purpose-of-the-merlin-graph">Purpose of the Merlin Graph</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#graph-terminology">Graph Terminology</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#understanding-operators-columns-nodes-and-schema">Understanding Operators, Columns, Nodes, and Schema</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#introduction-to-operators-columns-nodes-and-schema">Introduction to Operators, Columns, Nodes, and Schema</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#reference-documentation">Reference Documentation</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="about-dataset.html">About the Merlin Dataset</a></li>
@@ -85,7 +87,7 @@
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home"></a></li>
           <li class="breadcrumb-item"><a href="technical-concepts.html">Merlin Technical Concepts</a></li>
-      <li class="breadcrumb-item active">About the Merlin Directed Acyclic Graph</li>
+      <li class="breadcrumb-item active">About the Merlin Graph</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -94,16 +96,21 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <div class="section" id="about-the-merlin-directed-acyclic-graph">
-<h1>About the Merlin Directed Acyclic Graph<a class="headerlink" href="#about-the-merlin-directed-acyclic-graph" title="Permalink to this headline"></a></h1>
+  <div class="section" id="about-the-merlin-graph">
+<h1>About the Merlin Graph<a class="headerlink" href="#about-the-merlin-graph" title="Permalink to this headline"></a></h1>
 <div class="contents local topic" id="contents">
 <ul class="simple">
-<li><p><a class="reference internal" href="#graph-terminology" id="id1">Graph Terminology</a></p></li>
-<li><p><a class="reference internal" href="#understanding-operators-columns-nodes-and-schema" id="id2">Understanding Operators, Columns, Nodes, and Schema</a></p></li>
+<li><p><a class="reference internal" href="#purpose-of-the-merlin-graph" id="id1">Purpose of the Merlin Graph</a></p></li>
+<li><p><a class="reference internal" href="#graph-terminology" id="id2">Graph Terminology</a></p></li>
+<li><p><a class="reference internal" href="#introduction-to-operators-columns-nodes-and-schema" id="id3">Introduction to Operators, Columns, Nodes, and Schema</a></p></li>
+<li><p><a class="reference internal" href="#reference-documentation" id="id4">Reference Documentation</a></p></li>
 </ul>
 </div>
+<div class="section" id="purpose-of-the-merlin-graph">
+<h2>Purpose of the Merlin Graph<a class="headerlink" href="#purpose-of-the-merlin-graph" title="Permalink to this headline"></a></h2>
 <p>Merlin uses a directed acyclic graph (DAG) to represent operations on data such as filtering or bucketing and to represent operations in a recommender system such as creating an ensemble or filtering candidate items during inference.</p>
-<p>Understanding the Merlin DAG is helpful if you want to develop your own operator (Op) or building a recommender system with Merlin.</p>
+<p>Understanding the Merlin DAG is helpful if you want to develop your own Operator or building a recommender system with Merlin.</p>
+</div>
 <div class="section" id="graph-terminology">
 <h2>Graph Terminology<a class="headerlink" href="#graph-terminology" title="Permalink to this headline"></a></h2>
 <dl class="simple myst">
@@ -124,13 +131,19 @@ Each column has its own schema that identifies the column name and can specify <
 </dd>
 <dt>tag</dt><dd><p>A Merlin tag categorizes information about a column.
 Adding a tag to a column enables you to select columns for operations by tag rather than name.</p>
-<p>For example, you can add the <code class="docutils literal notranslate"><span class="pre">USER</span></code> and <code class="docutils literal notranslate"><span class="pre">ITEM</span></code> tags to columns.
-Modeling and inference operations can use that information to act accordingly on the dataset.</p>
+<p>For example, you can add the <code class="docutils literal notranslate"><span class="pre">CONTINUOUS</span></code> or <code class="docutils literal notranslate"><span class="pre">CATEGORICAL</span></code> tags to columns.
+Feature engineering Operators, modeling, and inference operations can use that information to act accordingly on the dataset.</p>
 </dd>
 </dl>
 </div>
-<div class="section" id="understanding-operators-columns-nodes-and-schema">
-<h2>Understanding Operators, Columns, Nodes, and Schema<a class="headerlink" href="#understanding-operators-columns-nodes-and-schema" title="Permalink to this headline"></a></h2>
+<div class="section" id="introduction-to-operators-columns-nodes-and-schema">
+<h2>Introduction to Operators, Columns, Nodes, and Schema<a class="headerlink" href="#introduction-to-operators-columns-nodes-and-schema" title="Permalink to this headline"></a></h2>
+<p>The NVTabular library uses Operators for feature engineering.
+One example of an NVTabular Operator is <code class="docutils literal notranslate"><span class="pre">Normalize</span></code>.
+The Operator normalizes continuous variables between <code class="docutils literal notranslate"><span class="pre">0</span></code> and <code class="docutils literal notranslate"><span class="pre">1</span></code>.</p>
+<p>The Merlin Systems library uses Operators for building ensembles and performing inference.
+The library includes Operators such as <code class="docutils literal notranslate"><span class="pre">FilterCandidates</span></code> and <code class="docutils literal notranslate"><span class="pre">PredictTensorflow</span></code>.
+You use these Operators to put your models into production and serve recommendations.</p>
 <p>Merlin enables you to chain together Operators with the <code class="docutils literal notranslate"><span class="pre">&gt;&gt;</span></code> syntax to create feature-processing workflows.
 The <code class="docutils literal notranslate"><span class="pre">&gt;&gt;</span></code> syntax means “take the output of the left-hand side and feed it into the input of the right-hand side.”</p>
 <p>You can specify an explicit list of columns to run an Operator on just the specified columns.
@@ -145,6 +158,10 @@ The following code block shows the syntax for explicit column names:</p>
 <p>Chaining Operators together builds a graph.
 The following figure shows how each node in the graph has an Operator.</p>
 <p><img alt="A directed graph with two nodes. The first node is a Selection Operator and selects columns &quot;col1&quot; and &quot;col2.&quot; The second node receives the two columns as its input. The second node has a fictional SomeOperator Operator." src="_images/graph_simple.svg" /></p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>After you build an NVTabular workflow or Merlin Systems transform workflow, you can visualize the graph and create an image like the preceding example by running the <code class="docutils literal notranslate"><span class="pre">graph</span></code> method.</p>
+</div>
 <p>Each node in a graph has an input schema and an output schema that describe the columns that go into an Operator and the columns that go out of an Operator.
 The following figure represents an Operator that adds <code class="docutils literal notranslate"><span class="pre">colB</span></code> to a dataset.</p>
 <p><img alt="Part of a directed graph that shows the input schema to a fictional SomeOperator Operator as &quot;colA&quot;. The fictional Operator adds adds &quot;colB&quot; and the result is an output schema with &quot;colA&quot; and &quot;colB.&quot;" src="_images/graph_schema.svg" /></p>
@@ -161,6 +178,17 @@ The categories are specified by <em>tags</em> instead of an explicit list of col
 <li><p>You can chain Operators together into a graph, such as an NVTabular workflow, before you specify a dataset.
 The graph, Operators, and schema do not know which columns will be selected by tag until the software accesses the dataset and determines the column names.</p></li>
 </ol>
+</div>
+<div class="section" id="reference-documentation">
+<h2>Reference Documentation<a class="headerlink" href="#reference-documentation" title="Permalink to this headline"></a></h2>
+<ul class="simple">
+<li><p><a class="reference external" href="https://nvidia-merlin.github.io/NVTabular/main/generated/nvtabular.ops.Normalize.html#nvtabular.ops.Normalize" title="(in NVTabular)"><code class="xref py py-class docutils literal notranslate"><span class="pre">nvtabular.ops.Normalize</span></code></a></p></li>
+<li><p><a class="reference external" href="https://nvidia-merlin.github.io/NVTabular/main/generated/nvtabular.workflow.workflow.Workflow.html#nvtabular.workflow.workflow.Workflow" title="(in NVTabular)"><code class="xref py py-class docutils literal notranslate"><span class="pre">nvtabular.workflow.workflow.Workflow</span></code></a></p></li>
+<li><p><a class="reference external" href="https://nvidia-merlin.github.io/systems/main/generated/merlin.systems.dag.ops.workflow.TransformWorkflow.html#merlin.systems.dag.ops.workflow.TransformWorkflow" title="(in Merlin Systems)"><code class="xref py py-class docutils literal notranslate"><span class="pre">merlin.systems.dag.ops.workflow.TransformWorkflow</span></code></a></p></li>
+<li><p><a class="reference external" href="https://nvidia-merlin.github.io/systems/main/generated/merlin.systems.dag.Ensemble.html#merlin.systems.dag.Ensemble" title="(in Merlin Systems)"><code class="xref py py-class docutils literal notranslate"><span class="pre">merlin.systems.dag.Ensemble</span></code></a></p></li>
+<li><p><a class="reference external" href="https://nvidia-merlin.github.io/systems/main/generated/merlin.systems.dag.ops.session_filter.FilterCandidates.html#merlin.systems.dag.ops.session_filter.FilterCandidates" title="(in Merlin Systems)"><code class="xref py py-class docutils literal notranslate"><span class="pre">merlin.systems.dag.ops.session_filter.FilterCandidates</span></code></a></p></li>
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">merlin.systems.dag.tensorflow.PredictTensorFlow</span></code></p></li>
+</ul>
 </div>
 </div>
 
