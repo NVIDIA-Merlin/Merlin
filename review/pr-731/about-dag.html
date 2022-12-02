@@ -55,13 +55,7 @@
 <li class="toctree-l1"><a class="reference internal" href="README.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples/index.html">Example Notebooks</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="technical-concepts.html">Merlin Technical Concepts</a><ul class="current">
-<li class="toctree-l2 current"><a class="current reference internal" href="#">About the Merlin Graph</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#purpose-of-the-merlin-graph">Purpose of the Merlin Graph</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#graph-terminology">Graph Terminology</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#introduction-to-operators-columns-nodes-and-schema">Introduction to Operators, Columns, Nodes, and Schema</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#reference-documentation">Reference Documentation</a></li>
-</ul>
-</li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">About the Merlin Graph</a></li>
 <li class="toctree-l2"><a class="reference internal" href="about-dataset.html">About the Merlin Dataset</a></li>
 <li class="toctree-l2"><a class="reference internal" href="about-schema.html">About the Merlin Schema</a></li>
 <li class="toctree-l2"><a class="reference internal" href="about-operators.html">About Merlin Operators</a></li>
@@ -108,7 +102,7 @@
 </div>
 <div class="section" id="purpose-of-the-merlin-graph">
 <h2>Purpose of the Merlin Graph<a class="headerlink" href="#purpose-of-the-merlin-graph" title="Permalink to this headline"></a></h2>
-<p>Merlin uses a directed acyclic graph (DAG) to represent operations on data such as filtering or bucketing and to represent operations in a recommender system such as creating an ensemble or filtering candidate items during inference.</p>
+<p>Merlin uses a directed acyclic graph (DAG) to represent operations on data such as normalizing or clipping values and to represent operations in a recommender system such as creating an ensemble or filtering candidate items during inference.</p>
 <p>Understanding the Merlin DAG is helpful if you want to develop your own Operator or building a recommender system with Merlin.</p>
 </div>
 <div class="section" id="graph-terminology">
@@ -132,7 +126,7 @@ Each column has its own schema that identifies the column name and can specify <
 <dt>tag</dt><dd><p>A Merlin tag categorizes information about a column.
 Adding a tag to a column enables you to select columns for operations by tag rather than name.</p>
 <p>For example, you can add the <code class="docutils literal notranslate"><span class="pre">CONTINUOUS</span></code> or <code class="docutils literal notranslate"><span class="pre">CATEGORICAL</span></code> tags to columns.
-Feature engineering Operators, modeling, and inference operations can use that information to act accordingly on the dataset.</p>
+Feature engineering Operators, modeling, and inference operations can use that information to operate accordingly on the dataset.</p>
 </dd>
 </dl>
 </div>
@@ -145,8 +139,8 @@ The Operator normalizes continuous variables between <code class="docutils liter
 The library includes Operators such as <code class="docutils literal notranslate"><span class="pre">FilterCandidates</span></code> and <code class="docutils literal notranslate"><span class="pre">PredictTensorflow</span></code>.
 You use these Operators to put your models into production and serve recommendations.</p>
 <p>Merlin enables you to chain together Operators with the <code class="docutils literal notranslate"><span class="pre">&gt;&gt;</span></code> syntax to create feature-processing workflows.
-The <code class="docutils literal notranslate"><span class="pre">&gt;&gt;</span></code> syntax means “take the output of the left-hand side and feed it into the input of the right-hand side.”</p>
-<p>You can specify an explicit list of columns to run an Operator on just the specified columns.
+The <code class="docutils literal notranslate"><span class="pre">&gt;&gt;</span></code> syntax means “take the output columns from the left-hand side and feed them as the input columns to the right-hand side.”</p>
+<p>You can specify an explicit list of columns names for an Operator.
 The following code block shows the syntax for explicit column names:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">result</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;col1&quot;</span><span class="p">,</span> <span class="s2">&quot;col2&quot;</span><span class="p">,]</span> <span class="o">&gt;&gt;</span> <span class="n">SomeOperator</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
 </pre></div>
@@ -162,10 +156,10 @@ The following figure shows how each node in the graph has an Operator.</p>
 <p class="admonition-title">Tip</p>
 <p>After you build an NVTabular workflow or Merlin Systems transform workflow, you can visualize the graph and create an image like the preceding example by running the <code class="docutils literal notranslate"><span class="pre">graph</span></code> method.</p>
 </div>
-<p>Each node in a graph has an input schema and an output schema that describe the columns that go into an Operator and the columns that go out of an Operator.
-The following figure represents an Operator that adds <code class="docutils literal notranslate"><span class="pre">colB</span></code> to a dataset.</p>
+<p>Each node in a graph has an input schema and an output schema that describe the input columns to the Operator and the output columns produced by the Operator.
+The following figure represents an Operator, <code class="docutils literal notranslate"><span class="pre">SomeOperator</span></code>, that adds <code class="docutils literal notranslate"><span class="pre">colB</span></code> to a dataset.</p>
 <p><img alt="Part of a directed graph that shows the input schema to a fictional SomeOperator Operator as &quot;colA&quot;. The fictional Operator adds adds &quot;colB&quot; and the result is an output schema with &quot;colA&quot; and &quot;colB.&quot;" src="_images/graph_schema.svg" /></p>
-<p>In practice, the workflow does not know which columns are processed or produced immediately when Merlin builds the graph.
+<p>In practice, when Merlin first builds the graph, the workflow does not initially know which columns are input or output.
 This is for two reasons:</p>
 <ol class="arabic">
 <li><p>Merlin enables you to build graphs that process categories of columns.

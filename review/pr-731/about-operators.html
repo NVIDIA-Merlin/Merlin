@@ -58,13 +58,7 @@
 <li class="toctree-l2"><a class="reference internal" href="about-dag.html">About the Merlin Graph</a></li>
 <li class="toctree-l2"><a class="reference internal" href="about-dataset.html">About the Merlin Dataset</a></li>
 <li class="toctree-l2"><a class="reference internal" href="about-schema.html">About the Merlin Schema</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">About Merlin Operators</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#understanding-operators">Understanding Operators</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#operators-and-columns-column-selector">Operators and Columns: Column Selector</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#how-to-build-an-operator">How to Build an Operator</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#reference-documentation">Reference Documentation</a></li>
-</ul>
-</li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">About Merlin Operators</a></li>
 <li class="toctree-l2"><a class="reference internal" href="about-model-blocks.html">About Merlin Model Blocks</a></li>
 </ul>
 </li>
@@ -111,14 +105,15 @@
 <p>Merlin uses Operators to perform computation on datasets such as normalizing continuous variables, bucketing continuous variables, clipping variables between minimum and maximum values, and so on.</p>
 <p>An Operator implements two key methods:</p>
 <dl class="simple myst">
-<dt>Fit</dt><dd><p>The <code class="docutils literal notranslate"><span class="pre">fit</span></code> method performs any pre-computation steps that are required before operating on data.</p>
-<p>For example, the <code class="docutils literal notranslate"><span class="pre">Normalize</span></code> Operator normalizes the values of a continuous column between 0 and 1.
+<dt>Fit</dt><dd><p>The <code class="docutils literal notranslate"><span class="pre">fit</span></code> method performs any pre-computation steps that are required before modifying the data.</p>
+<p>For example, the <code class="docutils literal notranslate"><span class="pre">Normalize</span></code> Operator normalizes the values of a continuous variable between 0 and 1.
 The <code class="docutils literal notranslate"><span class="pre">fit</span></code> method determines the minimum and maximum values.</p>
 <p>The method is optional.
 For example, the <code class="docutils literal notranslate"><span class="pre">Bucketize</span></code> and <code class="docutils literal notranslate"><span class="pre">Clip</span></code> Operators do not implement the method because you specify the bucket boundaries or the minimum and maximum values for clipping.
 These Operators do not need to access the data to perform any pre-computation steps.</p>
 </dd>
-<dt>Transform</dt><dd><p>The <code class="docutils literal notranslate"><span class="pre">transform</span></code> method operates on the dataset such as normalizing values, bucketing, or clipping.</p>
+<dt>Transform</dt><dd><p>The <code class="docutils literal notranslate"><span class="pre">transform</span></code> method operates on the dataset such as normalizing values, bucketing, or clipping.
+This method modifies the data.</p>
 </dd>
 </dl>
 <p>Another difference between the two methods is that the <code class="docutils literal notranslate"><span class="pre">fit</span></code> method accepts a Merlin dataset object and the <code class="docutils literal notranslate"><span class="pre">transform</span></code> method accepts a DataFrame object.
@@ -127,15 +122,15 @@ The difference is an implementation detail—the <code class="docutils literal n
 <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">selector</span><span class="p">:</span> <span class="n">ColumnSelector</span><span class="p">,</span>
-    <span class="n">dataset</span><span class="p">:</span> <span class="n">Dataset</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span>
+<span class="hll">    <span class="n">dataset</span><span class="p">:</span> <span class="n">Dataset</span>
+</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span>
 
 <span class="c1"># Typical signature of a transform method.</span>
 <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">selector</span><span class="p">:</span> <span class="n">ColumnSelector</span><span class="p">,</span>
-    <span class="n">df</span><span class="p">:</span> <span class="n">DataFrame</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFrame</span>
+<span class="hll">    <span class="n">df</span><span class="p">:</span> <span class="n">DataFrame</span>
+</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFrame</span>
 </pre></div>
 </div>
 </div>
