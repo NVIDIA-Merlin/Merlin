@@ -71,7 +71,7 @@ exclude_patterns = []
 #
 html_theme = "sphinx_rtd_theme"
 html_theme_options = {
-    "navigation_depth": 3,
+    "titles_only": True,
     "analytics_id": "G-NVJ1Y1YJHK",
 }
 html_copy_source = False
@@ -117,6 +117,14 @@ autodoc_default_options = {
 }
 
 autosummary_generate = True
+
+intersphinx_mapping = {
+    "python": ("https://docs.python.org/3", None),
+    "merlin-core": ("https://nvidia-merlin.github.io/core/main", None),
+    "merlin-systems": ("https://nvidia-merlin.github.io/systems/main", None),
+    "merlin-models": ("https://nvidia-merlin.github.io/models/main", None),
+    "NVTabular": ("https://nvidia-merlin.github.io/NVTabular/main", None),
+}
 
 copydirs_additional_dirs = ["../../examples/", "../../README.md"]
 
