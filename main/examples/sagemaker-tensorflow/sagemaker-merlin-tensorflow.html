@@ -23,7 +23,9 @@
         <script >var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
-    <link rel="search" title="Search" href="../../search.html" /> 
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Scaling Large Datasets with Criteo" href="../scaling-criteo/index.html" />
+    <link rel="prev" title="Training and Serving Merlin on AWS SageMaker" href="index.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -49,9 +51,18 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption"><span class="caption-text">Contents</span></p>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../../README.html">Introduction</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../index.html">Example Notebooks</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">Example Notebooks</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../getting-started-movielens/index.html">Getting Started using the MovieLens Dataset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Building-and-deploying-multi-stage-RecSys/index.html">Deploying a Multi-Stage Recommender System</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">Merlin and AWS SageMaker</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Training and Serving Merlin on AWS SageMaker</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../scaling-criteo/index.html">Scaling Large Datasets with Criteo</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="../../containers.html">Merlin Containers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../support_matrix/index.html">Merlin Support Matrix</a></li>
 </ul>
@@ -70,6 +81,8 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">NVIDIA Merlin Example Notebooks</a></li>
+          <li class="breadcrumb-item"><a href="index.html">Training and Serving Merlin on AWS SageMaker</a></li>
       <li class="breadcrumb-item active">Training and Serving Merlin on AWS SageMaker</li>
       <li class="wy-breadcrumbs-aside">
       </li>
@@ -221,7 +234,7 @@ Successfully installed contextlib2-21.6.0 dill-0.3.6 importlib-metadata-4.13.0 m
 </div>
 <div class="section" id="training-script">
 <h3>Training Script<a class="headerlink" href="#training-script" title="Permalink to this headline"></a></h3>
-<p>The training script <a class="reference download internal" download="" href="../../_downloads/08d85fba77615657906f6b1c7d98e7fd/train.py"><span class="xref download myst">train.py</span></a> in this example starts with the synthethic dataset we have created in the previous cell and produces a ranking model by performing the following tasks:</p>
+<p>The training script <a class="reference download internal" download="" href="../../_downloads/08d85fba77615657906f6b1c7d98e7fd/train.py"><span class="xref download myst">train.py</span></a> in this example starts with the synthetic dataset we have created in the previous cell and produces a ranking model by performing the following tasks:</p>
 <ul class="simple">
 <li><p>Perform feature engineering and preprocessing with <a class="reference external" href="https://github.com/NVIDIA-Merlin/NVTabular">NVTabular</a>. NVTabular implements common feature engineering and preprocessing operators in easy-to-use, high-level APIs.</p></li>
 <li><p>Use <a class="reference external" href="https://github.com/NVIDIA-Merlin/models/">Merlin Models</a> to train <a class="reference external" href="https://arxiv.org/pdf/1906.00091.pdf">Facebook’s DLRM model</a> in Tensorflow.</p></li>
@@ -434,11 +447,11 @@ The training script outputs to <code class="docutils literal notranslate"><span 
 </div>
 </div>
 </div>
-<div class="section" id="the-dockerfile">
-<h3>The <code class="docutils literal notranslate"><span class="pre">Dockerfile</span></code><a class="headerlink" href="#the-dockerfile" title="Permalink to this headline"></a></h3>
+<div class="section" id="create-the-dockerfile">
+<h3>Create the Dockerfile<a class="headerlink" href="#create-the-dockerfile" title="Permalink to this headline"></a></h3>
 <p>The <code class="docutils literal notranslate"><span class="pre">Dockerfile</span></code> describes the image that will be used on SageMaker for training and inference.
 We start from the latest stable <a class="reference external" href="https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-tensorflow/tags">merlin-tensorflow</a> docker image and install the <a class="reference external" href="https://github.com/aws/sagemaker-training-toolkit">sagemaker-training-toolkit</a> library, which makes the image compatible with Sagemaker for training models.</p>
-<div class="cell docutils container">
+<div class="cell tag_flake8-noqa-cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%writefile</span> container/Dockerfile
 
@@ -461,7 +474,7 @@ We start from the latest stable <a class="reference external" href="https://cata
 <p>You need to have the AWS CLI installed to run this code. To install the AWS CLI, see <a class="reference external" href="https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html#getting-started-install-instructions">Installing or updating the latest version of the AWS CLI</a>.</p>
 <p>This code looks for an ECR repository in the account you’re using and the current default region (if you’re using a SageMaker notebook instance, this is the region where the notebook instance was created). If the repository doesn’t exist, the script will create it.</p>
 <p>Note that running the following script requires permissions to create new repositories on Amazon ECR.</p>
-<div class="cell docutils container">
+<div class="cell tag_flake8-noqa-cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>%%writefile ./build_and_push_image.sh
 
@@ -1217,7 +1230,7 @@ Here, we use the <a class="reference external" href="https://github.com/triton-i
 
 <span class="c1"># Parse json header size length from the response</span>
 <span class="n">header_length_prefix</span> <span class="o">=</span> <span class="s2">&quot;application/vnd.sagemaker-triton.binary+json;json-header-size=&quot;</span>
-<span class="n">header_length_str</span> <span class="o">=</span> <span class="n">response</span><span class="p">[</span><span class="s2">&quot;ContentType&quot;</span><span class="p">][</span><span class="nb">len</span><span class="p">(</span><span class="n">header_length_prefix</span><span class="p">)</span> <span class="p">:]</span>
+<span class="n">header_length_str</span> <span class="o">=</span> <span class="n">response</span><span class="p">[</span><span class="s2">&quot;ContentType&quot;</span><span class="p">][</span><span class="nb">len</span><span class="p">(</span><span class="n">header_length_prefix</span><span class="p">):]</span>
 
 <span class="c1"># Read response body</span>
 <span class="n">result</span> <span class="o">=</span> <span class="n">httpclient</span><span class="o">.</span><span class="n">InferenceServerClient</span><span class="o">.</span><span class="n">parse_response_body</span><span class="p">(</span>
@@ -1275,7 +1288,10 @@ Here, we use the <a class="reference external" href="https://github.com/triton-i
 
            </div>
           </div>
-          <footer>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Training and Serving Merlin on AWS SageMaker" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../scaling-criteo/index.html" class="btn btn-neutral float-right" title="Scaling Large Datasets with Criteo" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
 
   <hr/>
 
