@@ -13,9 +13,14 @@ Our recommendation is to use our latest stable [Merlin containers](https://catal
 
 Explore the following notebooks:
 
+Training and Deployment with **TensorFlow**:
 - [Download and Convert](01-Download-Convert.ipynb)
 - [Feature Engineering with NVTabular](02-ETL-with-NVTabular.ipynb)
 - [Training with HugeCTR](03-Training-with-HugeCTR.ipynb)
-- [Training with Merlin Models TensorFlow](03-Training-with-Merlin-Models-TensorFlow.ipynb)
 - [Deploy the HugeCTR Model with Triton Inference Server](04-Triton-Inference-with-HugeCTR.ipynb)
-- [Deploy the TensorFlow Model with Triton Inference Server](04-Triton-Inference-with-Merlin-Models-TensorFlow.ipynb)
+
+Training and Deployment with **HugeCTR**:
+- [Download and Convert](01-Download-Convert.ipynb)
+- [Feature Engineering with NVTabular](02-ETL-with-NVTabular.ipynb)
+- [Training with HugeCTR](03-Training-with-HugeCTR.ipynb)
+- [Deploy the HugeCTR Model with Triton Inference Server](04-Triton-Inference-with-HugeCTR.ipynb)
