@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TensorFlow: Convert TFRecords to Parquet files &mdash; Merlin  documentation</title><link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/mystnb.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/togglebutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/custom.css" type="text/css" />
+    <link rel="canonical" href="https://nvidia-merlin.github.io/Merlin/main/examples/legacy/tensorflow/TFRecords-To-Parquet.html" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script >let toggleHintShow = 'Click to show';</script>
+        <script >let toggleHintHide = 'Click to hide';</script>
+        <script >let toggleOpenOnPrint = 'true';</script>
+        <script src="../../../_static/togglebutton.js"></script>
+        <script >var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="banner">
+    <p class="banner">
+      Beginning in January 2023, versions for all NVIDIA Merlin projects
+      will change from semantic versioning like <code>4.0</code>
+      to calendar versioning like <code>23.01</code>.</p>
+  </div>
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../../index.html" class="icon icon-home"> Merlin
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../README.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../index.html">Example Notebooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../containers.html">Merlin Containers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../support_matrix/index.html">Merlin Support Matrix</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Merlin</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home"></a></li>
+      <li class="breadcrumb-item active">TensorFlow: Convert TFRecords to Parquet files</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Copyright 2021 NVIDIA Corporation. All Rights Reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+<span class="c1"># ==============================================================================</span>
+</pre></div>
+</div>
+</div>
+</div>
+<img alt="http://developer.download.nvidia.com/compute/machine-learning/frameworks/nvidia_logo.png" src="http://developer.download.nvidia.com/compute/machine-learning/frameworks/nvidia_logo.png" />
+<div class="section" id="tensorflow-convert-tfrecords-to-parquet-files">
+<h1>TensorFlow: Convert TFRecords to Parquet files<a class="headerlink" href="#tensorflow-convert-tfrecords-to-parquet-files" title="Permalink to this headline"></a></h1>
+<div class="section" id="tfrecords">
+<h2>TFRecords<a class="headerlink" href="#tfrecords" title="Permalink to this headline"></a></h2>
+<p><a class="reference external" href="https://www.tensorflow.org/tutorials/load_data/tfrecord">TFRecords</a> are a popular file format to store data for deep learning training with TensorFlow. It is a “simple format for storing a sequence of binary records”. In many cases the dataset is too large for the host memory and the dataset is converted into (multiple) tfrecords file to disk. TensorFlow’s ecosystem enables to stream the tfrecords from disk to train the model without requiring to load the full dataset.<br><br>
+That sounds great, but there are some disadvantages when working with tabular dataset. TFRecords stores the dataset as key, values. In other domains, such as computer vision, this representation is efficient as the key is <code class="docutils literal notranslate"><span class="pre">image</span></code> and the values are a the pixels. For an RGB image with 200x200 resolution, there are 120000 (200x200x3) values. In a tabular dataset, a feature is often a single number and therefore, there is a significant overhead for using a key in each example. <strong>In some of our experiments, we experienced that tfrecords can be ~4-5x larger than <code class="docutils literal notranslate"><span class="pre">parquet</span></code> files for the same dataset.</strong>
+<br><br>
+<a class="reference external" href="https://en.wikipedia.org/wiki/Apache_Parquet">Parquet</a> is another file format to store data. It is a free and open-source data storage format in the Hadoop ecosystem. Many popular systems, such as Spark or Pandas, support to read and write parquet files.
+<br><br>
+We developed <a class="reference external" href="https://nvidia-merlin.github.io/NVTabular/main/training/index.html">NVTabular Data Loaders</a> as a customized data loader, fully operating on the GPU. It reads the data from disk into the GPU memory and prepares the next batch on the GPU. Therefore, we do not have any CPU-GPU communication. Our data loader leverages parquet files to reduce the disk pressure. <strong>In our experiments, we experienced that the native data loader is the bottleneck in training tabular deep learning models and by changing the native data loader to NVTabular Data Loader, we saw a 8-9x speed-up.</strong></p>
+<div class="section" id="convert-tfrecords-to-parquet-files">
+<h3>Convert TFRecords to Parquet files<a class="headerlink" href="#convert-tfrecords-to-parquet-files" title="Permalink to this headline"></a></h3>
+<p>That is a lot of background information. In many cases, we saw that users have their dataset stored as tfrecords files. In this notebook, we provide a tfrecords to parquet examples. Users can transform their dataset to parquet and be able to experiment with NVTabular data loader.</p>
+<p>We leverage the library pandas-tfrecords. We install pandas-tfrecords without dependencies, as it would install a specific TensorFlow version.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>pip install --no-deps pandas-tfrecords<span class="o">==</span><span class="m">0</span>.1.5
+<span class="o">!</span>pip install s3fs
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Looking in indexes: https://pypi.org/simple, https://pypi.ngc.nvidia.com
+Requirement already satisfied: pandas-tfrecords==0.1.5 in /usr/local/lib/python3.8/dist-packages (0.1.5)
+<span class=" -Color -Color-Yellow">WARNING: You are using pip version 21.0.1; however, version 21.2.4 is available.</span>
+<span class=" -Color -Color-Yellow">You should consider upgrading via the &#39;/usr/bin/python -m pip install --upgrade pip&#39; command.</span>
+Looking in indexes: https://pypi.org/simple, https://pypi.ngc.nvidia.com
+Requirement already satisfied: s3fs in /usr/local/lib/python3.8/dist-packages (2021.8.1)
+Requirement already satisfied: fsspec==2021.08.1 in /root/.local/lib/python3.8/site-packages/fsspec-2021.8.1-py3.8.egg (from s3fs) (2021.8.1)
+Requirement already satisfied: aiobotocore~=1.4.0 in /usr/local/lib/python3.8/dist-packages (from s3fs) (1.4.1)
+Requirement already satisfied: wrapt&gt;=1.10.10 in /usr/local/lib/python3.8/dist-packages (from aiobotocore~=1.4.0-&gt;s3fs) (1.12.1)
+Requirement already satisfied: aioitertools&gt;=0.5.1 in /usr/local/lib/python3.8/dist-packages (from aiobotocore~=1.4.0-&gt;s3fs) (0.8.0)
+Requirement already satisfied: botocore&lt;1.20.107,&gt;=1.20.106 in /usr/local/lib/python3.8/dist-packages (from aiobotocore~=1.4.0-&gt;s3fs) (1.20.106)
+Requirement already satisfied: aiohttp&gt;=3.3.1 in /usr/local/lib/python3.8/dist-packages (from aiobotocore~=1.4.0-&gt;s3fs) (3.7.4.post0)
+Requirement already satisfied: yarl&lt;2.0,&gt;=1.0 in /usr/local/lib/python3.8/dist-packages (from aiohttp&gt;=3.3.1-&gt;aiobotocore~=1.4.0-&gt;s3fs) (1.6.3)
+Requirement already satisfied: typing-extensions&gt;=3.6.5 in /usr/local/lib/python3.8/dist-packages (from aiohttp&gt;=3.3.1-&gt;aiobotocore~=1.4.0-&gt;s3fs) (3.7.4.3)
+Requirement already satisfied: attrs&gt;=17.3.0 in /usr/local/lib/python3.8/dist-packages (from aiohttp&gt;=3.3.1-&gt;aiobotocore~=1.4.0-&gt;s3fs) (21.2.0)
+Requirement already satisfied: chardet&lt;5.0,&gt;=2.0 in /usr/lib/python3/dist-packages (from aiohttp&gt;=3.3.1-&gt;aiobotocore~=1.4.0-&gt;s3fs) (3.0.4)
+Requirement already satisfied: async-timeout&lt;4.0,&gt;=3.0 in /usr/local/lib/python3.8/dist-packages (from aiohttp&gt;=3.3.1-&gt;aiobotocore~=1.4.0-&gt;s3fs) (3.0.1)
+Requirement already satisfied: multidict&lt;7.0,&gt;=4.5 in /usr/local/lib/python3.8/dist-packages (from aiohttp&gt;=3.3.1-&gt;aiobotocore~=1.4.0-&gt;s3fs) (5.1.0)
+Requirement already satisfied: urllib3&lt;1.27,&gt;=1.25.4 in /usr/lib/python3/dist-packages (from botocore&lt;1.20.107,&gt;=1.20.106-&gt;aiobotocore~=1.4.0-&gt;s3fs) (1.25.8)
+Requirement already satisfied: python-dateutil&lt;3.0.0,&gt;=2.1 in /usr/local/lib/python3.8/dist-packages (from botocore&lt;1.20.107,&gt;=1.20.106-&gt;aiobotocore~=1.4.0-&gt;s3fs) (2.8.2)
+Requirement already satisfied: jmespath&lt;1.0.0,&gt;=0.7.1 in /usr/local/lib/python3.8/dist-packages (from botocore&lt;1.20.107,&gt;=1.20.106-&gt;aiobotocore~=1.4.0-&gt;s3fs) (0.10.0)
+Requirement already satisfied: six&gt;=1.5 in /usr/local/lib/python3.8/dist-packages (from python-dateutil&lt;3.0.0,&gt;=2.1-&gt;botocore&lt;1.20.107,&gt;=1.20.106-&gt;aiobotocore~=1.4.0-&gt;s3fs) (1.15.0)
+Requirement already satisfied: idna&gt;=2.0 in /usr/lib/python3/dist-packages (from yarl&lt;2.0,&gt;=1.0-&gt;aiohttp&gt;=3.3.1-&gt;aiobotocore~=1.4.0-&gt;s3fs) (2.8)
+<span class=" -Color -Color-Yellow">WARNING: You are using pip version 21.0.1; however, version 21.2.4 is available.</span>
+<span class=" -Color -Color-Yellow">You should consider upgrading via the &#39;/usr/bin/python -m pip install --upgrade pip&#39; command.</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="create-a-synthetic-dataset">
+<h2>Create a Synthetic Dataset<a class="headerlink" href="#create-a-synthetic-dataset" title="Permalink to this headline"></a></h2>
+<p>First, we will create a synthetic dataset. Afterwards, we will convert the synthetic data to a tfrecord file. The synthetic dataset contains <code class="docutils literal notranslate"><span class="pre">continuous</span> <span class="pre">features</span></code>, <code class="docutils literal notranslate"><span class="pre">categorical</span> <span class="pre">features</span></code>, <code class="docutils literal notranslate"><span class="pre">continuous</span> <span class="pre">features</span> <span class="pre">in</span> <span class="pre">a</span> <span class="pre">list</span> <span class="pre">with</span> <span class="pre">variable</span> <span class="pre">length</span></code>, <code class="docutils literal notranslate"><span class="pre">categorical</span> <span class="pre">features</span> <span class="pre">in</span> <span class="pre">a</span> <span class="pre">list</span> <span class="pre">with</span> <span class="pre">variable</span> <span class="pre">length</span></code> and the <code class="docutils literal notranslate"><span class="pre">label</span></code>.<br><br>
+The features of a list have variable length, which are often used in session-based recommender systems. For example, the last page views in a session and sessions have different lengths.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="kn">import</span> <span class="nn">cudf</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">create_synthetic_df</span><span class="p">(</span>
+    <span class="n">N_CONT_FEATURES</span><span class="p">,</span> <span class="n">N_CAT_FEATURES</span><span class="p">,</span> <span class="n">N_CONT_LIST_FEATURES</span><span class="p">,</span> <span class="n">N_CAT_LIST_FEATURES</span><span class="p">,</span> <span class="n">N_ROWS</span>
+<span class="p">):</span>
+    <span class="n">dict_features</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">icont</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N_CONT_FEATURES</span><span class="p">):</span>
+        <span class="n">dict_features</span><span class="p">[</span><span class="s2">&quot;cont&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">icont</span><span class="p">)]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">N_ROWS</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">icat</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N_CAT_FEATURES</span><span class="p">):</span>
+        <span class="n">dict_features</span><span class="p">[</span><span class="s2">&quot;cat&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">icat</span><span class="p">)]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">)),</span> <span class="n">size</span><span class="o">=</span><span class="n">N_ROWS</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">icontlist</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N_CONT_LIST_FEATURES</span><span class="p">):</span>
+        <span class="n">feature_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">irow</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N_ROWS</span><span class="p">):</span>
+            <span class="n">n_elements</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">20</span><span class="p">)))</span>
+            <span class="n">feature_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">n_elements</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+        <span class="n">dict_features</span><span class="p">[</span><span class="s2">&quot;cont_list&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">icontlist</span><span class="p">)]</span> <span class="o">=</span> <span class="n">feature_list</span>
+    <span class="k">for</span> <span class="n">icatlist</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N_CAT_LIST_FEATURES</span><span class="p">):</span>
+        <span class="n">feature_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">irow</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N_ROWS</span><span class="p">):</span>
+            <span class="n">n_elements</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">20</span><span class="p">)))</span>
+            <span class="n">feature_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">)),</span> <span class="n">size</span><span class="o">=</span><span class="n">n_elements</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+        <span class="n">dict_features</span><span class="p">[</span><span class="s2">&quot;cat_list&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">icatlist</span><span class="p">)]</span> <span class="o">=</span> <span class="n">feature_list</span>
+    <span class="n">dict_features</span><span class="p">[</span><span class="s2">&quot;label&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">)),</span> <span class="n">size</span><span class="o">=</span><span class="n">N_ROWS</span><span class="p">)</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">dict_features</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">df</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>We can configure the size of the dataset and numbers of features of the different type. As this is just a example, we use only 20,000 rows.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">N_ROWS</span> <span class="o">=</span> <span class="mi">20000</span>
+<span class="n">N_CONT_FEATURES</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="n">N_CAT_FEATURES</span> <span class="o">=</span> <span class="mi">7</span>
+<span class="n">N_CONT_LIST_FEATURES</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">N_CAT_LIST_FEATURES</span> <span class="o">=</span> <span class="mi">3</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df</span> <span class="o">=</span> <span class="n">create_synthetic_df</span><span class="p">(</span>
+    <span class="n">N_CONT_FEATURES</span><span class="p">,</span> <span class="n">N_CAT_FEATURES</span><span class="p">,</span> <span class="n">N_CONT_LIST_FEATURES</span><span class="p">,</span> <span class="n">N_CAT_LIST_FEATURES</span><span class="p">,</span> <span class="n">N_ROWS</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>We can take a look on the dataset.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>cont0</th>
+      <th>cont1</th>
+      <th>cont2</th>
+      <th>cont3</th>
+      <th>cont4</th>
+      <th>cat0</th>
+      <th>cat1</th>
+      <th>cat2</th>
+      <th>cat3</th>
+      <th>cat4</th>
+      <th>cat5</th>
+      <th>cat6</th>
+      <th>cont_list0</th>
+      <th>cont_list1</th>
+      <th>cat_list0</th>
+      <th>cat_list1</th>
+      <th>cat_list2</th>
+      <th>label</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>-0.346288</td>
+      <td>-0.092784</td>
+      <td>0.878876</td>
+      <td>0.990467</td>
+      <td>-0.505079</td>
+      <td>2</td>
+      <td>2</td>
+      <td>8</td>
+      <td>9</td>
+      <td>0</td>
+      <td>2</td>
+      <td>4</td>
+      <td>[-0.5329311666886798, -0.7973632802691455, -0....</td>
+      <td>[-0.7527243533757371]</td>
+      <td>[7, 5, 1, 9, 5, 6, 5, 7, 1, 6, 0, 7, 8, 1]</td>
+      <td>[2, 0, 0, 0, 6, 4, 2, 3]</td>
+      <td>[8, 3, 5, 7, 0, 5, 2, 1, 2, 7, 7]</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>-0.336003</td>
+      <td>-0.665982</td>
+      <td>0.902071</td>
+      <td>0.531961</td>
+      <td>-0.005143</td>
+      <td>1</td>
+      <td>2</td>
+      <td>6</td>
+      <td>9</td>
+      <td>3</td>
+      <td>0</td>
+      <td>7</td>
+      <td>[0.9805303513847896, -0.1364336119532299, 0.39...</td>
+      <td>[]</td>
+      <td>[4, 5, 0, 7, 6, 7]</td>
+      <td>[9, 0, 6, 9, 2, 2]</td>
+      <td>[1, 2, 0, 6, 2, 4, 9, 4, 3, 3, 7, 4, 1, 5, 7, 9]</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>-0.089536</td>
+      <td>-0.922915</td>
+      <td>-0.636890</td>
+      <td>-0.494594</td>
+      <td>-0.123065</td>
+      <td>7</td>
+      <td>9</td>
+      <td>0</td>
+      <td>0</td>
+      <td>2</td>
+      <td>4</td>
+      <td>4</td>
+      <td>[0.9677775916375682, 0.4868478686143529, 0.010...</td>
+      <td>[0.9863213170102452, 0.801522837843786, 0.8203...</td>
+      <td>[4, 5, 3, 5, 2, 5, 3, 4, 1, 8, 0, 4, 5, 3, 0, ...</td>
+      <td>[6, 2]</td>
+      <td>[8, 7, 4, 6, 5, 4, 7, 9, 0, 7, 6]</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>-0.260400</td>
+      <td>0.693127</td>
+      <td>-0.875754</td>
+      <td>0.456287</td>
+      <td>0.762904</td>
+      <td>3</td>
+      <td>5</td>
+      <td>3</td>
+      <td>3</td>
+      <td>1</td>
+      <td>7</td>
+      <td>3</td>
+      <td>[-0.2644213019104138, -0.09665251017206655, -0...</td>
+      <td>[-0.8362007638643811, 0.1541830950440195, 0.79...</td>
+      <td>[8, 0, 1, 0, 9, 5, 9, 7, 9, 6, 7]</td>
+      <td>[0, 8, 9, 5, 9, 7, 8]</td>
+      <td>[7, 0, 7, 2, 0, 0, 8, 3, 5]</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>0.980959</td>
+      <td>-0.982329</td>
+      <td>0.628736</td>
+      <td>-0.311694</td>
+      <td>-0.880940</td>
+      <td>6</td>
+      <td>6</td>
+      <td>0</td>
+      <td>8</td>
+      <td>4</td>
+      <td>2</td>
+      <td>2</td>
+      <td>[-0.34002032148205985, -0.28546136806218714, -...</td>
+      <td>[0.057850173597639776, 0.8166183641925591, -0....</td>
+      <td>[4, 8, 9, 9, 7, 9, 2]</td>
+      <td>[4, 3, 5, 9, 0, 3, 8, 5, 4, 0, 3, 1, 4, 8, 0, ...</td>
+      <td>[7, 4, 4, 2, 5, 0, 3, 9, 5, 8, 3, 9, 3, 1, 7, ...</td>
+      <td>0</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">CONTINUOUS_COLUMNS</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;cont&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N_CONT_FEATURES</span><span class="p">)]</span>
+<span class="n">CATEGORICAL_COLUMNS</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;cat&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N_CAT_FEATURES</span><span class="p">)]</span>
+<span class="n">CONTINUOUS_LIST_COLUMNS</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;cont_list&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N_CONT_LIST_FEATURES</span><span class="p">)]</span>
+<span class="n">CATEGORICAL_LIST_COLUMNS</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;cat_list&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N_CAT_LIST_FEATURES</span><span class="p">)]</span>
+<span class="n">LABEL_COLUMNS</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;label&quot;</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="convert-the-synthetic-dataset-into-tfrecords">
+<h2>Convert the Synthetic Dataset into TFRecords<a class="headerlink" href="#convert-the-synthetic-dataset-into-tfrecords" title="Permalink to this headline"></a></h2>
+<p>After we created the synthetic dataset, we store it to tfrecords.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">multiprocessing</span> <span class="k">as</span> <span class="nn">mp</span>
+<span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">repeat</span>
+
+
+<span class="k">def</span> <span class="nf">transform_tfrecords</span><span class="p">(</span>
+    <span class="n">df</span><span class="p">,</span>
+    <span class="n">PATH</span><span class="p">,</span>
+    <span class="n">CONTINUOUS_COLUMNS</span><span class="p">,</span>
+    <span class="n">CATEGORICAL_COLUMNS</span><span class="p">,</span>
+    <span class="n">CONTINUOUS_LIST_COLUMNS</span><span class="p">,</span>
+    <span class="n">CATEGORICAL_LIST_COLUMNS</span><span class="p">,</span>
+    <span class="n">LABEL_COLUMNS</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="n">write_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">PATH</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">write_dir</span><span class="p">):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">write_dir</span><span class="p">)</span>
+    <span class="n">file_idx</span><span class="p">,</span> <span class="n">example_idx</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+    <span class="n">writer</span> <span class="o">=</span> <span class="n">get_writer</span><span class="p">(</span><span class="n">write_dir</span><span class="p">,</span> <span class="n">file_idx</span><span class="p">)</span>
+    <span class="n">column_names</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">CONTINUOUS_COLUMNS</span><span class="p">,</span>
+        <span class="n">CATEGORICAL_COLUMNS</span> <span class="o">+</span> <span class="n">LABEL_COLUMNS</span><span class="p">,</span>
+        <span class="n">CONTINUOUS_LIST_COLUMNS</span><span class="p">,</span>
+        <span class="n">CATEGORICAL_LIST_COLUMNS</span><span class="p">,</span>
+    <span class="p">]</span>
+    <span class="k">with</span> <span class="n">mp</span><span class="o">.</span><span class="n">Pool</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="n">pool_initializer</span><span class="p">,</span> <span class="n">column_names</span><span class="p">)</span> <span class="k">as</span> <span class="n">pool</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">col_names</span> <span class="ow">in</span> <span class="n">column_names</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">col_names</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">repeat</span><span class="p">(</span><span class="kc">None</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">col_names</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">record_map</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="n">imap</span><span class="p">(</span><span class="n">build_and_serialize_example</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">chunksize</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="n">record_map</span><span class="p">:</span>
+            <span class="n">writer</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">record</span><span class="p">)</span>
+            <span class="n">example_idx</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="n">writer</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+
+<span class="k">def</span> <span class="nf">pool_initializer</span><span class="p">(</span><span class="n">num_cols</span><span class="p">,</span> <span class="n">cat_cols</span><span class="p">,</span> <span class="n">num_list_cols</span><span class="p">,</span> <span class="n">cat_list_cols</span><span class="p">):</span>
+    <span class="k">global</span> <span class="n">numeric_columns</span>
+    <span class="k">global</span> <span class="n">categorical_columns</span>
+    <span class="k">global</span> <span class="n">numeric_list_columns</span>
+    <span class="k">global</span> <span class="n">categorical_list_columns</span>
+    <span class="n">numeric_columns</span> <span class="o">=</span> <span class="n">num_cols</span>
+    <span class="n">categorical_columns</span> <span class="o">=</span> <span class="n">cat_cols</span>
+    <span class="n">numeric_list_columns</span> <span class="o">=</span> <span class="n">num_list_cols</span>
+    <span class="n">categorical_list_columns</span> <span class="o">=</span> <span class="n">cat_list_cols</span>
+
+
+<span class="k">def</span> <span class="nf">build_and_serialize_example</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="n">numeric_values</span><span class="p">,</span> <span class="n">categorical_values</span><span class="p">,</span> <span class="n">numeric_list_values</span><span class="p">,</span> <span class="n">categorical_list_values</span> <span class="o">=</span> <span class="n">data</span>
+    <span class="n">feature</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">if</span> <span class="n">numeric_values</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">feature</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="n">col</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">Feature</span><span class="p">(</span><span class="n">float_list</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">FloatList</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="p">[</span><span class="n">val</span><span class="p">]))</span>
+                <span class="k">for</span> <span class="n">col</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">numeric_columns</span><span class="p">,</span> <span class="n">numeric_values</span><span class="p">)</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="n">categorical_values</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">feature</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="n">col</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">Feature</span><span class="p">(</span><span class="n">int64_list</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">Int64List</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="p">[</span><span class="n">val</span><span class="p">]))</span>
+                <span class="k">for</span> <span class="n">col</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">categorical_columns</span><span class="p">,</span> <span class="n">categorical_values</span><span class="p">)</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="n">numeric_list_values</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">feature</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="n">col</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">Feature</span><span class="p">(</span><span class="n">float_list</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">FloatList</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="n">val</span><span class="p">))</span>
+                <span class="k">for</span> <span class="n">col</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">numeric_list_columns</span><span class="p">,</span> <span class="n">numeric_list_values</span><span class="p">)</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="n">categorical_list_values</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">feature</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="n">col</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">Feature</span><span class="p">(</span><span class="n">int64_list</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">Int64List</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="n">val</span><span class="p">))</span>
+                <span class="k">for</span> <span class="n">col</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">categorical_list_columns</span><span class="p">,</span> <span class="n">categorical_list_values</span><span class="p">)</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">Example</span><span class="p">(</span><span class="n">features</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">Features</span><span class="p">(</span><span class="n">feature</span><span class="o">=</span><span class="n">feature</span><span class="p">))</span><span class="o">.</span><span class="n">SerializeToString</span><span class="p">()</span>
+
+
+<span class="k">def</span> <span class="nf">get_writer</span><span class="p">(</span><span class="n">write_dir</span><span class="p">,</span> <span class="n">file_idx</span><span class="p">):</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">file_idx</span><span class="p">)</span><span class="o">.</span><span class="n">zfill</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;.tfrecords&quot;</span>
+    <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">TFRecordWriter</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">write_dir</span><span class="p">,</span> <span class="n">filename</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>We define the output path.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">PATH</span> <span class="o">=</span> <span class="s2">&quot;/raid/tfrecord-test/&quot;</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>rm -rf <span class="nv">$PATH</span>
+<span class="o">!</span>mkdir <span class="nv">$PATH</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">transform_tfrecords</span><span class="p">(</span>
+    <span class="n">df</span><span class="p">,</span>
+    <span class="n">PATH</span><span class="p">,</span>
+    <span class="n">CONTINUOUS_COLUMNS</span><span class="p">,</span>
+    <span class="n">CATEGORICAL_COLUMNS</span><span class="p">,</span>
+    <span class="n">CONTINUOUS_LIST_COLUMNS</span><span class="p">,</span>
+    <span class="n">CATEGORICAL_LIST_COLUMNS</span><span class="p">,</span>
+    <span class="n">LABEL_COLUMNS</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>We can check the file.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>ls <span class="nv">$PATH</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>00000.tfrecords
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="id1">
+<h2>Convert TFRecords to parquet files<a class="headerlink" href="#id1" title="Permalink to this headline"></a></h2>
+<p>Now, we have a dataset in the tfrecords format. Let’s use the <code class="docutils literal notranslate"><span class="pre">convert_tfrecords_to_parquet</span></code> function to convert a tfrecord file into parquet.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">glob</span>
+
+<span class="kn">from</span> <span class="nn">nvtabular.framework_utils.tensorflow.tfrecords_to_parquet</span> <span class="kn">import</span> <span class="n">convert_tfrecords_to_parquet</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Let’s select all TFRecords in the folder.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">filenames</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">PATH</span> <span class="o">+</span> <span class="s2">&quot;/*.tfrecords&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Let’s call the <code class="docutils literal notranslate"><span class="pre">convert_tfrecords_to_parquet</span></code>.<br><br>
+Some details about the parameters:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">compression_type</span></code> is the compression type of the tfrecords. Options: <code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code> (no compression), <code class="docutils literal notranslate"><span class="pre">&quot;ZLIB&quot;</span></code>, or <code class="docutils literal notranslate"><span class="pre">&quot;GZIP&quot;</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">chunks</span></code> defines how many data points per <code class="docutils literal notranslate"><span class="pre">parquet</span></code> file should be saved. It splits a tfrecords into multiple parquet files.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">convert_lists</span></code> defines, if feature lists should be converted into multiple feature columns. Even single dataframe series are 1 dimensional arrays when converted back from tfrecords to parquet.</p></li>
+</ul>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">filenames</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[&#39;/raid/tfrecord-test/00000.tfrecords&#39;]
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">convert_tfrecords_to_parquet</span><span class="p">(</span>
+    <span class="n">filenames</span><span class="o">=</span><span class="n">filenames</span><span class="p">,</span> <span class="n">output_dir</span><span class="o">=</span><span class="n">PATH</span><span class="p">,</span> <span class="n">compression_type</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">chunks</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">convert_lists</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2021-09-22 21:56:53.202269: I tensorflow/core/platform/cpu_feature_guard.cc:142] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  AVX2 FMA
+To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2021-09-22 21:56:54.586055: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1510] Created device /job:localhost/replica:0/task:0/device:GPU:0 with 30681 MB memory:  -&gt; device: 0, name: Tesla V100-SXM2-32GB, pci bus id: 0000:0b:00.0, compute capability: 7.0
+2021-09-22 21:56:55.158643: I tensorflow/compiler/mlir/mlir_graph_optimization_pass.cc:185] None of the MLIR Optimization Passes are enabled (registered 2)
+20000it [00:12, 1665.20it/s]
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="let-s-take-a-look">
+<h2>Let’s take a look<a class="headerlink" href="#let-s-take-a-look" title="Permalink to this headline"></a></h2>
+<p>We can see that <code class="docutils literal notranslate"><span class="pre">convert_tfrecords_to_parquet</span></code> created multiple files per <code class="docutils literal notranslate"><span class="pre">tfrecord</span></code> depending on the chunk size.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">filenames</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">PATH</span> <span class="o">+</span> <span class="s2">&quot;/*.parquet&quot;</span><span class="p">)</span>
+<span class="n">filenames</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[&#39;/raid/tfrecord-test/00000.parquet&#39;]
+</pre></div>
+</div>
+</div>
+</div>
+<p>If we load the first file, we can see, that it has the same structure as our original synthetic dataset.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df</span> <span class="o">=</span> <span class="n">cudf</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="n">filenames</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>cat0</th>
+      <th>cat1</th>
+      <th>cat2</th>
+      <th>cat3</th>
+      <th>cat4</th>
+      <th>cat5</th>
+      <th>cat6</th>
+      <th>cat_list0</th>
+      <th>cat_list1</th>
+      <th>cat_list2</th>
+      <th>cont0</th>
+      <th>cont1</th>
+      <th>cont2</th>
+      <th>cont3</th>
+      <th>cont4</th>
+      <th>cont_list0</th>
+      <th>cont_list1</th>
+      <th>label</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>2</td>
+      <td>2</td>
+      <td>8</td>
+      <td>9</td>
+      <td>0</td>
+      <td>2</td>
+      <td>4</td>
+      <td>[7, 5, 1, 9, 5, 6, 5, 7, 1, 6, 0, 7, 8, 1]</td>
+      <td>[2, 0, 0, 0, 6, 4, 2, 3]</td>
+      <td>[8, 3, 5, 7, 0, 5, 2, 1, 2, 7, 7]</td>
+      <td>-0.346288</td>
+      <td>-0.092784</td>
+      <td>0.878876</td>
+      <td>0.990467</td>
+      <td>-0.505079</td>
+      <td>[-0.53293115, -0.7973633, -0.047344275, -0.132...</td>
+      <td>[-0.75272435]</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>1</td>
+      <td>2</td>
+      <td>6</td>
+      <td>9</td>
+      <td>3</td>
+      <td>0</td>
+      <td>7</td>
+      <td>[4, 5, 0, 7, 6, 7]</td>
+      <td>[9, 0, 6, 9, 2, 2]</td>
+      <td>[1, 2, 0, 6, 2, 4, 9, 4, 3, 3, 7, 4, 1, 5, 7, 9]</td>
+      <td>-0.336003</td>
+      <td>-0.665982</td>
+      <td>0.902071</td>
+      <td>0.531961</td>
+      <td>-0.005143</td>
+      <td>[0.9805303, -0.13643362, 0.39948544, 0.7434469...</td>
+      <td>[]</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>7</td>
+      <td>9</td>
+      <td>0</td>
+      <td>0</td>
+      <td>2</td>
+      <td>4</td>
+      <td>4</td>
+      <td>[4, 5, 3, 5, 2, 5, 3, 4, 1, 8, 0, 4, 5, 3, 0, ...</td>
+      <td>[6, 2]</td>
+      <td>[8, 7, 4, 6, 5, 4, 7, 9, 0, 7, 6]</td>
+      <td>-0.089536</td>
+      <td>-0.922915</td>
+      <td>-0.636890</td>
+      <td>-0.494594</td>
+      <td>-0.123065</td>
+      <td>[0.9677776, 0.48684788, 0.010608715]</td>
+      <td>[0.98632133, 0.80152285, 0.820345, 0.015393688...</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>3</td>
+      <td>5</td>
+      <td>3</td>
+      <td>3</td>
+      <td>1</td>
+      <td>7</td>
+      <td>3</td>
+      <td>[8, 0, 1, 0, 9, 5, 9, 7, 9, 6, 7]</td>
+      <td>[0, 8, 9, 5, 9, 7, 8]</td>
+      <td>[7, 0, 7, 2, 0, 0, 8, 3, 5]</td>
+      <td>-0.260400</td>
+      <td>0.693127</td>
+      <td>-0.875754</td>
+      <td>0.456287</td>
+      <td>0.762904</td>
+      <td>[-0.2644213, -0.09665251, -0.92680424, 0.30409...</td>
+      <td>[-0.8362008, 0.15418309, 0.799706, 0.4666645, ...</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>6</td>
+      <td>6</td>
+      <td>0</td>
+      <td>8</td>
+      <td>4</td>
+      <td>2</td>
+      <td>2</td>
+      <td>[4, 8, 9, 9, 7, 9, 2]</td>
+      <td>[4, 3, 5, 9, 0, 3, 8, 5, 4, 0, 3, 1, 4, 8, 0, ...</td>
+      <td>[7, 4, 4, 2, 5, 0, 3, 9, 5, 8, 3, 9, 3, 1, 7, ...</td>
+      <td>0.980959</td>
+      <td>-0.982329</td>
+      <td>0.628736</td>
+      <td>-0.311694</td>
+      <td>-0.880940</td>
+      <td>[-0.34002033, -0.28546137, -0.2595898, -0.5337...</td>
+      <td>[0.057850175, 0.8166184, -0.3719872, -0.703909...</td>
+      <td>0</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">shape</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(20000, 18)
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+<jinja2.runtime.BlockReference object at 0x7f110682bfa0>
+
+  <div>
+    <p>Each user is responsible for checking the content of datasets
+       and the applicable licenses and determining if suitable for
+       the intended use.</p>
+  </div>
+
+
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-NVJ1Y1YJHK"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-NVJ1Y1YJHK', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>
