@@ -53,8 +53,6 @@ Depending on which example you want to run, you should use any one of these Dock
 
 All the containers include Triton Inference Server and are capable of training models and performing inference.
 
-There are example docker-compose files referenced in [Scaling to large Datasets with Criteo](https://github.com/NVIDIA-Merlin/Merlin/tree/main/examples/scaling-criteo) that you can get from our GitHub repository.
-
 To run the example notebooks using Docker containers, perform the following steps:
 
 1. Pull and start the container by running the following command:
@@ -71,14 +69,6 @@ To run the example notebooks using Docker containers, perform the following step
    ```shell
    root@2efa5b50b909:
    ```
-
-1. Install JupyterLab with `pip` by running the following command:
-
-   ```shell
-   pip install jupyterlab
-   ```
-
-   For more information, see the JupyterLab [Installation Guide](https://jupyterlab.readthedocs.io/en/stable/getting_started/installation.html).
 
 1. Start the JupyterLab server by running the following command:
 
