@@ -85,83 +85,6 @@ def run_triton_server(modelpath):
 
 # pylint: disable=unused-import,broad-except
 
-
-def test_criteo_tf_notebook(tmpdir):
-    tor = pytest.importorskip("tensorflow")  # noqa
-    # create a toy dataset in tmpdir, and point environment variables so the notebook
-    # will read from it
-    os.system("mkdir -p " + os.path.join(tmpdir, "converted/criteo"))
-    for i in range(24):
-        df = _get_random_criteo_data(1000)
-        df.to_parquet(os.path.join(tmpdir, "converted/criteo", f"day_{i}.parquet"))
-    os.environ["BASE_DIR"] = str(tmpdir)
-
-    def _nb_modify(line):
-        # Disable LocalCUDACluster
-        line = line.replace("client.run(_rmm_pool)", "# client.run(_rmm_pool)")
-        line = line.replace("if cluster is None:", "if False:")
-        line = line.replace("client = Client(cluster)", "# client = Client(cluster)")
-        line = line.replace(
-            "workflow = nvt.Workflow(features, client=client)", "workflow = nvt.Workflow(features)"
-        )
-        line = line.replace("client", "# client")
-        line = line.replace("NUM_GPUS = [0, 1, 2, 3, 4, 5, 6, 7]", "NUM_GPUS = [0]")
-        line = line.replace("part_size = int(part_mem_frac * device_size)", "part_size = '128MB'")
-
-        return line
-
-    _run_notebook(
-        tmpdir,
-        os.path.join(
-            dirname(TEST_PATH),
-            "examples/legacy/scaling-criteo/",
-            "02-ETL-with-NVTabular.ipynb",
-        ),
-        # disable rmm.reinitialize, seems to be causing issues
-        transform=_nb_modify,
-    )
-
-    def _modify_tf_nb(line):
-        return line.replace(
-            # don't require grqphviz/pydot
-            "tf.keras.utils.plot_model(model)",
-            "# tf.keras.utils.plot_model(model)",
-        )
-
-    _run_notebook(
-        tmpdir,
-        os.path.join(
-            dirname(TEST_PATH),
-            "examples/legacy/scaling-criteo/",
-            "03-Training-with-TF.ipynb",
-        ),
-        transform=_modify_tf_nb,
-    )
-
-
-def test_optimize_criteo(tmpdir):
-    input_path = str(tmpdir.mkdir("input"))
-    _get_random_criteo_data(1000).to_csv(os.path.join(input_path, "day_0"), sep="\t", header=False)
-    os.environ["INPUT_DATA_DIR"] = input_path
-    os.environ["OUTPUT_DATA_DIR"] = str(tmpdir.mkdir("output"))
-    with get_cuda_cluster() as cuda_cluster:
-        scheduler_port = cuda_cluster.scheduler_address
-
-        def _nb_modify(line):
-            # Use cuda_cluster "fixture" port rather than allowing notebook
-            # to deploy a LocalCUDACluster within the subprocess
-            line = line.replace("download_criteo = True", "download_criteo = False")
-            line = line.replace("cluster = None", f"cluster = '{scheduler_port}'")
-            return line
-
-        notebook_path = os.path.join(
-            dirname(TEST_PATH),
-            "examples/legacy/scaling-criteo/",
-            "01-Download-Convert.ipynb",
-        )
-        _run_notebook(tmpdir, notebook_path, _nb_modify)
-
-
 def test_movielens_example(tmpdir):
     _get_random_movielens_data(tmpdir, 10000, dataset="movie")
     _get_random_movielens_data(tmpdir, 10000, dataset="ratings")
@@ -272,17 +195,6 @@ def _run_notebook(tmpdir, notebook_path, transform=None):
     with open(script_path, "w") as script:
         script.write("\n".join(lines))
     subprocess.check_output([sys.executable, script_path])
-
-
-def _get_random_criteo_data(rows):
-    dtypes = {col: float for col in [f"I{x}" for x in range(1, 14)]}
-    dtypes.update({col: int for col in [f"C{x}" for x in range(1, 27)]})
-    dtypes["label"] = bool
-    ret = cudf.datasets.randomdata(rows, dtypes=dtypes)
-    # binarize the labels
-    ret.label = ret.label.astype(int)
-    return ret
-
 
 def _get_random_movielens_data(tmpdir, rows, dataset="movie", valid=None):
     if dataset == "movie":
