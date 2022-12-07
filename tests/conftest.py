@@ -13,9 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# from functools import lru_cache
 
 from __future__ import absolute_import
+
+import contextlib
+import os
 
 from pathlib import Path
 
@@ -24,7 +26,39 @@ import pytest
 REPO_ROOT = Path(__file__).parent.parent
 
 
+try:
+    import cudf
+
+    try:
+        import cudf.testing._utils
+
+        assert_eq = cudf.testing._utils.assert_eq
+    except ImportError:
+        import cudf.tests.utils
+
+        assert_eq = cudf.tests.utils.assert_eq
+except ImportError:
+    cudf = None
+
+    def assert_eq(a, b, *args, **kwargs):
+        if isinstance(a, pd.DataFrame):
+            return pd.testing.assert_frame_equal(a, b, *args, **kwargs)
+        elif isinstance(a, pd.Series):
+            return pd.testing.assert_series_equal(a, b, *args, **kwargs)
+        else:
+            return np.testing.assert_allclose(a, b)
+
 def pytest_sessionfinish(session, exitstatus):
     # if all the tests are skipped, lets not fail the entire CI run
     if exitstatus == 5:
         session.exitstatus = 0
+
+@contextlib.contextmanager
+def get_cuda_cluster():
+    from dask_cuda import LocalCUDACluster
+
+    CUDA_VISIBLE_DEVICES = os.environ.get("CUDA_VISIBLE_DEVICES", "0")
+    n_workers = min(2, len(CUDA_VISIBLE_DEVICES.split(",")))
+    cluster = LocalCUDACluster(n_workers=n_workers)
+    yield cluster
+    cluster.close()
