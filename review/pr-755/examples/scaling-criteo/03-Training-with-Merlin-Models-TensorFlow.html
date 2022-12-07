@@ -124,7 +124,7 @@
 <div class="section" id="overview">
 <h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline"></a></h2>
 <p>The <a class="reference external" href="https://ailab.criteo.com/download-criteo-1tb-click-logs-dataset/">Criteo 1TB Click Logs dataset</a> is a popular dataset in the recommender system community as it is one of the largest, public available dataset. It contains ~1.3 TB of uncompressed click logs containing over four billion samples spanning 24 days.</p>
-<p>We will train Facebook’s <a class="reference external" href="https://arxiv.org/abs/1906.00091">deep learning recommendation model (DLRM)</a> architecture with Merlin Models. We will assume you are familiar with Merlin Models’ API and features. Otherwise, we recommend to start with the <a class="reference external" href="https://github.com/NVIDIA-Merlin/models/tree/main/examples">Merlin Models examples</a>.</p>
+<p>We will train Facebook’s <a class="reference external" href="https://arxiv.org/abs/1906.00091">deep learning recommendation model (DLRM)</a> architecture with Merlin Models. We will assume you are familiar with Merlin Models’ API and features. Otherwise, we recommend to start with the <a class="reference external" href="https://nvidia-merlin.github.io/models/main/examples/index.html#">Merlin Models examples</a>.</p>
 </div>
 <div class="section" id="learning-objectives">
 <h2>Learning objectives<a class="headerlink" href="#learning-objectives" title="Permalink to this headline"></a></h2>
@@ -149,6 +149,18 @@
 </pre></div>
 </div>
 </div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/usr/lib/python3/dist-packages/requests/__init__.py:89: RequestsDependencyWarning: urllib3 (1.26.12) or chardet (3.0.4) doesn&#39;t match a supported version!
+  warnings.warn(&quot;urllib3 ({}) or chardet ({}) doesn&#39;t match a supported &quot;
+2022-11-29 17:20:01.942873: I tensorflow/core/platform/cpu_feature_guard.cc:194] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  SSE3 SSE4.1 SSE4.2 AVX
+To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2022-11-29 17:20:06.579306: I tensorflow/core/common_runtime/gpu/gpu_process_state.cc:222] Using CUDA malloc Async allocator for GPU: 0
+2022-11-29 17:20:06.579506: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1532] Created device /job:localhost/replica:0/task:0/device:GPU:0 with 16255 MB memory:  -&gt; device: 0, name: Tesla V100-SXM2-32GB-LS, pci bus id: 0000:85:00.0, compute capability: 7.0
+2022-11-29 17:20:06.582211: I tensorflow/core/common_runtime/gpu/gpu_process_state.cc:222] Using CUDA malloc Async allocator for GPU: 1
+2022-11-29 17:20:06.582328: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1532] Created device /job:localhost/replica:0/task:0/device:GPU:1 with 30655 MB memory:  -&gt; device: 1, name: Tesla V100-SXM2-32GB-LS, pci bus id: 0000:8a:00.0, compute capability: 7.0
+</pre></div>
+</div>
+</div>
 </div>
 <p>Define the path to directories which contains the processed data.</p>
 <div class="cell docutils container">
@@ -160,6 +172,14 @@
 <span class="n">PATH_TO_VALID_DATA</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">input_path</span><span class="p">,</span> <span class="s2">&quot;valid&quot;</span><span class="p">,</span> <span class="s2">&quot;*.parquet&quot;</span><span class="p">)))</span>
 
 <span class="n">PATH_TO_TRAIN_DATA</span><span class="p">,</span> <span class="n">PATH_TO_VALID_DATA</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>([&#39;/raid/data/criteo/test_dask/output/train/part_0.parquet&#39;,
+  &#39;/raid/data/criteo/test_dask/output/train/part_1.parquet&#39;],
+ [&#39;/raid/data/criteo/test_dask/output/valid/part_0.parquet&#39;,
+  &#39;/raid/data/criteo/test_dask/output/valid/part_1.parquet&#39;])
 </pre></div>
 </div>
 </div>
@@ -176,7 +196,7 @@
 </div>
 </div>
 </div>
-<p>We will use Merlin Dataset object to initialize the dataloaders. It provides a dataset schema to initialize the model architectures. The <a class="reference external" href="https://github.com/NVIDIA-Merlin/models/tree/main/examples">Merlin Models examples</a> will explain more details.</p>
+<p>We will use Merlin Dataset object to initialize the dataloaders. It provides a dataset schema to initialize the model architectures. The <a class="reference external" href="https://nvidia-merlin.github.io/models/main/examples/index.html#">Merlin Models examples</a> will explain more details.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">train</span> <span class="o">=</span> <span class="n">Dataset</span><span class="p">(</span><span class="n">PATH_TO_TRAIN_DATA</span><span class="p">,</span> <span class="n">part_mem_fraction</span><span class="o">=</span><span class="mf">0.08</span><span class="p">)</span>
@@ -215,6 +235,16 @@
 </pre></div>
 </div>
 </div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2867/2867 [==============================] - 224s 72ms/step - loss: 0.1563 - precision: 0.0378 - recall: 2.0745e-04 - binary_accuracy: 0.9677 - auc: 0.5673 - regularization_loss: 0.0000e+00 - loss_batch: 0.1563 - val_loss: 0.1385 - val_precision: 0.0000e+00 - val_recall: 0.0000e+00 - val_binary_accuracy: 0.9680 - val_auc: 0.6279 - val_regularization_loss: 0.0000e+00 - val_loss_batch: 0.1405
+CPU times: user 8min 32s, sys: 13min 13s, total: 21min 45s
+Wall time: 3min 54s
+</pre></div>
+</div>
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;keras.callbacks.History at 0x7f58457b1c40&gt;
+</pre></div>
+</div>
+</div>
 </div>
 </div>
 <div class="section" id="evaluate-the-model">
@@ -224,6 +254,20 @@
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">eval_metrics</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">valid</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">BATCH_SIZE</span><span class="p">,</span> <span class="n">return_dict</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">eval_metrics</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2787/2787 [==============================] - 89s 31ms/step - loss: 0.1385 - precision: 0.0000e+00 - recall: 0.0000e+00 - binary_accuracy: 0.9680 - auc: 0.6279 - regularization_loss: 0.0000e+00 - loss_batch: 0.1385
+</pre></div>
+</div>
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>{&#39;loss&#39;: 0.13853003084659576,
+ &#39;precision&#39;: 0.0,
+ &#39;recall&#39;: 0.0,
+ &#39;binary_accuracy&#39;: 0.9679937958717346,
+ &#39;auc&#39;: 0.6279259324073792,
+ &#39;regularization_loss&#39;: 0.0,
+ &#39;loss_batch&#39;: 0.14048266410827637}
 </pre></div>
 </div>
 </div>
@@ -238,6 +282,27 @@
 </pre></div>
 </div>
 </div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Unsupported signature for serialization: ((PredictionOutput(predictions=TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/predictions&#39;), targets=TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/targets&#39;), positive_item_ids=None, label_relevant_counts=None, valid_negatives_mask=None, negative_item_ids=None, sample_weight=None), &lt;tensorflow.python.framework.func_graph.UnknownArgument object at 0x7f57c5f8ecd0&gt;), {}).
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>WARNING:absl:Function `_wrapped_model` contains input name(s) C1, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C2, C20, C21, C22, C23, C24, C25, C26, C3, C4, C5, C6, C7, C8, C9, I1, I10, I11, I12, I13, I2, I3, I4, I5, I6, I7, I8, I9 with unsupported characters which will be renamed to c1, c10, c11, c12, c13, c14, c15, c16, c17, c18, c19, c2, c20, c21, c22, c23, c24, c25, c26, c3, c4, c5, c6, c7, c8, c9, i1, i10, i11, i12, i13, i2, i3, i4, i5, i6, i7, i8, i9 in the SavedModel.
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Unsupported signature for serialization: ((PredictionOutput(predictions=TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/predictions&#39;), targets=TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/targets&#39;), positive_item_ids=None, label_relevant_counts=None, valid_negatives_mask=None, negative_item_ids=None, sample_weight=None), &lt;tensorflow.python.framework.func_graph.UnknownArgument object at 0x7f57c5f8ecd0&gt;), {}).
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Unsupported signature for serialization: ((PredictionOutput(predictions=TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/predictions&#39;), targets=TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/targets&#39;), positive_item_ids=None, label_relevant_counts=None, valid_negatives_mask=None, negative_item_ids=None, sample_weight=None), &lt;tensorflow.python.framework.func_graph.UnknownArgument object at 0x7f57c5f8ecd0&gt;), {}).
+WARNING:absl:Found untraced functions such as train_compute_metrics, model_context_layer_call_fn, model_context_layer_call_and_return_conditional_losses, output_layer_layer_call_fn, output_layer_layer_call_and_return_conditional_losses while saving (showing 5 of 161). These functions will not be directly callable after loading.
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Assets written to: /raid/data/criteo/test_dask/output/dlrm/assets
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Assets written to: /raid/data/criteo/test_dask/output/dlrm/assets
+</pre></div>
+</div>
+</div>
 </div>
 </div>
 <div class="section" id="summary">
@@ -247,7 +312,7 @@
 <div class="section" id="next-steps">
 <h2>Next steps<a class="headerlink" href="#next-steps" title="Permalink to this headline"></a></h2>
 <p>The next step  is to <a class="reference internal" href="04-Triton-Inference-with-Merlin-Models-TensorFlow.html"><span class="doc std std-doc">deploy the NVTabular workflow and DLRM model</span></a> to production.</p>
-<p>If you are interested more in different architecture and training models with Merlin Models, we recommend to check out our <a class="reference external" href="https://github.com/NVIDIA-Merlin/models/">Merlin Models examples</a></p>
+<p>If you are interested more in different architecture and training models with Merlin Models, we recommend to check out our <a class="reference external" href="https://nvidia-merlin.github.io/models/main/examples/index.html">Merlin Models examples</a></p>
 </div>
 </div>
 
