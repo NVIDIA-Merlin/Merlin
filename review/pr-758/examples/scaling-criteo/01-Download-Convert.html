@@ -125,7 +125,7 @@
 <h2>Criteo 1TB Click Logs dataset<a class="headerlink" href="#criteo-1tb-click-logs-dataset" title="Permalink to this headline"></a></h2>
 <p>The <a class="reference external" href="https://ailab.criteo.com/download-criteo-1tb-click-logs-dataset/">Criteo 1TB Click Logs dataset</a> is the largest public available dataset for recommender system. It contains ~1.3 TB of uncompressed click logs containing over four billion samples spanning 24 days. Each record contains 40 features: one label indicating a click or no click, 13 numerical figures, and 26 categorical features. The dataset is provided by CriteoLabs. A subset of 7 days was used in this <a class="reference external" href="https://www.kaggle.com/c/criteo-display-ad-challenge/overview">Kaggle Competition</a>. We will use the dataset as an example how to scale ETL, Training and Inference.</p>
 <p>First, we will download the data and extract it. We define the base directory for the dataset and the numbers of day. Criteo provides 24 days. We will use the last day as validation dataset and the remaining days as training.</p>
-<p><strong>Each day has a size of ~15GB compressed <code class="docutils literal notranslate"><span class="pre">.gz</span></code> and uncompressed ~XXXGB. You can define a smaller subset of days, if you like. Each day takes ~20-30min to download and extract it.</strong></p>
+<p><strong>Each day has a size of ~15GB compressed <code class="docutils literal notranslate"><span class="pre">.gz</span></code> and uncompressed ~47GB. You can define a smaller subset of days, if you like. Each day takes ~20-30min to download and extract it.</strong></p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
@@ -183,12 +183,20 @@
 </div>
 </div>
 <div class="cell_output docutils container">
-<script type="application/vnd.jupyter.widget-view+json">{"model_id": "933e7da7339647308a9b3cd0ca4a6b3a", "version_major": 2, "version_minor": 0}</script></div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>downloading day_0.gz: 16.3GB [03:16, 83.0MB/s]                            
+downloading day_1.gz: 16.7GB [04:32, 61.3MB/s]                            
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>CPU times: user 15min 12s, sys: 3min 48s, total: 19min
+Wall time: 23min 25s
+</pre></div>
+</div>
+</div>
 </div>
 <p>The original dataset is in text format. We will convert the dataset into <code class="docutils literal notranslate"><span class="pre">.parquet</span></code> format. Parquet is a compressed, column-oriented file structure and requires less disk space.</p>
 <div class="section" id="conversion-script-for-criteo-dataset-csv-to-parquet">
 <h3>Conversion Script for Criteo Dataset (CSV-to-Parquet)<a class="headerlink" href="#conversion-script-for-criteo-dataset-csv-to-parquet" title="Permalink to this headline"></a></h3>
-<p><strong>Step 1</strong>: Import libraries</p>
+<p>Import libraries</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
@@ -204,7 +212,7 @@
 </div>
 </div>
 </div>
-<p><strong>Step 2</strong>: Specify options</p>
+<p>Specify options</p>
 <p>Specify the input and output paths, unless the <code class="docutils literal notranslate"><span class="pre">INPUT_DATA_DIR</span></code> and <code class="docutils literal notranslate"><span class="pre">OUTPUT_DATA_DIR</span></code> environment variables are already set. For multi-GPU systems, check that the <code class="docutils literal notranslate"><span class="pre">CUDA_VISIBLE_DEVICES</span></code> environment variable includes all desired device IDs.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -216,7 +224,7 @@
 </div>
 </div>
 </div>
-<p><strong>Step 3</strong>: (Optionally) Start a Dask cluster</p>
+<p>(Optionally) Start a Dask cluster</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">cluster</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># Connect to existing cluster if desired</span>
@@ -230,8 +238,13 @@
 </pre></div>
 </div>
 </div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2022-12-06 09:52:35,564 - distributed.preloading - INFO - Import preload module: dask_cuda.initialize
+</pre></div>
 </div>
-<p><strong>Step 5</strong>: Convert original data to an NVTabular Dataset</p>
+</div>
+</div>
+<p>Convert original data to an NVTabular Dataset</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Specify column names</span>
@@ -263,20 +276,20 @@
 </pre></div>
 </div>
 </div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/usr/local/lib/python3.8/dist-packages/merlin/core/utils.py:384: FutureWarning: The `client` argument is deprecated from Dataset and will be removed in a future version of NVTabular. By default, a global client in the same python context will be detected automatically, and `merlin.utils.set_dask_client` (as well as `Distributed` and `Serial`) can be used for explicit control.
+  warnings.warn(
+</pre></div>
 </div>
-<p><strong><strong>Step 6</strong></strong>: Write Dataset to Parquet</p>
+</div>
+</div>
+<p>Write Dataset to Parquet</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">dataset</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span>
     <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">OUTPUT_PATH</span><span class="p">,</span> <span class="s2">&quot;criteo&quot;</span><span class="p">),</span>
     <span class="n">preserve_files</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>CPU times: user 8.59 s, sys: 2.83 s, total: 11.4 s
-Wall time: 5min 55s
 </pre></div>
 </div>
 </div>
