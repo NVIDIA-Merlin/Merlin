@@ -72,10 +72,12 @@ exclude_patterns = []
 html_theme = "sphinx_rtd_theme"
 html_theme_options = {
     "titles_only": True,
+    "prev_next_buttons_location": None,
     "analytics_id": "G-NVJ1Y1YJHK",
 }
 html_copy_source = False
 html_show_sourcelink = False
+html_show_sphinx = False
 
 # Whitelist pattern for tags (set to None to ignore all tags)
 # Determine if Sphinx is reading conf.py from the checked out
