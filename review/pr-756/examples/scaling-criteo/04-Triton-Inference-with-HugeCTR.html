@@ -190,9 +190,9 @@
 </div>
 </div>
 </div>
-<div class="section" id="export-artifcats">
-<h3>Export artifcats<a class="headerlink" href="#export-artifcats" title="Permalink to this headline"></a></h3>
-<p>Now we can save our models to be deployed at the inference stage. To do so we will use export_hugectr_ensemble method below. With this method, we can generate the config.pbtxt files automatically for each model.<br><br>
+<div class="section" id="export-artifacts">
+<h3>Export artifacts<a class="headerlink" href="#export-artifacts" title="Permalink to this headline"></a></h3>
+<p>Now, we can save our models for use later during the inference stage. To do so we use export_hugectr_ensemble method below. With this method, we can generate the <code class="docutils literal notranslate"><span class="pre">config.pbtxt</span></code> files automatically for each model.<br><br>
 The script below creates an ensemble triton server model where</p>
 <ul class="simple">
 <li><p>workflow is the the nvtabular workflow used in preprocessing,</p></li>
@@ -356,8 +356,8 @@ For <code class="docutils literal notranslate"><span class="pre">ps=</span></cod
 </div>
 <div class="section" id="get-prediction-from-triton-inference-server">
 <h2>Get prediction from Triton Inference Server<a class="headerlink" href="#get-prediction-from-triton-inference-server" title="Permalink to this headline"></a></h2>
-<p>We have only saved the models for Triton Inference Server. We started Triton Inference Server and the models are loaded.  we will send raw data as a request and receive the predictions.</p>
-<p>We read 3 example rows from the last parquet file from the raw data. We drop the target column (<code class="docutils literal notranslate"><span class="pre">label</span></code>) from the dataframe, as the information is not available at inference time.</p>
+<p>We have saved the models for Triton Inference Server. We started Triton Inference Server and the models are loaded.  Now, we can send raw data as a request and receive the predictions.</p>
+<p>We read 3 example rows from the last parquet file from the raw data. We drop the target column, <code class="docutils literal notranslate"><span class="pre">label</span></code>, from the dataframe, as the information is not available at inference time.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df_lib</span> <span class="o">=</span> <span class="n">get_lib</span><span class="p">()</span>
@@ -494,7 +494,7 @@ For <code class="docutils literal notranslate"><span class="pre">ps=</span></cod
 </div></div></div>
 </div>
 <p>We generate a Triton Inference Server request object.</p>
-<p>Currently, NA/None values are not supported for <code class="docutils literal notranslate"><span class="pre">int32</span></code> columns. As a workaround, we will NA values with 0. This will be updated in the future. The output of the HugeCTR model is called <code class="docutils literal notranslate"><span class="pre">OUTPUT0</span></code>. For the same reason of dropping the target column, we need to remove it from the input schema, as well.</p>
+<p>Currently, <code class="docutils literal notranslate"><span class="pre">NA</span></code> and <code class="docutils literal notranslate"><span class="pre">None</span></code> values are not supported for <code class="docutils literal notranslate"><span class="pre">int32</span></code> columns. As a workaround, we will <code class="docutils literal notranslate"><span class="pre">NA</span></code> values with <code class="docutils literal notranslate"><span class="pre">0</span></code>. The output of the HugeCTR model is called <code class="docutils literal notranslate"><span class="pre">OUTPUT0</span></code>. For the same reason of dropping the target column, we need to remove it from the input schema, as well.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">input_schema</span> <span class="o">=</span> <span class="n">workflow</span><span class="o">.</span><span class="n">input_schema</span><span class="o">.</span><span class="n">remove_col</span><span class="p">(</span><span class="s1">&#39;label&#39;</span><span class="p">)</span>
@@ -522,7 +522,7 @@ For <code class="docutils literal notranslate"><span class="pre">ps=</span></cod
 </div>
 </div>
 </div>
-<p>We print out the predictions.</p>
+<p>We print out the predictions. The outputs are the probability scores, predicted by our model, how likely the ad will be clicked.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">output_cols</span><span class="p">:</span>
