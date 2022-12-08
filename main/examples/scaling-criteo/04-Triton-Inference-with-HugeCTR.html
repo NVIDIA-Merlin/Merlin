@@ -124,7 +124,7 @@
 <div class="section" id="overview">
 <h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline"></a></h2>
 <p>The last step is to deploy the ETL workflow and saved model to production. In the production setting, we want to transform the input data as during training (ETL). We need to apply the same mean/std for continuous features and use the same categorical mapping to convert the categories to continuous integer before we use the deep learning model for a prediction. Therefore, we deploy the NVTabular workflow with the HugeCTR model as an ensemble model to Triton Inference. The ensemble model guarantees that the same transformation are applied to the raw inputs.</p>
-<a class="reference internal image-reference" href="../../_images/triton-hugectr1.png"><img alt="../../_images/triton-hugectr1.png" src="../../_images/triton-hugectr1.png" style="width: 25%;" /></a>
+<a class="reference internal image-reference" href="../../_images/triton-hugectr.png"><img alt="../../_images/triton-hugectr.png" src="../../_images/triton-hugectr.png" style="width: 25%;" /></a>
 <div class="section" id="learning-objectives">
 <h3>Learning objectives<a class="headerlink" href="#learning-objectives" title="Permalink to this headline"></a></h3>
 <p>In this notebook, we learn how to deploy our models to production:</p>
@@ -135,16 +135,33 @@
 </ul>
 </div>
 </div>
-<div class="section" id="inference-with-triton-and-hugectr">
-<h2>Inference with Triton and HugeCTR<a class="headerlink" href="#inference-with-triton-and-hugectr" title="Permalink to this headline"></a></h2>
+<div class="section" id="deploying-ensemble-to-triton-inference-server">
+<h2>Deploying Ensemble to Triton Inference Server<a class="headerlink" href="#deploying-ensemble-to-triton-inference-server" title="Permalink to this headline"></a></h2>
 <p>First, we need to generate the Triton Inference Server configurations and save the models in the correct format. In the previous notebooks <a class="reference internal" href="02-ETL-with-NVTabular.html"><span class="doc std std-doc">02-ETL-with-NVTabular</span></a> and <a class="reference internal" href="03-Training-with-HugeCTR.html"><span class="doc std std-doc">03-Training-with-HugeCTR</span></a> we saved the NVTabular workflow and HugeCTR model to disk. We will load them.</p>
-<div class="section" id="saving-ensemble-model-for-triton-inference-server">
-<h3>Saving Ensemble Model for Triton Inference Server<a class="headerlink" href="#saving-ensemble-model-for-triton-inference-server" title="Permalink to this headline"></a></h3>
 <p>After training terminates, we can see that two <code class="docutils literal notranslate"><span class="pre">.model</span></code> files are generated. We need to move them inside a temporary folder, like <code class="docutils literal notranslate"><span class="pre">criteo_hugectr/1</span></code>. Let’s create these folders.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">glob</span>
+<span class="kn">import</span> <span class="nn">json</span>
+
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">nvtabular</span> <span class="k">as</span> <span class="nn">nvt</span>
+<span class="kn">import</span> <span class="nn">tritonclient.grpc</span> <span class="k">as</span> <span class="nn">grpcclient</span>
+
+<span class="kn">from</span> <span class="nn">merlin.core.dispatch</span> <span class="kn">import</span> <span class="n">get_lib</span>
+<span class="kn">from</span> <span class="nn">merlin.systems.triton</span> <span class="kn">import</span> <span class="n">convert_df_to_triton_input</span>
+<span class="kn">from</span> <span class="nn">nvtabular.inference.triton</span> <span class="kn">import</span> <span class="n">export_hugectr_ensemble</span>
+
+<span class="n">BASE_DIR</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;BASE_DIR&quot;</span><span class="p">,</span> <span class="s2">&quot;/raid/data/criteo&quot;</span><span class="p">)</span>
+<span class="n">OUTPUT_DATA_DIR</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;OUTPUT_DATA_DIR&quot;</span><span class="p">,</span> <span class="n">BASE_DIR</span> <span class="o">+</span> <span class="s2">&quot;/test_dask/output&quot;</span><span class="p">)</span>
+<span class="n">original_data_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;INPUT_FOLDER&quot;</span><span class="p">,</span> <span class="n">BASE_DIR</span> <span class="o">+</span> <span class="s2">&quot;/converted/criteo&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/usr/lib/python3/dist-packages/requests/__init__.py:89: RequestsDependencyWarning: urllib3 (1.26.12) or chardet (3.0.4) doesn&#39;t match a supported version!
+  warnings.warn(&quot;urllib3 ({}) or chardet ({}) doesn&#39;t match a supported &quot;
 </pre></div>
 </div>
 </div>
@@ -152,30 +169,15 @@
 <p>Now we move our saved <code class="docutils literal notranslate"><span class="pre">.model</span></code> files inside 1 folder. We use only the last snapshot after <code class="docutils literal notranslate"><span class="pre">9600</span></code> iterations.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;mv *9600.model ./criteo_hugectr/1/&quot;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;mv *9600.model &quot;</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">OUTPUT_DATA_DIR</span><span class="p">,</span> <span class="s2">&quot;criteo_hugectr/1/&quot;</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
 </div>
-<p>Now we can save our models to be deployed at the inference stage. To do so we will use export_hugectr_ensemble method below. With this method, we can generate the config.pbtxt files automatically for each model. In doing so, we should also create a hugectr_params dictionary, and define the parameters like where the amazonreview.json file will be read, slots which corresponds to number of categorical features, <code class="docutils literal notranslate"><span class="pre">embedding_vector_size</span></code>, <code class="docutils literal notranslate"><span class="pre">max_nnz</span></code>, and <code class="docutils literal notranslate"><span class="pre">n_outputs</span></code> which is number of outputs.<br><br>
-The script below creates an ensemble triton server model where</p>
-<ul class="simple">
-<li><p>workflow is the the nvtabular workflow used in preprocessing,</p></li>
-<li><p>hugectr_model_path is the HugeCTR model that should be served.</p></li>
-<li><p>This path includes the model files.</p></li>
-<li><p>name is the base name of the various triton models.</p></li>
-<li><p>output_path is the path where is model will be saved to.</p></li>
-<li><p>cats are the categorical column names</p></li>
-<li><p>conts are the continuous column names</p></li>
-</ul>
 <p>We need to load the NVTabular workflow first</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">nvtabular</span> <span class="k">as</span> <span class="nn">nvt</span>
-
-<span class="n">BASE_DIR</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;BASE_DIR&quot;</span><span class="p">,</span> <span class="s2">&quot;/raid/data/criteo&quot;</span><span class="p">)</span>
-<span class="n">input_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s2">&quot;test_dask/output&quot;</span><span class="p">)</span>
-<span class="n">workflow</span> <span class="o">=</span> <span class="n">nvt</span><span class="o">.</span><span class="n">Workflow</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">input_path</span><span class="p">,</span> <span class="s2">&quot;workflow&quot;</span><span class="p">))</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">workflow</span> <span class="o">=</span> <span class="n">nvt</span><span class="o">.</span><span class="n">Workflow</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">OUTPUT_DATA_DIR</span><span class="p">,</span> <span class="s2">&quot;workflow&quot;</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
@@ -183,32 +185,40 @@ The script below creates an ensemble triton server model where</p>
 <p>Let’s clear the directory</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;rm -rf /model/*&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;rm -rf &quot;</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">OUTPUT_DATA_DIR</span><span class="p">,</span> <span class="s2">&quot;model_inference&quot;</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
 </div>
+<div class="section" id="export-artifacts">
+<h3>Export artifacts<a class="headerlink" href="#export-artifacts" title="Permalink to this headline"></a></h3>
+<p>Now, we can save our models for use later during the inference stage. To do so we use export_hugectr_ensemble method below. With this method, we can generate the <code class="docutils literal notranslate"><span class="pre">config.pbtxt</span></code> files automatically for each model.<br><br>
+The script below creates an ensemble triton server model where</p>
+<ul class="simple">
+<li><p>workflow is the the nvtabular workflow used in preprocessing,</p></li>
+<li><p>hugectr_model_path is the HugeCTR model that should be served. This path includes the model files.</p></li>
+<li><p>name is the base name of the various triton models.</p></li>
+<li><p>output_path is the path where is model will be saved to.</p></li>
+<li><p>cats are the categorical column names</p></li>
+<li><p>conts are the continuous column names</p></li>
+</ul>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">nvtabular.inference.triton</span> <span class="kn">import</span> <span class="n">export_hugectr_ensemble</span>
-
-<span class="n">hugectr_params</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
-<span class="n">hugectr_params</span><span class="p">[</span><span class="s2">&quot;config&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;/model/criteo/1/criteo.json&quot;</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">hugectr_params</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+<span class="c1"># Config File in the final directory for serving</span>
+<span class="n">hugectr_params</span><span class="p">[</span><span class="s2">&quot;config&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">OUTPUT_DATA_DIR</span><span class="p">,</span> <span class="s2">&quot;model_inference&quot;</span><span class="p">,</span> <span class="s2">&quot;criteo/1/criteo.json&quot;</span><span class="p">)</span>
 <span class="n">hugectr_params</span><span class="p">[</span><span class="s2">&quot;slots&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">26</span>
 <span class="n">hugectr_params</span><span class="p">[</span><span class="s2">&quot;max_nnz&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
 <span class="n">hugectr_params</span><span class="p">[</span><span class="s2">&quot;embedding_vector_size&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">128</span>
 <span class="n">hugectr_params</span><span class="p">[</span><span class="s2">&quot;n_outputs&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
 <span class="n">export_hugectr_ensemble</span><span class="p">(</span>
     <span class="n">workflow</span><span class="o">=</span><span class="n">workflow</span><span class="p">,</span>
-    <span class="n">hugectr_model_path</span><span class="o">=</span><span class="s2">&quot;./criteo_hugectr/1/&quot;</span><span class="p">,</span>
+    <span class="c1"># Current directory with model weights and config file</span>
+    <span class="n">hugectr_model_path</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">OUTPUT_DATA_DIR</span><span class="p">,</span> <span class="s2">&quot;criteo_hugectr/1/&quot;</span><span class="p">),</span>
     <span class="n">hugectr_params</span><span class="o">=</span><span class="n">hugectr_params</span><span class="p">,</span>
     <span class="n">name</span><span class="o">=</span><span class="s2">&quot;criteo&quot;</span><span class="p">,</span>
-    <span class="n">output_path</span><span class="o">=</span><span class="s2">&quot;/model/&quot;</span><span class="p">,</span>
+    <span class="c1"># Base directory for serving</span>
+    <span class="n">output_path</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">OUTPUT_DATA_DIR</span><span class="p">,</span> <span class="s2">&quot;model_inference&quot;</span><span class="p">),</span>
     <span class="n">label_columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;label&quot;</span><span class="p">],</span>
     <span class="n">cats</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;C&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">27</span><span class="p">)],</span>
     <span class="n">conts</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;I&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">14</span><span class="p">)],</span>
@@ -221,15 +231,14 @@ The script below creates an ensemble triton server model where</p>
 <p>We can take a look at the generated files.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>tree /model
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>tree <span class="nv">$OUTPUT_DATA_DIR</span>/model_inference
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span class=" -Color -Color-Bold -Color-Bold-Blue">/model</span>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span class=" -Color -Color-Bold -Color-Bold-Blue">/tmp/test_merlin_criteo_hugectr/output/criteo//model_inference</span>
 ├── <span class=" -Color -Color-Bold -Color-Bold-Blue">criteo</span>
 │   ├── <span class=" -Color -Color-Bold -Color-Bold-Blue">1</span>
-│   │   ├── 0_opt_sparse_9600.model
 │   │   ├── <span class=" -Color -Color-Bold -Color-Bold-Blue">0_sparse_9600.model</span>
 │   │   │   ├── emb_vector
 │   │   │   ├── key
@@ -241,43 +250,45 @@ The script below creates an ensemble triton server model where</p>
 ├── <span class=" -Color -Color-Bold -Color-Bold-Blue">criteo_ens</span>
 │   ├── <span class=" -Color -Color-Bold -Color-Bold-Blue">1</span>
 │   └── config.pbtxt
-└── <span class=" -Color -Color-Bold -Color-Bold-Blue">criteo_nvt</span>
-    ├── <span class=" -Color -Color-Bold -Color-Bold-Blue">1</span>
-    │   ├── model.py
-    │   └── <span class=" -Color -Color-Bold -Color-Bold-Blue">workflow</span>
-    │       ├── <span class=" -Color -Color-Bold -Color-Bold-Blue">categories</span>
-    │       │   ├── unique.C1.parquet
-    │       │   ├── unique.C10.parquet
-    │       │   ├── unique.C11.parquet
-    │       │   ├── unique.C12.parquet
-    │       │   ├── unique.C13.parquet
-    │       │   ├── unique.C14.parquet
-    │       │   ├── unique.C15.parquet
-    │       │   ├── unique.C16.parquet
-    │       │   ├── unique.C17.parquet
-    │       │   ├── unique.C18.parquet
-    │       │   ├── unique.C19.parquet
-    │       │   ├── unique.C2.parquet
-    │       │   ├── unique.C20.parquet
-    │       │   ├── unique.C21.parquet
-    │       │   ├── unique.C22.parquet
-    │       │   ├── unique.C23.parquet
-    │       │   ├── unique.C24.parquet
-    │       │   ├── unique.C25.parquet
-    │       │   ├── unique.C26.parquet
-    │       │   ├── unique.C3.parquet
-    │       │   ├── unique.C4.parquet
-    │       │   ├── unique.C5.parquet
-    │       │   ├── unique.C6.parquet
-    │       │   ├── unique.C7.parquet
-    │       │   ├── unique.C8.parquet
-    │       │   └── unique.C9.parquet
-    │       ├── column_types.json
-    │       ├── metadata.json
-    │       └── workflow.pkl
-    └── config.pbtxt
+├── <span class=" -Color -Color-Bold -Color-Bold-Blue">criteo_nvt</span>
+│   ├── <span class=" -Color -Color-Bold -Color-Bold-Blue">1</span>
+│   │   ├── <span class=" -Color -Color-Bold -Color-Bold-Blue">__pycache__</span>
+│   │   │   └── model.cpython-38.pyc
+│   │   ├── model.py
+│   │   └── <span class=" -Color -Color-Bold -Color-Bold-Blue">workflow</span>
+│   │       ├── <span class=" -Color -Color-Bold -Color-Bold-Blue">categories</span>
+│   │       │   ├── unique.C1.parquet
+│   │       │   ├── unique.C10.parquet
+│   │       │   ├── unique.C11.parquet
+│   │       │   ├── unique.C12.parquet
+│   │       │   ├── unique.C13.parquet
+│   │       │   ├── unique.C14.parquet
+│   │       │   ├── unique.C15.parquet
+│   │       │   ├── unique.C16.parquet
+│   │       │   ├── unique.C17.parquet
+│   │       │   ├── unique.C18.parquet
+│   │       │   ├── unique.C19.parquet
+│   │       │   ├── unique.C2.parquet
+│   │       │   ├── unique.C20.parquet
+│   │       │   ├── unique.C21.parquet
+│   │       │   ├── unique.C22.parquet
+│   │       │   ├── unique.C23.parquet
+│   │       │   ├── unique.C24.parquet
+│   │       │   ├── unique.C25.parquet
+│   │       │   ├── unique.C26.parquet
+│   │       │   ├── unique.C3.parquet
+│   │       │   ├── unique.C4.parquet
+│   │       │   ├── unique.C5.parquet
+│   │       │   ├── unique.C6.parquet
+│   │       │   ├── unique.C7.parquet
+│   │       │   ├── unique.C8.parquet
+│   │       │   └── unique.C9.parquet
+│   │       ├── metadata.json
+│   │       └── workflow.pkl
+│   └── config.pbtxt
+└── ps.json
 
-9 directories, 40 files
+10 directories, 40 files
 </pre></div>
 </div>
 </div>
@@ -285,353 +296,254 @@ The script below creates an ensemble triton server model where</p>
 <p>We need to write a configuration file with the stored model weights and model configuration.</p>
 <div class="cell tag_flake8-noqa-cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%writefile</span> &#39;/model/ps.json&#39;
-<span class="c1"># fmt: off</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">config</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span>
 <span class="p">{</span>
-    <span class="s2">&quot;supportlonglong&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
+    <span class="s2">&quot;supportlonglong&quot;</span><span class="p">:</span> <span class="s2">&quot;true&quot;</span><span class="p">,</span>
     <span class="s2">&quot;models&quot;</span><span class="p">:</span> <span class="p">[</span>
         <span class="p">{</span>
             <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="s2">&quot;criteo&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;sparse_files&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;/model/criteo/1/0_sparse_9600.model&quot;</span><span class="p">],</span>
-            <span class="s2">&quot;dense_file&quot;</span><span class="p">:</span> <span class="s2">&quot;/model/criteo/1/_dense_9600.model&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;network_file&quot;</span><span class="p">:</span> <span class="s2">&quot;/model/criteo/1/criteo.json&quot;</span>
+            <span class="s2">&quot;sparse_files&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">OUTPUT_DATA_DIR</span><span class="p">,</span> <span class="s2">&quot;model_inference&quot;</span><span class="p">,</span> <span class="s2">&quot;criteo/1/0_sparse_9600.model&quot;</span><span class="p">)],</span>
+            <span class="s2">&quot;dense_file&quot;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">OUTPUT_DATA_DIR</span><span class="p">,</span> <span class="s2">&quot;model_inference&quot;</span><span class="p">,</span> <span class="s2">&quot;criteo/1/_dense_9600.model&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;network_file&quot;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">OUTPUT_DATA_DIR</span><span class="p">,</span> <span class="s2">&quot;model_inference&quot;</span><span class="p">,</span> <span class="s2">&quot;criteo/1/criteo.json&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;max_batch_size&quot;</span><span class="p">:</span> <span class="s2">&quot;64&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;gpucache&quot;</span><span class="p">:</span> <span class="s2">&quot;true&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;hit_rate_threshold&quot;</span><span class="p">:</span> <span class="s2">&quot;0.9&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;gpucacheper&quot;</span><span class="p">:</span> <span class="s2">&quot;0.5&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;num_of_worker_buffer_in_pool&quot;</span><span class="p">:</span> <span class="s2">&quot;4&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;num_of_refresher_buffer_in_pool&quot;</span><span class="p">:</span> <span class="s2">&quot;1&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;cache_refresh_percentage_per_iteration&quot;</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">,</span>
+            <span class="s2">&quot;deployed_device_list&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;0&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;default_value_for_each_table&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;0.0&quot;</span><span class="p">,</span> <span class="s2">&quot;0.0&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;maxnum_catfeature_query_per_table_per_sample&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">26</span><span class="p">],</span>
+            <span class="s2">&quot;embedding_vecsize_per_table&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">16</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">26</span><span class="p">)],</span>
         <span class="p">}</span>
-    <span class="p">]</span>
+    <span class="p">],</span>
 <span class="p">}</span>
+<span class="p">)</span>
+
+<span class="n">config</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">OUTPUT_DATA_DIR</span><span class="p">,</span> <span class="s2">&quot;model_inference&quot;</span><span class="p">,</span> <span class="s2">&quot;ps.json&quot;</span><span class="p">),</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="start-triton-inference-server">
+<h3>Start Triton Inference Server<a class="headerlink" href="#start-triton-inference-server" title="Permalink to this headline"></a></h3>
+<p>After we export the ensemble, we are ready to start the Triton Inference Server. The server is installed in the merlin-tensorflow-container. If you are not using one of our containers, then ensure it is installed in your environment. For more information, see the Triton Inference Server <a class="reference external" href="https://github.com/triton-inference-server/server/blob/r22.03/README.md#documentation">documentation</a>.</p>
+<p>You can start the server by running the following command:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>tritonserver --model-repository<span class="o">=</span>&lt;output_path&gt; --backend-config<span class="o">=</span>hugectr,ps<span class="o">=</span>&lt;ps.json file&gt;
+</pre></div>
+</div>
+<p>For the <code class="docutils literal notranslate"><span class="pre">--model-repository</span></code> argument, specify the same value as <code class="docutils literal notranslate"><span class="pre">os.path.join(OUTPUT_DATA_DIR,</span> <span class="pre">&quot;model_inference&quot;</span></code> that you specified previously in <code class="docutils literal notranslate"><span class="pre">export_hugectr_ensemble</span></code> for <code class="docutils literal notranslate"><span class="pre">output_path</span></code>.
+For <code class="docutils literal notranslate"><span class="pre">ps=</span></code> argument, specify the same value as <code class="docutils literal notranslate"><span class="pre">os.path.join(OUTPUT_DATA_DIR,</span> <span class="pre">&quot;model_inference&quot;,</span> <span class="pre">&quot;ps.json)</span></code> the file for ps.json.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">OUTPUT_DATA_DIR</span><span class="p">,</span> <span class="s2">&quot;model_inference&quot;</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">OUTPUT_DATA_DIR</span><span class="p">,</span> <span class="s2">&quot;model_inference&quot;</span><span class="p">,</span> <span class="s2">&quot;ps.json&quot;</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Overwriting /model/ps.json
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/tmp/test_merlin_criteo_hugectr/output/criteo/model_inference
+/tmp/test_merlin_criteo_hugectr/output/criteo/model_inference/ps.json
 </pre></div>
 </div>
 </div>
 </div>
 </div>
-<div class="section" id="loading-ensemble-model-with-triton-inference-server">
-<h3>Loading Ensemble Model with Triton Inference Server<a class="headerlink" href="#loading-ensemble-model-with-triton-inference-server" title="Permalink to this headline"></a></h3>
-<p>We have only saved the models for Triton Inference Server. We started Triton Inference Server in explicit mode, meaning that we need to send a request that Triton will load the ensemble model.</p>
-<p>We connect to the Triton Inference Server.</p>
+</div>
+<div class="section" id="get-prediction-from-triton-inference-server">
+<h2>Get prediction from Triton Inference Server<a class="headerlink" href="#get-prediction-from-triton-inference-server" title="Permalink to this headline"></a></h2>
+<p>We have saved the models for Triton Inference Server. We started Triton Inference Server and the models are loaded.  Now, we can send raw data as a request and receive the predictions.</p>
+<p>We read 3 example rows from the last parquet file from the raw data. We drop the target column, <code class="docutils literal notranslate"><span class="pre">label</span></code>, from the dataframe, as the information is not available at inference time.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">tritonhttpclient</span>
-
-<span class="k">try</span><span class="p">:</span>
-    <span class="n">triton_client</span> <span class="o">=</span> <span class="n">tritonhttpclient</span><span class="o">.</span><span class="n">InferenceServerClient</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="s2">&quot;localhost:8000&quot;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;client created.&quot;</span><span class="p">)</span>
-<span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;channel creation failed: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df_lib</span> <span class="o">=</span> <span class="n">get_lib</span><span class="p">()</span>
+<span class="n">input_cols</span> <span class="o">=</span> <span class="n">workflow</span><span class="o">.</span><span class="n">input_schema</span><span class="o">.</span><span class="n">column_names</span>
+<span class="c1"># read in data for request</span>
+<span class="n">batch</span> <span class="o">=</span> <span class="n">df_lib</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">original_data_path</span> <span class="o">+</span> <span class="s2">&quot;/*.parquet&quot;</span><span class="p">))[</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span>
+    <span class="n">num_rows</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+    <span class="n">columns</span><span class="o">=</span><span class="n">input_cols</span>
+<span class="p">)</span>
+<span class="n">batch</span> <span class="o">=</span> <span class="n">batch</span><span class="p">[[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">batch</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">x</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;label&#39;</span><span class="p">]]]</span>
+<span class="n">batch</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>client created.
-</pre></div>
-</div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/usr/local/lib/python3.8/dist-packages/tritonhttpclient/__init__.py:31: DeprecationWarning: The package `tritonhttpclient` is deprecated and will be removed in a future version. Please use instead `tritonclient.http`
-  warnings.warn(
-</pre></div>
-</div>
-</div>
-</div>
-<p>We deactivate warnings.</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">warnings</span>
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
 
-<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>C1</th>
+      <th>C2</th>
+      <th>C3</th>
+      <th>C4</th>
+      <th>C5</th>
+      <th>C6</th>
+      <th>C7</th>
+      <th>C8</th>
+      <th>C9</th>
+      <th>C10</th>
+      <th>...</th>
+      <th>I4</th>
+      <th>I5</th>
+      <th>I6</th>
+      <th>I7</th>
+      <th>I8</th>
+      <th>I9</th>
+      <th>I10</th>
+      <th>I11</th>
+      <th>I12</th>
+      <th>I13</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>70000</th>
+      <td>2714039</td>
+      <td>29401</td>
+      <td>11464</td>
+      <td>1122</td>
+      <td>9355</td>
+      <td>2</td>
+      <td>6370</td>
+      <td>1010</td>
+      <td>37</td>
+      <td>1865651</td>
+      <td>...</td>
+      <td>0.208215</td>
+      <td>0.952671</td>
+      <td>0.955872</td>
+      <td>0.944922</td>
+      <td>0.139380</td>
+      <td>0.994092</td>
+      <td>0.056103</td>
+      <td>0.547473</td>
+      <td>0.709442</td>
+      <td>0.930728</td>
+    </tr>
+    <tr>
+      <th>70001</th>
+      <td>3514299</td>
+      <td>27259</td>
+      <td>8072</td>
+      <td>395</td>
+      <td>9361</td>
+      <td>1</td>
+      <td>544</td>
+      <td>862</td>
+      <td>11</td>
+      <td>3292987</td>
+      <td>...</td>
+      <td>0.171709</td>
+      <td>0.759526</td>
+      <td>0.795019</td>
+      <td>0.716366</td>
+      <td>0.134964</td>
+      <td>0.516737</td>
+      <td>0.065577</td>
+      <td>0.129782</td>
+      <td>0.471361</td>
+      <td>0.386101</td>
+    </tr>
+    <tr>
+      <th>70002</th>
+      <td>1304577</td>
+      <td>5287</td>
+      <td>7367</td>
+      <td>2033</td>
+      <td>2899</td>
+      <td>2</td>
+      <td>712</td>
+      <td>640</td>
+      <td>36</td>
+      <td>6415968</td>
+      <td>...</td>
+      <td>0.880028</td>
+      <td>0.347701</td>
+      <td>0.207892</td>
+      <td>0.753950</td>
+      <td>0.371013</td>
+      <td>0.759502</td>
+      <td>0.201477</td>
+      <td>0.192447</td>
+      <td>0.085893</td>
+      <td>0.957961</td>
+    </tr>
+  </tbody>
+</table>
+<p>3 rows × 39 columns</p>
+</div></div></div>
+</div>
+<p>We generate a Triton Inference Server request object.</p>
+<p>Currently, <code class="docutils literal notranslate"><span class="pre">NA</span></code> and <code class="docutils literal notranslate"><span class="pre">None</span></code> values are not supported for <code class="docutils literal notranslate"><span class="pre">int32</span></code> columns. As a workaround, we will <code class="docutils literal notranslate"><span class="pre">NA</span></code> values with <code class="docutils literal notranslate"><span class="pre">0</span></code>. The output of the HugeCTR model is called <code class="docutils literal notranslate"><span class="pre">OUTPUT0</span></code>. For the same reason of dropping the target column, we need to remove it from the input schema, as well.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">input_schema</span> <span class="o">=</span> <span class="n">workflow</span><span class="o">.</span><span class="n">input_schema</span><span class="o">.</span><span class="n">remove_col</span><span class="p">(</span><span class="s1">&#39;label&#39;</span><span class="p">)</span>
+<span class="n">inputs</span> <span class="o">=</span> <span class="n">convert_df_to_triton_input</span><span class="p">(</span>
+    <span class="n">input_schema</span><span class="p">,</span> 
+    <span class="n">batch</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> 
+    <span class="n">grpcclient</span><span class="o">.</span><span class="n">InferInput</span>
+<span class="p">)</span>
+<span class="n">output_cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;OUTPUT0&#39;</span><span class="p">]</span>
+<span class="n">outputs</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">grpcclient</span><span class="o">.</span><span class="n">InferRequestedOutput</span><span class="p">(</span><span class="n">col</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">output_cols</span>
+<span class="p">]</span>
 </pre></div>
 </div>
 </div>
 </div>
-<p>We check if the server is alive.</p>
+<p>We send the request to Triton Inference Server.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">triton_client</span><span class="o">.</span><span class="n">is_server_live</span><span class="p">()</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># send request to tritonserver</span>
+<span class="k">with</span> <span class="n">grpcclient</span><span class="o">.</span><span class="n">InferenceServerClient</span><span class="p">(</span><span class="s2">&quot;localhost:8001&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">client</span><span class="p">:</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">infer</span><span class="p">(</span><span class="s2">&quot;criteo_ens&quot;</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">request_id</span><span class="o">=</span><span class="s2">&quot;1&quot;</span><span class="p">,</span> <span class="n">outputs</span><span class="o">=</span><span class="n">outputs</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>We print out the predictions. The outputs are the probability scores, predicted by our model, how likely the ad will be clicked.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">output_cols</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">col</span><span class="p">,</span> <span class="n">response</span><span class="p">[</span><span class="n">col</span><span class="p">],</span> <span class="n">response</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>GET /v2/health/live, headers None
-&lt;HTTPSocketPoolResponse status=200 headers={&#39;content-length&#39;: &#39;0&#39;, &#39;content-type&#39;: &#39;text/plain&#39;}&gt;
-</pre></div>
-</div>
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>True
-</pre></div>
-</div>
-</div>
-</div>
-<p>We check the available models in the repositories:</p>
-<ul class="simple">
-<li><p>criteo_ens: Ensemble</p></li>
-<li><p>criteo_nvt: NVTabular</p></li>
-<li><p>criteo: HugeCTR model</p></li>
-</ul>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">triton_client</span><span class="o">.</span><span class="n">get_model_repository_index</span><span class="p">()</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>POST /v2/repository/index, headers None
-
-&lt;HTTPSocketPoolResponse status=200 headers={&#39;content-type&#39;: &#39;application/json&#39;, &#39;content-length&#39;: &#39;93&#39;}&gt;
-bytearray(b&#39;[{&quot;name&quot;:&quot;.ipynb_checkpoints&quot;},{&quot;name&quot;:&quot;criteo&quot;},{&quot;name&quot;:&quot;criteo_ens&quot;},{&quot;name&quot;:&quot;criteo_nvt&quot;}]&#39;)
-</pre></div>
-</div>
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[{&#39;name&#39;: &#39;.ipynb_checkpoints&#39;},
- {&#39;name&#39;: &#39;criteo&#39;},
- {&#39;name&#39;: &#39;criteo_ens&#39;},
- {&#39;name&#39;: &#39;criteo_nvt&#39;}]
-</pre></div>
-</div>
-</div>
-</div>
-<p>We load the models individually.</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%time</span>
-
-<span class="n">triton_client</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="n">model_name</span><span class="o">=</span><span class="s2">&quot;criteo_nvt&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>POST /v2/repository/models/criteo_nvt/load, headers None
-
-&lt;HTTPSocketPoolResponse status=200 headers={&#39;content-type&#39;: &#39;application/json&#39;, &#39;content-length&#39;: &#39;0&#39;}&gt;
-Loaded model &#39;criteo_nvt&#39;
-CPU times: user 4.21 ms, sys: 258 µs, total: 4.47 ms
-Wall time: 20.6 s
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%time</span>
-
-<span class="n">triton_client</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="n">model_name</span><span class="o">=</span><span class="s2">&quot;criteo&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>POST /v2/repository/models/criteo/load, headers None
-
-&lt;HTTPSocketPoolResponse status=200 headers={&#39;content-type&#39;: &#39;application/json&#39;, &#39;content-length&#39;: &#39;0&#39;}&gt;
-Loaded model &#39;criteo&#39;
-CPU times: user 1.8 ms, sys: 3.01 ms, total: 4.81 ms
-Wall time: 32.4 s
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%time</span>
-
-<span class="n">triton_client</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="n">model_name</span><span class="o">=</span><span class="s2">&quot;criteo_ens&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>POST /v2/repository/models/criteo_ens/load, headers None
-
-&lt;HTTPSocketPoolResponse status=200 headers={&#39;content-type&#39;: &#39;application/json&#39;, &#39;content-length&#39;: &#39;0&#39;}&gt;
-Loaded model &#39;criteo_ens&#39;
-CPU times: user 4.7 ms, sys: 0 ns, total: 4.7 ms
-Wall time: 20.2 s
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>OUTPUT0 [0.52164096 0.50390565 0.4957397 ] (3,)
 </pre></div>
 </div>
 </div>
 </div>
 </div>
-<div class="section" id="example-request-to-triton-inference-server">
-<h3>Example Request to Triton Inference Server<a class="headerlink" href="#example-request-to-triton-inference-server" title="Permalink to this headline"></a></h3>
-<p>Now, the models are loaded and we can create a sample request. We read an example <strong>raw batch</strong> for inference.</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Get dataframe library - cudf or pandas</span>
-<span class="kn">from</span> <span class="nn">merlin.core.dispatch</span> <span class="kn">import</span> <span class="n">get_lib</span>
-<span class="n">df_lib</span> <span class="o">=</span> <span class="n">get_lib</span><span class="p">()</span>
-
-<span class="c1"># read in the workflow (to get input/output schema to call triton with)</span>
-<span class="n">batch_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s2">&quot;converted/criteo&quot;</span><span class="p">)</span>
-<span class="n">batch</span> <span class="o">=</span> <span class="n">df_lib</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">batch_path</span><span class="p">,</span> <span class="s2">&quot;*.parquet&quot;</span><span class="p">),</span> <span class="n">num_rows</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
-<span class="n">batch</span> <span class="o">=</span> <span class="n">batch</span><span class="p">[[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">batch</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">x</span> <span class="o">!=</span> <span class="s2">&quot;label&quot;</span><span class="p">]]</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span>
-</pre></div>
+<div class="section" id="summary">
+<h2>Summary<a class="headerlink" href="#summary" title="Permalink to this headline"></a></h2>
+<p>In this example, we deployed a recommender system pipeline as an ensemble. First, NVTabular created features and afterwards, HugeCTR predicted the processed data. This process ensures that the training and production environments use the same feature engineering.</p>
 </div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>     I1   I2    I3    I4    I5  I6  I7  I8  I9  I10  ...        C17  \
-0     5  110  &lt;NA&gt;    16  &lt;NA&gt;   1   0  14   7    1  ... -771205462   
-1    32    3     5  &lt;NA&gt;     1   0   0  61   5    0  ... -771205462   
-2  &lt;NA&gt;  233     1   146     1   0   0  99   7    0  ... -771205462   
-
-          C18         C19         C20         C21        C22        C23  \
-0 -1206449222 -1793932789 -1014091992   351689309  632402057 -675152885   
-1 -1578429167 -1793932789   -20981661 -1556988767 -924717482  391309800   
-2  1653545869 -1793932789 -1014091992   351689309  632402057 -675152885   
-
-          C24         C25         C26  
-0  2091868316   809724924  -317696227  
-1  1966410890 -1726799382 -1218975401  
-2   883538181   -10139646  -317696227  
-
-[3 rows x 39 columns]
-</pre></div>
-</div>
-</div>
-</div>
-<p>We prepare the batch for inference by using correct column names and data types. We use the same datatypes as defined in our dataframe.</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">batch</span><span class="o">.</span><span class="n">dtypes</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>I1     int32
-I2     int32
-I3     int32
-I4     int32
-I5     int32
-I6     int32
-I7     int32
-I8     int32
-I9     int32
-I10    int32
-I11    int32
-I12    int32
-I13    int32
-C1     int32
-C2     int32
-C3     int32
-C4     int32
-C5     int32
-C6     int32
-C7     int32
-C8     int32
-C9     int32
-C10    int32
-C11    int32
-C12    int32
-C13    int32
-C14    int32
-C15    int32
-C16    int32
-C17    int32
-C18    int32
-C19    int32
-C20    int32
-C21    int32
-C22    int32
-C23    int32
-C24    int32
-C25    int32
-C26    int32
-dtype: object
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">tritonclient.http</span> <span class="k">as</span> <span class="nn">httpclient</span>
-<span class="kn">from</span> <span class="nn">tritonclient.utils</span> <span class="kn">import</span> <span class="n">np_to_triton_dtype</span>
-
-<span class="n">inputs</span> <span class="o">=</span> <span class="p">[]</span>
-
-<span class="n">col_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">batch</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
-<span class="n">col_dtypes</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">col_names</span><span class="p">)</span>
-
-<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">col</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">batch</span><span class="o">.</span><span class="n">columns</span><span class="p">):</span>
-    <span class="n">d</span> <span class="o">=</span> <span class="n">batch</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">values_host</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">col_dtypes</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
-    <span class="n">d</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">d</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
-    <span class="n">inputs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">httpclient</span><span class="o">.</span><span class="n">InferInput</span><span class="p">(</span><span class="n">col_names</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">d</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">np_to_triton_dtype</span><span class="p">(</span><span class="n">col_dtypes</span><span class="p">[</span><span class="n">i</span><span class="p">])))</span>
-    <span class="n">inputs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_data_from_numpy</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-<p>We send the request to the triton server and collect the last output.</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># placeholder variables for the output</span>
-<span class="n">outputs</span> <span class="o">=</span> <span class="p">[</span><span class="n">httpclient</span><span class="o">.</span><span class="n">InferRequestedOutput</span><span class="p">(</span><span class="s2">&quot;OUTPUT0&quot;</span><span class="p">)]</span>
-
-<span class="c1"># build a client to connect to our server.</span>
-<span class="c1"># This InferenceServerClient object is what we&#39;ll be using to talk to Triton.</span>
-<span class="c1"># make the request with tritonclient.http.InferInput object</span>
-<span class="n">response</span> <span class="o">=</span> <span class="n">triton_client</span><span class="o">.</span><span class="n">infer</span><span class="p">(</span><span class="s2">&quot;criteo_ens&quot;</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">request_id</span><span class="o">=</span><span class="s2">&quot;1&quot;</span><span class="p">,</span> <span class="n">outputs</span><span class="o">=</span><span class="n">outputs</span><span class="p">)</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;predicted sigmoid result:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">as_numpy</span><span class="p">(</span><span class="s2">&quot;OUTPUT0&quot;</span><span class="p">))</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>POST /v2/models/criteo_ens/infer, headers {&#39;Inference-Header-Content-Length&#39;: 3383}
-b&#39;{&quot;id&quot;:&quot;1&quot;,&quot;inputs&quot;:[{&quot;name&quot;:&quot;I1&quot;,&quot;shape&quot;:[3,1],&quot;datatype&quot;:&quot;INT32&quot;,&quot;parameters&quot;:{&quot;binary_data_size&quot;:12}},{&quot;name&quot;:&quot;I2&quot;,&quot;shape&quot;:[3,1],&quot;datatype&quot;:&quot;INT32&quot;,&quot;parameters&quot;:{&quot;binary_data_size&quot;:12}},{&quot;name&quot;:&quot;I3&quot;,&quot;shape&quot;:[3,1],&quot;datatype&quot;:&quot;INT32&quot;,&quot;parameters&quot;:{&quot;binary_data_size&quot;:12}},{&quot;name&quot;:&quot;I4&quot;,&quot;shape&quot;:[3,1],&quot;datatype&quot;:&quot;INT32&quot;,&quot;parameters&quot;:{&quot;binary_data_size&quot;:12}},{&quot;name&quot;:&quot;I5&quot;,&quot;shape&quot;:[3,1],&quot;datatype&quot;:&quot;INT32&quot;,&quot;parameters&quot;:{&quot;binary_data_size&quot;:12}},{&quot;name&quot;:&quot;I6&quot;,&quot;shape&quot;:[3,1],&quot;datatype&quot;:&quot;INT32&quot;,&quot;parameters&quot;:{&quot;binary_data_size&quot;:12}},{&quot;name&quot;:&quot;I7&quot;,&quot;shape&quot;:[3,1],&quot;datatype&quot;:&quot;INT32&quot;,&quot;parameters&quot;:{&quot;binary_data_size&quot;:12}},{&quot;name&quot;:&quot;I8&quot;,&quot;shape&quot;:[3,1],&quot;datatype&quot;:&quot;INT32&quot;,&quot;parameters&quot;:{&quot;binary_data_size&quot;:12}},{&quot;name&quot;:&quot;I9&quot;,&quot;shape&quot;:[3,1],&quot;datatype&quot;:&quot;INT32&quot;,&quot;parameters&quot;:{&quot;binary_data_size&quot;:12}},{&quot;name&quot;:&quot;I10&quot;,&quot;shape&quot;:[3,1],&quot;datatype&quot;:&quot;INT32&quot;,&quot;parameters&quot;:{&quot;binary_data_size&quot;:12}},{&quot;name&quot;:&quot;I11&quot;,&quot;shape&quot;:[3,1],&quot;datatype&quot;:&quot;INT32&quot;,&quot;parameters&quot;:{&quot;binary_data_size&quot;:12}},{&quot;name&quot;:&quot;I12&quot;,&quot;shape&quot;:[3,1],&quot;datatype&quot;:&quot;INT32&quot;,&quot;parameters&quot;:{&quot;binary_data_size&quot;:12}},{&quot;name&quot;:&quot;I13&quot;,&quot;shape&quot;:[3,1],&quot;datatype&quot;:&quot;INT32&quot;,&quot;parameters&quot;:{&quot;binary_data_size&quot;:12}},{&quot;name&quot;:&quot;C1&quot;,&quot;shape&quot;:[3,1],&quot;datatype&quot;:&quot;INT32&quot;,&quot;parameters&quot;:{&quot;binary_data_size&quot;:12}},{&quot;name&quot;:&quot;C2&quot;,&quot;shape&quot;:[3,1],&quot;datatype&quot;:&quot;INT32&quot;,&quot;parameters&quot;:{&quot;binary_data_size&quot;:12}},{&quot;name&quot;:&quot;C3&quot;,&quot;shape&quot;:[3,1],&quot;datatype&quot;:&quot;INT32&quot;,&quot;parameters&quot;:{&quot;binary_data_size&quot;:12}},{&quot;name&quot;:&quot;C4&quot;,&quot;shape&quot;:[3,1],&quot;datatype&quot;:&quot;INT32&quot;,&quot;parameters&quot;:{&quot;binary_data_size&quot;:12}},{&quot;name&quot;:&quot;C5&quot;,&quot;shape&quot;:[3,1],&quot;datatype&quot;:&quot;INT32&quot;,&quot;parameters&quot;:{&quot;binary_data_size&quot;:12}},{&quot;name&quot;:&quot;C6&quot;,&quot;shape&quot;:[3,1],&quot;datatype&quot;:&quot;INT32&quot;,&quot;parameters&quot;:{&quot;binary_data_size&quot;:12}},{&quot;name&quot;:&quot;C7&quot;,&quot;shape&quot;:[3,1],&quot;datatype&quot;:&quot;INT32&quot;,&quot;parameters&quot;:{&quot;binary_data_size&quot;:12}},{&quot;name&quot;:&quot;C8&quot;,&quot;shape&quot;:[3,1],&quot;datatype&quot;:&quot;INT32&quot;,&quot;parameters&quot;:{&quot;binary_data_size&quot;:12}},{&quot;name&quot;:&quot;C9&quot;,&quot;shape&quot;:[3,1],&quot;datatype&quot;:&quot;INT32&quot;,&quot;parameters&quot;:{&quot;binary_data_size&quot;:12}},{&quot;name&quot;:&quot;C10&quot;,&quot;shape&quot;:[3,1],&quot;datatype&quot;:&quot;INT32&quot;,&quot;parameters&quot;:{&quot;binary_data_size&quot;:12}},{&quot;name&quot;:&quot;C11&quot;,&quot;shape&quot;:[3,1],&quot;datatype&quot;:&quot;INT32&quot;,&quot;parameters&quot;:{&quot;binary_data_size&quot;:12}},{&quot;name&quot;:&quot;C12&quot;,&quot;shape&quot;:[3,1],&quot;datatype&quot;:&quot;INT32&quot;,&quot;parameters&quot;:{&quot;binary_data_size&quot;:12}},{&quot;name&quot;:&quot;C13&quot;,&quot;shape&quot;:[3,1],&quot;datatype&quot;:&quot;INT32&quot;,&quot;parameters&quot;:{&quot;binary_data_size&quot;:12}},{&quot;name&quot;:&quot;C14&quot;,&quot;shape&quot;:[3,1],&quot;datatype&quot;:&quot;INT32&quot;,&quot;parameters&quot;:{&quot;binary_data_size&quot;:12}},{&quot;name&quot;:&quot;C15&quot;,&quot;shape&quot;:[3,1],&quot;datatype&quot;:&quot;INT32&quot;,&quot;parameters&quot;:{&quot;binary_data_size&quot;:12}},{&quot;name&quot;:&quot;C16&quot;,&quot;shape&quot;:[3,1],&quot;datatype&quot;:&quot;INT32&quot;,&quot;parameters&quot;:{&quot;binary_data_size&quot;:12}},{&quot;name&quot;:&quot;C17&quot;,&quot;shape&quot;:[3,1],&quot;datatype&quot;:&quot;INT32&quot;,&quot;parameters&quot;:{&quot;binary_data_size&quot;:12}},{&quot;name&quot;:&quot;C18&quot;,&quot;shape&quot;:[3,1],&quot;datatype&quot;:&quot;INT32&quot;,&quot;parameters&quot;:{&quot;binary_data_size&quot;:12}},{&quot;name&quot;:&quot;C19&quot;,&quot;shape&quot;:[3,1],&quot;datatype&quot;:&quot;INT32&quot;,&quot;parameters&quot;:{&quot;binary_data_size&quot;:12}},{&quot;name&quot;:&quot;C20&quot;,&quot;shape&quot;:[3,1],&quot;datatype&quot;:&quot;INT32&quot;,&quot;parameters&quot;:{&quot;binary_data_size&quot;:12}},{&quot;name&quot;:&quot;C21&quot;,&quot;shape&quot;:[3,1],&quot;datatype&quot;:&quot;INT32&quot;,&quot;parameters&quot;:{&quot;binary_data_size&quot;:12}},{&quot;name&quot;:&quot;C22&quot;,&quot;shape&quot;:[3,1],&quot;datatype&quot;:&quot;INT32&quot;,&quot;parameters&quot;:{&quot;binary_data_size&quot;:12}},{&quot;name&quot;:&quot;C23&quot;,&quot;shape&quot;:[3,1],&quot;datatype&quot;:&quot;INT32&quot;,&quot;parameters&quot;:{&quot;binary_data_size&quot;:12}},{&quot;name&quot;:&quot;C24&quot;,&quot;shape&quot;:[3,1],&quot;datatype&quot;:&quot;INT32&quot;,&quot;parameters&quot;:{&quot;binary_data_size&quot;:12}},{&quot;name&quot;:&quot;C25&quot;,&quot;shape&quot;:[3,1],&quot;datatype&quot;:&quot;INT32&quot;,&quot;parameters&quot;:{&quot;binary_data_size&quot;:12}},{&quot;name&quot;:&quot;C26&quot;,&quot;shape&quot;:[3,1],&quot;datatype&quot;:&quot;INT32&quot;,&quot;parameters&quot;:{&quot;binary_data_size&quot;:12}}],&quot;outputs&quot;:[{&quot;name&quot;:&quot;OUTPUT0&quot;,&quot;parameters&quot;:{&quot;binary_data&quot;:true}}]}\x05\x00\x00\x00 \x00\x00\x00\x00\x00\x00\x00n\x00\x00\x00\x03\x00\x00\x00\xe9\x00\x00\x00\x00\x00\x00\x00\x05\x00\x00\x00\x01\x00\x00\x00\x10\x00\x00\x00\x00\x00\x00\x00\x92\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x0e\x00\x00\x00=\x00\x00\x00c\x00\x00\x00\x07\x00\x00\x00\x05\x00\x00\x00\x07\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x002\x01\x00\x00U\x0c\x00\x00\x1d\x0c\x00\x00\x00\x00\x00\x00\x05\x00\x00\x00\x01\x00\x00\x00y\rwb\x8d\xfd\xf3\xe5y\rwbX]\x1f\xe2\xa6\xff\xaa\xa0\x03B\x98\xad/D\xea\xaf\xd5\x15\xaao\r\xc6\xbeb\xcf\x7f\\\x94!4\x8a\xda\xeeIl8H\&#39;\xb08#\x9f\xd6&lt;M\x06U\xe7\xcbm\xcdo\xcbm\xcdo\xcbm\xcdo!\xaa\x805\x81\xed\x16\xabb\xeb\xf5\xb5\x03\x89\x80()lBC\x8b\xcc\xf2\xd1\xa6\xdf\xdeFT\xe1\xf5\x1d\x1f\x82N.\xc1}\x02.\xa9\xc0\xe9}\xc1}\x02.1B|\x0cd\xdcRf1B|\x0c\x1f\x1d\x98\x95\&#39;N\xeb\x99\x84aq\x12\xb7\xff\xc5\x00\xb7\xff\xc5\x00\xb7\xff\xc5\x007\xe5N\xbe7\xe5N\xbe7\xe5N\xbe\xcct\x0b\x8a\x99\xfe\xbb\xf3\x0b\r\x0f\xf7\xfa&gt;\xdcL\xfa&gt;\xdcL\xfa&gt;\xdcL\xaaV\x08\xd2\xaaV\x08\xd2\xaaV\x08\xd2\xba\x0b\x17\xb8\x11\x15\xeb\xa1\x8d\x1b\x8fb\x0b\xc2\x12\x95\x0b\xc2\x12\x95\x0b\xc2\x12\x95(/\x8e\xc3c\xd8\xbf\xfe(/\x8e\xc3]Z\xf6\x14\xa1&lt;2\xa3]Z\xf6\x14\x89\xb0\xb1%V\xee\xe1\xc8\x89\xb0\xb1%\x0b\xfc\xc1\xd7\xe8\xe9R\x17\x0b\xfc\xc1\xd7\x9c`\xaf|\x8a\x0c5u\x05\xb9\xa94\xfckC0\xea!\x13\x99\x02He\xff\x1dW\x10\xedW\xe9W\xb7\x1dW\x10\xed&#39;
-&lt;HTTPSocketPoolResponse status=400 headers={&#39;content-length&#39;: &#39;122&#39;, &#39;content-type&#39;: &#39;text/plain&#39;}&gt;
-</pre></div>
-</div>
-<div class="output traceback highlight-ipythontb notranslate"><div class="highlight"><pre><span></span><span class="gt">---------------------------------------------------------------------------</span>
-<span class="ne">InferenceServerException</span><span class="g g-Whitespace">                  </span>Traceback (most recent call last)
-<span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">ipykernel_2961</span><span class="o">/</span><span class="mf">3517835948.</span><span class="n">py</span> <span class="ow">in</span> <span class="o">&lt;</span><span class="n">module</span><span class="o">&gt;</span>
-<span class="g g-Whitespace">      </span><span class="mi">5</span> <span class="c1"># This InferenceServerClient object is what we&#39;ll be using to talk to Triton.</span>
-<span class="g g-Whitespace">      </span><span class="mi">6</span> <span class="c1"># make the request with tritonclient.http.InferInput object</span>
-<span class="ne">----&gt; </span><span class="mi">7</span> <span class="n">response</span> <span class="o">=</span> <span class="n">triton_client</span><span class="o">.</span><span class="n">infer</span><span class="p">(</span><span class="s2">&quot;criteo_ens&quot;</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">request_id</span><span class="o">=</span><span class="s2">&quot;1&quot;</span><span class="p">,</span> <span class="n">outputs</span><span class="o">=</span><span class="n">outputs</span><span class="p">)</span>
-<span class="g g-Whitespace">      </span><span class="mi">8</span> 
-<span class="g g-Whitespace">      </span><span class="mi">9</span> <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;predicted sigmoid result:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">as_numpy</span><span class="p">(</span><span class="s2">&quot;OUTPUT0&quot;</span><span class="p">))</span>
-
-<span class="nn">/usr/local/lib/python3.8/dist-packages/tritonclient/http/__init__.py</span> in <span class="ni">infer</span><span class="nt">(self, model_name, inputs, model_version, outputs, request_id, sequence_id, sequence_start, sequence_end, priority, timeout, headers, query_params, request_compression_algorithm, response_compression_algorithm)</span>
-<span class="g g-Whitespace">   </span><span class="mi">1254</span>                               <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">,</span>
-<span class="g g-Whitespace">   </span><span class="mi">1255</span>                               <span class="n">query_params</span><span class="o">=</span><span class="n">query_params</span><span class="p">)</span>
-<span class="ne">-&gt; </span><span class="mi">1256</span>         <span class="n">_raise_if_error</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
-<span class="g g-Whitespace">   </span><span class="mi">1257</span> 
-<span class="g g-Whitespace">   </span><span class="mi">1258</span>         <span class="k">return</span> <span class="n">InferResult</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_verbose</span><span class="p">)</span>
-
-<span class="nn">/usr/local/lib/python3.8/dist-packages/tritonclient/http/__init__.py</span> in <span class="ni">_raise_if_error</span><span class="nt">(response)</span>
-<span class="g g-Whitespace">     </span><span class="mi">62</span>     <span class="n">error</span> <span class="o">=</span> <span class="n">_get_error</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
-<span class="g g-Whitespace">     </span><span class="mi">63</span>     <span class="k">if</span> <span class="n">error</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-<span class="ne">---&gt; </span><span class="mi">64</span>         <span class="k">raise</span> <span class="n">error</span>
-<span class="g g-Whitespace">     </span><span class="mi">65</span> 
-<span class="g g-Whitespace">     </span><span class="mi">66</span> 
-
-<span class="ne">InferenceServerException</span>: in ensemble &#39;criteo_ens&#39;, Failed to process the request(s), message: The stub process has exited unexpectedly.
-</pre></div>
-</div>
-</div>
-</div>
-<p>Let’s unload the model. We need to unload each model.</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">triton_client</span><span class="o">.</span><span class="n">unload_model</span><span class="p">(</span><span class="n">model_name</span><span class="o">=</span><span class="s2">&quot;criteo_ens&quot;</span><span class="p">)</span>
-<span class="n">triton_client</span><span class="o">.</span><span class="n">unload_model</span><span class="p">(</span><span class="n">model_name</span><span class="o">=</span><span class="s2">&quot;criteo_nvt&quot;</span><span class="p">)</span>
-<span class="n">triton_client</span><span class="o">.</span><span class="n">unload_model</span><span class="p">(</span><span class="n">model_name</span><span class="o">=</span><span class="s2">&quot;criteo&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>POST /v2/repository/models/criteo_ens/unload, headers None
-{&quot;parameters&quot;:{&quot;unload_dependents&quot;:false}}
-&lt;HTTPSocketPoolResponse status=200 headers={&#39;content-type&#39;: &#39;application/json&#39;, &#39;content-length&#39;: &#39;0&#39;}&gt;
-Loaded model &#39;criteo_ens&#39;
-POST /v2/repository/models/criteo_nvt/unload, headers None
-{&quot;parameters&quot;:{&quot;unload_dependents&quot;:false}}
-&lt;HTTPSocketPoolResponse status=200 headers={&#39;content-type&#39;: &#39;application/json&#39;, &#39;content-length&#39;: &#39;0&#39;}&gt;
-Loaded model &#39;criteo_nvt&#39;
-POST /v2/repository/models/criteo/unload, headers None
-{&quot;parameters&quot;:{&quot;unload_dependents&quot;:false}}
-&lt;HTTPSocketPoolResponse status=200 headers={&#39;content-type&#39;: &#39;application/json&#39;, &#39;content-length&#39;: &#39;0&#39;}&gt;
-Loaded model &#39;criteo&#39;
-</pre></div>
-</div>
-</div>
-</div>
-</div>
+<div class="section" id="next-steps">
+<h2>Next steps<a class="headerlink" href="#next-steps" title="Permalink to this headline"></a></h2>
+<p>There is more detailed information in the <a class="reference external" href="https://nvidia-merlin.github.io/HugeCTR/main/hugectr_user_guide.html">API documentation</a> and <a class="reference external" href="https://nvidia-merlin.github.io/HugeCTR/main/notebooks/index.html">more examples</a> in the <a class="reference external" href="https://github.com/NVIDIA-Merlin/HugeCTR">HugeCTR repository</a>.</p>
 </div>
 </div>
 

@@ -120,7 +120,7 @@
 <div class="section" id="overview">
 <h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline"></a></h2>
 <p>Recommender Systems (RecSys) are the engine of the modern internet and the catalyst for human decisions. Building a recommendation system is challenging because it requires multiple stages (data preprocessing, offline training, item retrieval, filtering, ranking, ordering, etc.) to work together seamlessly and efficiently. The biggest challenges for new practitioners are the lack of understanding around what RecSys look like in the real world, and the gap between examples of simple models and a production-ready end-to-end recommender systems.</p>
-<p>The figure below represents a four-stage recommender systems. This is more complex process than only training a single model and deploying it, and it is much more realistic and closer to what’s happening in the real-world recommender production systems.</p>
+<p>The figure below represents a four-stage recommender systems. This is a more complex process than only training a single model and deploying it, and it is much more realistic and closer to what’s happening in the real-world recommender production systems.</p>
 <p><img alt="fourstage" src="../../_images/fourstages.png" /></p>
 <p>In these series of notebooks, we are going to showcase how we can deploy a four-stage recommender systems using Merlin Systems library easily on <a class="reference external" href="https://github.com/triton-inference-server/server">Triton Inference Server</a>. Let’s go over the concepts in the figure briefly.</p>
 <ul class="simple">
@@ -149,7 +149,7 @@
 <div class="section" id="import-required-libraries-and-functions">
 <h2>Import required libraries and functions<a class="headerlink" href="#import-required-libraries-and-functions" title="Permalink to this headline"></a></h2>
 <p><strong>Compatibility:</strong></p>
-<p>These notebooks are developed and tested using our latest <code class="docutils literal notranslate"><span class="pre">merlin-tensorflow:22.XX</span></code> container on <a class="reference external" href="https://catalog.ngc.nvidia.com/containers?filters=&amp;orderBy=dateModifiedDESC&amp;query=merlin">NVIDIA’s docker registry</a>.</p>
+<p>This notebook is developed and tested using the latest <code class="docutils literal notranslate"><span class="pre">merlin-tensorflow</span></code> container from the NVIDIA NGC catalog. To find the tag for the most recently-released container, refer to the <a class="reference external" href="https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-tensorflow">Merlin TensorFlow</a> page.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># for running this example on GPU, install the following libraries</span>
@@ -166,7 +166,8 @@
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">nvtabular</span> <span class="k">as</span> <span class="nn">nvt</span>
-<span class="kn">from</span> <span class="nn">nvtabular.ops</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">nvtabular.ops</span> <span class="kn">import</span> <span class="n">Rename</span><span class="p">,</span> <span class="n">Filter</span><span class="p">,</span> <span class="n">Dropna</span><span class="p">,</span> <span class="n">LambdaOp</span><span class="p">,</span> <span class="n">Categorify</span><span class="p">,</span> \
+    <span class="n">TagAsUserFeatures</span><span class="p">,</span> <span class="n">TagAsUserID</span><span class="p">,</span> <span class="n">TagAsItemFeatures</span><span class="p">,</span> <span class="n">TagAsItemID</span><span class="p">,</span> <span class="n">AddMetadata</span>
 
 <span class="kn">from</span> <span class="nn">merlin.schema.tags</span> <span class="kn">import</span> <span class="n">Tags</span>
 
@@ -241,7 +242,7 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 </div>
 </div>
 </div>
-<p>In the NVTabular workflow below, notice that we apply <code class="docutils literal notranslate"><span class="pre">Dropna()</span></code> op at the end. The reason we do that is to remove rows with missing values in the final dataframe after preceding transformations. Although, the synthetic dataset that we generate above and use in this notebook does not have null entries, you might have null entries in your <code class="docutils literal notranslate"><span class="pre">user_id</span></code> and <code class="docutils literal notranslate"><span class="pre">item_id</span></code> columns in your own custom dataset. Therefore while applying <code class="docutils literal notranslate"><span class="pre">Dropna()</span></code> we will not be registering null <code class="docutils literal notranslate"><span class="pre">user_id_raw</span></code> and <code class="docutils literal notranslate"><span class="pre">item_id_raw</span></code> values in the feature store, and will be avoiding  potential issues that can occur because of any null entires.</p>
+<p>In the following NVTabular workflow, notice that we apply the <code class="docutils literal notranslate"><span class="pre">Dropna()</span></code> Operator at the end. We add the Operator to remove rows with missing values in the final DataFrame after the preceding transformations. Although, the synthetic dataset that we generate and use in this notebook does not have null entries, you might have null entries in your <code class="docutils literal notranslate"><span class="pre">user_id</span></code> and <code class="docutils literal notranslate"><span class="pre">item_id</span></code> columns in your own custom dataset. Therefore, while applying <code class="docutils literal notranslate"><span class="pre">Dropna()</span></code> we will not be registering null <code class="docutils literal notranslate"><span class="pre">user_id_raw</span></code> and <code class="docutils literal notranslate"><span class="pre">item_id_raw</span></code> values in the feature store, and will be avoiding potential issues that can occur because of any null entries.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">user_id_raw</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;user_id&quot;</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">Rename</span><span class="p">(</span><span class="n">postfix</span><span class="o">=</span><span class="s1">&#39;_raw&#39;</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="n">LambdaOp</span><span class="p">(</span><span class="k">lambda</span> <span class="n">col</span><span class="p">:</span> <span class="n">col</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;int32&quot;</span><span class="p">))</span> <span class="o">&gt;&gt;</span> <span class="n">TagAsUserFeatures</span><span class="p">()</span>
@@ -272,7 +273,7 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 
 <span class="n">targets</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;click&quot;</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">AddMetadata</span><span class="p">(</span><span class="n">tags</span><span class="o">=</span><span class="p">[</span><span class="n">Tags</span><span class="o">.</span><span class="n">BINARY_CLASSIFICATION</span><span class="p">,</span> <span class="s2">&quot;target&quot;</span><span class="p">])</span>
 
-<span class="n">outputs</span> <span class="o">=</span> <span class="n">user_id</span> <span class="o">+</span> <span class="n">item_id</span> <span class="o">+</span> <span class="n">item_features</span> <span class="o">+</span> <span class="n">user_features</span> <span class="o">+</span>  <span class="n">user_id_raw</span> <span class="o">+</span> <span class="n">item_id_raw</span> <span class="o">+</span> <span class="n">targets</span>
+<span class="n">outputs</span> <span class="o">=</span> <span class="n">user_id</span> <span class="o">+</span> <span class="n">item_id</span> <span class="o">+</span> <span class="n">item_features</span> <span class="o">+</span> <span class="n">user_features</span> <span class="o">+</span> <span class="n">user_id_raw</span> <span class="o">+</span> <span class="n">item_id_raw</span> <span class="o">+</span> <span class="n">targets</span>
 
 <span class="c1"># add dropna op to filter rows with nulls</span>
 <span class="n">outputs</span> <span class="o">=</span> <span class="n">outputs</span> <span class="o">&gt;&gt;</span> <span class="n">Dropna</span><span class="p">()</span>

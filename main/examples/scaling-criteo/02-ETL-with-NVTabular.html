@@ -124,7 +124,7 @@
 <div class="section" id="overview">
 <h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline"></a></h2>
 <p>NVTabular is a feature engineering and preprocessing library for tabular data designed to quickly and easily manipulate terabyte scale datasets used to train deep learning based recommender systems. It provides a high level abstraction to simplify code and accelerates computation on the GPU using the RAPIDS cuDF library.<br><br></p>
-<p><strong>In this notebook, we will show how to scale NVTabular to multi-GPUs and multiple nodes.</strong> Prerequisite is to be familiar with NVTabular and its API. You can read more NVTabular and its API in our <a class="reference external" href="https://github.com/NVIDIA-Merlin/NVTabular/tree/main/examples/getting-started-movielens">Getting Started with Movielens notebooks</a>.<br><br></p>
+<p><strong>In this notebook, we will use NVTabular with multiple GPUs. The notebook can run on single GPU, as well</strong>. Prerequisite is to be familiar with NVTabular and its API. You can read more NVTabular and its API in our <a class="reference external" href="https://nvidia-merlin.github.io/NVTabular/main/Introduction.html">Documentation</a> or check out our <a class="reference external" href="https://nvidia-merlin.github.io/NVTabular/main/examples/index.html">NVTabular Examples</a>.<br><br></p>
 <p>The full <a class="reference external" href="https://ailab.criteo.com/download-criteo-1tb-click-logs-dataset/">Criteo 1TB Click Logs dataset</a> contains ~1.3 TB of uncompressed click logs containing over four billion samples spanning 24 days. In our benchmarks, we are able to preprocess and engineer features in <strong>13.8min with 1x NVIDIA A100 GPU and 1.9min with 8x NVIDIA A100 GPUs</strong>. This is a <strong>speed-up of 100x-10000x</strong> in comparison to different CPU versions, You can read more in our <a class="reference external" href="https://developer.nvidia.com/blog/announcing-the-nvtabular-open-beta-with-multi-gpu-support-and-new-data-loaders/">blog</a>.</p>
 <p>Our pipeline will be representative with most common preprocessing transformation for deep learning recommender models.</p>
 <ul class="simple">
@@ -139,21 +139,6 @@
 <li><p>Use multi-GPU or multi node for ETL</p></li>
 <li><p>Apply common deep learning ETL workflow</p></li>
 </ul>
-</div>
-<div class="section" id="multi-gpu-and-multi-node-scaling">
-<h3>Multi-GPU and multi-node scaling<a class="headerlink" href="#multi-gpu-and-multi-node-scaling" title="Permalink to this headline"></a></h3>
-<p>NVTabular is built on top off <a class="reference external" href="https://github.com/rapidsai/cudf/">RAPIDS.AI cuDF</a>, <a class="reference external" href="https://docs.rapids.ai/api/cudf/stable/">dask_cudf</a> and <a class="reference external" href="https://dask.org/">dask</a>.<br><br>
-<strong>Dask</strong> is a task-based library for parallel scheduling and execution. Although it is certainly possible to use the task-scheduling machinery directly to implement customized parallel workflows (we do it in NVTabular), most users only interact with Dask through a Dask Collection API. The most popular “collection” API’s include:</p>
-<ul class="simple">
-<li><p>Dask DataFrame: Dask-based version of the Pandas DataFrame/Series API. Note that dask_cudf is just a wrapper around this collection module (dask.dataframe).</p></li>
-<li><p>Dask Array: Dask-based version of the NumPy array API</p></li>
-<li><p>Dask Bag: Similar to a Dask-based version of PyToolz or a Pythonic version of PySpark RDD</p></li>
-</ul>
-<p>For example, Dask DataFrame provides a convenient API for decomposing large Pandas (or cuDF) DataFrame/Series objects into a collection of DataFrame partitions.</p>
-<a class="reference internal image-reference" href="../../_images/dask-dataframe1.svg"><img alt="../../_images/dask-dataframe1.svg" src="../../_images/dask-dataframe1.svg" width="20%" /></a>
-<p>We use <strong>dask_cudf</strong> to process large datasets as a collection of cuDF dataframes instead of Pandas. CuDF is a GPU DataFrame library for loading, joining, aggregating, filtering, and otherwise manipulating data.
-<br><br>
-<strong>Dask enables easily to schedule tasks for multiple workers: multi-GPU or multi-node. We just need to initialize a Dask cluster (<code class="docutils literal notranslate"><span class="pre">LocalCUDACluster</span></code>) and NVTabular will use the cluster to execute the workflow.</strong></p>
 </div>
 </div>
 <div class="section" id="etl-with-nvtabular">
@@ -199,6 +184,7 @@
 <span class="n">BASE_DIR</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;BASE_DIR&quot;</span><span class="p">,</span> <span class="s2">&quot;/raid/data/criteo&quot;</span><span class="p">)</span>
 <span class="n">INPUT_DATA_DIR</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;INPUT_DATA_DIR&quot;</span><span class="p">,</span> <span class="n">BASE_DIR</span> <span class="o">+</span> <span class="s2">&quot;/converted/criteo&quot;</span><span class="p">)</span>
 <span class="n">OUTPUT_DATA_DIR</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;OUTPUT_DATA_DIR&quot;</span><span class="p">,</span> <span class="n">BASE_DIR</span> <span class="o">+</span> <span class="s2">&quot;/test_dask/output&quot;</span><span class="p">)</span>
+<span class="n">USE_HUGECTR</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;USE_HUGECTR&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
 <span class="n">stats_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">OUTPUT_DATA_DIR</span><span class="p">,</span> <span class="s2">&quot;test_dask/stats&quot;</span><span class="p">)</span>
 <span class="n">dask_workdir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">OUTPUT_DATA_DIR</span><span class="p">,</span> <span class="s2">&quot;test_dask/workdir&quot;</span><span class="p">)</span>
 
@@ -239,6 +225,12 @@
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">train_paths</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">valid_paths</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[&#39;/raid/data/criteo/converted/criteo/day_0.parquet&#39;]
+[&#39;/raid/data/criteo/converted/criteo/day_1.parquet&#39;]
 </pre></div>
 </div>
 </div>
@@ -294,13 +286,244 @@
 </pre></div>
 </div>
 </div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2022-12-06 10:52:32,108 - distributed.preloading - INFO - Import preload module: dask_cuda.initialize
+2022-12-06 10:52:32,242 - distributed.preloading - INFO - Import preload module: dask_cuda.initialize
+</pre></div>
+</div>
+<div class="output text_html"><div>
+    <div style="width: 24px; height: 24px; background-color: #e1e1e1; border: 3px solid #9D9D9D; border-radius: 5px; position: absolute;"> </div>
+    <div style="margin-left: 48px;">
+        <h3 style="margin-bottom: 0px;">Client</h3>
+        <p style="color: #9D9D9D; margin-bottom: 0px;">Client-16739757-7554-11ed-88cc-2a33bb9638f6</p>
+        <table style="width: 100%; text-align: left;">
+
+        <tr>
+        
+            <td style="text-align: left;"><strong>Connection method:</strong> Cluster object</td>
+            <td style="text-align: left;"><strong>Cluster type:</strong> dask_cuda.LocalCUDACluster</td>
+        
+        </tr>
+
+        
+            <tr>
+                <td style="text-align: left;">
+                    <strong>Dashboard: </strong> <a href="http://127.0.0.1:8787/status" target="_blank">http://127.0.0.1:8787/status</a>
+                </td>
+                <td style="text-align: left;"></td>
+            </tr>
+        
+
+        </table>
+
+        
+            <details>
+            <summary style="margin-bottom: 20px;"><h3 style="display: inline;">Cluster Info</h3></summary>
+            <div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-mod-trusted jp-OutputArea-output">
+    <div style="width: 24px; height: 24px; background-color: #e1e1e1; border: 3px solid #9D9D9D; border-radius: 5px; position: absolute;">
+    </div>
+    <div style="margin-left: 48px;">
+        <h3 style="margin-bottom: 0px; margin-top: 0px;">LocalCUDACluster</h3>
+        <p style="color: #9D9D9D; margin-bottom: 0px;">c4f394c8</p>
+        <table style="width: 100%; text-align: left;">
+            <tr>
+                <td style="text-align: left;">
+                    <strong>Dashboard:</strong> <a href="http://127.0.0.1:8787/status" target="_blank">http://127.0.0.1:8787/status</a>
+                </td>
+                <td style="text-align: left;">
+                    <strong>Workers:</strong> 2
+                </td>
+            </tr>
+            <tr>
+                <td style="text-align: left;">
+                    <strong>Total threads:</strong> 2
+                </td>
+                <td style="text-align: left;">
+                    <strong>Total memory:</strong> 100.00 GiB
+                </td>
+            </tr>
+            
+            <tr>
+    <td style="text-align: left;"><strong>Status:</strong> running</td>
+    <td style="text-align: left;"><strong>Using processes:</strong> True</td>
+</tr>
+
+            
+        </table>
+
+        <details>
+            <summary style="margin-bottom: 20px;">
+                <h3 style="display: inline;">Scheduler Info</h3>
+            </summary>
+
+            <div style="">
+    <div>
+        <div style="width: 24px; height: 24px; background-color: #FFF7E5; border: 3px solid #FF6132; border-radius: 5px; position: absolute;"> </div>
+        <div style="margin-left: 48px;">
+            <h3 style="margin-bottom: 0px;">Scheduler</h3>
+            <p style="color: #9D9D9D; margin-bottom: 0px;">Scheduler-a605479f-02de-4ca6-8661-fd02b84655ac</p>
+            <table style="width: 100%; text-align: left;">
+                <tr>
+                    <td style="text-align: left;">
+                        <strong>Comm:</strong> tcp://127.0.0.1:44059
+                    </td>
+                    <td style="text-align: left;">
+                        <strong>Workers:</strong> 2
+                    </td>
+                </tr>
+                <tr>
+                    <td style="text-align: left;">
+                        <strong>Dashboard:</strong> <a href="http://127.0.0.1:8787/status" target="_blank">http://127.0.0.1:8787/status</a>
+                    </td>
+                    <td style="text-align: left;">
+                        <strong>Total threads:</strong> 2
+                    </td>
+                </tr>
+                <tr>
+                    <td style="text-align: left;">
+                        <strong>Started:</strong> Just now
+                    </td>
+                    <td style="text-align: left;">
+                        <strong>Total memory:</strong> 100.00 GiB
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <details style="margin-left: 48px;">
+        <summary style="margin-bottom: 20px;">
+            <h3 style="display: inline;">Workers</h3>
+        </summary>
+
+        
+        <div style="margin-bottom: 20px;">
+            <div style="width: 24px; height: 24px; background-color: #DBF5FF; border: 3px solid #4CC9FF; border-radius: 5px; position: absolute;"> </div>
+            <div style="margin-left: 48px;">
+            <details>
+                <summary>
+                    <h4 style="margin-bottom: 0px; display: inline;">Worker: 0</h4>
+                </summary>
+                <table style="width: 100%; text-align: left;">
+                    <tr>
+                        <td style="text-align: left;">
+                            <strong>Comm: </strong> tcp://127.0.0.1:45833
+                        </td>
+                        <td style="text-align: left;">
+                            <strong>Total threads: </strong> 1
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: left;">
+                            <strong>Dashboard: </strong> <a href="http://127.0.0.1:38541/status" target="_blank">http://127.0.0.1:38541/status</a>
+                        </td>
+                        <td style="text-align: left;">
+                            <strong>Memory: </strong> 50.00 GiB
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: left;">
+                            <strong>Nanny: </strong> tcp://127.0.0.1:43849
+                        </td>
+                        <td style="text-align: left;"></td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="text-align: left;">
+                            <strong>Local directory: </strong> /raid/data/criteo/test_dask/output/test_dask/workdir/dask-worker-space/worker-9hxldmq1
+                        </td>
+                    </tr>
+
+                    
+                    <tr>
+                        <td style="text-align: left;">
+                            <strong>GPU: </strong>Tesla V100-SXM2-32GB-LS
+                        </td>
+                        <td style="text-align: left;">
+                            <strong>GPU memory: </strong> 31.75 GiB
+                        </td>
+                    </tr>
+                    
+
+                    
+
+                </table>
+            </details>
+            </div>
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+            <div style="width: 24px; height: 24px; background-color: #DBF5FF; border: 3px solid #4CC9FF; border-radius: 5px; position: absolute;"> </div>
+            <div style="margin-left: 48px;">
+            <details>
+                <summary>
+                    <h4 style="margin-bottom: 0px; display: inline;">Worker: 1</h4>
+                </summary>
+                <table style="width: 100%; text-align: left;">
+                    <tr>
+                        <td style="text-align: left;">
+                            <strong>Comm: </strong> tcp://127.0.0.1:35261
+                        </td>
+                        <td style="text-align: left;">
+                            <strong>Total threads: </strong> 1
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: left;">
+                            <strong>Dashboard: </strong> <a href="http://127.0.0.1:46685/status" target="_blank">http://127.0.0.1:46685/status</a>
+                        </td>
+                        <td style="text-align: left;">
+                            <strong>Memory: </strong> 50.00 GiB
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: left;">
+                            <strong>Nanny: </strong> tcp://127.0.0.1:37015
+                        </td>
+                        <td style="text-align: left;"></td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="text-align: left;">
+                            <strong>Local directory: </strong> /raid/data/criteo/test_dask/output/test_dask/workdir/dask-worker-space/worker-nsltf61z
+                        </td>
+                    </tr>
+
+                    
+                    <tr>
+                        <td style="text-align: left;">
+                            <strong>GPU: </strong>Tesla V100-SXM2-32GB-LS
+                        </td>
+                        <td style="text-align: left;">
+                            <strong>GPU memory: </strong> 31.75 GiB
+                        </td>
+                    </tr>
+                    
+
+                    
+
+                </table>
+            </details>
+            </div>
+        </div>
+        
+
+    </details>
+</div>
+
+        </details>
+    </div>
+</div>
+            </details>
+        
+
+    </div>
+</div></div></div>
 </div>
 <p>That’s it. We initialized our Dask cluster and NVTabular will execute the workflow on multiple GPUs. Similar, we could define a cluster with multiple nodes.</p>
 </div>
 <div class="section" id="defining-our-preprocessing-pipeline">
 <h3>Defining our Preprocessing Pipeline<a class="headerlink" href="#defining-our-preprocessing-pipeline" title="Permalink to this headline"></a></h3>
 <p>At this point, our data still isn’t in a form that’s ideal for consumption by neural networks. The most pressing issues are missing values and the fact that our categorical variables are still represented by random, discrete identifiers, and need to be transformed into contiguous indices that can be leveraged by a learned embedding. Less pressing, but still important for learning dynamics, are the distributions of our continuous variables, which are distributed across multiple orders of magnitude and are uncentered (i.e. E[x] != 0).</p>
-<p>We can fix these issues in a concise and GPU-accelerated manner with an NVTabular <code class="docutils literal notranslate"><span class="pre">Workflow</span></code>. We explained the NVTabular API in <a class="reference external" href="https://github.com/NVIDIA/NVTabular/tree/main/examples/getting-started-movielens">Getting Started with Movielens notebooks</a> and hope you are familiar with the syntax.</p>
+<p>We can fix these issues in a concise and GPU-accelerated manner with an NVTabular <code class="docutils literal notranslate"><span class="pre">Workflow</span></code>. More information about NVTabular’s API can be found in its <a class="reference external" href="https://nvidia-merlin.github.io/NVTabular/main/Introduction.html">Documentation</a>.</p>
 <div class="section" id="frequency-thresholding">
 <h4>Frequency Thresholding<a class="headerlink" href="#frequency-thresholding" title="Permalink to this headline"></a></h4>
 <p>One interesting thing worth pointing out is that we’re using <em>frequency thresholding</em> in our <code class="docutils literal notranslate"><span class="pre">Categorify</span></code> op. This handy functionality will map all categories which occur in the dataset with some threshold level of infrequency (which we’ve set here to be 15 occurrences throughout the dataset) to the <em>same</em> index, keeping the model from overfitting to sparse signals.</p>
@@ -327,13 +550,14 @@
 </div>
 </div>
 </div>
-<p>Now instantiate dataset iterators to loop through our dataset (which we couldn’t fit into GPU memory). We need to enforce the required HugeCTR data types, so we set them in a dictionary and give as an argument when creating our dataset.</p>
+<p>We need to enforce the required HugeCTR data types, so we set them in a dictionary and give as an argument when creating our dataset. The dictonary defines the output datatypes of our datasets.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">dict_dtypes</span> <span class="o">=</span> <span class="p">{}</span>
 
+<span class="c1"># The environment variable USE_HUGECTR defines, if we want to use the output for HugeCTR or another framework</span>
 <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">CATEGORICAL_COLUMNS</span><span class="p">:</span>
-    <span class="n">dict_dtypes</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">int32</span>
+    <span class="n">dict_dtypes</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">int64</span> <span class="k">if</span> <span class="n">USE_HUGECTR</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">int32</span>
 
 <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">CONTINUOUS_COLUMNS</span><span class="p">:</span>
     <span class="n">dict_dtypes</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span>
@@ -344,6 +568,7 @@
 </div>
 </div>
 </div>
+<p>Now instantiate dataset iterators to loop through our dataset (which we couldn’t fit into GPU memory).</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">train_dataset</span> <span class="o">=</span> <span class="n">nvt</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">train_paths</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="s2">&quot;parquet&quot;</span><span class="p">,</span> <span class="n">part_size</span><span class="o">=</span><span class="n">part_size</span><span class="p">)</span>
@@ -371,11 +596,19 @@
 </pre></div>
 </div>
 </div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>CPU times: user 2.38 s, sys: 260 ms, total: 2.64 s
+Wall time: 12.6 s
+</pre></div>
+</div>
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;nvtabular.workflow.workflow.Workflow at 0x7fdacec4fdc0&gt;
+</pre></div>
+</div>
+</div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%time</span>
-<span class="c1"># Add &quot;write_hugectr_keyset=True&quot; to &quot;to_parquet&quot; if using this ETL Notebook for training with HugeCTR</span>
 
 <span class="n">workflow</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">train_dataset</span><span class="p">)</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span>
     <span class="n">output_files</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">NUM_GPUS</span><span class="p">),</span>
@@ -389,11 +622,16 @@
 </pre></div>
 </div>
 </div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>CPU times: user 980 ms, sys: 202 ms, total: 1.18 s
+Wall time: 19.5 s
+</pre></div>
+</div>
+</div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%time</span>
-<span class="c1"># Add &quot;write_hugectr_keyset=True&quot; to &quot;to_parquet&quot; if using this ETL Notebook for training with HugeCTR</span>
 
 <span class="n">workflow</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">valid_dataset</span><span class="p">)</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span>
     <span class="n">output_path</span><span class="o">=</span><span class="n">output_valid_dir</span><span class="p">,</span>
@@ -402,6 +640,12 @@
     <span class="n">conts</span><span class="o">=</span><span class="n">CONTINUOUS_COLUMNS</span><span class="p">,</span>
     <span class="n">labels</span><span class="o">=</span><span class="n">LABEL_COLUMNS</span><span class="p">,</span>
 <span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>CPU times: user 801 ms, sys: 203 ms, total: 1 s
+Wall time: 15.4 s
 </pre></div>
 </div>
 </div>

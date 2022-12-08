@@ -126,7 +126,7 @@
 <p>HugeCTR is an open-source framework to accelerate the training of CTR estimation models on NVIDIA GPUs. It is written in CUDA C++ and highly exploits GPU-accelerated libraries such as cuBLAS, cuDNN, and NCCL.<br><br>
 HugeCTR offers multiple advantages to train deep learning recommender systems:</p>
 <ol class="arabic simple">
-<li><p><strong>Speed</strong>: HugeCTR is a highly efficient framework written C++. We experienced up to 10x speed up. HugeCTR on a NVIDIA DGX A100 system proved to be the fastest commercially available solution for training the architecture Deep Learning Recommender Model (DLRM) developed by Facebook.</p></li>
+<li><p><strong>Speed</strong>: HugeCTR is a highly efficient framework written in C++. We experienced up to 10x speed up. HugeCTR on a NVIDIA DGX A100 system proved to be the fastest commercially available solution for training the architecture Deep Learning Recommender Model (DLRM) developed by Facebook.</p></li>
 <li><p><strong>Scale</strong>: HugeCTR supports model parallel scaling. It distributes the large embedding tables over multiple GPUs or multiple nodes.</p></li>
 <li><p><strong>Easy-to-use</strong>: Easy-to-use Python API similar to Keras. Examples for popular deep learning recommender systems architectures (Wide&amp;Deep, DLRM, DCN, DeepFM) are available.</p></li>
 </ol>
@@ -150,25 +150,21 @@ HugeCTR offers multiple advantages to train deep learning recommender systems:</
 <li><p><a class="reference external" href="https://nvidia-merlin.github.io/HugeCTR/master/api/python_interface.html">HugeCTR Python API</a></p></li>
 <li><p><a class="reference external" href="https://github.com/NVIDIA/HugeCTR/tree/main/samples">HugeCTR example architectures</a></p></li>
 </ul>
-<p>We will write the code to a <code class="docutils literal notranslate"><span class="pre">./model.py</span></code> file and execute it. It will create snapshot, which we will use for inference in the next notebook.</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>ls /raid/data/criteo/test_dask/output/
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>train  valid  workflow
-</pre></div>
-</div>
-</div>
-</div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
 
-<span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;rm -rf ./criteo_hugectr/&quot;</span><span class="p">)</span>
-<span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;mkdir -p ./criteo_hugectr/1&quot;</span><span class="p">)</span>
+<span class="n">BASE_DIR</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;BASE_DIR&quot;</span><span class="p">,</span> <span class="s2">&quot;/raid/data/criteo&quot;</span><span class="p">)</span>
+<span class="n">OUTPUT_DATA_DIR</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;OUTPUT_DATA_DIR&quot;</span><span class="p">,</span> <span class="n">BASE_DIR</span> <span class="o">+</span> <span class="s2">&quot;/test_dask/output&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>First, we clean the output directory.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;rm -rf &quot;</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">OUTPUT_DATA_DIR</span><span class="p">,</span> <span class="s2">&quot;criteo_hugectr/&quot;</span><span class="p">))</span>
+<span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s2">&quot;mkdir -p &quot;</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">OUTPUT_DATA_DIR</span><span class="p">,</span> <span class="s2">&quot;criteo_hugectr/1/&quot;</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
@@ -178,293 +174,228 @@ HugeCTR offers multiple advantages to train deep learning recommender systems:</
 </div>
 </div>
 </div>
-<p>We use <code class="docutils literal notranslate"><span class="pre">graph_to_json</span></code> to convert the model to a JSON configuration, required for the inference.</p>
+<p>We write the code to a <code class="docutils literal notranslate"><span class="pre">./model.py</span></code> file and execute it. The code creates snapshots, which we will use for inference in the next notebook. We use <code class="docutils literal notranslate"><span class="pre">graph_to_json</span></code> to convert the model to a JSON configuration, required for the inference.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%writefile</span> &#39;./model.py&#39;
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">file_to_write</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">import hugectr</span>
+<span class="s2">from mpi4py import MPI  # noqa</span>
 
-<span class="kn">import</span> <span class="nn">hugectr</span>
-<span class="kn">from</span> <span class="nn">mpi4py</span> <span class="kn">import</span> <span class="n">MPI</span>  <span class="c1"># noqa</span>
+<span class="s2"># HugeCTR</span>
+<span class="s2">solver = hugectr.CreateSolver(</span>
+<span class="s2">    vvgpu=[[0]],</span>
+<span class="s2">    max_eval_batches=100,</span>
+<span class="s2">    batchsize_eval=2720,</span>
+<span class="s2">    batchsize=2720,</span>
+<span class="s2">    i64_input_key=True,</span>
+<span class="s2">    use_mixed_precision=False,</span>
+<span class="s2">    repeat_dataset=True,</span>
+<span class="s2">)</span>
+<span class="s2">optimizer = hugectr.CreateOptimizer(optimizer_type=hugectr.Optimizer_t.SGD)</span>
+<span class="s2">reader = hugectr.DataReaderParams(</span>
+<span class="s2">    data_reader_type=hugectr.DataReaderType_t.Parquet,</span>
+<span class="s2">    source=[&quot;</span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">OUTPUT_DATA_DIR</span><span class="p">,</span> <span class="s2">&quot;train/_file_list.txt&quot;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;],</span>
+<span class="s2">    eval_source=&quot;</span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">OUTPUT_DATA_DIR</span><span class="p">,</span> <span class="s2">&quot;valid/_file_list.txt&quot;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;,</span>
+<span class="s2">    check_type=hugectr.Check_t.Non,</span>
+<span class="s2">    slot_size_array=[</span>
+<span class="s2">        10000000,</span>
+<span class="s2">        10000000,</span>
+<span class="s2">        3014529,</span>
+<span class="s2">        400781,</span>
+<span class="s2">        11,</span>
+<span class="s2">        2209,</span>
+<span class="s2">        11869,</span>
+<span class="s2">        148,</span>
+<span class="s2">        4,</span>
+<span class="s2">        977,</span>
+<span class="s2">        15,</span>
+<span class="s2">        38713,</span>
+<span class="s2">        10000000,</span>
+<span class="s2">        10000000,</span>
+<span class="s2">        10000000,</span>
+<span class="s2">        584616,</span>
+<span class="s2">        12883,</span>
+<span class="s2">        109,</span>
+<span class="s2">        37,</span>
+<span class="s2">        17177,</span>
+<span class="s2">        7425,</span>
+<span class="s2">        20266,</span>
+<span class="s2">        4,</span>
+<span class="s2">        7085,</span>
+<span class="s2">        1535,</span>
+<span class="s2">        64,</span>
+<span class="s2">    ],</span>
+<span class="s2">)</span>
+<span class="s2">model = hugectr.Model(solver, reader, optimizer)</span>
+<span class="s2">model.add(</span>
+<span class="s2">    hugectr.Input(</span>
+<span class="s2">        label_dim=1,</span>
+<span class="s2">        label_name=&quot;label&quot;,</span>
+<span class="s2">        dense_dim=13,</span>
+<span class="s2">        dense_name=&quot;dense&quot;,</span>
+<span class="s2">        data_reader_sparse_param_array=[hugectr.DataReaderSparseParam(&quot;data1&quot;, 1, False, 26)],</span>
+<span class="s2">    )</span>
+<span class="s2">)</span>
+<span class="s2">model.add(</span>
+<span class="s2">    hugectr.SparseEmbedding(</span>
+<span class="s2">        embedding_type=hugectr.Embedding_t.LocalizedSlotSparseEmbeddingHash,</span>
+<span class="s2">        workspace_size_per_gpu_in_mb=6000,</span>
+<span class="s2">        embedding_vec_size=128,</span>
+<span class="s2">        combiner=&quot;sum&quot;,</span>
+<span class="s2">        sparse_embedding_name=&quot;sparse_embedding1&quot;,</span>
+<span class="s2">        bottom_name=&quot;data1&quot;,</span>
+<span class="s2">        optimizer=optimizer,</span>
+<span class="s2">    )</span>
+<span class="s2">)</span>
+<span class="s2">model.add(</span>
+<span class="s2">    hugectr.DenseLayer(</span>
+<span class="s2">        layer_type=hugectr.Layer_t.InnerProduct,</span>
+<span class="s2">        bottom_names=[&quot;dense&quot;],</span>
+<span class="s2">        top_names=[&quot;fc1&quot;],</span>
+<span class="s2">        num_output=512,</span>
+<span class="s2">    )</span>
+<span class="s2">)</span>
+<span class="s2">model.add(</span>
+<span class="s2">    hugectr.DenseLayer(layer_type=hugectr.Layer_t.ReLU, bottom_names=[&quot;fc1&quot;], top_names=[&quot;relu1&quot;])</span>
+<span class="s2">)</span>
+<span class="s2">model.add(</span>
+<span class="s2">    hugectr.DenseLayer(</span>
+<span class="s2">        layer_type=hugectr.Layer_t.InnerProduct,</span>
+<span class="s2">        bottom_names=[&quot;relu1&quot;],</span>
+<span class="s2">        top_names=[&quot;fc2&quot;],</span>
+<span class="s2">        num_output=256,</span>
+<span class="s2">    )</span>
+<span class="s2">)</span>
+<span class="s2">model.add(</span>
+<span class="s2">    hugectr.DenseLayer(layer_type=hugectr.Layer_t.ReLU, bottom_names=[&quot;fc2&quot;], top_names=[&quot;relu2&quot;])</span>
+<span class="s2">)</span>
+<span class="s2">model.add(</span>
+<span class="s2">    hugectr.DenseLayer(</span>
+<span class="s2">        layer_type=hugectr.Layer_t.InnerProduct,</span>
+<span class="s2">        bottom_names=[&quot;relu2&quot;],</span>
+<span class="s2">        top_names=[&quot;fc3&quot;],</span>
+<span class="s2">        num_output=128,</span>
+<span class="s2">    )</span>
+<span class="s2">)</span>
+<span class="s2">model.add(</span>
+<span class="s2">    hugectr.DenseLayer(layer_type=hugectr.Layer_t.ReLU, bottom_names=[&quot;fc3&quot;], top_names=[&quot;relu3&quot;])</span>
+<span class="s2">)</span>
+<span class="s2">model.add(</span>
+<span class="s2">    hugectr.DenseLayer(</span>
+<span class="s2">        layer_type=hugectr.Layer_t.Interaction,</span>
+<span class="s2">        bottom_names=[&quot;relu3&quot;, &quot;sparse_embedding1&quot;],</span>
+<span class="s2">        top_names=[&quot;interaction1&quot;],</span>
+<span class="s2">    )</span>
+<span class="s2">)</span>
+<span class="s2">model.add(</span>
+<span class="s2">    hugectr.DenseLayer(</span>
+<span class="s2">        layer_type=hugectr.Layer_t.InnerProduct,</span>
+<span class="s2">        bottom_names=[&quot;interaction1&quot;],</span>
+<span class="s2">        top_names=[&quot;fc4&quot;],</span>
+<span class="s2">        num_output=1024,</span>
+<span class="s2">    )</span>
+<span class="s2">)</span>
+<span class="s2">model.add(</span>
+<span class="s2">    hugectr.DenseLayer(layer_type=hugectr.Layer_t.ReLU, bottom_names=[&quot;fc4&quot;], top_names=[&quot;relu4&quot;])</span>
+<span class="s2">)</span>
+<span class="s2">model.add(</span>
+<span class="s2">    hugectr.DenseLayer(</span>
+<span class="s2">        layer_type=hugectr.Layer_t.InnerProduct,</span>
+<span class="s2">        bottom_names=[&quot;relu4&quot;],</span>
+<span class="s2">        top_names=[&quot;fc5&quot;],</span>
+<span class="s2">        num_output=1024,</span>
+<span class="s2">    )</span>
+<span class="s2">)</span>
+<span class="s2">model.add(</span>
+<span class="s2">    hugectr.DenseLayer(layer_type=hugectr.Layer_t.ReLU, bottom_names=[&quot;fc5&quot;], top_names=[&quot;relu5&quot;])</span>
+<span class="s2">)</span>
+<span class="s2">model.add(</span>
+<span class="s2">    hugectr.DenseLayer(</span>
+<span class="s2">        layer_type=hugectr.Layer_t.InnerProduct,</span>
+<span class="s2">        bottom_names=[&quot;relu5&quot;],</span>
+<span class="s2">        top_names=[&quot;fc6&quot;],</span>
+<span class="s2">        num_output=512,</span>
+<span class="s2">    )</span>
+<span class="s2">)</span>
+<span class="s2">model.add(</span>
+<span class="s2">    hugectr.DenseLayer(layer_type=hugectr.Layer_t.ReLU, bottom_names=[&quot;fc6&quot;], top_names=[&quot;relu6&quot;])</span>
+<span class="s2">)</span>
+<span class="s2">model.add(</span>
+<span class="s2">    hugectr.DenseLayer(</span>
+<span class="s2">        layer_type=hugectr.Layer_t.InnerProduct,</span>
+<span class="s2">        bottom_names=[&quot;relu6&quot;],</span>
+<span class="s2">        top_names=[&quot;fc7&quot;],</span>
+<span class="s2">        num_output=256,</span>
+<span class="s2">    )</span>
+<span class="s2">)</span>
+<span class="s2">model.add(</span>
+<span class="s2">    hugectr.DenseLayer(layer_type=hugectr.Layer_t.ReLU, bottom_names=[&quot;fc7&quot;], top_names=[&quot;relu7&quot;])</span>
+<span class="s2">)</span>
+<span class="s2">model.add(</span>
+<span class="s2">    hugectr.DenseLayer(</span>
+<span class="s2">        layer_type=hugectr.Layer_t.InnerProduct,</span>
+<span class="s2">        bottom_names=[&quot;relu7&quot;],</span>
+<span class="s2">        top_names=[&quot;fc8&quot;],</span>
+<span class="s2">        num_output=1,</span>
+<span class="s2">    )</span>
+<span class="s2">)</span>
+<span class="s2">model.add(</span>
+<span class="s2">    hugectr.DenseLayer(</span>
+<span class="s2">        layer_type=hugectr.Layer_t.BinaryCrossEntropyLoss,</span>
+<span class="s2">        bottom_names=[&quot;fc8&quot;, &quot;label&quot;],</span>
+<span class="s2">        top_names=[&quot;loss&quot;],</span>
+<span class="s2">    )</span>
+<span class="s2">)</span>
 
-<span class="c1"># HugeCTR</span>
-<span class="n">solver</span> <span class="o">=</span> <span class="n">hugectr</span><span class="o">.</span><span class="n">CreateSolver</span><span class="p">(</span>
-    <span class="n">vvgpu</span><span class="o">=</span><span class="p">[[</span><span class="mi">0</span><span class="p">]],</span>
-    <span class="n">max_eval_batches</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
-    <span class="n">batchsize_eval</span><span class="o">=</span><span class="mi">2720</span><span class="p">,</span>
-    <span class="n">batchsize</span><span class="o">=</span><span class="mi">2720</span><span class="p">,</span>
-    <span class="n">i64_input_key</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">use_mixed_precision</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-    <span class="n">repeat_dataset</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-<span class="p">)</span>
-<span class="n">optimizer</span> <span class="o">=</span> <span class="n">hugectr</span><span class="o">.</span><span class="n">CreateOptimizer</span><span class="p">(</span><span class="n">optimizer_type</span><span class="o">=</span><span class="n">hugectr</span><span class="o">.</span><span class="n">Optimizer_t</span><span class="o">.</span><span class="n">SGD</span><span class="p">)</span>
-<span class="n">reader</span> <span class="o">=</span> <span class="n">hugectr</span><span class="o">.</span><span class="n">DataReaderParams</span><span class="p">(</span>
-    <span class="n">data_reader_type</span><span class="o">=</span><span class="n">hugectr</span><span class="o">.</span><span class="n">DataReaderType_t</span><span class="o">.</span><span class="n">Parquet</span><span class="p">,</span>
-    <span class="n">source</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;/raid/data/criteo/test_dask/output/train/_file_list.txt&quot;</span><span class="p">],</span>
-    <span class="n">eval_source</span><span class="o">=</span><span class="s2">&quot;/raid/data/criteo/test_dask/output/train/_file_list.txt&quot;</span><span class="p">,</span>
-    <span class="n">check_type</span><span class="o">=</span><span class="n">hugectr</span><span class="o">.</span><span class="n">Check_t</span><span class="o">.</span><span class="n">Non</span><span class="p">,</span>
-    <span class="n">slot_size_array</span><span class="o">=</span><span class="p">[</span>
-        <span class="mi">10000000</span><span class="p">,</span>
-        <span class="mi">10000000</span><span class="p">,</span>
-        <span class="mi">3014529</span><span class="p">,</span>
-        <span class="mi">400781</span><span class="p">,</span>
-        <span class="mi">11</span><span class="p">,</span>
-        <span class="mi">2209</span><span class="p">,</span>
-        <span class="mi">11869</span><span class="p">,</span>
-        <span class="mi">148</span><span class="p">,</span>
-        <span class="mi">4</span><span class="p">,</span>
-        <span class="mi">977</span><span class="p">,</span>
-        <span class="mi">15</span><span class="p">,</span>
-        <span class="mi">38713</span><span class="p">,</span>
-        <span class="mi">10000000</span><span class="p">,</span>
-        <span class="mi">10000000</span><span class="p">,</span>
-        <span class="mi">10000000</span><span class="p">,</span>
-        <span class="mi">584616</span><span class="p">,</span>
-        <span class="mi">12883</span><span class="p">,</span>
-        <span class="mi">109</span><span class="p">,</span>
-        <span class="mi">37</span><span class="p">,</span>
-        <span class="mi">17177</span><span class="p">,</span>
-        <span class="mi">7425</span><span class="p">,</span>
-        <span class="mi">20266</span><span class="p">,</span>
-        <span class="mi">4</span><span class="p">,</span>
-        <span class="mi">7085</span><span class="p">,</span>
-        <span class="mi">1535</span><span class="p">,</span>
-        <span class="mi">64</span><span class="p">,</span>
-    <span class="p">],</span>
-<span class="p">)</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">hugectr</span><span class="o">.</span><span class="n">Model</span><span class="p">(</span><span class="n">solver</span><span class="p">,</span> <span class="n">reader</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">)</span>
-<span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
-    <span class="n">hugectr</span><span class="o">.</span><span class="n">Input</span><span class="p">(</span>
-        <span class="n">label_dim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-        <span class="n">label_name</span><span class="o">=</span><span class="s2">&quot;label&quot;</span><span class="p">,</span>
-        <span class="n">dense_dim</span><span class="o">=</span><span class="mi">13</span><span class="p">,</span>
-        <span class="n">dense_name</span><span class="o">=</span><span class="s2">&quot;dense&quot;</span><span class="p">,</span>
-        <span class="n">data_reader_sparse_param_array</span><span class="o">=</span><span class="p">[</span><span class="n">hugectr</span><span class="o">.</span><span class="n">DataReaderSparseParam</span><span class="p">(</span><span class="s2">&quot;data1&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="mi">26</span><span class="p">)],</span>
-    <span class="p">)</span>
-<span class="p">)</span>
-<span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
-    <span class="n">hugectr</span><span class="o">.</span><span class="n">SparseEmbedding</span><span class="p">(</span>
-        <span class="n">embedding_type</span><span class="o">=</span><span class="n">hugectr</span><span class="o">.</span><span class="n">Embedding_t</span><span class="o">.</span><span class="n">LocalizedSlotSparseEmbeddingHash</span><span class="p">,</span>
-        <span class="n">workspace_size_per_gpu_in_mb</span><span class="o">=</span><span class="mi">6000</span><span class="p">,</span>
-        <span class="n">embedding_vec_size</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span>
-        <span class="n">combiner</span><span class="o">=</span><span class="s2">&quot;sum&quot;</span><span class="p">,</span>
-        <span class="n">sparse_embedding_name</span><span class="o">=</span><span class="s2">&quot;sparse_embedding1&quot;</span><span class="p">,</span>
-        <span class="n">bottom_name</span><span class="o">=</span><span class="s2">&quot;data1&quot;</span><span class="p">,</span>
-        <span class="n">optimizer</span><span class="o">=</span><span class="n">optimizer</span><span class="p">,</span>
-    <span class="p">)</span>
-<span class="p">)</span>
-<span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
-    <span class="n">hugectr</span><span class="o">.</span><span class="n">DenseLayer</span><span class="p">(</span>
-        <span class="n">layer_type</span><span class="o">=</span><span class="n">hugectr</span><span class="o">.</span><span class="n">Layer_t</span><span class="o">.</span><span class="n">InnerProduct</span><span class="p">,</span>
-        <span class="n">bottom_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;dense&quot;</span><span class="p">],</span>
-        <span class="n">top_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;fc1&quot;</span><span class="p">],</span>
-        <span class="n">num_output</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span>
-    <span class="p">)</span>
-<span class="p">)</span>
-<span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
-    <span class="n">hugectr</span><span class="o">.</span><span class="n">DenseLayer</span><span class="p">(</span><span class="n">layer_type</span><span class="o">=</span><span class="n">hugectr</span><span class="o">.</span><span class="n">Layer_t</span><span class="o">.</span><span class="n">ReLU</span><span class="p">,</span> <span class="n">bottom_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;fc1&quot;</span><span class="p">],</span> <span class="n">top_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;relu1&quot;</span><span class="p">])</span>
-<span class="p">)</span>
-<span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
-    <span class="n">hugectr</span><span class="o">.</span><span class="n">DenseLayer</span><span class="p">(</span>
-        <span class="n">layer_type</span><span class="o">=</span><span class="n">hugectr</span><span class="o">.</span><span class="n">Layer_t</span><span class="o">.</span><span class="n">InnerProduct</span><span class="p">,</span>
-        <span class="n">bottom_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;relu1&quot;</span><span class="p">],</span>
-        <span class="n">top_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;fc2&quot;</span><span class="p">],</span>
-        <span class="n">num_output</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span>
-    <span class="p">)</span>
-<span class="p">)</span>
-<span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
-    <span class="n">hugectr</span><span class="o">.</span><span class="n">DenseLayer</span><span class="p">(</span><span class="n">layer_type</span><span class="o">=</span><span class="n">hugectr</span><span class="o">.</span><span class="n">Layer_t</span><span class="o">.</span><span class="n">ReLU</span><span class="p">,</span> <span class="n">bottom_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;fc2&quot;</span><span class="p">],</span> <span class="n">top_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;relu2&quot;</span><span class="p">])</span>
-<span class="p">)</span>
-<span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
-    <span class="n">hugectr</span><span class="o">.</span><span class="n">DenseLayer</span><span class="p">(</span>
-        <span class="n">layer_type</span><span class="o">=</span><span class="n">hugectr</span><span class="o">.</span><span class="n">Layer_t</span><span class="o">.</span><span class="n">InnerProduct</span><span class="p">,</span>
-        <span class="n">bottom_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;relu2&quot;</span><span class="p">],</span>
-        <span class="n">top_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;fc3&quot;</span><span class="p">],</span>
-        <span class="n">num_output</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span>
-    <span class="p">)</span>
-<span class="p">)</span>
-<span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
-    <span class="n">hugectr</span><span class="o">.</span><span class="n">DenseLayer</span><span class="p">(</span><span class="n">layer_type</span><span class="o">=</span><span class="n">hugectr</span><span class="o">.</span><span class="n">Layer_t</span><span class="o">.</span><span class="n">ReLU</span><span class="p">,</span> <span class="n">bottom_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;fc3&quot;</span><span class="p">],</span> <span class="n">top_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;relu3&quot;</span><span class="p">])</span>
-<span class="p">)</span>
-<span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
-    <span class="n">hugectr</span><span class="o">.</span><span class="n">DenseLayer</span><span class="p">(</span>
-        <span class="n">layer_type</span><span class="o">=</span><span class="n">hugectr</span><span class="o">.</span><span class="n">Layer_t</span><span class="o">.</span><span class="n">Interaction</span><span class="p">,</span>
-        <span class="n">bottom_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;relu3&quot;</span><span class="p">,</span> <span class="s2">&quot;sparse_embedding1&quot;</span><span class="p">],</span>
-        <span class="n">top_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;interaction1&quot;</span><span class="p">],</span>
-    <span class="p">)</span>
-<span class="p">)</span>
-<span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
-    <span class="n">hugectr</span><span class="o">.</span><span class="n">DenseLayer</span><span class="p">(</span>
-        <span class="n">layer_type</span><span class="o">=</span><span class="n">hugectr</span><span class="o">.</span><span class="n">Layer_t</span><span class="o">.</span><span class="n">InnerProduct</span><span class="p">,</span>
-        <span class="n">bottom_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;interaction1&quot;</span><span class="p">],</span>
-        <span class="n">top_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;fc4&quot;</span><span class="p">],</span>
-        <span class="n">num_output</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span>
-    <span class="p">)</span>
-<span class="p">)</span>
-<span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
-    <span class="n">hugectr</span><span class="o">.</span><span class="n">DenseLayer</span><span class="p">(</span><span class="n">layer_type</span><span class="o">=</span><span class="n">hugectr</span><span class="o">.</span><span class="n">Layer_t</span><span class="o">.</span><span class="n">ReLU</span><span class="p">,</span> <span class="n">bottom_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;fc4&quot;</span><span class="p">],</span> <span class="n">top_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;relu4&quot;</span><span class="p">])</span>
-<span class="p">)</span>
-<span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
-    <span class="n">hugectr</span><span class="o">.</span><span class="n">DenseLayer</span><span class="p">(</span>
-        <span class="n">layer_type</span><span class="o">=</span><span class="n">hugectr</span><span class="o">.</span><span class="n">Layer_t</span><span class="o">.</span><span class="n">InnerProduct</span><span class="p">,</span>
-        <span class="n">bottom_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;relu4&quot;</span><span class="p">],</span>
-        <span class="n">top_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;fc5&quot;</span><span class="p">],</span>
-        <span class="n">num_output</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span>
-    <span class="p">)</span>
-<span class="p">)</span>
-<span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
-    <span class="n">hugectr</span><span class="o">.</span><span class="n">DenseLayer</span><span class="p">(</span><span class="n">layer_type</span><span class="o">=</span><span class="n">hugectr</span><span class="o">.</span><span class="n">Layer_t</span><span class="o">.</span><span class="n">ReLU</span><span class="p">,</span> <span class="n">bottom_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;fc5&quot;</span><span class="p">],</span> <span class="n">top_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;relu5&quot;</span><span class="p">])</span>
-<span class="p">)</span>
-<span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
-    <span class="n">hugectr</span><span class="o">.</span><span class="n">DenseLayer</span><span class="p">(</span>
-        <span class="n">layer_type</span><span class="o">=</span><span class="n">hugectr</span><span class="o">.</span><span class="n">Layer_t</span><span class="o">.</span><span class="n">InnerProduct</span><span class="p">,</span>
-        <span class="n">bottom_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;relu5&quot;</span><span class="p">],</span>
-        <span class="n">top_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;fc6&quot;</span><span class="p">],</span>
-        <span class="n">num_output</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span>
-    <span class="p">)</span>
-<span class="p">)</span>
-<span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
-    <span class="n">hugectr</span><span class="o">.</span><span class="n">DenseLayer</span><span class="p">(</span><span class="n">layer_type</span><span class="o">=</span><span class="n">hugectr</span><span class="o">.</span><span class="n">Layer_t</span><span class="o">.</span><span class="n">ReLU</span><span class="p">,</span> <span class="n">bottom_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;fc6&quot;</span><span class="p">],</span> <span class="n">top_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;relu6&quot;</span><span class="p">])</span>
-<span class="p">)</span>
-<span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
-    <span class="n">hugectr</span><span class="o">.</span><span class="n">DenseLayer</span><span class="p">(</span>
-        <span class="n">layer_type</span><span class="o">=</span><span class="n">hugectr</span><span class="o">.</span><span class="n">Layer_t</span><span class="o">.</span><span class="n">InnerProduct</span><span class="p">,</span>
-        <span class="n">bottom_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;relu6&quot;</span><span class="p">],</span>
-        <span class="n">top_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;fc7&quot;</span><span class="p">],</span>
-        <span class="n">num_output</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span>
-    <span class="p">)</span>
-<span class="p">)</span>
-<span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
-    <span class="n">hugectr</span><span class="o">.</span><span class="n">DenseLayer</span><span class="p">(</span><span class="n">layer_type</span><span class="o">=</span><span class="n">hugectr</span><span class="o">.</span><span class="n">Layer_t</span><span class="o">.</span><span class="n">ReLU</span><span class="p">,</span> <span class="n">bottom_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;fc7&quot;</span><span class="p">],</span> <span class="n">top_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;relu7&quot;</span><span class="p">])</span>
-<span class="p">)</span>
-<span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
-    <span class="n">hugectr</span><span class="o">.</span><span class="n">DenseLayer</span><span class="p">(</span>
-        <span class="n">layer_type</span><span class="o">=</span><span class="n">hugectr</span><span class="o">.</span><span class="n">Layer_t</span><span class="o">.</span><span class="n">InnerProduct</span><span class="p">,</span>
-        <span class="n">bottom_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;relu7&quot;</span><span class="p">],</span>
-        <span class="n">top_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;fc8&quot;</span><span class="p">],</span>
-        <span class="n">num_output</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-    <span class="p">)</span>
-<span class="p">)</span>
-<span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
-    <span class="n">hugectr</span><span class="o">.</span><span class="n">DenseLayer</span><span class="p">(</span>
-        <span class="n">layer_type</span><span class="o">=</span><span class="n">hugectr</span><span class="o">.</span><span class="n">Layer_t</span><span class="o">.</span><span class="n">BinaryCrossEntropyLoss</span><span class="p">,</span>
-        <span class="n">bottom_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;fc8&quot;</span><span class="p">,</span> <span class="s2">&quot;label&quot;</span><span class="p">],</span>
-        <span class="n">top_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;loss&quot;</span><span class="p">],</span>
-    <span class="p">)</span>
-<span class="p">)</span>
-
-<span class="n">MAX_ITER</span> <span class="o">=</span> <span class="mi">10000</span>
-<span class="n">EVAL_INTERVAL</span> <span class="o">=</span> <span class="mi">3200</span>
-<span class="n">model</span><span class="o">.</span><span class="n">compile</span><span class="p">()</span>
-<span class="n">model</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span>
-<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">max_iter</span><span class="o">=</span><span class="n">MAX_ITER</span><span class="p">,</span> <span class="n">eval_interval</span><span class="o">=</span><span class="n">EVAL_INTERVAL</span><span class="p">,</span> <span class="n">display</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">snapshot</span><span class="o">=</span><span class="mi">3200</span><span class="p">)</span>
-<span class="n">model</span><span class="o">.</span><span class="n">graph_to_json</span><span class="p">(</span><span class="n">graph_config_file</span><span class="o">=</span><span class="s2">&quot;./criteo_hugectr/1/criteo.json&quot;</span><span class="p">)</span>
+<span class="s2">MAX_ITER = 10000</span>
+<span class="s2">EVAL_INTERVAL = 3200</span>
+<span class="s2">model.compile()</span>
+<span class="s2">model.summary()</span>
+<span class="s2">model.fit(max_iter=MAX_ITER, eval_interval=EVAL_INTERVAL, display=1000, snapshot=3200)</span>
+<span class="s2">model.graph_to_json(graph_config_file=&quot;</span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">OUTPUT_DATA_DIR</span><span class="p">,</span> <span class="s2">&quot;criteo_hugectr/1/&quot;</span><span class="p">,</span> <span class="s2">&quot;criteo.json&quot;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;)</span>
+<span class="s2">&quot;&quot;&quot;</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;./model.py&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fi</span><span class="p">:</span>
+    <span class="n">fi</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">file_to_write</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Overwriting ./model.py
-</pre></div>
 </div>
-</div>
-</div>
+<p>We can execute the training process.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">time</span>
 
 <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-<span class="o">!</span>python model.py
+<span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;python model.py&#39;</span><span class="p">)</span>
 <span class="n">end</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;run_time: </span><span class="si">{</span><span class="n">end</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>====================================================Model Init=====================================================
-[26d18h47m40s][HUGECTR][INFO]: Global seed is 488900738
-[26d18h47m43s][HUGECTR][INFO]: Peer-to-peer access cannot be fully enabled.
-Device 0: Tesla V100-SXM2-32GB
-[26d18h47m43s][HUGECTR][INFO]: num of DataReader workers: 1
-[26d18h47m43s][HUGECTR][INFO]: max_vocabulary_size_per_gpu_=12288000
-[26d18h47m43s][HUGECTR][INFO]: All2All Warmup Start
-[26d18h47m43s][HUGECTR][INFO]: All2All Warmup End
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>HugeCTR Version: 4.1
+====================================================Model Init=====================================================
+[HCTR][13:56:03.374][WARNING][RK0][main]: The model name is not specified when creating the solver.
+[HCTR][13:56:03.374][INFO][RK0][main]: Global seed is 2831956451
+[HCTR][13:56:03.376][INFO][RK0][main]: Device to NUMA mapping:
+  GPU 0 -&gt;  node 0
+[HCTR][13:56:06.490][WARNING][RK0][main]: Peer-to-peer access cannot be fully enabled.
+[HCTR][13:56:06.490][INFO][RK0][main]: Start all2all warmup
+[HCTR][13:56:06.490][INFO][RK0][main]: End all2all warmup
+[HCTR][13:56:06.491][INFO][RK0][main]: Using All-reduce algorithm: NCCL
+[HCTR][13:56:06.493][INFO][RK0][main]: Device 0: Tesla V100-SXM2-32GB-LS
+[HCTR][13:56:06.493][INFO][RK0][main]: num of DataReader workers for train: 1
+[HCTR][13:56:06.493][INFO][RK0][main]: num of DataReader workers for eval: 1
+[HCTR][13:56:06.540][INFO][RK0][main]: Vocabulary size: 54120457
+[HCTR][13:56:06.541][INFO][RK0][main]: max_vocabulary_size_per_gpu_=12288000
+[HCTR][13:56:06.562][INFO][RK0][main]: Graph analysis to resolve tensor dependency
 ===================================================Model Compile===================================================
-[26d18h47m58s][HUGECTR][INFO]: gpu0 start to init embedding
-[26d18h47m58s][HUGECTR][INFO]: gpu0 init embedding done
+[HCTR][13:56:24.055][INFO][RK0][main]: gpu0 start to init embedding
+[HCTR][13:56:24.107][INFO][RK0][main]: gpu0 init embedding done
+[HCTR][13:56:24.111][INFO][RK0][main]: Starting AUC NCCL warm-up
+[HCTR][13:56:24.113][INFO][RK0][main]: Warm-up done
 ===================================================Model Summary===================================================
-Label                                   Dense                         Sparse                        
-label                                   dense                          data1                         
-(None, 1)                               (None, 13)                              
-------------------------------------------------------------------------------------------------------------------
-Layer Type                              Input Name                    Output Name                   Output Shape                  
-------------------------------------------------------------------------------------------------------------------
-LocalizedSlotSparseEmbeddingHash        data1                         sparse_embedding1             (None, 26, 128)               
-InnerProduct                            dense                         fc1                           (None, 512)                   
-ReLU                                    fc1                           relu1                         (None, 512)                   
-InnerProduct                            relu1                         fc2                           (None, 256)                   
-ReLU                                    fc2                           relu2                         (None, 256)                   
-InnerProduct                            relu2                         fc3                           (None, 128)                   
-ReLU                                    fc3                           relu3                         (None, 128)                   
-Interaction                             relu3,sparse_embedding1       interaction1                  (None, 480)                   
-InnerProduct                            interaction1                  fc4                           (None, 1024)                  
-ReLU                                    fc4                           relu4                         (None, 1024)                  
-InnerProduct                            relu4                         fc5                           (None, 1024)                  
-ReLU                                    fc5                           relu5                         (None, 1024)                  
-InnerProduct                            relu5                         fc6                           (None, 512)                   
-ReLU                                    fc6                           relu6                         (None, 512)                   
-InnerProduct                            relu6                         fc7                           (None, 256)                   
-ReLU                                    fc7                           relu7                         (None, 256)                   
-InnerProduct                            relu7                         fc8                           (None, 1)                     
-BinaryCrossEntropyLoss                  fc8,label                     loss                                                        
-------------------------------------------------------------------------------------------------------------------
-=====================================================Model Fit=====================================================
-[26d18h47m58s][HUGECTR][INFO]: Use non-epoch mode with number of iterations: 10000
-[26d18h47m58s][HUGECTR][INFO]: Training batchsize: 2720, evaluation batchsize: 2720
-[26d18h47m58s][HUGECTR][INFO]: Evaluation interval: 3200, snapshot interval: 3200
-[26d18h47m58s][HUGECTR][INFO]: Sparse embedding trainable: 1, dense network trainable: 1
-[26d18h47m58s][HUGECTR][INFO]: Use mixed precision: 0, scaler: 1.000000, use cuda graph: 1
-[26d18h47m58s][HUGECTR][INFO]: lr: 0.001000, warmup_steps: 1, decay_start: 0, decay_steps: 1, decay_power: 2.000000, end_lr: 0.000000
-[26d18h47m58s][HUGECTR][INFO]: Training source file: /raid/data/criteo2/test_dask/output/train/_file_list.txt
-[26d18h47m58s][HUGECTR][INFO]: Evaluation source file: /raid/data/criteo2/test_dask/output/train/_file_list.txt
-[26d18h48m40s][HUGECTR][INFO]: Iter: 1000 Time(1000 iters): 5.344550s Loss: 0.157622 lr:0.001000
-[26d18h48m90s][HUGECTR][INFO]: Iter: 2000 Time(1000 iters): 5.351840s Loss: 0.139202 lr:0.001000
-[26d18h48m14s][HUGECTR][INFO]: Iter: 3000 Time(1000 iters): 5.370395s Loss: 0.150230 lr:0.001000
-[26d18h48m16s][HUGECTR][INFO]: Evaluation, AUC: 0.547015
-[26d18h48m16s][HUGECTR][INFO]: Eval Time for 100 iters: 0.284275s
-[26d18h48m17s][HUGECTR][INFO]: Rank0: Dump hash table from GPU0
-[26d18h48m17s][HUGECTR][INFO]: Rank0: Write hash table &lt;key,value&gt; pairs to file
-[26d18h48m20s][HUGECTR][INFO]: Done
-[26d18h48m20s][HUGECTR][INFO]: Dumping sparse weights to files, successful
-[26d18h48m20s][HUGECTR][INFO]: Dumping sparse optimzer states to files, successful
-[26d18h48m20s][HUGECTR][INFO]: Dumping dense weights to file, successful
-[26d18h48m20s][HUGECTR][INFO]: Dumping dense optimizer states to file, successful
-[26d18h48m20s][HUGECTR][INFO]: Dumping untrainable weights to file, successful
-[26d18h48m25s][HUGECTR][INFO]: Iter: 4000 Time(1000 iters): 10.234373s Loss: 0.138970 lr:0.001000
-[26d18h48m30s][HUGECTR][INFO]: Iter: 5000 Time(1000 iters): 5.334527s Loss: 0.123318 lr:0.001000
-[26d18h48m35s][HUGECTR][INFO]: Iter: 6000 Time(1000 iters): 5.342809s Loss: 0.135370 lr:0.001000
-[26d18h48m38s][HUGECTR][INFO]: Evaluation, AUC: 0.612456
-[26d18h48m38s][HUGECTR][INFO]: Eval Time for 100 iters: 0.341947s
-[26d18h48m39s][HUGECTR][INFO]: Rank0: Dump hash table from GPU0
-[26d18h48m40s][HUGECTR][INFO]: Rank0: Write hash table &lt;key,value&gt; pairs to file
-[26d18h48m44s][HUGECTR][INFO]: Done
-[26d18h48m45s][HUGECTR][INFO]: Dumping sparse weights to files, successful
-[26d18h48m45s][HUGECTR][INFO]: Dumping sparse optimzer states to files, successful
-[26d18h48m45s][HUGECTR][INFO]: Dumping dense weights to file, successful
-[26d18h48m45s][HUGECTR][INFO]: Dumping dense optimizer states to file, successful
-[26d18h48m45s][HUGECTR][INFO]: Dumping untrainable weights to file, successful
-[26d18h48m48s][HUGECTR][INFO]: Iter: 7000 Time(1000 iters): 12.887706s Loss: 0.164043 lr:0.001000
-[26d18h48m54s][HUGECTR][INFO]: Iter: 8000 Time(1000 iters): 5.328255s Loss: 0.137928 lr:0.001000
-[26d18h48m59s][HUGECTR][INFO]: Iter: 9000 Time(1000 iters): 5.346786s Loss: 0.149743 lr:0.001000
-[26d18h49m20s][HUGECTR][INFO]: Evaluation, AUC: 0.630659
-[26d18h49m20s][HUGECTR][INFO]: Eval Time for 100 iters: 0.344536s
-[26d18h49m40s][HUGECTR][INFO]: Rank0: Dump hash table from GPU0
-[26d18h49m50s][HUGECTR][INFO]: Rank0: Write hash table &lt;key,value&gt; pairs to file
-[26d18h49m11s][HUGECTR][INFO]: Done
-[26d18h49m12s][HUGECTR][INFO]: Dumping sparse weights to files, successful
-[26d18h49m12s][HUGECTR][INFO]: Dumping sparse optimzer states to files, successful
-[26d18h49m12s][HUGECTR][INFO]: Dumping dense weights to file, successful
-[26d18h49m12s][HUGECTR][INFO]: Dumping dense optimizer states to file, successful
-[26d18h49m12s][HUGECTR][INFO]: Dumping untrainable weights to file, successful
-[26d18h49m14s][HUGECTR][INFO]: Save the model graph to ./criteo_hugectr/1/criteo.json, successful
+run_time: 125.9122965335846
 </pre></div>
 </div>
 </div>
