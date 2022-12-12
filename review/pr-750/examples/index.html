@@ -54,15 +54,9 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../README.html">Introduction</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Example Notebooks</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#inventory">Inventory</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#building-and-deploying-a-multi-stage-recsys"><span class="xref myst">Building and Deploying a multi-stage RecSys</span></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#getting-started-with-movielens"><span class="xref myst">Getting Started with MovieLens</span></a></li>
-<li class="toctree-l3"><a class="reference internal" href="#scaling-large-datasets-with-criteo"><span class="xref myst">Scaling Large Datasets with Criteo</span></a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#running-the-example-notebooks">Running the Example Notebooks</a></li>
 <li class="toctree-l2"><a class="reference internal" href="getting-started-movielens/index.html">Getting Started using the MovieLens Dataset</a></li>
 <li class="toctree-l2"><a class="reference internal" href="Building-and-deploying-multi-stage-RecSys/index.html">Deploying a Multi-Stage Recommender System</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sagemaker-tensorflow/index.html">Merlin and AWS SageMaker</a></li>
 <li class="toctree-l2"><a class="reference internal" href="scaling-criteo/index.html">Scaling Large Datasets with Criteo</a></li>
 </ul>
 </li>
@@ -95,8 +89,9 @@
              
   <div class="section" id="nvidia-merlin-example-notebooks">
 <h1>NVIDIA Merlin Example Notebooks<a class="headerlink" href="#nvidia-merlin-example-notebooks" title="Permalink to this headline"></a></h1>
-<p>We have a collection of Jupyter example notebooks that are based on different datasets to provide end-to-end examples for NVIDIA Merlin.
-These example notebooks demonstrate how to use NVTabular with TensorFlow, PyTorch, <a class="reference external" href="https://github.com/NVIDIA-Merlin/HugeCTR">HugeCTR</a> and <a class="reference external" href="https://github.com/NVIDIA-Merlin/models">Merlin Models</a>.
+<p>We have a collection of Jupyter example notebooks that show how to build an end-to-end recommender system with NVIDIA Merlin.
+The notebooks use different datasets to demonstrate different feature engineering workflows that might help you to adapt your data for a recommender system.</p>
+<p>These example notebooks demonstrate how to use NVTabular with TensorFlow, PyTorch, <a class="reference external" href="https://github.com/NVIDIA-Merlin/HugeCTR">HugeCTR</a> and <a class="reference external" href="https://github.com/NVIDIA-Merlin/models">Merlin Models</a>.
 Each example provides additional details about the end-to-end workflow, such as includes ETL, training, and inference.</p>
 <div class="section" id="inventory">
 <h2>Inventory<a class="headerlink" href="#inventory" title="Permalink to this headline"></a></h2>
@@ -135,6 +130,20 @@ Many users are familiar with this dataset, so the notebooks focus primarily on t
 <li><p>Inference with the Triton Inference Server and Merlin Models for TensorFlow or HugeCTR.</p></li>
 </ul>
 </div>
+<div class="section" id="training-and-serving-with-merlin-on-aws-sagemaker">
+<h3><a class="reference internal" href="sagemaker-tensorflow/index.html"><span class="xref myst">Training and Serving with Merlin on AWS SageMaker</span></a><a class="headerlink" href="#training-and-serving-with-merlin-on-aws-sagemaker" title="Permalink to this headline"></a></h3>
+<p>The notebook and scripts demonstrate how to use Merlin components like NVTabular, Merlin Models, and Merlin Systems
+with Triton Inference Server to build and deploy a sample end-to-end recommender system in AWS SageMaker.</p>
+<ul class="simple">
+<li><p>Use the Amazon SageMaker Python SDK to interact with the SageMaker environment.</p></li>
+<li><p>Create a sample NVTabular workflow to prepare data for binary classification.</p></li>
+<li><p>Train a DLRMModel with Merlin Models for click and conversion prediction.</p></li>
+<li><p>Create a Merlin Systems ensemble for use with Triton Inference Server.</p></li>
+<li><p>Build a container and store it in AWS ECR that is based on Merlin and includes the training script.</p></li>
+<li><p>Use the Python SDK to run the container and train the model.</p></li>
+<li><p>Use the boto3 library locally to make inference requests to Triton Inference Server in the container that is running in the SageMaker environment.</p></li>
+</ul>
+</div>
 </div>
 <div class="section" id="running-the-example-notebooks">
 <h2>Running the Example Notebooks<a class="headerlink" href="#running-the-example-notebooks" title="Permalink to this headline"></a></h2>
@@ -148,7 +157,6 @@ Access the catalog of containers at <a class="reference external" href="https://
 <li><p><a class="reference external" href="https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-pytorch"><code class="docutils literal notranslate"><span class="pre">merlin-pytorch</span></code></a> (contains Merlin Core, Merlin Models, Merlin Systems, NVTabular and PyTorch)</p></li>
 </ul>
 <p>All the containers include Triton Inference Server and are capable of training models and performing inference.</p>
-<p>There are example docker-compose files referenced in <a class="reference external" href="https://github.com/NVIDIA-Merlin/Merlin/tree/main/examples/scaling-criteo">Scaling to large Datasets with Criteo</a> that you can get from our GitHub repository.</p>
 <p>To run the example notebooks using Docker containers, perform the following steps:</p>
 <ol class="arabic">
 <li><p>Pull and start the container by running the following command:</p>
@@ -162,12 +170,6 @@ Your shell prompt should look similar to the following example:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>root@2efa5b50b909:
 </pre></div>
 </div>
-</li>
-<li><p>Install JupyterLab with <code class="docutils literal notranslate"><span class="pre">pip</span></code> by running the following command:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>pip install jupyterlab
-</pre></div>
-</div>
-<p>For more information, see the JupyterLab <a class="reference external" href="https://jupyterlab.readthedocs.io/en/stable/getting_started/installation.html">Installation Guide</a>.</p>
 </li>
 <li><p>Start the JupyterLab server by running the following command:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>jupyter-lab --allow-root --ip<span class="o">=</span><span class="s1">&#39;0.0.0.0&#39;</span>
