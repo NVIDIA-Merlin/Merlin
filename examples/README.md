@@ -1,6 +1,8 @@
 # NVIDIA Merlin Example Notebooks
 
-We have a collection of Jupyter example notebooks that are based on different datasets to provide end-to-end examples for NVIDIA Merlin.
+We have a collection of Jupyter example notebooks that show how to build an end-to-end recommender system with NVIDIA Merlin.
+The notebooks use different datasets to demonstrate different feature engineering workflows that might help you to adapt your data for a recommender system.
+
 These example notebooks demonstrate how to use NVTabular with TensorFlow, PyTorch, [HugeCTR](https://github.com/NVIDIA-Merlin/HugeCTR) and [Merlin Models](https://github.com/NVIDIA-Merlin/models).
 Each example provides additional details about the end-to-end workflow, such as includes ETL, training, and inference.
 
@@ -39,6 +41,19 @@ These notebooks demonstrate how to scale NVTabular as well as the following:
 - Train recommender system models with HugeCTR using multiple GPUs.
 - Inference with the Triton Inference Server and Merlin Models for TensorFlow or HugeCTR.
 
+### [Training and Serving with Merlin on AWS SageMaker](./sagemaker-tensorflow/)
+
+The notebook and scripts demonstrate how to use Merlin components like NVTabular, Merlin Models, and Merlin Systems
+with Triton Inference Server to build and deploy a sample end-to-end recommender system in AWS SageMaker.
+
+- Use the Amazon SageMaker Python SDK to interact with the SageMaker environment.
+- Create a sample NVTabular workflow to prepare data for binary classification.
+- Train a DLRMModel with Merlin Models for click and conversion prediction.
+- Create a Merlin Systems ensemble for use with Triton Inference Server.
+- Build a container and store it in AWS ECR that is based on Merlin and includes the training script.
+- Use the Python SDK to run the container and train the model.
+- Use the boto3 library locally to make inference requests to Triton Inference Server in the container that is running in the SageMaker environment.
+
 ## Running the Example Notebooks
 
 You can run the examples with Docker containers.
@@ -52,8 +67,6 @@ Depending on which example you want to run, you should use any one of these Dock
 - [`merlin-pytorch`](https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-pytorch) (contains Merlin Core, Merlin Models, Merlin Systems, NVTabular and PyTorch)
 
 All the containers include Triton Inference Server and are capable of training models and performing inference.
-
-There are example docker-compose files referenced in [Scaling to large Datasets with Criteo](https://github.com/NVIDIA-Merlin/Merlin/tree/main/examples/scaling-criteo) that you can get from our GitHub repository.
 
 To run the example notebooks using Docker containers, perform the following steps:
 
@@ -71,14 +84,6 @@ To run the example notebooks using Docker containers, perform the following step
    ```shell
    root@2efa5b50b909:
    ```
-
-1. Install JupyterLab with `pip` by running the following command:
-
-   ```shell
-   pip install jupyterlab
-   ```
-
-   For more information, see the JupyterLab [Installation Guide](https://jupyterlab.readthedocs.io/en/stable/getting_started/installation.html).
 
 1. Start the JupyterLab server by running the following command:
 

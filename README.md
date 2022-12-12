@@ -71,6 +71,17 @@ models to highly-advanced deep learning models. With Merlin Models, you can:
 - Assemble connectable building blocks for common RecSys architectures so that
   you can create of new models quickly and easily.
 
+**[Transformers4Rec](https://github.com/NVIDIA-Merlin/Transformers4Rec)**
+[![PyPI version shields.io](https://img.shields.io/pypi/v/Transformers4Rec.svg)](https://pypi.org/project/Transformers4Rec/)<br>
+The Transformers4Rec library provides sequential and session-based recommendation.
+The library provides modular building blocks that are compatible with standard PyTorch modules.
+You can use the building blocks to design custom architectures such as multiple towers, multiple heads and tasks, and losses.
+With Transformers4Rec, you can:
+
+- Build sequential and session-based recommenders from any sequential tabular data.
+- Take advantage of the integration with NVTabular for seamless data preprocessing and feature engineering.
+- Perform next-item prediction as well as classic binary classification or regression tasks.
+
 **[Merlin Systems](https://github.com/NVIDIA-Merlin/systems)**
 [![PyPI version shields.io](https://img.shields.io/pypi/v/merlin-systems.svg)](https://pypi.org/project/merlin-systems/)<br>
 Merlin Systems provides tools for combining recommendation models with other
