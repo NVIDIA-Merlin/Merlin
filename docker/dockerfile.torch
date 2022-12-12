@@ -29,9 +29,12 @@ RUN pip install --no-cache-dir --no-deps torch torchmetrics \
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/pytorch backends/pytorch
 
 # DLFW Python packages
-COPY --chown=1000:1000 --from=dlfw /opt/conda/lib/python3.8/site-packages/numba /usr/local/lib/python3.8/dist-packages/numba
-COPY --chown=1000:1000 --from=dlfw /opt/conda/lib/python3.8/site-packages/numpy /usr/local/lib/python3.8/dist-packages/numpy
-COPY --chown=1000:1000 --from=dlfw /opt/conda/lib/python3.8/site-packages/torch /usr/local/lib/python3.8/dist-packages/torch
+COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python3.8/dist-packages/numba /usr/local/lib/python3.8/dist-packages/numba
+COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python3.8/dist-packages/numpy /usr/local/lib/python3.8/dist-packages/numpy
+COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python3.8/dist-packages/torch /usr/local/lib/python3.8/dist-packages/torch
+
+# Add all torch libraries to /usr/local
+RUN ln -s /opt/tritonserver/backends/pytorch/* /usr/local/lib/
 
 RUN pip install --no-deps fastai fastcore fastprogress fastdownload
 RUN pip install matplotlib
