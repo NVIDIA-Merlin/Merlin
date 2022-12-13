@@ -68,7 +68,7 @@ RUN if [ "$HUGECTR_DEV_MODE" == "false" ]; then \
         cd sparse_operation_kit && \
         python setup.py install && \
         # Install HPS TF plugin
-        cd ../hierarchical_parameter_server && \
+        cd ../hps_tf && \
         python setup.py install && \
         popd; \
     fi
