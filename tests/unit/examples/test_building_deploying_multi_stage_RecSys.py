@@ -62,7 +62,7 @@ def test_func():
             """
             import shutil
             from merlin.core.dispatch import get_lib
-            from merlin.models.loader.tf_utils import configure_tensorflow
+            from merlin.dataloader.tf_utils import configure_tensorflow
             configure_tensorflow()
             df_lib = get_lib()
             batch = df_lib.read_parquet(

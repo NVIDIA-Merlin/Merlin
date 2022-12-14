@@ -73,7 +73,7 @@ def test_func():
             """
             import shutil
             from merlin.core.dispatch import make_df
-            from merlin.models.loader.tf_utils import configure_tensorflow
+            from merlin.dataloader.tf_utils import configure_tensorflow
             from merlin.systems.triton.utils import run_ensemble_on_tritonserver
             configure_tensorflow()
             request = make_df({"user_id_raw": [100]})
