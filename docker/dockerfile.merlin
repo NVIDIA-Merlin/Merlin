@@ -91,7 +91,7 @@ RUN ln -s /usr/bin/python3 /usr/bin/python
 RUN pip install "cmake<3.25.0" ninja scikit-build
 
 RUN pip install pandas==1.3.5
-RUN pip install cupy-cuda117 nvidia-pyindex pybind11 pytest protobuf transformers==4.12 tensorflow-metadata
+RUN pip install cupy-cuda117 nvidia-pyindex pybind11 pytest transformers==4.12 tensorflow-metadata
 RUN pip install betterproto cachetools graphviz nvtx scipy scikit-learn
 RUN pip install tritonclient[all] grpcio-channelz fiddle wandb npy-append-array
 RUN pip install git+https://github.com/rapidsai/asvdb.git@main
@@ -103,6 +103,19 @@ RUN pip install "cuda-python>=11.5,<12.0"
 RUN pip install fsspec==2022.5.0 llvmlite
 RUN pip install pynvml dask==${DASK_VER} distributed==${DASK_VER}
 RUN pip install numpy==1.22.4
+
+# protobuf versions
+#   tensorflow: >= 3.9.2, < 3.20
+#     The upper bound here is not strict (it will work with 3.20, though not on Windows, and not with 4.x)
+#     https://github.com/tensorflow/tensorflow/blob/v2.11.0/tensorflow/tools/pip_package/setup.py#L95-L102
+#   tritonclient: >= 3.5.0, < 3.20
+#     https://github.com/triton-inference-server/client/blob/4bb65af5c8affadeee954e358ebead72717aebe2/src/python/library/requirements/requirements_grpc.txt#L27-L30
+#   cudf: >= 3.20.1, < 3.21.0a0
+#     https://github.com/rapidsai/cudf/blob/v22.12.01/python/cudf/setup.py#L20
+#   onnx: >= 3.20.2, < 4
+#      https://github.com/onnx/onnx/blob/v1.13.0/requirements.txt#L2
+RUN pip install protobuf==3.20.3
+
 
 # Triton Server
 WORKDIR /opt/tritonserver
