@@ -43,7 +43,7 @@ def test_test_scaling_criteo_merlin_models_hugectr():
         / "scaling-criteo"
         / "03-Training-with-HugeCTR.ipynb",
         execute=False,
-        timeout=180,
+        timeout=360,
     ) as tb2:
         tb2.inject(
             """
