@@ -24,7 +24,11 @@ devices=$2
 
 # Run only for Merlin Tensorflow Container
 if [ "$container" == "merlin-tensorflow" ]; then
-    pip install 'feast<0.20'
+    # feast will install latest pyarrow version (currently 10.0.1)
+    # this vesrion of pyarrow is incompatibile
+    # with the current version of cudf 22.12
+    # pinning the version of pyarrow here to match the cudf-supported version
+    pip install 'feast<0.20' pyarrow==8.0.0
     pip install dask==2022.07.1 distributed==2022.07.1
     CUDA_VISIBLE_DEVICES="$devices"  pytest -rxs tests/integration
 fi
