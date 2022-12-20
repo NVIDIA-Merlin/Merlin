@@ -2,12 +2,17 @@
 ARG MERLIN_VERSION=22.12
 ARG TRITON_VERSION=22.11
 
+ARG FULL_IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-py3
 ARG BASE_IMAGE=nvcr.io/nvstaging/merlin/merlin-base:${MERLIN_VERSION}
 
+FROM ${FULL_IMAGE} as triton
 FROM ${BASE_IMAGE} as base
 
 ARG HUGECTR_VER=main
 ARG HUGECTR_BACKEND_VER=main
+
+# Triton backends
+COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/tensorrt backends/tensorrt
 
 # Envs
 ENV CUDA_SHORT_VERSION=11.6
@@ -183,7 +188,17 @@ RUN if [ "${HUGECTR_DEV_MODE}" == "false" ]; then \
             -DTRITON_BACKEND_REPO_TAG="r${TRITON_VERSION}" .. && \
         make -j$(nproc) && \
         make install && \
-        cd ../.. && \
+        cd ../hps_backend && \
+        mkdir build && \
+        cd build && \
+        cmake \
+            -DCMAKE_INSTALL_PREFIX:PATH=${HUGECTR_HOME} \
+            -DTRITON_COMMON_REPO_TAG="r${TRITON_VERSION}" \
+            -DTRITON_CORE_REPO_TAG="r${TRITON_VERSION}" \
+            -DTRITON_BACKEND_REPO_TAG="r${TRITON_VERSION}" .. && \
+        make -j$(nproc) && \
+        make install && \
+        cd ../../.. && \
         rm -rf hugectr_triton_backend && \
         chmod +x ${HUGECTR_HOME}/lib/*.so ${HUGECTR_HOME}/backends/hugectr/*.so \
     ; fi ; rm -rf /repos

@@ -48,15 +48,20 @@ RUN apt update -y --fix-missing && \
 
 
 # Install HugeCTR
-ENV LD_LIBRARY_PATH=/usr/local/hugectr/lib:$LD_LIBRARY_PATH \
-    LIBRARY_PATH=/usr/local/hugectr/lib:$LIBRARY_PATH \
-    SOK_COMPILE_UNIT_TEST=ON
-
 # Arguments "_XXXX" are only valid when $HUGECTR_DEV_MODE==false
 ARG HUGECTR_DEV_MODE=false
 ARG _HUGECTR_REPO="github.com/NVIDIA-Merlin/HugeCTR.git"
 ARG _CI_JOB_TOKEN=""
 ARG HUGECTR_VER=main
+ARG HUGECTR_BACKEND_VER=main
+ARG _HUGECTR_BACKEND_REPO="github.com/triton-inference-server/hugectr_backend.git"
+ARG HUGECTR_HOME=/usr/local/hugectr
+ARG TRITON_VERSION
+
+ENV CPATH=$CPATH:${HUGECTR_HOME}/include \
+    LD_LIBRARY_PATH=${HUGECTR_HOME}/lib:$LD_LIBRARY_PATH \
+    LIBRARY_PATH=${HUGECTR_HOME}/lib:$LIBRARY_PATH \
+    SOK_COMPILE_UNIT_TEST=ON
 
 RUN mkdir -p /usr/local/nvidia/lib64 && \
     ln -s /usr/local/cuda/lib64/libcusolver.so /usr/local/nvidia/lib64/libcusolver.so.10
@@ -77,6 +82,28 @@ RUN if [ "$HUGECTR_DEV_MODE" == "false" ]; then \
         # Install HPS TF plugin
         cd ../hps_tf && \
         python setup.py install && \
+	# Install HugeCTR inference which is needed by hps_backend
+        mkdir -p /hugectr/build && \
+	cd /hugectr/build && \
+	cmake -DCMAKE_BUILD_TYPE=Release -DSM="60;61;70;75;80" -DENABLE_INFERENCE=ON .. && \
+        make -j$(nproc) && \
+        make install && \
+	rm -rf ./* && \
+	# Install HPS backend
+	git clone --branch ${HUGECTR_BACKEND_VER} --depth 1 https://${_CI_JOB_TOKEN}${_HUGECTR_BACKEND_REPO} /repos/hugectr_triton_backend && \
+        mkdir -p /repos/hugectr_triton_backend/hps_backend/build && \
+        cd /repos/hugectr_triton_backend/hps_backend/build && \
+	echo "r${TRITON_VERSION}" && \
+        cmake \
+            -DCMAKE_INSTALL_PREFIX:PATH=${HUGECTR_HOME} \
+            -DTRITON_COMMON_REPO_TAG="r${TRITON_VERSION}" \
+            -DTRITON_CORE_REPO_TAG="r${TRITON_VERSION}" \
+            -DTRITON_BACKEND_REPO_TAG="r${TRITON_VERSION}" .. && \
+        make -j$(nproc) && \
+        make install && \
+        cd / && \
+        rm -rf /repos && \
+	chmod +x ${HUGECTR_HOME}/lib/*.so ${HUGECTR_HOME}/backends/hps/*.so && \
         popd; \
     fi; \
     if [ "$INSTALL_DISTRIBUTED_EMBEDDINGS" == "true" ]; then \
