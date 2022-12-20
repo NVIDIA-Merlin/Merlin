@@ -88,7 +88,7 @@ def test_func():
             outputs = ensemble.output_schema.column_names
             response = run_ensemble_on_tritonserver(
                 "/tmp/output/criteo/ensemble/",workflow.input_schema, batch.fillna(0),
-                outputs, "ensemble_model"
+                outputs, "executor_model"
             )
             response = [x.tolist()[0] for x in response["label/binary_classification_task"]]
             shutil.rmtree("/tmp/input/criteo", ignore_errors=True)
