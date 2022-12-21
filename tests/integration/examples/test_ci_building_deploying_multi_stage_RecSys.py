@@ -18,6 +18,7 @@ def test_func():
         execute=False,
         timeout=450,
     ) as tb1:
+        NUM_OF_CELLS = len(tb1.cells)
         tb1.inject(
             """
             import os
@@ -26,7 +27,21 @@ def test_func():
             os.environ["BASE_DIR"] = "/tmp/examples/"
             """
         )
-        tb1.execute()
+        tb1.execute_cell(list(range(0, 25)))
+        tb1.inject(
+            """
+                from pathlib import Path
+                from merlin.datasets.ecommerce import transform_aliccp
+                from merlin.io.dataset import Dataset
+                import glob
+                train_min = Dataset(sorted(glob.glob('/raid/data/aliccp/train/*.parquet'))[0:2])
+                valid_min = Dataset(sorted(glob.glob('/raid/data/aliccp/test/*.parquet'))[0:2])
+                transform_aliccp(
+                    (train_min, valid_min), output_path, nvt_workflow=outputs, workflow_name="workflow"
+                )
+            """
+        )
+        tb1.execute_cell(list(range(28, NUM_OF_CELLS)))
         assert os.path.isdir("/tmp/examples/query_tower")
         assert os.path.isdir("/tmp/examples/dlrm")
         assert os.path.isdir("/tmp/examples/feature_repo")
@@ -70,4 +85,3 @@ def test_func():
         )
         response = tb2.ref("response")
         assert len(response) == top_k
-
