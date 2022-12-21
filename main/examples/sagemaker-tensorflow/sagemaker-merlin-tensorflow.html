@@ -892,9 +892,9 @@ Billable seconds: 589
 1_predicttensorflow/1/model.savedmodel/variables/variables.data-00000-of-00001
 1_predicttensorflow/1/model.savedmodel/saved_model.pb
 1_predicttensorflow/1/model.savedmodel/keras_metadata.pb
-ensemble_model/
-ensemble_model/config.pbtxt
-ensemble_model/1/
+executor_model/
+executor_model/config.pbtxt
+executor_model/1/
 0_transformworkflow/
 0_transformworkflow/config.pbtxt
 0_transformworkflow/1/
@@ -928,7 +928,7 @@ ensemble_model/1/
 <div class="section" id="part-3-retrieving-recommendations-from-triton-inference-server">
 <h2>Part 3: Retrieving Recommendations from Triton Inference Server<a class="headerlink" href="#part-3-retrieving-recommendations-from-triton-inference-server" title="Permalink to this headline"></a></h2>
 <p>Although we use the Sagemaker Python SDK to train our model, here we will use <code class="docutils literal notranslate"><span class="pre">boto3</span></code> to launch our inference endpoint as it offers more low-level control than the Python SDK.</p>
-<p>The model artificat <code class="docutils literal notranslate"><span class="pre">model.tar.gz</span></code> uploaded to S3 from the Sagemaker training job contained three directories: <code class="docutils literal notranslate"><span class="pre">0_transformworkflow</span></code> for the NVTabular workflow, <code class="docutils literal notranslate"><span class="pre">1_predicttensorflow</span></code> for the Tensorflow model, and <code class="docutils literal notranslate"><span class="pre">ensemble_model</span></code> for the ensemble graph that we can use in Triton.</p>
+<p>The model artificat <code class="docutils literal notranslate"><span class="pre">model.tar.gz</span></code> uploaded to S3 from the Sagemaker training job contained three directories: <code class="docutils literal notranslate"><span class="pre">0_transformworkflow</span></code> for the NVTabular workflow, <code class="docutils literal notranslate"><span class="pre">1_predicttensorflow</span></code> for the Tensorflow model, and <code class="docutils literal notranslate"><span class="pre">executor_model</span></code> for the ensemble graph that we can use in Triton.</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>/tmp/ensemble/
 ├── 0_transformworkflow
 │   ├── <span class="m">1</span>
@@ -964,13 +964,13 @@ ensemble_model/1/
 │   │           ├── variables.data-00000-of-00001
 │   │           └── variables.index
 │   └── config.pbtxt
-├── ensemble_model
+├── executor_model
 │   ├── <span class="m">1</span>
 │   └── config.pbtxt
 └── model.tar.gz
 </pre></div>
 </div>
-<p>We specify that we only want to use <code class="docutils literal notranslate"><span class="pre">ensemble_model</span></code> in Triton by passing the environment variable <code class="docutils literal notranslate"><span class="pre">SAGEMAKER_TRITON_DEFAULT_MODEL_NAME</span></code>.</p>
+<p>We specify that we only want to use <code class="docutils literal notranslate"><span class="pre">executor_model</span></code> in Triton by passing the environment variable <code class="docutils literal notranslate"><span class="pre">SAGEMAKER_TRITON_DEFAULT_MODEL_NAME</span></code>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">time</span>
@@ -984,7 +984,7 @@ ensemble_model/1/
     <span class="s2">&quot;ModelDataUrl&quot;</span><span class="p">:</span> <span class="n">estimator</span><span class="o">.</span><span class="n">model_data</span><span class="p">,</span>
     <span class="s2">&quot;Environment&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;SAGEMAKER_TRITON_TENSORFLOW_VERSION&quot;</span><span class="p">:</span> <span class="s2">&quot;2&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;SAGEMAKER_TRITON_DEFAULT_MODEL_NAME&quot;</span><span class="p">:</span> <span class="s2">&quot;ensemble_model&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;SAGEMAKER_TRITON_DEFAULT_MODEL_NAME&quot;</span><span class="p">:</span> <span class="s2">&quot;executor_model&quot;</span><span class="p">,</span>
     <span class="p">},</span>
 <span class="p">}</span>
 
