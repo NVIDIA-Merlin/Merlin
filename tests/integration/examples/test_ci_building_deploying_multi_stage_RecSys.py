@@ -62,7 +62,7 @@ def test_func():
             request = make_df({"user_id_raw": [100]})
             request["user_id_raw"] = request["user_id_raw"].astype(np.int32)
             response = run_ensemble_on_tritonserver(
-                "/tmp/examples/poc_ensemble", ensemble.graph.input_schema, request, outputs,  "ensemble_model"
+                "/tmp/examples/poc_ensemble", ensemble.graph.input_schema, request, outputs,  "executor_model"
             )
             response = [x.tolist()[0] for x in response["ordered_ids"]]
             shutil.rmtree("/tmp/examples/", ignore_errors=True)
