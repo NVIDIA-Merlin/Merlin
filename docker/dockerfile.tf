@@ -16,7 +16,7 @@ COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/tensorflow2 back
 
 # Tensorflow dependencies (only)
 # Pinning to pass hugectr sok tests
-RUN pip install tensorflow-gpu==2.9.2 \
+RUN pip install tensorflow-gpu==2.9.2 transformers==4.23.1 tf2onnx \
     && pip uninstall tensorflow-gpu keras -y \
     && python -m pip cache purge
 
@@ -87,6 +87,14 @@ RUN if [ "$HUGECTR_DEV_MODE" == "false" ]; then \
 	cd /hugectr/build && \
 	cmake -DCMAKE_BUILD_TYPE=Release -DSM="60;61;70;75;80" -DENABLE_INFERENCE=ON .. && \
         make -j$(nproc) && \
+        make install && \
+	rm -rf ./* && \
+	# Install HPS trt plugin
+        cd ../hps_trt && \
+	mkdir build && \
+	cd build && \
+	cmake .. && \
+	make -j$(nproc) && \
         make install && \
 	rm -rf ./* && \
 	# Install HPS backend

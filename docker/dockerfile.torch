@@ -67,6 +67,11 @@ RUN if [ "${HUGECTR_DEV_MODE}" == "false" ]; then \
         cmake -DCMAKE_BUILD_TYPE=Release -DSM="60;61;70;75;80" -DENABLE_INFERENCE=ON .. && \
         make -j$(nproc) && \
         make install && \
+        # Install HPS trt pugin
+        cd ../hps_trt && \
+        mkdir build && \
+        make -j$(nproc) && \
+        make install && \
         cd / && rm -rf /hugectr && \
         # Install hps_backend
         git clone --branch ${HUGECTR_BACKEND_VER} --depth 1 https://${_CI_JOB_TOKEN}${_HUGECTR_BACKEND_REPO} /repos/hugectr_triton_backend && \

@@ -144,6 +144,14 @@ RUN if [[ "${HUGECTR_DEV_MODE}" == "false" ]]; then \
         make -j$(nproc) && \
         make install && \
         rm -rf ./* && \
+        # Install HPS trt plugin
+        cd ../hps_trt && \
+        mkdir build && \
+        cd build && \
+        cmake .. && \
+        make -j$(nproc) && \
+        make install && \
+        rm -rf ./* && \
         chmod +x ${HUGECTR_HOME}/bin/* ${HUGECTR_HOME}/lib/*.so \
     ; fi ; \
     if [[ "${HUGECTR_DEV_MODE}" == "false" ]]; then \
