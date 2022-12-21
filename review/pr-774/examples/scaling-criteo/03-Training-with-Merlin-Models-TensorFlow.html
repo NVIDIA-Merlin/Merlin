@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scaling Criteo: Training with Merlin Models TensorFlow &mdash; Merlin  documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/mystnb.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/togglebutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/custom.css" type="text/css" />
+    <link rel="canonical" href="https://nvidia-merlin.github.io/Merlin/main/examples/scaling-criteo/03-Training-with-Merlin-Models-TensorFlow.html" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script >let toggleHintShow = 'Click to show';</script>
+        <script >let toggleHintHide = 'Click to hide';</script>
+        <script >let toggleOpenOnPrint = 'true';</script>
+        <script src="../../_static/togglebutton.js"></script>
+        <script >var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Scaling Criteo: Triton Inference with HugeCTR" href="04-Triton-Inference-with-HugeCTR.html" />
+    <link rel="prev" title="Scaling Criteo: Training with HugeCTR" href="03-Training-with-HugeCTR.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="banner">
+    <p class="banner">
+      Beginning in January 2023, versions for all NVIDIA Merlin projects
+      will change from semantic versioning like <code>4.0</code>
+      to calendar versioning like <code>23.01</code>.</p>
+  </div>
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Merlin
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../README.html">Introduction</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">Example Notebooks</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../getting-started-movielens/index.html">Getting Started using the MovieLens Dataset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../Building-and-deploying-multi-stage-RecSys/index.html">Deploying a Multi-Stage Recommender System</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../sagemaker-tensorflow/index.html">Merlin and AWS SageMaker</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">Scaling Large Datasets with Criteo</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="01-Download-Convert.html">Criteo Download and Convert</a></li>
+<li class="toctree-l3"><a class="reference internal" href="02-ETL-with-NVTabular.html">Feature Engineering with NVTabular</a></li>
+<li class="toctree-l3"><a class="reference internal" href="03-Training-with-HugeCTR.html">Training with HugeCTR</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Training with Merlin Models and TensorFlow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="04-Triton-Inference-with-HugeCTR.html">Deploy the HugeCTR Model with Triton</a></li>
+<li class="toctree-l3"><a class="reference internal" href="04-Triton-Inference-with-Merlin-Models-TensorFlow.html">Deploy the TensorFlow Model with Triton</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../containers.html">Merlin Containers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../support_matrix/index.html">Merlin Support Matrix</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Merlin</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">NVIDIA Merlin Example Notebooks</a></li>
+          <li class="breadcrumb-item"><a href="index.html">Scaling Large Datasets with Criteo</a></li>
+      <li class="breadcrumb-item active">Scaling Criteo: Training with Merlin Models TensorFlow</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Copyright 2021 NVIDIA Corporation. All Rights Reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+<span class="c1"># ==============================================================================</span>
+</pre></div>
+</div>
+</div>
+</div>
+<img alt="https://developer.download.nvidia.com/notebooks/dlsw-notebooks/merlin_merlin_scaling-criteo-03-training-with-merlin-models-tensorflow/nvidia_logo.png" src="https://developer.download.nvidia.com/notebooks/dlsw-notebooks/merlin_merlin_scaling-criteo-03-training-with-merlin-models-tensorflow/nvidia_logo.png" />
+<div class="section" id="scaling-criteo-training-with-merlin-models-tensorflow">
+<h1>Scaling Criteo: Training with Merlin Models TensorFlow<a class="headerlink" href="#scaling-criteo-training-with-merlin-models-tensorflow" title="Permalink to this headline"></a></h1>
+<p>This notebook is created using the latest stable <a class="reference external" href="https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-tensorflow/tags">merlin-tensorflow</a> container.</p>
+<div class="section" id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline"></a></h2>
+<p>The <a class="reference external" href="https://ailab.criteo.com/download-criteo-1tb-click-logs-dataset/">Criteo 1TB Click Logs dataset</a> is a popular dataset in the recommender system community as it is one of the largest, public available dataset. It contains ~1.3 TB of uncompressed click logs containing over four billion samples spanning 24 days.</p>
+<p>We will train Facebook’s <a class="reference external" href="https://arxiv.org/abs/1906.00091">deep learning recommendation model (DLRM)</a> architecture with Merlin Models. We will assume you are familiar with Merlin Models’ API and features. Otherwise, we recommend to start with the <a class="reference external" href="https://nvidia-merlin.github.io/models/main/examples/index.html#">Merlin Models examples</a>.</p>
+</div>
+<div class="section" id="learning-objectives">
+<h2>Learning objectives<a class="headerlink" href="#learning-objectives" title="Permalink to this headline"></a></h2>
+<ul class="simple">
+<li><p>Train a DLRM architecture with Merlin Models on a large dataset</p></li>
+</ul>
+</div>
+<div class="section" id="training-a-dlrm-model">
+<h2>Training a DLRM model<a class="headerlink" href="#training-a-dlrm-model" title="Permalink to this headline"></a></h2>
+<p>Let’s start with importing the libraries that we’ll use in this notebook.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;TF_GPU_ALLOCATOR&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;cuda_malloc_async&quot;</span>
+
+<span class="kn">import</span> <span class="nn">glob</span>
+<span class="kn">import</span> <span class="nn">merlin.models.tf</span> <span class="k">as</span> <span class="nn">mm</span>
+<span class="kn">from</span> <span class="nn">merlin.io.dataset</span> <span class="kn">import</span> <span class="n">Dataset</span>
+
+<span class="kn">from</span> <span class="nn">merlin.schema</span> <span class="kn">import</span> <span class="n">Tags</span>
+<span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/usr/lib/python3/dist-packages/requests/__init__.py:89: RequestsDependencyWarning: urllib3 (1.26.12) or chardet (3.0.4) doesn&#39;t match a supported version!
+  warnings.warn(&quot;urllib3 ({}) or chardet ({}) doesn&#39;t match a supported &quot;
+2022-11-29 17:20:01.942873: I tensorflow/core/platform/cpu_feature_guard.cc:194] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  SSE3 SSE4.1 SSE4.2 AVX
+To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2022-11-29 17:20:06.579306: I tensorflow/core/common_runtime/gpu/gpu_process_state.cc:222] Using CUDA malloc Async allocator for GPU: 0
+2022-11-29 17:20:06.579506: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1532] Created device /job:localhost/replica:0/task:0/device:GPU:0 with 16255 MB memory:  -&gt; device: 0, name: Tesla V100-SXM2-32GB-LS, pci bus id: 0000:85:00.0, compute capability: 7.0
+2022-11-29 17:20:06.582211: I tensorflow/core/common_runtime/gpu/gpu_process_state.cc:222] Using CUDA malloc Async allocator for GPU: 1
+2022-11-29 17:20:06.582328: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1532] Created device /job:localhost/replica:0/task:0/device:GPU:1 with 30655 MB memory:  -&gt; device: 1, name: Tesla V100-SXM2-32GB-LS, pci bus id: 0000:8a:00.0, compute capability: 7.0
+</pre></div>
+</div>
+</div>
+</div>
+<p>Define the path to directories which contains the processed data.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">input_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;INPUT_DATA_DIR&quot;</span><span class="p">,</span> <span class="s2">&quot;/raid/data/criteo/test_dask/output/&quot;</span><span class="p">)</span>
+
+<span class="c1"># path to processed data</span>
+<span class="n">PATH_TO_TRAIN_DATA</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">input_path</span><span class="p">,</span> <span class="s2">&quot;train&quot;</span><span class="p">,</span> <span class="s2">&quot;*.parquet&quot;</span><span class="p">)))</span>
+<span class="n">PATH_TO_VALID_DATA</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">input_path</span><span class="p">,</span> <span class="s2">&quot;valid&quot;</span><span class="p">,</span> <span class="s2">&quot;*.parquet&quot;</span><span class="p">)))</span>
+
+<span class="n">PATH_TO_TRAIN_DATA</span><span class="p">,</span> <span class="n">PATH_TO_VALID_DATA</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>([&#39;/raid/data/criteo/test_dask/output/train/part_0.parquet&#39;,
+  &#39;/raid/data/criteo/test_dask/output/train/part_1.parquet&#39;],
+ [&#39;/raid/data/criteo/test_dask/output/valid/part_0.parquet&#39;,
+  &#39;/raid/data/criteo/test_dask/output/valid/part_1.parquet&#39;])
+</pre></div>
+</div>
+</div>
+</div>
+<p>We define some hyperparameters for the model architecture.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">BATCH_SIZE</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;BATCH_SIZE&quot;</span><span class="p">,</span> <span class="mi">64</span> <span class="o">*</span> <span class="mi">1024</span><span class="p">))</span>
+<span class="n">EMBEDDING_SIZE</span> <span class="o">=</span> <span class="mi">8</span>
+<span class="n">EPOCHS</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">LR</span> <span class="o">=</span> <span class="mf">0.01</span>
+<span class="n">OPTIMIZER</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">optimizers</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">learning_rate</span><span class="o">=</span><span class="n">LR</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>We will use Merlin Dataset object to initialize the dataloaders. It provides a dataset schema to initialize the model architectures. The <a class="reference external" href="https://nvidia-merlin.github.io/models/main/examples/index.html#">Merlin Models examples</a> will explain more details.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">train</span> <span class="o">=</span> <span class="n">Dataset</span><span class="p">(</span><span class="n">PATH_TO_TRAIN_DATA</span><span class="p">,</span> <span class="n">part_mem_fraction</span><span class="o">=</span><span class="mf">0.08</span><span class="p">)</span>
+<span class="n">valid</span> <span class="o">=</span> <span class="n">Dataset</span><span class="p">(</span><span class="n">PATH_TO_VALID_DATA</span><span class="p">,</span> <span class="n">part_mem_fraction</span><span class="o">=</span><span class="mf">0.08</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>We initialize the DLRM architecture with Merlin Models.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">mm</span><span class="o">.</span><span class="n">DLRMModel</span><span class="p">(</span>
+    <span class="n">train</span><span class="o">.</span><span class="n">schema</span><span class="p">,</span>
+    <span class="n">embedding_dim</span><span class="o">=</span><span class="n">EMBEDDING_SIZE</span><span class="p">,</span>
+    <span class="n">bottom_block</span><span class="o">=</span><span class="n">mm</span><span class="o">.</span><span class="n">MLPBlock</span><span class="p">([</span><span class="mi">128</span><span class="p">,</span> <span class="n">EMBEDDING_SIZE</span><span class="p">]),</span>
+    <span class="n">top_block</span><span class="o">=</span><span class="n">mm</span><span class="o">.</span><span class="n">MLPBlock</span><span class="p">([</span><span class="mi">128</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">32</span><span class="p">]),</span>
+    <span class="n">prediction_tasks</span><span class="o">=</span><span class="n">mm</span><span class="o">.</span><span class="n">BinaryClassificationTask</span><span class="p">(</span>
+        <span class="n">train</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">select_by_tag</span><span class="p">(</span><span class="n">Tags</span><span class="o">.</span><span class="n">TARGET</span><span class="p">)</span><span class="o">.</span><span class="n">column_names</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="p">)</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>We compile and train our model.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%time</span>
+
+<span class="n">model</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">optimizer</span><span class="o">=</span><span class="n">OPTIMIZER</span><span class="p">,</span> <span class="n">run_eagerly</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train</span><span class="p">,</span>
+          <span class="n">validation_data</span><span class="o">=</span><span class="n">valid</span><span class="p">,</span>
+          <span class="n">batch_size</span><span class="o">=</span><span class="n">BATCH_SIZE</span><span class="p">,</span>
+          <span class="n">epochs</span><span class="o">=</span><span class="n">EPOCHS</span>
+          <span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2867/2867 [==============================] - 224s 72ms/step - loss: 0.1563 - precision: 0.0378 - recall: 2.0745e-04 - binary_accuracy: 0.9677 - auc: 0.5673 - regularization_loss: 0.0000e+00 - loss_batch: 0.1563 - val_loss: 0.1385 - val_precision: 0.0000e+00 - val_recall: 0.0000e+00 - val_binary_accuracy: 0.9680 - val_auc: 0.6279 - val_regularization_loss: 0.0000e+00 - val_loss_batch: 0.1405
+CPU times: user 8min 32s, sys: 13min 13s, total: 21min 45s
+Wall time: 3min 54s
+</pre></div>
+</div>
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;keras.callbacks.History at 0x7f58457b1c40&gt;
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="evaluate-the-model">
+<h2>Evaluate the model<a class="headerlink" href="#evaluate-the-model" title="Permalink to this headline"></a></h2>
+<p>Finally, we can evaluate our model on the validation dataset.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">eval_metrics</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">valid</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">BATCH_SIZE</span><span class="p">,</span> <span class="n">return_dict</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">eval_metrics</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2787/2787 [==============================] - 89s 31ms/step - loss: 0.1385 - precision: 0.0000e+00 - recall: 0.0000e+00 - binary_accuracy: 0.9680 - auc: 0.6279 - regularization_loss: 0.0000e+00 - loss_batch: 0.1385
+</pre></div>
+</div>
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>{&#39;loss&#39;: 0.13853003084659576,
+ &#39;precision&#39;: 0.0,
+ &#39;recall&#39;: 0.0,
+ &#39;binary_accuracy&#39;: 0.9679937958717346,
+ &#39;auc&#39;: 0.6279259324073792,
+ &#39;regularization_loss&#39;: 0.0,
+ &#39;loss_batch&#39;: 0.14048266410827637}
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="save-the-model">
+<h2>Save the model<a class="headerlink" href="#save-the-model" title="Permalink to this headline"></a></h2>
+<p>We save the model to disk.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">input_path</span><span class="p">,</span> <span class="s2">&quot;dlrm&quot;</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Unsupported signature for serialization: ((PredictionOutput(predictions=TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/predictions&#39;), targets=TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/targets&#39;), positive_item_ids=None, label_relevant_counts=None, valid_negatives_mask=None, negative_item_ids=None, sample_weight=None), &lt;tensorflow.python.framework.func_graph.UnknownArgument object at 0x7f57c5f8ecd0&gt;), {}).
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>WARNING:absl:Function `_wrapped_model` contains input name(s) C1, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C2, C20, C21, C22, C23, C24, C25, C26, C3, C4, C5, C6, C7, C8, C9, I1, I10, I11, I12, I13, I2, I3, I4, I5, I6, I7, I8, I9 with unsupported characters which will be renamed to c1, c10, c11, c12, c13, c14, c15, c16, c17, c18, c19, c2, c20, c21, c22, c23, c24, c25, c26, c3, c4, c5, c6, c7, c8, c9, i1, i10, i11, i12, i13, i2, i3, i4, i5, i6, i7, i8, i9 in the SavedModel.
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Unsupported signature for serialization: ((PredictionOutput(predictions=TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/predictions&#39;), targets=TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/targets&#39;), positive_item_ids=None, label_relevant_counts=None, valid_negatives_mask=None, negative_item_ids=None, sample_weight=None), &lt;tensorflow.python.framework.func_graph.UnknownArgument object at 0x7f57c5f8ecd0&gt;), {}).
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Unsupported signature for serialization: ((PredictionOutput(predictions=TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/predictions&#39;), targets=TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/targets&#39;), positive_item_ids=None, label_relevant_counts=None, valid_negatives_mask=None, negative_item_ids=None, sample_weight=None), &lt;tensorflow.python.framework.func_graph.UnknownArgument object at 0x7f57c5f8ecd0&gt;), {}).
+WARNING:absl:Found untraced functions such as train_compute_metrics, model_context_layer_call_fn, model_context_layer_call_and_return_conditional_losses, output_layer_layer_call_fn, output_layer_layer_call_and_return_conditional_losses while saving (showing 5 of 161). These functions will not be directly callable after loading.
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Assets written to: /raid/data/criteo/test_dask/output/dlrm/assets
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Assets written to: /raid/data/criteo/test_dask/output/dlrm/assets
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="summary">
+<h2>Summary<a class="headerlink" href="#summary" title="Permalink to this headline"></a></h2>
+<p>We trained Facebook’s popular DLRM architecture with only ~5 commands on the large criteo dataset.</p>
+</div>
+<div class="section" id="next-steps">
+<h2>Next steps<a class="headerlink" href="#next-steps" title="Permalink to this headline"></a></h2>
+<p>The next step  is to <a class="reference internal" href="04-Triton-Inference-with-Merlin-Models-TensorFlow.html"><span class="doc std std-doc">deploy the NVTabular workflow and DLRM model</span></a> to production.</p>
+<p>If you are interested more in different architecture and training models with Merlin Models, we recommend to check out our <a class="reference external" href="https://nvidia-merlin.github.io/models/main/examples/index.html">Merlin Models examples</a></p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="03-Training-with-HugeCTR.html" class="btn btn-neutral float-left" title="Scaling Criteo: Training with HugeCTR" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="04-Triton-Inference-with-HugeCTR.html" class="btn btn-neutral float-right" title="Scaling Criteo: Triton Inference with HugeCTR" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, NVIDIA.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-NVJ1Y1YJHK"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-NVJ1Y1YJHK', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>
