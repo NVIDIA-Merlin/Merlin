@@ -16,7 +16,7 @@ COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/tensorflow2 back
 
 # Tensorflow dependencies (only)
 # Pinning to pass hugectr sok tests
-RUN pip install tensorflow-gpu==2.9.2 transformers==4.23.1 tf2onnx \
+RUN pip install tensorflow-gpu==2.9.2 \
     && pip uninstall tensorflow-gpu keras -y \
     && python -m pip cache purge
 
@@ -74,7 +74,7 @@ ARG TFDE_VER=v0.2
 RUN if [ "$HUGECTR_DEV_MODE" == "false" ]; then \
         git clone --branch ${HUGECTR_VER} --depth 1 https://${_CI_JOB_TOKEN}${_HUGECTR_REPO} /hugectr && \
         pushd /hugectr && \
-	pip install ninja && \
+	pip install ninja tf2onnx protobuf==3.20.3 && \
 	git submodule update --init --recursive && \
         # Install SOK
         cd sparse_operation_kit && \
