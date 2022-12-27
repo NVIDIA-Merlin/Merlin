@@ -58,6 +58,8 @@ RUN pip install --upgrade notebook
 RUN pip install --upgrade ipython
 RUN pip install tritonclient[all] grpcio-channelz
 RUN pip install git+https://github.com/rapidsai/asvdb.git@main
+# Restrict protobuf version to '3.20.3' for hugectr
+RUN pip install protobuf==3.20.3
 
 # Install CUDA-Aware hwloc
 ARG HWLOC_VER=2.4.1
