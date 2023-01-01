@@ -142,8 +142,14 @@
 <span class="c1"># path to saved model</span>
 <span class="n">MODEL_DIR</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">INPUT_DATA_DIR</span><span class="p">,</span> <span class="s2">&quot;model/movielens_hugectr&quot;</span><span class="p">)</span>
 
-<span class="o">!</span>mkdir /model
-<span class="o">!</span>mv <span class="o">{</span>MODEL_DIR<span class="o">}</span> /model
+<span class="o">!</span>mkdir<span class="w"> </span>/model
+<span class="o">!</span>mv<span class="w"> </span><span class="o">{</span>MODEL_DIR<span class="o">}</span><span class="w"> </span>/model
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>mkdir: cannot create directory ‘/model’: File exists
+mv: cannot stat &#39;/root/nvt-examples/movielens/data/model/movielens_hugectr&#39;: No such file or directory
 </pre></div>
 </div>
 </div>
@@ -236,7 +242,7 @@
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Writing /model/movielens_hugectr/config.pbtxt
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Overwriting /model/movielens_hugectr/config.pbtxt
 </pre></div>
 </div>
 </div>
@@ -260,7 +266,8 @@
             <span class="s2">&quot;default_value_for_each_table&quot;</span><span class="p">:[</span><span class="s2">&quot;0.0&quot;</span><span class="p">,</span><span class="s2">&quot;0.0&quot;</span><span class="p">],</span>
             <span class="s2">&quot;hit_rate_threshold&quot;</span><span class="p">:</span><span class="s2">&quot;0.9&quot;</span><span class="p">,</span>
             <span class="s2">&quot;gpucacheper&quot;</span><span class="p">:</span><span class="s2">&quot;0.5&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;maxnum_catfeature_query_per_table_per_sample&quot;</span><span class="p">:</span><span class="s2">&quot;12&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;maxnum_catfeature_query_per_table_per_sample&quot;</span><span class="p">:[</span><span class="s2">&quot;162542&quot;</span><span class="p">,</span> <span class="s2">&quot;56632&quot;</span><span class="p">,</span><span class="s2">&quot;12&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;embedding_vecsize_per_table&quot;</span><span class="p">:[</span><span class="s2">&quot;16&quot;</span><span class="p">,</span><span class="s2">&quot;16&quot;</span><span class="p">,</span><span class="s2">&quot;16&quot;</span><span class="p">],</span>
             <span class="s2">&quot;gpucache&quot;</span><span class="p">:</span><span class="s2">&quot;true&quot;</span>
         <span class="p">}</span>
     <span class="p">]</span>  
@@ -269,7 +276,7 @@
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Writing /model/ps.json
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Overwriting /model/ps.json
 </pre></div>
 </div>
 </div>
@@ -327,10 +334,6 @@
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>client created.
 </pre></div>
 </div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/usr/local/lib/python3.8/dist-packages/tritonhttpclient/__init__.py:31: DeprecationWarning: The package `tritonhttpclient` is deprecated and will be removed in a future version. Please use instead `tritonclient.http`
-  warnings.warn(
-</pre></div>
-</div>
 </div>
 </div>
 <div class="cell docutils container">
@@ -379,29 +382,10 @@ bytearray(b&#39;[{&quot;name&quot;:&quot;movielens_hugectr&quot;}]&#39;)
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>POST /v2/repository/models/movielens_hugectr/load, headers None
 {}
-&lt;HTTPSocketPoolResponse status=400 headers={&#39;content-type&#39;: &#39;application/json&#39;, &#39;content-length&#39;: &#39;144&#39;}&gt;
-</pre></div>
-</div>
-<div class="output traceback highlight-ipythontb notranslate"><div class="highlight"><pre><span></span><span class="gt">---------------------------------------------------------------------------</span>
-<span class="ne">InferenceServerException</span><span class="g g-Whitespace">                  </span>Traceback (most recent call last)
-<span class="n">File</span> <span class="o">&lt;</span><span class="n">timed</span> <span class="nb">eval</span><span class="o">&gt;</span><span class="p">:</span><span class="mi">1</span>
-
-<span class="nn">File /usr/local/lib/python3.8/dist-packages/tritonclient/http/__init__.py:681,</span> in <span class="ni">InferenceServerClient.load_model</span><span class="nt">(self, model_name, headers, query_params, config, files)</span>
-<span class="g g-Whitespace">    </span><span class="mi">676</span>         <span class="n">load_request</span><span class="p">[</span><span class="s2">&quot;parameters&quot;</span><span class="p">][</span><span class="n">path</span><span class="p">]</span> <span class="o">=</span> <span class="n">base64</span><span class="o">.</span><span class="n">b64encode</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
-<span class="g g-Whitespace">    </span><span class="mi">677</span> <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_post</span><span class="p">(</span><span class="n">request_uri</span><span class="o">=</span><span class="n">request_uri</span><span class="p">,</span>
-<span class="g g-Whitespace">    </span><span class="mi">678</span>                       <span class="n">request_body</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">load_request</span><span class="p">),</span>
-<span class="g g-Whitespace">    </span><span class="mi">679</span>                       <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">,</span>
-<span class="g g-Whitespace">    </span><span class="mi">680</span>                       <span class="n">query_params</span><span class="o">=</span><span class="n">query_params</span><span class="p">)</span>
-<span class="ne">--&gt; </span><span class="mi">681</span> <span class="n">_raise_if_error</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
-<span class="g g-Whitespace">    </span><span class="mi">682</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_verbose</span><span class="p">:</span>
-<span class="g g-Whitespace">    </span><span class="mi">683</span>     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Loaded model &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">model_name</span><span class="p">))</span>
-
-<span class="nn">File /usr/local/lib/python3.8/dist-packages/tritonclient/http/__init__.py:65,</span> in <span class="ni">_raise_if_error</span><span class="nt">(response)</span>
-<span class="g g-Whitespace">     </span><span class="mi">63</span> <span class="n">error</span> <span class="o">=</span> <span class="n">_get_error</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
-<span class="g g-Whitespace">     </span><span class="mi">64</span> <span class="k">if</span> <span class="n">error</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-<span class="ne">---&gt; </span><span class="mi">65</span>     <span class="k">raise</span> <span class="n">error</span>
-
-<span class="ne">InferenceServerException</span>: load failed for model &#39;movielens_hugectr&#39;: version 1 is at UNAVAILABLE state: Internal: attempt to access JSON non-array as array;
+&lt;HTTPSocketPoolResponse status=200 headers={&#39;content-type&#39;: &#39;application/json&#39;, &#39;content-length&#39;: &#39;0&#39;}&gt;
+Loaded model &#39;movielens_hugectr&#39;
+CPU times: user 4.38 ms, sys: 327 µs, total: 4.7 ms
+Wall time: 1.08 s
 </pre></div>
 </div>
 </div>
@@ -410,7 +394,7 @@ bytearray(b&#39;[{&quot;name&quot;:&quot;movielens_hugectr&quot;}]&#39;)
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="s2">&quot;/model/data/valid/part_0.parquet&quot;</span><span class="p">)</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="s1">&#39;/root/nvt-examples/movielens/data/valid/part_0.parquet&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -421,6 +405,70 @@ bytearray(b&#39;[{&quot;name&quot;:&quot;movielens_hugectr&quot;}]&#39;)
 </pre></div>
 </div>
 </div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>userId</th>
+      <th>movieId</th>
+      <th>genres</th>
+      <th>rating</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>65210</td>
+      <td>295</td>
+      <td>[2, 1, 9]</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>159384</td>
+      <td>1203</td>
+      <td>[3, 6, 4]</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>531</td>
+      <td>1713</td>
+      <td>[1]</td>
+      <td>0.0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>38610</td>
+      <td>36</td>
+      <td>[5, 1, 17]</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>8181</td>
+      <td>38</td>
+      <td>[3, 8, 1, 15]</td>
+      <td>1.0</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -437,7 +485,7 @@ bytearray(b&#39;[{&quot;name&quot;:&quot;movielens_hugectr&quot;}]&#39;)
 <span class="n">LABEL_COLUMNS</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;label&#39;</span><span class="p">]</span>
 <span class="n">emb_size_array</span> <span class="o">=</span> <span class="p">[</span><span class="mi">162542</span><span class="p">,</span> <span class="mi">29434</span><span class="p">,</span> <span class="mi">20</span><span class="p">]</span>
 <span class="n">shift</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">emb_size_array</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="s2">&quot;/model/data/valid/part_0.parquet&quot;</span><span class="p">)</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="s1">&#39;/root/nvt-examples/movielens/data/valid/part_0.parquet&#39;</span><span class="p">)</span>
 <span class="n">test_df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
 
 <span class="n">rp_lst</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -475,10 +523,35 @@ bytearray(b&#39;[{&quot;name&quot;:&quot;movielens_hugectr&quot;}]&#39;)
 </pre></div>
 </div>
 </div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Overwriting ./wdl2predict.py
+</pre></div>
+</div>
+</div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>python3 ./wdl2predict.py
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>python3<span class="w"> </span>./wdl2predict.py
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/usr/local/lib/python3.8/dist-packages/pandas/core/indexing.py:1851: SettingWithCopyWarning: 
+A value is trying to be set on a copy of a slice from a DataFrame.
+Try using .loc[row_indexer,col_indexer] = value instead
+
+See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+  self._setitem_single_column(loc, val, pi)
+/usr/local/lib/python3.8/dist-packages/pandas/core/indexing.py:1773: SettingWithCopyWarning: 
+A value is trying to be set on a copy of a slice from a DataFrame.
+Try using .loc[row_indexer,col_indexer] = value instead
+
+See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+  self._setitem_single_column(ilocs[0], value, pi)
+{&#39;id&#39;: &#39;1&#39;, &#39;model_name&#39;: &#39;movielens_hugectr&#39;, &#39;model_version&#39;: &#39;1&#39;, &#39;parameters&#39;: {&#39;NumSample&#39;: 10, &#39;DeviceID&#39;: 0}, &#39;outputs&#39;: [{&#39;name&#39;: &#39;OUTPUT0&#39;, &#39;datatype&#39;: &#39;FP32&#39;, &#39;shape&#39;: [10], &#39;parameters&#39;: {&#39;binary_data_size&#39;: 40}}]}
+Prediction Result:
+[0.29630125 0.60303    0.64638555 0.59273595 0.67363584 0.49444148
+ 0.83785003 0.6066596  0.7003484  0.2496397 ]
 </pre></div>
 </div>
 </div>
