@@ -131,7 +131,7 @@ in this repository or example notebooks in
 <p>To run this notebook, you need to have <a class="reference external" href="https://sagemaker.readthedocs.io/en/stable/">Amazon SageMaker Python SDK</a> installed.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span> python -m pip install sagemaker
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span><span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>sagemaker
 </pre></div>
 </div>
 </div>
@@ -289,7 +289,7 @@ The training script outputs to <code class="docutils literal notranslate"><span 
 
 
 <span class="k">def</span> <span class="nf">parse_args</span><span class="p">():</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Parse arguments passed from the SageMaker API to the container.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -360,7 +360,7 @@ The training script outputs to <code class="docutils literal notranslate"><span 
 
 
 <span class="k">def</span> <span class="nf">train</span><span class="p">():</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Train the Merlin model.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">train_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">train_dir</span><span class="p">,</span> <span class="s2">&quot;*.parquet&quot;</span><span class="p">)</span>
@@ -877,7 +877,7 @@ Billable seconds: 589
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span> <span class="nb">cd</span> /tmp/ensemble <span class="o">&amp;&amp;</span> tar xvzf model.tar.gz
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span><span class="w"> </span><span class="nb">cd</span><span class="w"> </span>/tmp/ensemble<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>tar<span class="w"> </span>xvzf<span class="w"> </span>model.tar.gz
 </pre></div>
 </div>
 </div>
@@ -930,44 +930,44 @@ ensemble_model/1/
 <p>Although we use the Sagemaker Python SDK to train our model, here we will use <code class="docutils literal notranslate"><span class="pre">boto3</span></code> to launch our inference endpoint as it offers more low-level control than the Python SDK.</p>
 <p>The model artificat <code class="docutils literal notranslate"><span class="pre">model.tar.gz</span></code> uploaded to S3 from the Sagemaker training job contained three directories: <code class="docutils literal notranslate"><span class="pre">0_transformworkflow</span></code> for the NVTabular workflow, <code class="docutils literal notranslate"><span class="pre">1_predicttensorflow</span></code> for the Tensorflow model, and <code class="docutils literal notranslate"><span class="pre">ensemble_model</span></code> for the ensemble graph that we can use in Triton.</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>/tmp/ensemble/
-├── 0_transformworkflow
-│   ├── <span class="m">1</span>
-│   │   ├── model.py
-│   │   └── workflow
-│   │       ├── categories
-│   │       │   ├── unique.item_brand.parquet
-│   │       │   ├── unique.item_category.parquet
-│   │       │   ├── unique.item_id.parquet
-│   │       │   ├── unique.item_shop.parquet
-│   │       │   ├── unique.user_age.parquet
-│   │       │   ├── unique.user_brands.parquet
-│   │       │   ├── unique.user_categories.parquet
-│   │       │   ├── unique.user_consumption_2.parquet
-│   │       │   ├── unique.user_gender.parquet
-│   │       │   ├── unique.user_geography.parquet
-│   │       │   ├── unique.user_group.parquet
-│   │       │   ├── unique.user_id.parquet
-│   │       │   ├── unique.user_intentions.parquet
-│   │       │   ├── unique.user_is_occupied.parquet
-│   │       │   ├── unique.user_profile.parquet
-│   │       │   └── unique.user_shops.parquet
-│   │       ├── metadata.json
-│   │       └── workflow.pkl
-│   └── config.pbtxt
-├── 1_predicttensorflow
-│   ├── <span class="m">1</span>
-│   │   └── model.savedmodel
-│   │       ├── assets
-│   │       ├── keras_metadata.pb
-│   │       ├── saved_model.pb
-│   │       └── variables
-│   │           ├── variables.data-00000-of-00001
-│   │           └── variables.index
-│   └── config.pbtxt
-├── ensemble_model
-│   ├── <span class="m">1</span>
-│   └── config.pbtxt
-└── model.tar.gz
+├──<span class="w"> </span>0_transformworkflow
+│<span class="w">   </span>├──<span class="w"> </span><span class="m">1</span>
+│<span class="w">   </span>│<span class="w">   </span>├──<span class="w"> </span>model.py
+│<span class="w">   </span>│<span class="w">   </span>└──<span class="w"> </span>workflow
+│<span class="w">   </span>│<span class="w">       </span>├──<span class="w"> </span>categories
+│<span class="w">   </span>│<span class="w">       </span>│<span class="w">   </span>├──<span class="w"> </span>unique.item_brand.parquet
+│<span class="w">   </span>│<span class="w">       </span>│<span class="w">   </span>├──<span class="w"> </span>unique.item_category.parquet
+│<span class="w">   </span>│<span class="w">       </span>│<span class="w">   </span>├──<span class="w"> </span>unique.item_id.parquet
+│<span class="w">   </span>│<span class="w">       </span>│<span class="w">   </span>├──<span class="w"> </span>unique.item_shop.parquet
+│<span class="w">   </span>│<span class="w">       </span>│<span class="w">   </span>├──<span class="w"> </span>unique.user_age.parquet
+│<span class="w">   </span>│<span class="w">       </span>│<span class="w">   </span>├──<span class="w"> </span>unique.user_brands.parquet
+│<span class="w">   </span>│<span class="w">       </span>│<span class="w">   </span>├──<span class="w"> </span>unique.user_categories.parquet
+│<span class="w">   </span>│<span class="w">       </span>│<span class="w">   </span>├──<span class="w"> </span>unique.user_consumption_2.parquet
+│<span class="w">   </span>│<span class="w">       </span>│<span class="w">   </span>├──<span class="w"> </span>unique.user_gender.parquet
+│<span class="w">   </span>│<span class="w">       </span>│<span class="w">   </span>├──<span class="w"> </span>unique.user_geography.parquet
+│<span class="w">   </span>│<span class="w">       </span>│<span class="w">   </span>├──<span class="w"> </span>unique.user_group.parquet
+│<span class="w">   </span>│<span class="w">       </span>│<span class="w">   </span>├──<span class="w"> </span>unique.user_id.parquet
+│<span class="w">   </span>│<span class="w">       </span>│<span class="w">   </span>├──<span class="w"> </span>unique.user_intentions.parquet
+│<span class="w">   </span>│<span class="w">       </span>│<span class="w">   </span>├──<span class="w"> </span>unique.user_is_occupied.parquet
+│<span class="w">   </span>│<span class="w">       </span>│<span class="w">   </span>├──<span class="w"> </span>unique.user_profile.parquet
+│<span class="w">   </span>│<span class="w">       </span>│<span class="w">   </span>└──<span class="w"> </span>unique.user_shops.parquet
+│<span class="w">   </span>│<span class="w">       </span>├──<span class="w"> </span>metadata.json
+│<span class="w">   </span>│<span class="w">       </span>└──<span class="w"> </span>workflow.pkl
+│<span class="w">   </span>└──<span class="w"> </span>config.pbtxt
+├──<span class="w"> </span>1_predicttensorflow
+│<span class="w">   </span>├──<span class="w"> </span><span class="m">1</span>
+│<span class="w">   </span>│<span class="w">   </span>└──<span class="w"> </span>model.savedmodel
+│<span class="w">   </span>│<span class="w">       </span>├──<span class="w"> </span>assets
+│<span class="w">   </span>│<span class="w">       </span>├──<span class="w"> </span>keras_metadata.pb
+│<span class="w">   </span>│<span class="w">       </span>├──<span class="w"> </span>saved_model.pb
+│<span class="w">   </span>│<span class="w">       </span>└──<span class="w"> </span>variables
+│<span class="w">   </span>│<span class="w">           </span>├──<span class="w"> </span>variables.data-00000-of-00001
+│<span class="w">   </span>│<span class="w">           </span>└──<span class="w"> </span>variables.index
+│<span class="w">   </span>└──<span class="w"> </span>config.pbtxt
+├──<span class="w"> </span>ensemble_model
+│<span class="w">   </span>├──<span class="w"> </span><span class="m">1</span>
+│<span class="w">   </span>└──<span class="w"> </span>config.pbtxt
+└──<span class="w"> </span>model.tar.gz
 </pre></div>
 </div>
 <p>We specify that we only want to use <code class="docutils literal notranslate"><span class="pre">ensemble_model</span></code> in Triton by passing the environment variable <code class="docutils literal notranslate"><span class="pre">SAGEMAKER_TRITON_DEFAULT_MODEL_NAME</span></code>.</p>

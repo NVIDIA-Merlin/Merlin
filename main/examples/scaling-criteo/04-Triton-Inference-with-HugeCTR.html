@@ -231,7 +231,7 @@ The script below creates an ensemble triton server model where</p>
 <p>We can take a look at the generated files.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>tree <span class="nv">$OUTPUT_DATA_DIR</span>/model_inference
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>tree<span class="w"> </span><span class="nv">$OUTPUT_DATA_DIR</span>/model_inference
 </pre></div>
 </div>
 </div>
@@ -333,7 +333,7 @@ The script below creates an ensemble triton server model where</p>
 <h3>Start Triton Inference Server<a class="headerlink" href="#start-triton-inference-server" title="Permalink to this headline"></a></h3>
 <p>After we export the ensemble, we are ready to start the Triton Inference Server. The server is installed in the merlin-tensorflow-container. If you are not using one of our containers, then ensure it is installed in your environment. For more information, see the Triton Inference Server <a class="reference external" href="https://github.com/triton-inference-server/server/blob/r22.03/README.md#documentation">documentation</a>.</p>
 <p>You can start the server by running the following command:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>tritonserver --model-repository<span class="o">=</span>&lt;output_path&gt; --backend-config<span class="o">=</span>hugectr,ps<span class="o">=</span>&lt;ps.json file&gt;
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>tritonserver<span class="w"> </span>--model-repository<span class="o">=</span>&lt;output_path&gt;<span class="w"> </span>--backend-config<span class="o">=</span>hugectr,ps<span class="o">=</span>&lt;ps.json<span class="w"> </span>file&gt;
 </pre></div>
 </div>
 <p>For the <code class="docutils literal notranslate"><span class="pre">--model-repository</span></code> argument, specify the same value as <code class="docutils literal notranslate"><span class="pre">os.path.join(OUTPUT_DATA_DIR,</span> <span class="pre">&quot;model_inference&quot;</span></code> that you specified previously in <code class="docutils literal notranslate"><span class="pre">export_hugectr_ensemble</span></code> for <code class="docutils literal notranslate"><span class="pre">output_path</span></code>.
