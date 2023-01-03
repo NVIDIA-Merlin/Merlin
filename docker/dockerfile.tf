@@ -74,7 +74,7 @@ ARG TFDE_VER=v0.2
 RUN if [ "$HUGECTR_DEV_MODE" == "false" ]; then \
         git clone --branch ${HUGECTR_VER} --depth 1 https://${_CI_JOB_TOKEN}${_HUGECTR_REPO} /hugectr && \
         pushd /hugectr && \
-	pip install ninja tf2onnx protobuf==3.20.3 && \
+	pip install ninja tf2onnx && \
 	git submodule update --init --recursive && \
         # Install SOK
         cd sparse_operation_kit && \
