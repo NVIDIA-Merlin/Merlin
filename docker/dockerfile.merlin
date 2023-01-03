@@ -99,7 +99,9 @@ RUN pip install --upgrade pip; pip install "cmake<3.25.0" ninja scikit-build pan
                 numba "cuda-python>=11.5,<12.0" fsspec==2022.5.0 llvmlite pynvml 
 RUN pip install numpy==1.22.4 protobuf==3.20.3
 RUN pip install dask==${DASK_VER} distributed==${DASK_VER} dask[dataframe]==${DASK_VER} 
-
+RUN pip install numpy==1.22.4
+RUN pip install onnx onnxruntime==1.11.1 pycuda
+RUN pip install onnx_graphsurgeon --index-url https://pypi.ngc.nvidia.com
 
 # Triton Server
 WORKDIR /opt/tritonserver
