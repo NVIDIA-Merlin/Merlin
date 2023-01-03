@@ -176,6 +176,7 @@ RUN apt update -y --fix-missing && \
     mv cuda-ubuntu2004.pin /etc/apt/preferences.d/cuda-repository-pin-600 && \
     apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/3bf863cc.pub && \
     add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/ /" && \
+RUN v=8.5.1-1+cuda11.8 && \
     apt install -y --no-install-recommends \
         ca-certificates \
         clang-format \
@@ -200,7 +201,17 @@ RUN apt update -y --fix-missing && \
         rapidjson-dev \
         tree \
         wget \
-        zlib1g-dev && \
+        zlib1g-dev \
+        # TensorRT dependencies
+        libnvinfer8=$v \
+        libnvonnxparsers8=$v \
+        libnvparsers8=$v \
+        libnvinfer-plugin8=$v \
+        libnvinfer-dev=$v \
+        libnvonnxparsers-dev=$v \
+        libnvparsers-dev=$v \
+        libnvinfer-plugin-dev=$v \
+        python3-libnvinfer=$v && \
     apt autoremove -y && \
     apt clean && \
     rm -rf /var/lib/apt/lists/*
@@ -225,6 +236,7 @@ COPY --chown=1000:1000 --from=triton /opt/tritonserver/include include/
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/repoagents/ repoagents/
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/python backends/python/
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/fil backends/fil/
+COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/tensorrt backends/tensorrt/
 COPY --chown=1000:1000 --from=triton /usr/bin/serve /usr/bin/.
 COPY --chown=1000:1000 --from=triton /usr/lib/x86_64-linux-gnu/libdcgm.so.2 /usr/lib/x86_64-linux-gnu/libdcgm.so.2
 COPY --chown=1000:1000 --from=triton /usr/local/cuda-11.8/targets/x86_64-linux/lib/libcupti.so.11.8 /usr/local/cuda-11.8/targets/x86_64-linux/lib/libcupti.so.11.8
