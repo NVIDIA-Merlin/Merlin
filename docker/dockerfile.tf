@@ -16,9 +16,15 @@ COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/tensorflow2 back
 
 # Tensorflow dependencies (only)
 # Pinning to pass hugectr sok tests
+<<<<<<< HEAD
 RUN pip install tensorflow-gpu==2.9.2 protobuf==3.20.3 \
     && pip uninstall tensorflow-gpu keras -y \
     && python -m pip cache purge
+=======
+# Restrict protobuf version to 3.20.3 for onnx
+RUN pip install tensorflow-gpu==2.9.2 transformers==4.23.1 protobuf==3.20.3 \
+    && pip uninstall tensorflow-gpu keras -y
+>>>>>>> Add cmake parameter for trt plugin
 
 # DLFW Tensorflow packages
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python3.8/dist-packages/tensorflow /usr/local/lib/python3.8/dist-packages/tensorflow/
