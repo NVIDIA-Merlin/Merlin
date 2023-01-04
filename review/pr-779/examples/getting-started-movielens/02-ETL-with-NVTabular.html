@@ -276,7 +276,7 @@ NVTabular has already implemented multiple calculations, called <code class="doc
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/8e9bd4ea1a6cdb0fff40e95772bf6f4fefe23b6d342f87ef8fca542fe2876cdc.svg" src="../../_images/8e9bd4ea1a6cdb0fff40e95772bf6f4fefe23b6d342f87ef8fca542fe2876cdc.svg" /></div>
+<img alt="../../_images/21a920038bdeb43a474a8bb1aaa25cc794451762a7cb0387d203f5283f3a4cd8.svg" src="../../_images/21a920038bdeb43a474a8bb1aaa25cc794451762a7cb0387d203f5283f3a4cd8.svg" /></div>
 </div>
 <p>Embedding Layers of neural networks require that categorical features are contiguous, incremental Integers: 0, 1, 2, … , |C|-1. We need to ensure that our categorical features fulfill the requirement.<br></p>
 <p>Currently, our genres are a list of Strings. In addition, we should transform the single-hot categorical features userId and movieId, as well.<br>
@@ -305,7 +305,7 @@ NVTabular provides the operator <code class="docutils literal notranslate"><span
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/9c60c65090b2eb8376a45b1b58667427542983db20e0fb9d5af9fef74fbeee17.svg" src="../../_images/9c60c65090b2eb8376a45b1b58667427542983db20e0fb9d5af9fef74fbeee17.svg" /></div>
+<img alt="../../_images/b586b0b6fe0c4af4c87b05565b04c43d6e8add8037761d3d363707a93f694e39.svg" src="../../_images/b586b0b6fe0c4af4c87b05565b04c43d6e8add8037761d3d363707a93f694e39.svg" /></div>
 </div>
 <p>We initialize our NVTabular <code class="docutils literal notranslate"><span class="pre">workflow</span></code>.</p>
 <div class="cell docutils container">
@@ -351,11 +351,11 @@ NVTabular provides the operator <code class="docutils literal notranslate"><span
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>CPU times: user 721 ms, sys: 291 ms, total: 1.01 s
-Wall time: 1.03 s
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>CPU times: user 752 ms, sys: 259 ms, total: 1.01 s
+Wall time: 1.01 s
 </pre></div>
 </div>
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;nvtabular.workflow.workflow.Workflow at 0x7fc47a1f08e0&gt;
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;nvtabular.workflow.workflow.Workflow at 0x7fae40831940&gt;
 </pre></div>
 </div>
 </div>
@@ -375,44 +375,42 @@ Wall time: 1.03 s
 <p>We transform our workflow with <code class="docutils literal notranslate"><span class="pre">.transform</span></code>. We are going to add <code class="docutils literal notranslate"><span class="pre">'userId',</span> <span class="pre">'movieId',</span> <span class="pre">'genres'</span></code> columns to <code class="docutils literal notranslate"><span class="pre">_metadata.json</span></code>, because this json file will be needed for HugeCTR training to obtain the required information from all the rows in each parquet file.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Add &quot;write_hugectr_keyset=True&quot; to &quot;to_parquet&quot; if using this ETL Notebook for training with HugeCTR</span>
-<span class="o">%</span><span class="k">time</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">time</span>
 <span class="n">workflow</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">train_dataset</span><span class="p">)</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span>
     <span class="n">output_path</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">INPUT_DATA_DIR</span><span class="p">,</span> <span class="s2">&quot;train&quot;</span><span class="p">),</span>
     <span class="n">shuffle</span><span class="o">=</span><span class="n">nvt</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">Shuffle</span><span class="o">.</span><span class="n">PER_PARTITION</span><span class="p">,</span>
     <span class="n">cats</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;userId&quot;</span><span class="p">,</span> <span class="s2">&quot;movieId&quot;</span><span class="p">,</span> <span class="s2">&quot;genres&quot;</span><span class="p">],</span>
     <span class="n">labels</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;rating&quot;</span><span class="p">],</span>
     <span class="n">dtypes</span><span class="o">=</span><span class="n">dict_dtypes</span><span class="p">,</span>
-    <span class="n">write_hugectr_keyset</span><span class="o">=</span><span class="kc">True</span>
+    <span class="n">write_hugectr_keyset</span><span class="o">=</span><span class="kc">True</span>  <span class="c1"># only needed if using using this ETL Notebook for training with HugeCTR</span>
 <span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>CPU times: user 0 ns, sys: 1 µs, total: 1 µs
-Wall time: 3.34 µs
+Wall time: 2.62 µs
 </pre></div>
 </div>
 </div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Add &quot;write_hugectr_keyset=True&quot; to &quot;to_parquet&quot; if using this ETL Notebook for training with HugeCTR</span>
-<span class="o">%</span><span class="k">time</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">time</span>
 <span class="n">workflow</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">valid_dataset</span><span class="p">)</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span>
     <span class="n">output_path</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">INPUT_DATA_DIR</span><span class="p">,</span> <span class="s2">&quot;valid&quot;</span><span class="p">),</span>
     <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="n">cats</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;userId&quot;</span><span class="p">,</span> <span class="s2">&quot;movieId&quot;</span><span class="p">,</span> <span class="s2">&quot;genres&quot;</span><span class="p">],</span>
     <span class="n">labels</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;rating&quot;</span><span class="p">],</span>
     <span class="n">dtypes</span><span class="o">=</span><span class="n">dict_dtypes</span><span class="p">,</span>
-    <span class="n">write_hugectr_keyset</span><span class="o">=</span><span class="kc">True</span>
+    <span class="n">write_hugectr_keyset</span><span class="o">=</span><span class="kc">True</span>  <span class="c1"># only needed if using using this ETL Notebook for training with HugeCTR</span>
 <span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>CPU times: user 1e+03 ns, sys: 1e+03 ns, total: 2 µs
-Wall time: 2.86 µs
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>CPU times: user 1e+03 ns, sys: 1 µs, total: 2 µs
+Wall time: 3.1 µs
 </pre></div>
 </div>
 </div>
@@ -482,85 +480,42 @@ Wall time: 2.86 µs
   <tbody>
     <tr>
       <th>0</th>
-      <td>7600</td>
-      <td>197</td>
-      <td>[2]</td>
-      <td>0.0</td>
+      <td>145633</td>
+      <td>234</td>
+      <td>[8, 1]</td>
+      <td>1.0</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>3989</td>
-      <td>326</td>
-      <td>[3, 4]</td>
+      <td>1447</td>
+      <td>1697</td>
+      <td>[5, 2]</td>
       <td>0.0</td>
     </tr>
     <tr>
       <th>2</th>
-      <td>184</td>
-      <td>640</td>
-      <td>[8, 1, 12, 11, 4]</td>
-      <td>0.0</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>292</td>
-      <td>14941</td>
+      <td>3</td>
+      <td>5592</td>
       <td>[18]</td>
       <td>1.0</td>
     </tr>
     <tr>
+      <th>3</th>
+      <td>7550</td>
+      <td>678</td>
+      <td>[5, 2, 7]</td>
+      <td>1.0</td>
+    </tr>
+    <tr>
       <th>4</th>
-      <td>24124</td>
-      <td>98</td>
-      <td>[3, 11, 4]</td>
-      <td>0.0</td>
+      <td>81718</td>
+      <td>655</td>
+      <td>[3, 5, 2, 17]</td>
+      <td>1.0</td>
     </tr>
   </tbody>
 </table>
 </div></div></div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="mi">162541</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">userId</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>162541
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">movieId</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>56632
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">max</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">userId</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="n">df</span><span class="o">.</span><span class="n">movieId</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>162541
-</pre></div>
-</div>
-</div>
 </div>
 </div>
 </div>

@@ -133,6 +133,7 @@
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
 
 <span class="c1"># path to preprocessed data</span>
 <span class="n">INPUT_DATA_DIR</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
@@ -141,15 +142,20 @@
 
 <span class="c1"># path to saved model</span>
 <span class="n">MODEL_DIR</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">INPUT_DATA_DIR</span><span class="p">,</span> <span class="s2">&quot;model/movielens_hugectr&quot;</span><span class="p">)</span>
-
-<span class="o">!</span>mkdir<span class="w"> </span>/model
-<span class="o">!</span>mv<span class="w"> </span><span class="o">{</span>MODEL_DIR<span class="o">}</span><span class="w"> </span>/model
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="s1">&#39;/model&#39;</span><span class="p">,</span> <span class="n">ignore_errors</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="s1">&#39;/model&#39;</span><span class="p">)</span>
+<span class="n">shutil</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="n">MODEL_DIR</span><span class="p">,</span> <span class="s1">&#39;/model&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>mkdir: cannot create directory ‘/model’: File exists
-mv: cannot stat &#39;/root/nvt-examples/movielens/data/model/movielens_hugectr&#39;: No such file or directory
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&#39;/model/movielens_hugectr&#39;
 </pre></div>
 </div>
 </div>
@@ -242,7 +248,7 @@ mv: cannot stat &#39;/root/nvt-examples/movielens/data/model/movielens_hugectr&#
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Overwriting /model/movielens_hugectr/config.pbtxt
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Writing /model/movielens_hugectr/config.pbtxt
 </pre></div>
 </div>
 </div>
@@ -276,7 +282,7 @@ mv: cannot stat &#39;/root/nvt-examples/movielens/data/model/movielens_hugectr&#
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Overwriting /model/ps.json
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Writing /model/ps.json
 </pre></div>
 </div>
 </div>
@@ -287,12 +293,6 @@ mv: cannot stat &#39;/root/nvt-examples/movielens/data/model/movielens_hugectr&#
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">tritonclient.grpc</span> <span class="k">as</span> <span class="nn">httpclient</span>
 <span class="kn">import</span> <span class="nn">cudf</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/usr/local/lib/python3.8/dist-packages/tqdm/auto.py:22: TqdmWarning: IProgress not found. Please update jupyter and ipywidgets. See https://ipywidgets.readthedocs.io/en/stable/user_install.html
-  from .autonotebook import tqdm as notebook_tqdm
 </pre></div>
 </div>
 </div>
@@ -384,7 +384,7 @@ bytearray(b&#39;[{&quot;name&quot;:&quot;movielens_hugectr&quot;}]&#39;)
 {}
 &lt;HTTPSocketPoolResponse status=200 headers={&#39;content-type&#39;: &#39;application/json&#39;, &#39;content-length&#39;: &#39;0&#39;}&gt;
 Loaded model &#39;movielens_hugectr&#39;
-CPU times: user 4.38 ms, sys: 327 µs, total: 4.7 ms
+CPU times: user 186 µs, sys: 4.2 ms, total: 4.39 ms
 Wall time: 1.08 s
 </pre></div>
 </div>
@@ -433,38 +433,38 @@ Wall time: 1.08 s
   <tbody>
     <tr>
       <th>0</th>
-      <td>65210</td>
-      <td>295</td>
-      <td>[2, 1, 9]</td>
+      <td>98292</td>
+      <td>800</td>
+      <td>[3, 5, 8, 4]</td>
       <td>0.0</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>159384</td>
-      <td>1203</td>
-      <td>[3, 6, 4]</td>
-      <td>0.0</td>
+      <td>5658</td>
+      <td>791</td>
+      <td>[2]</td>
+      <td>1.0</td>
     </tr>
     <tr>
       <th>2</th>
-      <td>531</td>
-      <td>1713</td>
-      <td>[1]</td>
+      <td>128987</td>
+      <td>744</td>
+      <td>[2, 1, 4]</td>
       <td>0.0</td>
     </tr>
     <tr>
       <th>3</th>
-      <td>38610</td>
-      <td>36</td>
-      <td>[5, 1, 17]</td>
+      <td>6196</td>
+      <td>7</td>
+      <td>[3, 5, 7, 4]</td>
       <td>1.0</td>
     </tr>
     <tr>
       <th>4</th>
-      <td>8181</td>
-      <td>38</td>
-      <td>[3, 8, 1, 15]</td>
-      <td>1.0</td>
+      <td>7968</td>
+      <td>1066</td>
+      <td>[3, 4]</td>
+      <td>0.0</td>
     </tr>
   </tbody>
 </table>
@@ -550,8 +550,8 @@ See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stab
   self._setitem_single_column(ilocs[0], value, pi)
 {&#39;id&#39;: &#39;1&#39;, &#39;model_name&#39;: &#39;movielens_hugectr&#39;, &#39;model_version&#39;: &#39;1&#39;, &#39;parameters&#39;: {&#39;NumSample&#39;: 10, &#39;DeviceID&#39;: 0}, &#39;outputs&#39;: [{&#39;name&#39;: &#39;OUTPUT0&#39;, &#39;datatype&#39;: &#39;FP32&#39;, &#39;shape&#39;: [10], &#39;parameters&#39;: {&#39;binary_data_size&#39;: 40}}]}
 Prediction Result:
-[0.29630125 0.60303    0.64638555 0.59273595 0.67363584 0.49444148
- 0.83785003 0.6066596  0.7003484  0.2496397 ]
+[0.19355804 0.52616954 0.4990877  0.5429387  0.21716931 0.15123127
+ 0.89931846 0.6387834  0.21316229 0.7703745 ]
 </pre></div>
 </div>
 </div>
