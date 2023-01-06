@@ -37,9 +37,12 @@ COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python3.8/dist-packages/horovo
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python3.8/dist-packages/horovod-*.dist-info /usr/local/lib/python3.8/dist-packages/horovod.dist-info/
 COPY --chown=1000:1000 --from=dlfw /usr/local/bin/horovodrun /usr/local/bin/horovodrun
 
+<<<<<<< HEAD
 # Need to install transformers after tensorflow has been pulled in, so it builds artifacts correctly.
 RUN pip install transformers==4.23.1
 
+=======
+>>>>>>> Move inference,hps_backend,trt_plugin to merlin-base
 # Install HugeCTR
 # Arguments "_XXXX" are only valid when $HUGECTR_DEV_MODE==false
 ARG HUGECTR_DEV_MODE=false
@@ -72,7 +75,7 @@ RUN if [ "$HUGECTR_DEV_MODE" == "false" ]; then \
         cd ../hps_tf && \
         python setup.py install && \
         popd; \
-    fi; \
+    fi \
     if [ "$INSTALL_DISTRIBUTED_EMBEDDINGS" == "true" ]; then \
         git clone https://github.com/NVIDIA-Merlin/distributed-embeddings.git /distributed_embeddings/ && \
         cd /distributed_embeddings && git checkout ${TFDE_VER} && git submodule update --init --recursive && \

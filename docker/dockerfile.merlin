@@ -419,6 +419,83 @@ RUN if [ "${HUGECTR_DEV_MODE}" == "false" ]; then \
     ; fi
 RUN ln -s ${HUGECTR_HOME}/backends/hps /opt/tritonserver/backends/hps
 
+# Optional dependency: Build and install protocol buffers and Hadoop/HDFS.
+ARG INSTALL_HDFS=false
+# Env for HDFS
+ENV HADOOP_HOME=/opt/hadoop
+ENV PATH=${PATH}:${HADOOP_HOME}/bin:${HADOOP_HOME}/sbin \
+    HDFS_NAMENODE_USER=root \
+    HDFS_SECONDARYNAMENODE_USER=root \
+    HDFS_DATANODE_USER=root \
+    YARN_RESOURCEMANAGER_USER=root \
+    YARN_NODEMANAGER_USER=root \
+    # Tackles with ThreadReaper stack overflow issues: https://bugs.openjdk.java.net/browse/JDK-8153057
+    LIBHDFS_OPTS='-Djdk.lang.processReaperUseDefaultStackSize=true' \
+    # Tackles with JVM setting error signals that UCX library will check (GitLab issue #425).
+    UCX_ERROR_SIGNALS='' \
+    CLASSPATH=${CLASSPATH}:\
+${HADOOP_HOME}/etc/hadoop/*:\
+${HADOOP_HOME}/share/hadoop/common/*:\
+${HADOOP_HOME}/share/hadoop/common/lib/*:\
+${HADOOP_HOME}/share/hadoop/hdfs/*:\
+${HADOOP_HOME}/share/hadoop/hdfs/lib/*:\
+${HADOOP_HOME}/share/hadoop/mapreduce/*:\
+${HADOOP_HOME}/share/hadoop/yarn/*:\
+${HADOOP_HOME}/share/hadoop/yarn/lib/*
+
+# Install Inference and HPS Backend
+ARG HUGECTR_DEV_MODE=false
+ARG HUGECTR_VER=main
+ARG _HUGECTR_REPO="github.com/NVIDIA-Merlin/HugeCTR.git"
+ARG HUGECTR_BACKEND_VER=main
+ARG _CI_JOB_TOKEN=""
+ARG _HUGECTR_BACKEND_REPO="github.com/triton-inference-server/hugectr_backend.git"
+ARG HUGECTR_HOME=/usr/local/hugectr
+ARG TRITON_VERSION
+
+ENV PATH=$PATH:${HUGECTR_HOME}/bin \
+    CPATH=$CPATH:${HUGECTR_HOME}/include \
+    LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${HUGECTR_HOME}/lib
+
+RUN if [ "${HUGECTR_DEV_MODE}" == "false" ]; then \
+        # Install HugeCTR inference which is dependency for hps_backenc
+        git clone --branch ${HUGECTR_VER} --depth 1 https://${_CI_JOB_TOKEN}${_HUGECTR_REPO} /hugectr && \
+        cd /hugectr && \
+        git submodule update --init --recursive && \
+        mkdir build && \
+        cd build && \
+        if [[ "${INSTALL_HDFS}" == "false" ]]; then \
+            cmake -DCMAKE_BUILD_TYPE=Release -DSM="60;61;70;75;80" -DENABLE_INFERENCE=ON .. \
+        ; else \
+            cmake -DCMAKE_BUILD_TYPE=Release -DSM="60;61;70;75;80" -DENABLE_INFERENCE=ON -DENABLE_HDFS=ON .. \
+        ; fi && \
+        make -j$(nproc) && \
+        make install && \
+        # Install HPS trt pugin
+        cd ../hps_trt && \
+        mkdir build && \
+        cd build && \
+        cmake -DSM="70;75;80" .. && \
+        make -j$(nproc) && \
+        make install && \
+        cd / && rm -rf /hugectr && \
+        # Install hps_backend
+        git clone --branch ${HUGECTR_BACKEND_VER} --depth 1 https://${_CI_JOB_TOKEN}${_HUGECTR_BACKEND_REPO} /repos/hugectr_triton_backend && \
+        mkdir /repos/hugectr_triton_backend/hps_backend/build && \
+        cd /repos/hugectr_triton_backend/hps_backend/build && \
+        cmake \
+            -DCMAKE_INSTALL_PREFIX:PATH=${HUGECTR_HOME} \
+            -DTRITON_COMMON_REPO_TAG="r${TRITON_VERSION}" \
+            -DTRITON_CORE_REPO_TAG="r${TRITON_VERSION}" \
+            -DTRITON_BACKEND_REPO_TAG="r${TRITON_VERSION}" .. && \
+        make -j$(nproc) && \
+        make install && \
+        cd ../.. && \
+        rm -rf hugectr_triton_backend && \
+        chmod +x ${HUGECTR_HOME}/lib/*.so ${HUGECTR_HOME}/backends/hps/*.so \
+    ; fi
+RUN ln -s ${HUGECTR_HOME}/backends/hps /opt/tritonserver/backends/hps
+
 HEALTHCHECK NONE
 CMD ["/bin/bash"]
 ENTRYPOINT ["/opt/nvidia/nvidia_entrypoint.sh"]
