@@ -58,7 +58,9 @@
 <li class="toctree-l3"><a class="reference internal" href="01-Download-Convert.html">MovieLens Download and Convert</a></li>
 <li class="toctree-l3"><a class="reference internal" href="02-ETL-with-NVTabular.html">Feature Engineering with NVTabular</a></li>
 <li class="toctree-l3"><a class="reference internal" href="03-Training-with-HugeCTR.html">Training with HugeCTR</a></li>
-<li class="toctree-l3"><a class="reference internal" href="03-Training-with-TF.html">Training with TensorFlow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="03-Training-with-TF.html">Getting Started MovieLens: Training with TensorFlow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="03-Training-with-TF.html#data-preparation">Data Preparation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="03-Training-with-TF.html#training-our-model">Training our model</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">Training with PyTorch</a></li>
 <li class="toctree-l3"><a class="reference internal" href="04-Triton-Inference-with-HugeCTR.html">Serving the HugeCTR Model with Triton</a></li>
 <li class="toctree-l3"><a class="reference internal" href="04-Triton-Inference-with-TF.html">Serving the TensorFlow Model with Triton</a></li>
@@ -114,6 +116,9 @@
 <span class="c1"># See the License for the specific language governing permissions and</span>
 <span class="c1"># limitations under the License.</span>
 <span class="c1"># ==============================================================================</span>
+
+<span class="c1"># Each user is responsible for checking the content of datasets and the</span>
+<span class="c1"># applicable licenses and determining if suitable for the intended use.</span>
 </pre></div>
 </div>
 </div>
@@ -124,7 +129,7 @@
 <p>This notebook is created using the latest stable <a class="reference external" href="https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-pytorch-training/tags">merlin-pytorch-training</a> container.</p>
 <div class="section" id="overview">
 <h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline"></a></h2>
-<p>We observed that PyTorch training pipelines can be slow as the dataloader is a bottleneck. The native dataloader in PyTorch randomly sample each item from the dataset, which is very slow. In our experiments, we are able to speed-up existing PyTorch pipelines using a highly optimized dataloader.<br><br></p>
+<p>We observed that PyTorch training pipelines can be slow as the dataloader is a bottleneck. The native dataloader in PyTorch randomly samples each item from the dataset, which is very slow. In our experiments, we are able to speed-up existing PyTorch pipelines using a highly optimized dataloader.<br><br></p>
 <p>In this tutorial we will be using the highly optimized Merlin Dataloader. To learn more about it, please consult the examples in its repository <a class="reference external" href="https://github.com/NVIDIA-Merlin/dataloader/tree/main/examples">here</a>.</p>
 <div class="section" id="learning-objectives">
 <h3>Learning objectives<a class="headerlink" href="#learning-objectives" title="Permalink to this headline"></a></h3>
@@ -200,7 +205,7 @@
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>({&#39;userId&#39;: (162542, 512), &#39;movieId&#39;: (56635, 512)}, {&#39;genres&#39;: (21, 16)})
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>({&#39;userId&#39;: (162542, 512), &#39;movieId&#39;: (56615, 512)}, {&#39;genres&#39;: (21, 16)})
 </pre></div>
 </div>
 </div>
@@ -214,7 +219,7 @@
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">from</span> <span class="nn">merlin.loader.torch</span> <span class="kn">import</span> <span class="n">Loader</span>
 
-<span class="kn">from</span> <span class="nn">nvtabular.loader.torch</span> <span class="kn">import</span> <span class="n">TorchAsyncItr</span><span class="p">,</span> <span class="n">DLDataLoader</span>
+<span class="c1"># from nvtabular.loader.torch import TorchAsyncItr, DLDataLoader</span>
 <span class="kn">from</span> <span class="nn">nvtabular.framework_utils.torch.models</span> <span class="kn">import</span> <span class="n">Model</span>
 <span class="kn">from</span> <span class="nn">nvtabular.framework_utils.torch.utils</span> <span class="kn">import</span> <span class="n">process_epoch</span>
 </pre></div>
@@ -224,69 +229,39 @@
 <p>First, we take a look on our dataloader and how the data is represented as tensors. The NVTabular dataloaders are initialized as usual and we specify both single-hot and multi-hot categorical features as cats. The dataloader can automatically recognize the single/multi-hot columns and represent them accordingly.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># # TensorItrDataset returns a single batch of x_cat, x_cont, y.</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">label_column</span> <span class="o">=</span> <span class="s1">&#39;rating&#39;</span>
 
-<span class="c1"># train_dataset = Loader(</span>
-<span class="c1">#     nvt.Dataset(TRAIN_PATHS),</span>
-<span class="c1">#     batch_size=BATCH_SIZE,</span>
-<span class="c1"># )</span>
 
-<span class="c1"># train_loader = DLDataLoader(</span>
-<span class="c1">#     train_dataset, batch_size=None, collate_fn=lambda x: x, pin_memory=False, num_workers=0</span>
-<span class="c1"># )</span>
+<span class="k">def</span> <span class="nf">process_batch</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">_</span><span class="p">):</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="p">{</span><span class="n">col</span><span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">if</span> <span class="n">col</span> <span class="o">!=</span> <span class="n">label_column</span><span class="p">}</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">label_column</span><span class="p">]</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
 
-<span class="c1"># valid_dataset = TorchAsyncItr(</span>
-<span class="c1">#     nvt.Dataset(VALID_PATHS),</span>
-<span class="c1">#     batch_size=BATCH_SIZE,</span>
-<span class="c1">#     cats=CATEGORICAL_COLUMNS + CATEGORICAL_MH_COLUMNS,</span>
-<span class="c1">#     conts=NUMERIC_COLUMNS,</span>
-<span class="c1">#     labels=[&quot;rating&quot;],</span>
-<span class="c1"># )</span>
-<span class="c1"># valid_loader = DLDataLoader(</span>
-<span class="c1">#     valid_dataset, batch_size=None, collate_fn=lambda x: x, pin_memory=False, num_workers=0</span>
-<span class="c1"># )</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># TensorItrDataset returns a single batch of x_cat, x_cont, y.</span>
 
-<span class="n">train_dataset</span> <span class="o">=</span> <span class="n">TorchAsyncItr</span><span class="p">(</span>
+<span class="n">train_loader</span> <span class="o">=</span> <span class="n">Loader</span><span class="p">(</span>
     <span class="n">nvt</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">TRAIN_PATHS</span><span class="p">),</span>
     <span class="n">batch_size</span><span class="o">=</span><span class="n">BATCH_SIZE</span><span class="p">,</span>
-    <span class="n">cats</span><span class="o">=</span><span class="n">CATEGORICAL_COLUMNS</span> <span class="o">+</span> <span class="n">CATEGORICAL_MH_COLUMNS</span><span class="p">,</span>
-    <span class="n">conts</span><span class="o">=</span><span class="n">NUMERIC_COLUMNS</span><span class="p">,</span>
-    <span class="n">labels</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;rating&quot;</span><span class="p">],</span>
-<span class="p">)</span>
-<span class="n">train_loader</span> <span class="o">=</span> <span class="n">DLDataLoader</span><span class="p">(</span>
-    <span class="n">train_dataset</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">collate_fn</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">,</span> <span class="n">pin_memory</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="mi">0</span>
-<span class="p">)</span>
+<span class="p">)</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">process_batch</span><span class="p">)</span>
 
-<span class="n">valid_dataset</span> <span class="o">=</span> <span class="n">TorchAsyncItr</span><span class="p">(</span>
+
+
+<span class="n">valid_loader</span> <span class="o">=</span> <span class="n">Loader</span><span class="p">(</span>
     <span class="n">nvt</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">VALID_PATHS</span><span class="p">),</span>
     <span class="n">batch_size</span><span class="o">=</span><span class="n">BATCH_SIZE</span><span class="p">,</span>
-    <span class="n">cats</span><span class="o">=</span><span class="n">CATEGORICAL_COLUMNS</span> <span class="o">+</span> <span class="n">CATEGORICAL_MH_COLUMNS</span><span class="p">,</span>
-    <span class="n">conts</span><span class="o">=</span><span class="n">NUMERIC_COLUMNS</span><span class="p">,</span>
-    <span class="n">labels</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;rating&quot;</span><span class="p">],</span>
-<span class="p">)</span>
-<span class="n">valid_loader</span> <span class="o">=</span> <span class="n">DLDataLoader</span><span class="p">(</span>
-    <span class="n">valid_dataset</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">collate_fn</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">,</span> <span class="n">pin_memory</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="mi">0</span>
-<span class="p">)</span>
+<span class="p">)</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">process_batch</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 </div>
 <p>Let’s generate a batch and take a look on the input features.<br><br>
-The single-hot categorical features (<code class="docutils literal notranslate"><span class="pre">userId</span></code> and <code class="docutils literal notranslate"><span class="pre">movieId</span></code>) have a shape of <code class="docutils literal notranslate"><span class="pre">(32768,</span> <span class="pre">1)</span></code>, which is the batch size (as usually). For the multi-hot categorical feature <code class="docutils literal notranslate"><span class="pre">genres</span></code>, we receive two Tensors <code class="docutils literal notranslate"><span class="pre">genres__values</span></code> and <code class="docutils literal notranslate"><span class="pre">genres__nnzs</span></code>.<br><br></p>
+The single-hot categorical features (<code class="docutils literal notranslate"><span class="pre">userId</span></code> and <code class="docutils literal notranslate"><span class="pre">movieId</span></code>) have a shape of <code class="docutils literal notranslate"><span class="pre">(32768,</span> <span class="pre">1)</span></code>, which is the batch size (as usually).</p>
+<p>For the multi-hot categorical feature <code class="docutils literal notranslate"><span class="pre">genres</span></code>, we receive a tuple of two Tensors. The first tensor are the actual data, containing the genre IDs. Note that the Tensor has more values than the batch_size. The reason is that one datapoint in the batch can contain more than one genre (multi-hot).</p>
+<p>The second tensor is a supporting Tensor, describing how many genres are associated with each datapoint in the batch.</p>
+<p>For example,</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">values</span></code> are the actual data, containing the genre IDs. Note that the Tensor has more values than the batch_size. The reason is, that one datapoint in the batch can contain more than one genre (multi-hot).<br></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">nnzs</span></code> are a supporting Tensor, describing how many genres are associated with each datapoint in the batch.<br><br>
-For example,</p></li>
-<li><p>if the first two values in <code class="docutils literal notranslate"><span class="pre">nnzs</span></code> is <code class="docutils literal notranslate"><span class="pre">0</span></code>, <code class="docutils literal notranslate"><span class="pre">2</span></code>, then the first 2 values (0, 1) in <code class="docutils literal notranslate"><span class="pre">values</span></code> are associated with the first datapoint in the batch (movieId/userId).<br></p></li>
-<li><p>if the next value in <code class="docutils literal notranslate"><span class="pre">nnzs</span></code> is <code class="docutils literal notranslate"><span class="pre">6</span></code>, then the 3rd, 4th and 5th value in <code class="docutils literal notranslate"><span class="pre">values</span></code> are associated with the second datapoint in the batch (continuing after the previous value stopped).<br></p></li>
-<li><p>if the third value in <code class="docutils literal notranslate"><span class="pre">nnzs</span></code> is <code class="docutils literal notranslate"><span class="pre">7</span></code>, then the 6th value in <code class="docutils literal notranslate"><span class="pre">values</span></code> are associated with the third datapoint in the batch.</p></li>
+<li><p>if the first two values in the second tensor are <code class="docutils literal notranslate"><span class="pre">0</span></code>, <code class="docutils literal notranslate"><span class="pre">2</span></code>, then the first 2 values (0, 1) in the first tensor are associated with the first datapoint in the batch (movieId/userId).</p></li>
+<li><p>if the next value in the second tensor is <code class="docutils literal notranslate"><span class="pre">6</span></code>, then the 3rd, 4th and 5th value in the first tensor are associated with the second datapoint in the batch (continuing after the previous value stopped).</p></li>
+<li><p>if the third value in the second tensor is <code class="docutils literal notranslate"><span class="pre">7</span></code>, then the 6th value in the first tensor is associated with the third datapoint in the batch.</p></li>
 <li><p>and so on</p></li>
 </ul>
 <div class="cell docutils container">
@@ -297,292 +272,34 @@ For example,</p></li>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>({&#39;genres&#39;: (tensor([ 2,  3,  4,  ...,  1, 16,  4], device=&#39;cuda:0&#39;),
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>({&#39;genres&#39;: (tensor([ 1, 11,  4,  ..., 11,  8,  4], device=&#39;cuda:0&#39;),
    tensor([[    0],
-           [    1],
            [    3],
+           [    6],
            ...,
-           [88629],
-           [88630],
-           [88634]], device=&#39;cuda:0&#39;, dtype=torch.int32)),
-  &#39;userId&#39;: tensor([[101587],
-          [   227],
-          [  2441],
+           [88688],
+           [88691],
+           [88693]], device=&#39;cuda:0&#39;, dtype=torch.int32)),
+  &#39;userId&#39;: tensor([[ 31056],
+          [  7087],
+          [  1696],
           ...,
-          [ 40914],
-          [ 23715],
-          [112017]], device=&#39;cuda:0&#39;),
-  &#39;movieId&#39;: tensor([[ 662],
-          [ 243],
-          [2930],
+          [ 54140],
+          [ 40743],
+          [120070]], device=&#39;cuda:0&#39;),
+  &#39;movieId&#39;: tensor([[ 285],
+          [  87],
+          [4594],
           ...,
-          [ 862],
-          [  10],
-          [5302]], device=&#39;cuda:0&#39;)},
- tensor([0., 1., 0.,  ..., 1., 0., 0.], device=&#39;cuda:0&#39;))
+          [1928],
+          [1313],
+          [ 747]], device=&#39;cuda:0&#39;)},
+ tensor([1., 1., 0.,  ..., 0., 1., 1.], device=&#39;cuda:0&#39;))
 </pre></div>
 </div>
 </div>
 </div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">del</span> <span class="n">train_dataset</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ds</span> <span class="o">=</span> <span class="n">nvt</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">TRAIN_PATHS</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ds</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output text_html"><div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>userId</th>
-      <th>movieId</th>
-      <th>genres</th>
-      <th>rating</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>101587</td>
-      <td>662</td>
-      <td>[2]</td>
-      <td>0.0</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>227</td>
-      <td>243</td>
-      <td>[3, 4]</td>
-      <td>1.0</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>2441</td>
-      <td>2930</td>
-      <td>[1, 16, 6]</td>
-      <td>0.0</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>101761</td>
-      <td>578</td>
-      <td>[1, 6]</td>
-      <td>1.0</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>84264</td>
-      <td>181</td>
-      <td>[1, 7]</td>
-      <td>0.0</td>
-    </tr>
-    <tr>
-      <th>...</th>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-      <td>...</td>
-    </tr>
-    <tr>
-      <th>20000071</th>
-      <td>3125</td>
-      <td>320</td>
-      <td>[3, 5, 1, 7, 4]</td>
-      <td>1.0</td>
-    </tr>
-    <tr>
-      <th>20000072</th>
-      <td>28915</td>
-      <td>57</td>
-      <td>[13, 10, 9, 16, 6, 15]</td>
-      <td>1.0</td>
-    </tr>
-    <tr>
-      <th>20000073</th>
-      <td>45526</td>
-      <td>1536</td>
-      <td>[1, 6]</td>
-      <td>1.0</td>
-    </tr>
-    <tr>
-      <th>20000074</th>
-      <td>143912</td>
-      <td>5379</td>
-      <td>[12, 4]</td>
-      <td>1.0</td>
-    </tr>
-    <tr>
-      <th>20000075</th>
-      <td>105122</td>
-      <td>863</td>
-      <td>[2, 1]</td>
-      <td>1.0</td>
-    </tr>
-  </tbody>
-</table>
-<p>20000076 rows × 4 columns</p>
-</div></div></div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ds</span><span class="o">.</span><span class="n">npartitions</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>1
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">train</span> <span class="o">=</span> <span class="n">Loader</span><span class="p">(</span><span class="n">nvt</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">TRAIN_PATHS</span><span class="p">),</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">2</span><span class="o">**</span><span class="mi">16</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">train</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output traceback highlight-ipythontb notranslate"><div class="highlight"><pre><span></span><span class="gt">---------------------------------------------------------------------------</span>
-<span class="ne">AttributeError</span><span class="g g-Whitespace">                            </span>Traceback (most recent call last)
-<span class="n">Cell</span> <span class="n">In</span> <span class="p">[</span><span class="mi">37</span><span class="p">],</span> <span class="n">line</span> <span class="mi">1</span>
-<span class="ne">----&gt; </span><span class="mi">1</span> <span class="n">train</span><span class="o">.</span><span class="n">map</span>
-
-<span class="ne">AttributeError</span>: &#39;Loader&#39; object has no attribute &#39;map&#39;
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># !pip install -U merlin-dataloader</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">batch</span> <span class="ow">in</span> <span class="n">train</span><span class="p">:</span> <span class="k">break</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">batch</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>({&#39;genres&#39;: (tensor([ 2,  3,  4,  ...,  7,  1, 14], device=&#39;cuda:0&#39;),
-   tensor([[     0],
-           [     1],
-           [     3],
-           ...,
-           [177340],
-           [177343],
-           [177345]], device=&#39;cuda:0&#39;, dtype=torch.int32)),
-  &#39;userId&#39;: tensor([[101587],
-          [   227],
-          [  2441],
-          ...,
-          [  2972],
-          [   403],
-          [ 24978]], device=&#39;cuda:0&#39;),
-  &#39;movieId&#39;: tensor([[ 662],
-          [ 243],
-          [2930],
-          ...,
-          [2631],
-          [2814],
-          [   8]], device=&#39;cuda:0&#39;),
-  &#39;rating&#39;: tensor([0., 1., 0.,  ..., 0., 1., 1.], device=&#39;cuda:0&#39;)},
- None)
-</pre></div>
-</div>
-</div>
-</div>
-<p><code class="docutils literal notranslate"><span class="pre">X_cat_multihot</span></code> is a tuple of two Tensors. For the multi-hot categorical feature <code class="docutils literal notranslate"><span class="pre">genres</span></code>, we receive two Tensors <code class="docutils literal notranslate"><span class="pre">values</span></code> and <code class="docutils literal notranslate"><span class="pre">nnzs</span></code>.</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">X_cat_multihot</span> <span class="o">=</span> <span class="n">batch</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;genres&#39;</span><span class="p">]</span>
-<span class="n">X_cat_multihot</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(tensor([ 2,  3,  4,  ...,  7,  1, 14], device=&#39;cuda:0&#39;),
- tensor([[     0],
-         [     1],
-         [     3],
-         ...,
-         [177340],
-         [177343],
-         [177345]], device=&#39;cuda:0&#39;, dtype=torch.int32))
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">X_cat_multihot</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>torch.Size([177347])
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">X_cat_multihot</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>torch.Size([65536, 1])
-</pre></div>
-</div>
-</div>
-</div>
-<p>As each datapoint can have a different number of genres, it is more efficient to represent the genres as two flat tensors: One with the actual values (<code class="docutils literal notranslate"><span class="pre">values</span></code>) and one with the length for each datapoint (<code class="docutils literal notranslate"><span class="pre">nnzs</span></code>).</p>
+<p>As each datapoint can have a different number of genres, it is more efficient to represent the genres as two flat tensors: One with the actual values (the first tensor) and one with the length for each datapoint (the second tensor).</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">del</span> <span class="n">batch</span>
@@ -591,7 +308,7 @@ For example,</p></li>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>56
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>68
 </pre></div>
 </div>
 </div>
@@ -629,7 +346,7 @@ For example,</p></li>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>({&#39;userId&#39;: (162542, 512), &#39;movieId&#39;: (56635, 512)}, {&#39;genres&#39;: (21, 16)})
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>({&#39;userId&#39;: (162542, 512), &#39;movieId&#39;: (56615, 512)}, {&#39;genres&#39;: (21, 16)})
 </pre></div>
 </div>
 </div>
@@ -652,7 +369,7 @@ For example,</p></li>
   (initial_cat_layer): ConcatenatedEmbeddings(
     (embedding_layers): ModuleList(
       (0): Embedding(162542, 512)
-      (1): Embedding(56635, 512)
+      (1): Embedding(56615, 512)
     )
     (dropout): Dropout(p=0.0, inplace=False)
   )
@@ -697,13 +414,6 @@ For example,</p></li>
 </div>
 </div>
 </div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">train_loader</span> <span class="o">=</span> <span class="n">train</span>
-</pre></div>
-</div>
-</div>
-</div>
 <p>We use the <code class="docutils literal notranslate"><span class="pre">process_epoch</span></code> function to train and validate our model. It iterates over the dataset and calculates as usually the loss and optimizer step.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -720,293 +430,15 @@ For example,</p></li>
                                           <span class="n">model</span><span class="p">,</span>
                                           <span class="n">train</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Epoch </span><span class="si">{</span><span class="n">epoch</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2">. Train loss: </span><span class="si">{</span><span class="n">train_loss</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">. Valid loss: </span><span class="si">{</span><span class="n">valid_loss</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
-<span class="n">t_final</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span>
-<span class="n">total_rows</span> <span class="o">=</span> <span class="n">train_dataset</span><span class="o">.</span><span class="n">num_rows_processed</span> <span class="o">+</span> <span class="n">valid_dataset</span><span class="o">.</span><span class="n">num_rows_processed</span>
-<span class="nb">print</span><span class="p">(</span>
-    <span class="sa">f</span><span class="s2">&quot;run_time: </span><span class="si">{</span><span class="n">t_final</span><span class="si">}</span><span class="s2"> - rows: </span><span class="si">{</span><span class="n">total_rows</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">EPOCHS</span><span class="si">}</span><span class="s2"> - epochs: </span><span class="si">{</span><span class="n">EPOCHS</span><span class="si">}</span><span class="s2"> - dl_thru: </span><span class="si">{</span><span class="p">(</span><span class="n">total_rows</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">EPOCHS</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">t_final</span><span class="si">}</span><span class="s2">&quot;</span>
-<span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output traceback highlight-ipythontb notranslate"><div class="highlight"><pre><span></span><span class="gt">---------------------------------------------------------------------------</span>
-<span class="ne">AttributeError</span><span class="g g-Whitespace">                            </span>Traceback (most recent call last)
-<span class="n">File</span> <span class="o">&lt;</span><span class="n">timed</span> <span class="n">exec</span><span class="o">&gt;</span><span class="p">:</span><span class="mi">5</span>
-
-<span class="nn">File /usr/local/lib/python3.8/dist-packages/nvtabular/framework_utils/torch/utils.py:101,</span> in <span class="ni">process_epoch</span><span class="nt">(dataloader, model, train, optimizer, loss_func, transform, amp, device)</span>
-<span class="g g-Whitespace">     </span><span class="mi">99</span>     <span class="n">x_cont</span> <span class="o">=</span> <span class="n">x_cont</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
-<span class="g g-Whitespace">    </span><span class="mi">100</span>     <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
-<span class="ne">--&gt; </span><span class="mi">101</span> <span class="n">y_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">detach</span><span class="p">())</span>
-<span class="g g-Whitespace">    </span><span class="mi">102</span> <span class="c1"># maybe autocast goes here?</span>
-<span class="g g-Whitespace">    </span><span class="mi">103</span> <span class="k">if</span> <span class="n">amp</span><span class="p">:</span>
-
-<span class="ne">AttributeError</span>: &#39;NoneType&#39; object has no attribute &#39;detach&#39;
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">debug</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&gt; <span class=" -Color -Color-Green">/usr/local/lib/python3.8/dist-packages/nvtabular/framework_utils/torch/utils.py</span>(101)<span class=" -Color -Color-Cyan">process_epoch</span><span class=" -Color -Color-Blue">()</span>
-<span class=" -Color -Color-Green">     99 </span><span class=" -Color -Color-Red">                </span>x_cont <span class=" -Color -Color-Blue">=</span> x_cont<span class=" -Color -Color-Blue">.</span>to<span class=" -Color -Color-Blue">(</span>device<span class=" -Color -Color-Blue">)</span>
-<span class=" -Color -Color-Green">    100 </span><span class=" -Color -Color-Red">                </span>y <span class=" -Color -Color-Blue">=</span> y<span class=" -Color -Color-Blue">.</span>to<span class=" -Color -Color-Blue">(</span>device<span class=" -Color -Color-Blue">)</span>
-<span class=" -Color -Color-Green">--&gt; 101 </span><span class=" -Color -Color-Red">            </span>y_list<span class=" -Color -Color-Blue">.</span>append<span class=" -Color -Color-Blue">(</span>y<span class=" -Color -Color-Blue">.</span>detach<span class=" -Color -Color-Blue">())</span>
-<span class=" -Color -Color-Green">    102 </span><span class=" -Color -Color-Red">            # maybe autocast goes here?</span>
-<span class=" -Color -Color-Green">    103 </span><span class=" -Color -Color-Red">            </span><span class=" -Color -Color-Green">if</span> amp<span class=" -Color -Color-Blue">:</span>
-
-ipdb&gt; ll
-<span class=" -Color -Color-Bold -Color-Bold-Green">     59 </span>def process_epoch(
-<span class=" -Color -Color-Bold -Color-Bold-Green">     60 </span>    dataloader<span class=" -Color -Color-Blue">,</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">     61 </span>    model<span class=" -Color -Color-Blue">,</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">     62 </span>    train<span class=" -Color -Color-Blue">=</span><span class=" -Color -Color-Green">False</span><span class=" -Color -Color-Blue">,</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">     63 </span>    optimizer<span class=" -Color -Color-Blue">=</span><span class=" -Color -Color-Green">None</span><span class=" -Color -Color-Blue">,</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">     64 </span>    loss_func<span class=" -Color -Color-Blue">=</span>torch<span class=" -Color -Color-Blue">.</span>nn<span class=" -Color -Color-Blue">.</span>MSELoss<span class=" -Color -Color-Blue">(),</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">     65 </span>    transform<span class=" -Color -Color-Blue">=</span>DictTransform<span class=" -Color -Color-Blue">,</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">     66 </span>    amp<span class=" -Color -Color-Blue">=</span><span class=" -Color -Color-Green">True</span><span class=" -Color -Color-Blue">,</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">     67 </span>    device<span class=" -Color -Color-Blue">=</span><span class=" -Color -Color-Green">None</span><span class=" -Color -Color-Blue">,</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">     68 </span>):
-<span class=" -Color -Color-Bold -Color-Bold-Green">     69 </span>    &quot;&quot;&quot;
-<span class=" -Color -Color-Bold -Color-Bold-Green">     70 </span>    The controlling function that loads data supplied via a dataloader to a model<span class=" -Color -Color-Blue">.</span> Can be redefined
-<span class=" -Color -Color-Bold -Color-Bold-Green">     71 </span>    based on parameters<span class=" -Color -Color-Blue">.</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">     72 </span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">     73 </span>    Parameters
-<span class=" -Color -Color-Bold -Color-Bold-Green">     74 </span>    <span class=" -Color -Color-Blue">-----------</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">     75 </span>    dataloader <span class=" -Color -Color-Blue">:</span> iterator
-<span class=" -Color -Color-Bold -Color-Bold-Green">     76 </span>        Iterator that contains the dataset to be submitted to the model<span class=" -Color -Color-Blue">.</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">     77 </span>    model <span class=" -Color -Color-Blue">:</span> torch<span class=" -Color -Color-Blue">.</span>nn<span class=" -Color -Color-Blue">.</span>Module
-<span class=" -Color -Color-Bold -Color-Bold-Green">     78 </span>        Pytorch model to run data through<span class=" -Color -Color-Blue">.</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">     79 </span>    train <span class=" -Color -Color-Blue">:</span> bool
-<span class=" -Color -Color-Bold -Color-Bold-Green">     80 </span>        Indicate whether dataloader contains training set<span class=" -Color -Color-Blue">.</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">     81 </span>    optimizer <span class=" -Color -Color-Blue">:</span> object
-<span class=" -Color -Color-Bold -Color-Bold-Green">     82 </span>        Optimizer to run <span class=" -Color -Color-Green">in</span> conjunction <span class=" -Color -Color-Green">with</span> model<span class=" -Color -Color-Blue">.</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">     83 </span>    loss_func <span class=" -Color -Color-Blue">:</span> function
-<span class=" -Color -Color-Bold -Color-Bold-Green">     84 </span>        Loss function to use<span class=" -Color -Color-Blue">,</span> default <span class=" -Color -Color-Green">is</span> MSELoss<span class=" -Color -Color-Blue">.</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">     85 </span>    &quot;&quot;&quot;
-<span class=" -Color -Color-Bold -Color-Bold-Green">     86 </span>    <span class=" -Color -Color-Green">if</span> isinstance<span class=" -Color -Color-Blue">(</span>dataloader<span class=" -Color -Color-Blue">,</span> torch<span class=" -Color -Color-Blue">.</span>utils<span class=" -Color -Color-Blue">.</span>data<span class=" -Color -Color-Blue">.</span>DataLoader<span class=" -Color -Color-Blue">):</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">     87 </span>        target <span class=" -Color -Color-Blue">=</span> dataloader<span class=" -Color -Color-Blue">.</span>dataset
-<span class=" -Color -Color-Bold -Color-Bold-Green">     88 </span>    <span class=" -Color -Color-Green">else</span><span class=" -Color -Color-Blue">:</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">     89 </span>        target <span class=" -Color -Color-Blue">=</span> dataloader
-<span class=" -Color -Color-Bold -Color-Bold-Green">     90 </span>    transform <span class=" -Color -Color-Blue">=</span> transform<span class=" -Color -Color-Blue">(</span>target<span class=" -Color -Color-Blue">).</span>transform
-<span class=" -Color -Color-Bold -Color-Bold-Green">     91 </span>    model<span class=" -Color -Color-Blue">.</span>train<span class=" -Color -Color-Blue">(</span>mode<span class=" -Color -Color-Blue">=</span>train<span class=" -Color -Color-Blue">)</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">     92 </span>    idx <span class=" -Color -Color-Blue">=</span> <span class=" -Color -Color-Cyan">0</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">     93 </span>    <span class=" -Color -Color-Green">with</span> torch<span class=" -Color -Color-Blue">.</span>set_grad_enabled<span class=" -Color -Color-Blue">(</span>train<span class=" -Color -Color-Blue">):</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">     94 </span>        y_list<span class=" -Color -Color-Blue">,</span> y_pred_list <span class=" -Color -Color-Blue">=</span> <span class=" -Color -Color-Blue">[],</span> <span class=" -Color -Color-Blue">[]</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">     95 </span>        <span class=" -Color -Color-Green">for</span> idx<span class=" -Color -Color-Blue">,</span> batch <span class=" -Color -Color-Green">in</span> enumerate<span class=" -Color -Color-Blue">(</span>iter<span class=" -Color -Color-Blue">(</span>dataloader<span class=" -Color -Color-Blue">)):</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">     96 </span>            x_cat<span class=" -Color -Color-Blue">,</span> x_cont<span class=" -Color -Color-Blue">,</span> y <span class=" -Color -Color-Blue">=</span> transform<span class=" -Color -Color-Blue">(</span>batch<span class=" -Color -Color-Blue">)</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">     97 </span>            <span class=" -Color -Color-Green">if</span> device<span class=" -Color -Color-Blue">:</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">     98 </span>                x_cat <span class=" -Color -Color-Blue">=</span> x_cat<span class=" -Color -Color-Blue">.</span>to<span class=" -Color -Color-Blue">(</span>device<span class=" -Color -Color-Blue">)</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">     99 </span>                x_cont <span class=" -Color -Color-Blue">=</span> x_cont<span class=" -Color -Color-Blue">.</span>to<span class=" -Color -Color-Blue">(</span>device<span class=" -Color -Color-Blue">)</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">    100 </span>                y <span class=" -Color -Color-Blue">=</span> y<span class=" -Color -Color-Blue">.</span>to<span class=" -Color -Color-Blue">(</span>device<span class=" -Color -Color-Blue">)</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">    101 </span>            y_list<span class=" -Color -Color-Blue">.</span>append<span class=" -Color -Color-Blue">(</span>y<span class=" -Color -Color-Blue">.</span>detach<span class=" -Color -Color-Blue">())</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">    102 </span>            <span class=" -Color -Color-Red"># maybe autocast goes here?</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">    103 </span>            <span class=" -Color -Color-Green">if</span> amp<span class=" -Color -Color-Blue">:</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">    104 </span>                <span class=" -Color -Color-Green">with</span> torch<span class=" -Color -Color-Blue">.</span>cuda<span class=" -Color -Color-Blue">.</span>amp<span class=" -Color -Color-Blue">.</span>autocast<span class=" -Color -Color-Blue">():</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">    105 </span>                    y_pred <span class=" -Color -Color-Blue">=</span> model<span class=" -Color -Color-Blue">(</span>x_cat<span class=" -Color -Color-Blue">,</span> x_cont<span class=" -Color -Color-Blue">)</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">    106 </span>                    y_pred_list<span class=" -Color -Color-Blue">.</span>append<span class=" -Color -Color-Blue">(</span>y_pred<span class=" -Color -Color-Blue">.</span>detach<span class=" -Color -Color-Blue">())</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">    107 </span>                    loss <span class=" -Color -Color-Blue">=</span> loss_func<span class=" -Color -Color-Blue">(</span>y_pred<span class=" -Color -Color-Blue">,</span> y<span class=" -Color -Color-Blue">)</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">    108 </span>            <span class=" -Color -Color-Green">else</span><span class=" -Color -Color-Blue">:</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">    109 </span>                y_pred <span class=" -Color -Color-Blue">=</span> model<span class=" -Color -Color-Blue">(</span>x_cat<span class=" -Color -Color-Blue">,</span> x_cont<span class=" -Color -Color-Blue">)</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">    110 </span>                y_pred_list<span class=" -Color -Color-Blue">.</span>append<span class=" -Color -Color-Blue">(</span>y_pred<span class=" -Color -Color-Blue">.</span>detach<span class=" -Color -Color-Blue">())</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">    111 </span>                loss <span class=" -Color -Color-Blue">=</span> loss_func<span class=" -Color -Color-Blue">(</span>y_pred<span class=" -Color -Color-Blue">,</span> y<span class=" -Color -Color-Blue">)</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">    112 </span>            <span class=" -Color -Color-Green">if</span> train<span class=" -Color -Color-Blue">:</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">    113 </span>                optimizer<span class=" -Color -Color-Blue">.</span>zero_grad<span class=" -Color -Color-Blue">()</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">    114 </span>                loss<span class=" -Color -Color-Blue">.</span>backward<span class=" -Color -Color-Blue">()</span>
-<span class=" -Color -Color-Green">--&gt; 115 </span><span class=" -Color -Color-Red">                </span>optimizer<span class=" -Color -Color-Blue">.</span>step<span class=" -Color -Color-Blue">()</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">    116 </span>    print<span class=" -Color -Color-Blue">(f&quot;Total batches: {idx}&quot;)</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">    117 </span>    y <span class=" -Color -Color-Blue">=</span> torch<span class=" -Color -Color-Blue">.</span>cat<span class=" -Color -Color-Blue">(</span>y_list<span class=" -Color -Color-Blue">)</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">    118 </span>    y_pred <span class=" -Color -Color-Blue">=</span> torch<span class=" -Color -Color-Blue">.</span>cat<span class=" -Color -Color-Blue">(</span>y_pred_list<span class=" -Color -Color-Blue">)</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">    119 </span>    epoch_loss <span class=" -Color -Color-Blue">=</span> loss_func<span class=" -Color -Color-Blue">(</span>y_pred<span class=" -Color -Color-Blue">,</span> y<span class=" -Color -Color-Blue">).</span>item<span class=" -Color -Color-Blue">()</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">    120 </span>    <span class=" -Color -Color-Green">return</span> epoch_loss<span class=" -Color -Color-Blue">,</span> y_pred<span class=" -Color -Color-Blue">,</span> y
-</pre></div>
-</div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>ipdb&gt; a
-dataloader = &lt;merlin.dataloader.torch.Loader object at 0x7f61103b3ee0&gt;
-model = Model(
-  (initial_cat_layer): ConcatenatedEmbeddings(
-    (embedding_layers): ModuleList(
-      (0): Embedding(162542, 512)
-      (1): Embedding(56635, 512)
-    )
-    (dropout): Dropout(p=0.0, inplace=False)
-  )
-  (mh_cat_layer): MultiHotEmbeddings(
-    (embedding_layers): ModuleList(
-      (0): EmbeddingBag(21, 16, mode=sum)
-    )
-    (dropout): Dropout(p=0.0, inplace=False)
-  )
-  (initial_cont_layer): BatchNorm1d(0, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-  (layers): ModuleList(
-    (0): Sequential(
-      (0): Linear(in_features=1040, out_features=128, bias=True)
-      (1): ReLU(inplace=True)
-      (2): BatchNorm1d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-      (3): Dropout(p=0.0, inplace=False)
-    )
-    (1): Sequential(
-      (0): Linear(in_features=128, out_features=128, bias=True)
-      (1): ReLU(inplace=True)
-      (2): BatchNorm1d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-      (3): Dropout(p=0.0, inplace=False)
-    )
-    (2): Sequential(
-      (0): Linear(in_features=128, out_features=128, bias=True)
-      (1): ReLU(inplace=True)
-      (2): BatchNorm1d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-      (3): Dropout(p=0.0, inplace=False)
-    )
-  )
-  (output_layer): Linear(in_features=128, out_features=1, bias=True)
-)
-train = True
-optimizer = Adam (
-Parameter Group 0
-    amsgrad: False
-    betas: (0.9, 0.999)
-    capturable: False
-    eps: 1e-08
-    foreach: None
-    lr: 0.01
-    maximize: False
-    weight_decay: 0
-)
-loss_func = MSELoss()
-transform = &lt;bound method DictTransform.transform of &lt;nvtabular.framework_utils.torch.utils.DictTransform object at 0x7f61103b3520&gt;&gt;
-amp = True
-device = None
-ipdb&gt; DictTransform
-&lt;class &#39;nvtabular.framework_utils.torch.utils.DictTransform&#39;&gt;
-ipdb&gt; train.labels
-*** AttributeError: &#39;bool&#39; object has no attribute &#39;labels&#39;
-ipdb&gt; train_loader.labels
-*** NameError: name &#39;train_loader&#39; is not defined
-ipdb&gt; exit
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">debug</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&gt; <span class=" -Color -Color-Green">/usr/local/lib/python3.8/dist-packages/nvtabular/framework_utils/torch/utils.py</span>(101)<span class=" -Color -Color-Cyan">process_epoch</span><span class=" -Color -Color-Blue">()</span>
-<span class=" -Color -Color-Green">     99 </span><span class=" -Color -Color-Red">                </span>x_cont <span class=" -Color -Color-Blue">=</span> x_cont<span class=" -Color -Color-Blue">.</span>to<span class=" -Color -Color-Blue">(</span>device<span class=" -Color -Color-Blue">)</span>
-<span class=" -Color -Color-Green">    100 </span><span class=" -Color -Color-Red">                </span>y <span class=" -Color -Color-Blue">=</span> y<span class=" -Color -Color-Blue">.</span>to<span class=" -Color -Color-Blue">(</span>device<span class=" -Color -Color-Blue">)</span>
-<span class=" -Color -Color-Green">--&gt; 101 </span><span class=" -Color -Color-Red">            </span>y_list<span class=" -Color -Color-Blue">.</span>append<span class=" -Color -Color-Blue">(</span>y<span class=" -Color -Color-Blue">.</span>detach<span class=" -Color -Color-Blue">())</span>
-<span class=" -Color -Color-Green">    102 </span><span class=" -Color -Color-Red">            # maybe autocast goes here?</span>
-<span class=" -Color -Color-Green">    103 </span><span class=" -Color -Color-Red">            </span><span class=" -Color -Color-Green">if</span> amp<span class=" -Color -Color-Blue">:</span>
-
-ipdb&gt; y_list
-[]
-ipdb&gt; y
-ipdb&gt; ll
-<span class=" -Color -Color-Bold -Color-Bold-Green">     59 </span>def process_epoch(
-<span class=" -Color -Color-Bold -Color-Bold-Green">     60 </span>    dataloader<span class=" -Color -Color-Blue">,</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">     61 </span>    model<span class=" -Color -Color-Blue">,</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">     62 </span>    train<span class=" -Color -Color-Blue">=</span><span class=" -Color -Color-Green">False</span><span class=" -Color -Color-Blue">,</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">     63 </span>    optimizer<span class=" -Color -Color-Blue">=</span><span class=" -Color -Color-Green">None</span><span class=" -Color -Color-Blue">,</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">     64 </span>    loss_func<span class=" -Color -Color-Blue">=</span>torch<span class=" -Color -Color-Blue">.</span>nn<span class=" -Color -Color-Blue">.</span>MSELoss<span class=" -Color -Color-Blue">(),</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">     65 </span>    transform<span class=" -Color -Color-Blue">=</span>DictTransform<span class=" -Color -Color-Blue">,</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">     66 </span>    amp<span class=" -Color -Color-Blue">=</span><span class=" -Color -Color-Green">True</span><span class=" -Color -Color-Blue">,</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">     67 </span>    device<span class=" -Color -Color-Blue">=</span><span class=" -Color -Color-Green">None</span><span class=" -Color -Color-Blue">,</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">     68 </span>):
-<span class=" -Color -Color-Bold -Color-Bold-Green">     69 </span>    &quot;&quot;&quot;
-<span class=" -Color -Color-Bold -Color-Bold-Green">     70 </span>    The controlling function that loads data supplied via a dataloader to a model<span class=" -Color -Color-Blue">.</span> Can be redefined
-<span class=" -Color -Color-Bold -Color-Bold-Green">     71 </span>    based on parameters<span class=" -Color -Color-Blue">.</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">     72 </span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">     73 </span>    Parameters
-<span class=" -Color -Color-Bold -Color-Bold-Green">     74 </span>    <span class=" -Color -Color-Blue">-----------</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">     75 </span>    dataloader <span class=" -Color -Color-Blue">:</span> iterator
-<span class=" -Color -Color-Bold -Color-Bold-Green">     76 </span>        Iterator that contains the dataset to be submitted to the model<span class=" -Color -Color-Blue">.</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">     77 </span>    model <span class=" -Color -Color-Blue">:</span> torch<span class=" -Color -Color-Blue">.</span>nn<span class=" -Color -Color-Blue">.</span>Module
-<span class=" -Color -Color-Bold -Color-Bold-Green">     78 </span>        Pytorch model to run data through<span class=" -Color -Color-Blue">.</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">     79 </span>    train <span class=" -Color -Color-Blue">:</span> bool
-<span class=" -Color -Color-Bold -Color-Bold-Green">     80 </span>        Indicate whether dataloader contains training set<span class=" -Color -Color-Blue">.</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">     81 </span>    optimizer <span class=" -Color -Color-Blue">:</span> object
-<span class=" -Color -Color-Bold -Color-Bold-Green">     82 </span>        Optimizer to run <span class=" -Color -Color-Green">in</span> conjunction <span class=" -Color -Color-Green">with</span> model<span class=" -Color -Color-Blue">.</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">     83 </span>    loss_func <span class=" -Color -Color-Blue">:</span> function
-<span class=" -Color -Color-Bold -Color-Bold-Green">     84 </span>        Loss function to use<span class=" -Color -Color-Blue">,</span> default <span class=" -Color -Color-Green">is</span> MSELoss<span class=" -Color -Color-Blue">.</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">     85 </span>    &quot;&quot;&quot;
-<span class=" -Color -Color-Bold -Color-Bold-Green">     86 </span>    <span class=" -Color -Color-Green">if</span> isinstance<span class=" -Color -Color-Blue">(</span>dataloader<span class=" -Color -Color-Blue">,</span> torch<span class=" -Color -Color-Blue">.</span>utils<span class=" -Color -Color-Blue">.</span>data<span class=" -Color -Color-Blue">.</span>DataLoader<span class=" -Color -Color-Blue">):</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">     87 </span>        target <span class=" -Color -Color-Blue">=</span> dataloader<span class=" -Color -Color-Blue">.</span>dataset
-<span class=" -Color -Color-Bold -Color-Bold-Green">     88 </span>    <span class=" -Color -Color-Green">else</span><span class=" -Color -Color-Blue">:</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">     89 </span>        target <span class=" -Color -Color-Blue">=</span> dataloader
-<span class=" -Color -Color-Bold -Color-Bold-Green">     90 </span>    transform <span class=" -Color -Color-Blue">=</span> transform<span class=" -Color -Color-Blue">(</span>target<span class=" -Color -Color-Blue">).</span>transform
-<span class=" -Color -Color-Bold -Color-Bold-Green">     91 </span>    model<span class=" -Color -Color-Blue">.</span>train<span class=" -Color -Color-Blue">(</span>mode<span class=" -Color -Color-Blue">=</span>train<span class=" -Color -Color-Blue">)</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">     92 </span>    idx <span class=" -Color -Color-Blue">=</span> <span class=" -Color -Color-Cyan">0</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">     93 </span>    <span class=" -Color -Color-Green">with</span> torch<span class=" -Color -Color-Blue">.</span>set_grad_enabled<span class=" -Color -Color-Blue">(</span>train<span class=" -Color -Color-Blue">):</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">     94 </span>        y_list<span class=" -Color -Color-Blue">,</span> y_pred_list <span class=" -Color -Color-Blue">=</span> <span class=" -Color -Color-Blue">[],</span> <span class=" -Color -Color-Blue">[]</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">     95 </span>        <span class=" -Color -Color-Green">for</span> idx<span class=" -Color -Color-Blue">,</span> batch <span class=" -Color -Color-Green">in</span> enumerate<span class=" -Color -Color-Blue">(</span>iter<span class=" -Color -Color-Blue">(</span>dataloader<span class=" -Color -Color-Blue">)):</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">     96 </span>            x_cat<span class=" -Color -Color-Blue">,</span> x_cont<span class=" -Color -Color-Blue">,</span> y <span class=" -Color -Color-Blue">=</span> transform<span class=" -Color -Color-Blue">(</span>batch<span class=" -Color -Color-Blue">)</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">     97 </span>            <span class=" -Color -Color-Green">if</span> device<span class=" -Color -Color-Blue">:</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">     98 </span>                x_cat <span class=" -Color -Color-Blue">=</span> x_cat<span class=" -Color -Color-Blue">.</span>to<span class=" -Color -Color-Blue">(</span>device<span class=" -Color -Color-Blue">)</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">     99 </span>                x_cont <span class=" -Color -Color-Blue">=</span> x_cont<span class=" -Color -Color-Blue">.</span>to<span class=" -Color -Color-Blue">(</span>device<span class=" -Color -Color-Blue">)</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">    100 </span>                y <span class=" -Color -Color-Blue">=</span> y<span class=" -Color -Color-Blue">.</span>to<span class=" -Color -Color-Blue">(</span>device<span class=" -Color -Color-Blue">)</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">    101 </span>            y_list<span class=" -Color -Color-Blue">.</span>append<span class=" -Color -Color-Blue">(</span>y<span class=" -Color -Color-Blue">.</span>detach<span class=" -Color -Color-Blue">())</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">    102 </span>            <span class=" -Color -Color-Red"># maybe autocast goes here?</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">    103 </span>            <span class=" -Color -Color-Green">if</span> amp<span class=" -Color -Color-Blue">:</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">    104 </span>                <span class=" -Color -Color-Green">with</span> torch<span class=" -Color -Color-Blue">.</span>cuda<span class=" -Color -Color-Blue">.</span>amp<span class=" -Color -Color-Blue">.</span>autocast<span class=" -Color -Color-Blue">():</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">    105 </span>                    y_pred <span class=" -Color -Color-Blue">=</span> model<span class=" -Color -Color-Blue">(</span>x_cat<span class=" -Color -Color-Blue">,</span> x_cont<span class=" -Color -Color-Blue">)</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">    106 </span>                    y_pred_list<span class=" -Color -Color-Blue">.</span>append<span class=" -Color -Color-Blue">(</span>y_pred<span class=" -Color -Color-Blue">.</span>detach<span class=" -Color -Color-Blue">())</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">    107 </span>                    loss <span class=" -Color -Color-Blue">=</span> loss_func<span class=" -Color -Color-Blue">(</span>y_pred<span class=" -Color -Color-Blue">,</span> y<span class=" -Color -Color-Blue">)</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">    108 </span>            <span class=" -Color -Color-Green">else</span><span class=" -Color -Color-Blue">:</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">    109 </span>                y_pred <span class=" -Color -Color-Blue">=</span> model<span class=" -Color -Color-Blue">(</span>x_cat<span class=" -Color -Color-Blue">,</span> x_cont<span class=" -Color -Color-Blue">)</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">    110 </span>                y_pred_list<span class=" -Color -Color-Blue">.</span>append<span class=" -Color -Color-Blue">(</span>y_pred<span class=" -Color -Color-Blue">.</span>detach<span class=" -Color -Color-Blue">())</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">    111 </span>                loss <span class=" -Color -Color-Blue">=</span> loss_func<span class=" -Color -Color-Blue">(</span>y_pred<span class=" -Color -Color-Blue">,</span> y<span class=" -Color -Color-Blue">)</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">    112 </span>            <span class=" -Color -Color-Green">if</span> train<span class=" -Color -Color-Blue">:</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">    113 </span>                optimizer<span class=" -Color -Color-Blue">.</span>zero_grad<span class=" -Color -Color-Blue">()</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">    114 </span>                loss<span class=" -Color -Color-Blue">.</span>backward<span class=" -Color -Color-Blue">()</span>
-<span class=" -Color -Color-Green">--&gt; 115 </span><span class=" -Color -Color-Red">                </span>optimizer<span class=" -Color -Color-Blue">.</span>step<span class=" -Color -Color-Blue">()</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">    116 </span>    print<span class=" -Color -Color-Blue">(f&quot;Total batches: {idx}&quot;)</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">    117 </span>    y <span class=" -Color -Color-Blue">=</span> torch<span class=" -Color -Color-Blue">.</span>cat<span class=" -Color -Color-Blue">(</span>y_list<span class=" -Color -Color-Blue">)</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">    118 </span>    y_pred <span class=" -Color -Color-Blue">=</span> torch<span class=" -Color -Color-Blue">.</span>cat<span class=" -Color -Color-Blue">(</span>y_pred_list<span class=" -Color -Color-Blue">)</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">    119 </span>    epoch_loss <span class=" -Color -Color-Blue">=</span> loss_func<span class=" -Color -Color-Blue">(</span>y_pred<span class=" -Color -Color-Blue">,</span> y<span class=" -Color -Color-Blue">).</span>item<span class=" -Color -Color-Blue">()</span>
-<span class=" -Color -Color-Bold -Color-Bold-Green">    120 </span>    <span class=" -Color -Color-Green">return</span> epoch_loss<span class=" -Color -Color-Blue">,</span> y_pred<span class=" -Color -Color-Blue">,</span> y
-</pre></div>
-</div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>ipdb&gt; batch
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%time</span>
-<span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">time</span>
-<span class="n">EPOCHS</span> <span class="o">=</span> <span class="mi">1</span>
-<span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">EPOCHS</span><span class="p">):</span>
-    <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
-    <span class="n">train_loss</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">process_epoch</span><span class="p">(</span><span class="n">train_loader</span><span class="p">,</span>
-                                          <span class="n">model</span><span class="p">,</span>
-                                          <span class="n">train</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                                          <span class="n">optimizer</span><span class="o">=</span><span class="n">optimizer</span><span class="p">)</span>
-    <span class="n">valid_loss</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">process_epoch</span><span class="p">(</span><span class="n">valid_loader</span><span class="p">,</span>
-                                          <span class="n">model</span><span class="p">,</span>
-                                          <span class="n">train</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Epoch </span><span class="si">{</span><span class="n">epoch</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2">. Train loss: </span><span class="si">{</span><span class="n">train_loss</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">. Valid loss: </span><span class="si">{</span><span class="n">valid_loss</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
-<span class="n">t_final</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span>
-<span class="n">total_rows</span> <span class="o">=</span> <span class="n">train_dataset</span><span class="o">.</span><span class="n">num_rows_processed</span> <span class="o">+</span> <span class="n">valid_dataset</span><span class="o">.</span><span class="n">num_rows_processed</span>
-<span class="nb">print</span><span class="p">(</span>
-    <span class="sa">f</span><span class="s2">&quot;run_time: </span><span class="si">{</span><span class="n">t_final</span><span class="si">}</span><span class="s2"> - rows: </span><span class="si">{</span><span class="n">total_rows</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">EPOCHS</span><span class="si">}</span><span class="s2"> - epochs: </span><span class="si">{</span><span class="n">EPOCHS</span><span class="si">}</span><span class="s2"> - dl_thru: </span><span class="si">{</span><span class="p">(</span><span class="n">total_rows</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">EPOCHS</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">t_final</span><span class="si">}</span><span class="s2">&quot;</span>
-<span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Total batches: 610
 Total batches: 152
-Epoch 00. Train loss: 0.1909. Valid loss: 0.1693.
-run_time: 17.438128232955933 - rows: 2292 - epochs: 1 - dl_thru: 131.43612487425113
-CPU times: user 16.9 s, sys: 310 ms, total: 17.2 s
-Wall time: 17.4 s
+Epoch 00. Train loss: 0.1909. Valid loss: 0.1694.
+CPU times: user 17 s, sys: 351 ms, total: 17.3 s
+Wall time: 17.3 s
 </pre></div>
 </div>
 </div>

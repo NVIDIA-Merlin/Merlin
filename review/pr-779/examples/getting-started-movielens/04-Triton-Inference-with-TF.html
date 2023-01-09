@@ -58,7 +58,9 @@
 <li class="toctree-l3"><a class="reference internal" href="01-Download-Convert.html">MovieLens Download and Convert</a></li>
 <li class="toctree-l3"><a class="reference internal" href="02-ETL-with-NVTabular.html">Feature Engineering with NVTabular</a></li>
 <li class="toctree-l3"><a class="reference internal" href="03-Training-with-HugeCTR.html">Training with HugeCTR</a></li>
-<li class="toctree-l3"><a class="reference internal" href="03-Training-with-TF.html">Training with TensorFlow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="03-Training-with-TF.html">Getting Started MovieLens: Training with TensorFlow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="03-Training-with-TF.html#data-preparation">Data Preparation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="03-Training-with-TF.html#training-our-model">Training our model</a></li>
 <li class="toctree-l3"><a class="reference internal" href="03-Training-with-PyTorch.html">Training with PyTorch</a></li>
 <li class="toctree-l3"><a class="reference internal" href="04-Triton-Inference-with-HugeCTR.html">Serving the HugeCTR Model with Triton</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">Serving the TensorFlow Model with Triton</a></li>
@@ -114,6 +116,9 @@
 <span class="c1"># See the License for the specific language governing permissions and</span>
 <span class="c1"># limitations under the License.</span>
 <span class="c1"># ==============================================================================</span>
+
+<span class="c1"># Each user is responsible for checking the content of datasets and the</span>
+<span class="c1"># applicable licenses and determining if suitable for the intended use.</span>
 </pre></div>
 </div>
 </div>
@@ -122,16 +127,8 @@
 <div class="section" id="serve-recommendations-from-the-tensorflow-model">
 <h1>Serve Recommendations from the TensorFlow Model<a class="headerlink" href="#serve-recommendations-from-the-tensorflow-model" title="Permalink to this headline"></a></h1>
 <p>This notebook is created using the latest stable <a class="reference external" href="https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-tensorflow/tags">merlin-tensorflow</a> container.</p>
-<p>The last step is to deploy the ETL workflow and saved model to production. In the production setting, we want to transform the input data as done during training ETL. We need to apply the same mean/std for continuous features and use the same categorical mapping to convert the categories to continuous integers before we use the deep learning model for a prediction. Therefore, we deploy the NVTabular workflow with the TensorFlow model as an ensemble model to Triton Inference. The ensemble model guarantees that the same transformation are applied to the raw inputs.</p>
+<p>The last step is to deploy the ETL workflow and saved model to production. In the production setting, we want to transform the input data as done during training ETL. We need to ensure that our data is processed in the same fashion during training as in production. Therefore, we deploy the NVTabular workflow with the Merlin Model as an ensemble model to Triton Inference Server. The ensemble model guarantees that the same transformations are applied to the raw inputs.</p>
 <a class="reference internal image-reference" href="../../_images/triton-tf.png"><img alt="../../_images/triton-tf.png" src="../../_images/triton-tf.png" style="width: 25%;" /></a>
-<div class="section" id="learning-objectives">
-<h2>Learning Objectives<a class="headerlink" href="#learning-objectives" title="Permalink to this headline"></a></h2>
-<p>In the previous notebook we explained and showed how we can preprocess data with multi-hot columns with NVTabular, and train an TF MLP model using NVTabular <code class="docutils literal notranslate"><span class="pre">KerasSequenceLoader</span></code>. We learned how to save a workflow, a trained TF model, and the ensemble model. In this notebook, we will show an example request script sent to the Triton Inference Server. We will learn</p>
-<ul class="simple">
-<li><p>to transform new/streaming data with NVTabular library</p></li>
-<li><p>to deploy the end-to-end pipeline to generate prediction results for new data from trained TF model</p></li>
-</ul>
-</div>
 <div class="section" id="launching-and-starting-the-triton-server">
 <h2>Launching and Starting the Triton Server<a class="headerlink" href="#launching-and-starting-the-triton-server" title="Permalink to this headline"></a></h2>
 <p>Before we get started, you should start the container for Triton Inference Server with the following command. This command includes the <code class="docutils literal notranslate"><span class="pre">-v</span></code> argument that mounts your local <code class="docutils literal notranslate"><span class="pre">model-repository</span></code> folder with your saved models from the previous notebook (<code class="docutils literal notranslate"><span class="pre">03a-Training-with-TF.ipynb</span></code>) to the <code class="docutils literal notranslate"><span class="pre">/model</span></code> directory in the container.</p>
@@ -236,9 +233,6 @@ You need to provide correct path for the <code class="docutils literal notransla
 </div>
 <p>The HTTP request returns status 200 if Triton is ready and non-200 if it is not ready.</p>
 <p>We check the available models in the repositories:</p>
-<p>movielens: Ensemble <br>
-movielens_nvt: NVTabular <br>
-movielens_tf: TensorFlow model</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">triton_client</span><span class="o">.</span><span class="n">get_model_repository_index</span><span class="p">()</span>
@@ -248,11 +242,11 @@ movielens_tf: TensorFlow model</p>
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>POST /v2/repository/index, headers None
 
-&lt;HTTPSocketPoolResponse status=200 headers={&#39;content-type&#39;: &#39;application/json&#39;, &#39;content-length&#39;: &#39;71&#39;}&gt;
-bytearray(b&#39;[{&quot;name&quot;:&quot;movielens&quot;},{&quot;name&quot;:&quot;movielens_nvt&quot;},{&quot;name&quot;:&quot;movielens_tf&quot;}]&#39;)
+&lt;HTTPSocketPoolResponse status=200 headers={&#39;content-type&#39;: &#39;application/json&#39;, &#39;content-length&#39;: &#39;21&#39;}&gt;
+bytearray(b&#39;[{&quot;name&quot;:&quot;ensemble&quot;}]&#39;)
 </pre></div>
 </div>
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[{&#39;name&#39;: &#39;movielens&#39;}, {&#39;name&#39;: &#39;movielens_nvt&#39;}, {&#39;name&#39;: &#39;movielens_tf&#39;}]
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[{&#39;name&#39;: &#39;ensemble&#39;}]
 </pre></div>
 </div>
 </div>
@@ -262,17 +256,36 @@ bytearray(b&#39;[{&quot;name&quot;:&quot;movielens&quot;},{&quot;name&quot;:&quo
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%time</span>
 
-<span class="n">triton_client</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="n">model_name</span><span class="o">=</span><span class="s2">&quot;movielens&quot;</span><span class="p">)</span>
+<span class="n">triton_client</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="n">model_name</span><span class="o">=</span><span class="s2">&quot;ensemble&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>POST /v2/repository/models/movielens/load, headers None
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>POST /v2/repository/models/ensemble/load, headers None
 {}
-&lt;HTTPSocketPoolResponse status=200 headers={&#39;content-type&#39;: &#39;application/json&#39;, &#39;content-length&#39;: &#39;0&#39;}&gt;
-Loaded model &#39;movielens&#39;
-CPU times: user 1.53 ms, sys: 0 ns, total: 1.53 ms
-Wall time: 2.99 s
+&lt;HTTPSocketPoolResponse status=400 headers={&#39;content-type&#39;: &#39;application/json&#39;, &#39;content-length&#39;: &#39;75&#39;}&gt;
+</pre></div>
+</div>
+<div class="output traceback highlight-ipythontb notranslate"><div class="highlight"><pre><span></span><span class="gt">---------------------------------------------------------------------------</span>
+<span class="ne">InferenceServerException</span><span class="g g-Whitespace">                  </span>Traceback (most recent call last)
+<span class="n">File</span> <span class="o">&lt;</span><span class="n">timed</span> <span class="nb">eval</span><span class="o">&gt;</span><span class="p">:</span><span class="mi">1</span>
+
+<span class="nn">File /usr/local/lib/python3.8/dist-packages/tritonclient/http/__init__.py:681,</span> in <span class="ni">InferenceServerClient.load_model</span><span class="nt">(self, model_name, headers, query_params, config, files)</span>
+<span class="g g-Whitespace">    </span><span class="mi">676</span>         <span class="n">load_request</span><span class="p">[</span><span class="s2">&quot;parameters&quot;</span><span class="p">][</span><span class="n">path</span><span class="p">]</span> <span class="o">=</span> <span class="n">base64</span><span class="o">.</span><span class="n">b64encode</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">677</span> <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_post</span><span class="p">(</span><span class="n">request_uri</span><span class="o">=</span><span class="n">request_uri</span><span class="p">,</span>
+<span class="g g-Whitespace">    </span><span class="mi">678</span>                       <span class="n">request_body</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">load_request</span><span class="p">),</span>
+<span class="g g-Whitespace">    </span><span class="mi">679</span>                       <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">,</span>
+<span class="g g-Whitespace">    </span><span class="mi">680</span>                       <span class="n">query_params</span><span class="o">=</span><span class="n">query_params</span><span class="p">)</span>
+<span class="ne">--&gt; </span><span class="mi">681</span> <span class="n">_raise_if_error</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+<span class="g g-Whitespace">    </span><span class="mi">682</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_verbose</span><span class="p">:</span>
+<span class="g g-Whitespace">    </span><span class="mi">683</span>     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Loaded model &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">model_name</span><span class="p">))</span>
+
+<span class="nn">File /usr/local/lib/python3.8/dist-packages/tritonclient/http/__init__.py:65,</span> in <span class="ni">_raise_if_error</span><span class="nt">(response)</span>
+<span class="g g-Whitespace">     </span><span class="mi">63</span> <span class="n">error</span> <span class="o">=</span> <span class="n">_get_error</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+<span class="g g-Whitespace">     </span><span class="mi">64</span> <span class="k">if</span> <span class="n">error</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+<span class="ne">---&gt; </span><span class="mi">65</span>     <span class="k">raise</span> <span class="n">error</span>
+
+<span class="ne">InferenceServerException</span>: failed to load &#39;ensemble&#39;, failed to poll from model repository
 </pre></div>
 </div>
 </div>
@@ -331,9 +344,9 @@ Wall time: 2.99 s
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>          userId  movieId
-2513996    16767     1527
-17105440  110918    56367
-19615955  127382     7099
+5867328    37999     8874
+13455621   87008     2710
+15095829   97836     2797
 </pre></div>
 </div>
 </div>
@@ -344,7 +357,7 @@ Wall time: 2.99 s
 
 <span class="n">outputs</span> <span class="o">=</span> <span class="p">[</span>
     <span class="n">grpcclient</span><span class="o">.</span><span class="n">InferRequestedOutput</span><span class="p">(</span><span class="n">col</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;userId&quot;</span><span class="p">,</span> <span class="s2">&quot;movieId&quot;</span><span class="p">,</span> <span class="s2">&quot;genres__nnzs&quot;</span><span class="p">,</span> <span class="s2">&quot;genres__values&quot;</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;userId&quot;</span><span class="p">,</span> <span class="s2">&quot;movieId&quot;</span><span class="p">]</span>
 <span class="p">]</span>
 
 <span class="n">MODEL_NAME_NVT</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;MODEL_NAME_NVT&quot;</span><span class="p">,</span> <span class="s2">&quot;movielens_nvt&quot;</span><span class="p">)</span>
@@ -352,33 +365,18 @@ Wall time: 2.99 s
 <span class="k">with</span> <span class="n">grpcclient</span><span class="o">.</span><span class="n">InferenceServerClient</span><span class="p">(</span><span class="s2">&quot;localhost:8001&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">client</span><span class="p">:</span>
     <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">infer</span><span class="p">(</span><span class="n">MODEL_NAME_NVT</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">request_id</span><span class="o">=</span><span class="s2">&quot;1&quot;</span><span class="p">,</span> <span class="n">outputs</span><span class="o">=</span><span class="n">outputs</span><span class="p">)</span>
 
-<span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;userId&quot;</span><span class="p">,</span> <span class="s2">&quot;movieId&quot;</span><span class="p">,</span> <span class="s2">&quot;genres__nnzs&quot;</span><span class="p">,</span> <span class="s2">&quot;genres__values&quot;</span><span class="p">]:</span>
+<span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;userId&quot;</span><span class="p">,</span> <span class="s2">&quot;movieId&quot;</span><span class="p">]:</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">col</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">as_numpy</span><span class="p">(</span><span class="n">col</span><span class="p">),</span> <span class="n">response</span><span class="o">.</span><span class="n">as_numpy</span><span class="p">(</span><span class="n">col</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>userId [[ 78578]
- [113524]
- [ 33179]] (3, 1)
-movieId [[  71]
- [ 236]
- [1166]] (3, 1)
-genres__nnzs [[4]
- [3]
- [5]] (3, 1)
-genres__values [[ 3]
- [ 5]
- [ 2]
- [ 7]
- [ 2]
- [ 1]
- [ 6]
- [ 5]
- [13]
- [ 1]
- [ 9]
- [ 7]] (12, 1)
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>userId [[37999]
+ [87008]
+ [97836]] (3, 1)
+movieId [[8874]
+ [2710]
+ [2797]] (3, 1)
 </pre></div>
 </div>
 </div>
@@ -390,7 +388,38 @@ genres__values [[ 3]
 <p>We will do the same, but this time we directly read in first 3 rows of the the raw <code class="docutils literal notranslate"><span class="pre">valid.parquet</span></code> file with cuDF.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># read in the workflow (to get input/output schema to call triton with)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">response</span><span class="o">.</span><span class="n">get_response</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>model_name: &quot;movielens_nvt&quot;
+model_version: &quot;1&quot;
+id: &quot;1&quot;
+outputs {
+  name: &quot;userId&quot;
+  datatype: &quot;INT64&quot;
+  shape: 3
+  shape: 1
+}
+outputs {
+  name: &quot;movieId&quot;
+  datatype: &quot;INT64&quot;
+  shape: 3
+  shape: 1
+}
+raw_output_contents: &quot;o\224\000\000\000\000\000\000\340S\001\000\000\000\000\000,~\001\000\000\000\000\000&quot;
+raw_output_contents: &quot;\252\&quot;\000\000\000\000\000\000\226\n\000\000\000\000\000\000\355\n\000\000\000\000\000\000&quot;
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">triton_client</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="n">model_name</span><span class="o">=</span><span class="s2">&quot;movielens_tf&quot;</span><span class="p">)</span>
+<span class="n">triton_client</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="n">model_name</span><span class="o">=</span><span class="s2">&quot;movielens&quot;</span><span class="p">)</span>
+
+<span class="c1"># read in the workflow (to get input/output schema to call triton with)</span>
 <span class="n">batch</span> <span class="o">=</span> <span class="n">df_lib</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span>
     <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">INPUT_DATA_DIR</span><span class="p">,</span> <span class="s2">&quot;valid.parquet&quot;</span><span class="p">),</span> <span class="n">num_rows</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;userId&quot;</span><span class="p">,</span> <span class="s2">&quot;movieId&quot;</span><span class="p">]</span>
 <span class="p">)</span>
@@ -401,7 +430,7 @@ genres__values [[ 3]
 <span class="n">inputs</span> <span class="o">=</span> <span class="n">nvt_triton</span><span class="o">.</span><span class="n">convert_df_to_triton_input</span><span class="p">([</span><span class="s2">&quot;userId&quot;</span><span class="p">,</span> <span class="s2">&quot;movieId&quot;</span><span class="p">],</span> <span class="n">batch</span><span class="p">,</span> <span class="n">grpcclient</span><span class="o">.</span><span class="n">InferInput</span><span class="p">)</span>
 
 <span class="c1"># placeholder variables for the output</span>
-<span class="n">outputs</span> <span class="o">=</span> <span class="p">[</span><span class="n">grpcclient</span><span class="o">.</span><span class="n">InferRequestedOutput</span><span class="p">(</span><span class="s2">&quot;output&quot;</span><span class="p">)]</span>
+<span class="n">outputs</span> <span class="o">=</span> <span class="p">[</span><span class="n">grpcclient</span><span class="o">.</span><span class="n">InferRequestedOutput</span><span class="p">(</span><span class="s2">&quot;rating&quot;</span><span class="p">)]</span>
 
 <span class="n">MODEL_NAME_ENSEMBLE</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;MODEL_NAME_ENSEMBLE&quot;</span><span class="p">,</span> <span class="s2">&quot;movielens&quot;</span><span class="p">)</span>
 
@@ -411,22 +440,75 @@ genres__values [[ 3]
 
 <span class="k">with</span> <span class="n">grpcclient</span><span class="o">.</span><span class="n">InferenceServerClient</span><span class="p">(</span><span class="s2">&quot;localhost:8001&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">client</span><span class="p">:</span>
     <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">infer</span><span class="p">(</span><span class="n">MODEL_NAME_ENSEMBLE</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">request_id</span><span class="o">=</span><span class="s2">&quot;1&quot;</span><span class="p">,</span> <span class="n">outputs</span><span class="o">=</span><span class="n">outputs</span><span class="p">)</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;predicted sigmoid result:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">as_numpy</span><span class="p">(</span><span class="s2">&quot;output&quot;</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>raw data:
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>POST /v2/repository/models/movielens_tf/load, headers None
+{}
+&lt;HTTPSocketPoolResponse status=200 headers={&#39;content-type&#39;: &#39;application/json&#39;, &#39;content-length&#39;: &#39;0&#39;}&gt;
+Loaded model &#39;movielens_tf&#39;
+POST /v2/repository/models/movielens/load, headers None
+{}
+&lt;HTTPSocketPoolResponse status=200 headers={&#39;content-type&#39;: &#39;application/json&#39;, &#39;content-length&#39;: &#39;0&#39;}&gt;
+Loaded model &#39;movielens&#39;
+raw data:
            userId  movieId
-2513996    16767     1527
-17105440  110918    56367
-19615955  127382     7099 
-
-predicted sigmoid result:
- [[0.6152474]
- [0.6197107]
- [0.6189732]]
+5867328    37999     8874
+13455621   87008     2710
+15095829   97836     2797 
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">response</span><span class="o">.</span><span class="n">get_response</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>model_name: &quot;movielens&quot;
+model_version: &quot;1&quot;
+id: &quot;1&quot;
+parameters {
+  key: &quot;sequence_end&quot;
+  value {
+    bool_param: false
+  }
+}
+parameters {
+  key: &quot;sequence_id&quot;
+  value {
+    int64_param: 0
+  }
+}
+parameters {
+  key: &quot;sequence_start&quot;
+  value {
+    bool_param: false
+  }
+}
+outputs {
+  name: &quot;rating&quot;
+  datatype: &quot;FP32&quot;
+  shape: 3
+  shape: 1
+}
+raw_output_contents: &quot;1\014 ?\250!#?^p!?&quot;
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;predicted sigmoid result:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">as_numpy</span><span class="p">(</span><span class="s2">&quot;outputs&quot;</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>predicted sigmoid result:
+ None
 </pre></div>
 </div>
 </div>
