@@ -63,7 +63,8 @@
 <li class="toctree-l3"><a class="reference internal" href="#training-our-model">Training our model</a></li>
 <li class="toctree-l3"><a class="reference internal" href="03-Training-with-PyTorch.html">Training with PyTorch</a></li>
 <li class="toctree-l3"><a class="reference internal" href="04-Triton-Inference-with-HugeCTR.html">Serving the HugeCTR Model with Triton</a></li>
-<li class="toctree-l3"><a class="reference internal" href="04-Triton-Inference-with-TF.html">Serving the TensorFlow Model with Triton</a></li>
+<li class="toctree-l3"><a class="reference internal" href="04-Triton-Inference-with-TF.html">Serve Recommendations from the TensorFlow Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="04-Triton-Inference-with-TF.html#predicting">Predicting</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../Building-and-deploying-multi-stage-RecSys/index.html">Deploying a Multi-Stage Recommender System</a></li>
@@ -197,18 +198,18 @@
 <div class="cell_output docutils container">
 <div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/usr/lib/python3/dist-packages/requests/__init__.py:89: RequestsDependencyWarning: urllib3 (1.26.12) or chardet (3.0.4) doesn&#39;t match a supported version!
   warnings.warn(&quot;urllib3 ({}) or chardet ({}) doesn&#39;t match a supported &quot;
-2023-01-09 03:59:23.307097: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:991] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
-2023-01-09 03:59:23.307492: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:991] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
-2023-01-09 03:59:23.307650: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:991] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
-2023-01-09 03:59:23.334845: I tensorflow/core/platform/cpu_feature_guard.cc:194] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  SSE3 SSE4.1 SSE4.2 AVX
+2023-01-09 08:42:22.319101: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:991] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2023-01-09 08:42:22.319496: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:991] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2023-01-09 08:42:22.319654: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:991] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2023-01-09 08:42:22.347567: I tensorflow/core/platform/cpu_feature_guard.cc:194] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  SSE3 SSE4.1 SSE4.2 AVX
 To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
-2023-01-09 03:59:23.335877: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:991] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
-2023-01-09 03:59:23.336063: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:991] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
-2023-01-09 03:59:23.336199: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:991] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
-2023-01-09 03:59:24.075911: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:991] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
-2023-01-09 03:59:24.076104: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:991] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
-2023-01-09 03:59:24.076242: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:991] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
-2023-01-09 03:59:24.076370: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1532] Created device /job:localhost/replica:0/task:0/device:GPU:0 with 24576 MB memory:  -&gt; device: 0, name: Quadro RTX 8000, pci bus id: 0000:08:00.0, compute capability: 7.5
+2023-01-09 08:42:22.348610: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:991] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2023-01-09 08:42:22.348798: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:991] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2023-01-09 08:42:22.348934: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:991] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2023-01-09 08:42:23.105272: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:991] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2023-01-09 08:42:23.105469: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:991] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2023-01-09 08:42:23.105610: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:991] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2023-01-09 08:42:23.105736: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1532] Created device /job:localhost/replica:0/task:0/device:GPU:0 with 24576 MB memory:  -&gt; device: 0, name: Quadro RTX 8000, pci bus id: 0000:08:00.0, compute capability: 7.5
 </pre></div>
 </div>
 </div>
@@ -299,10 +300,10 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>1221/1221 [==============================] - 8s 5ms/step - loss: 0.6609 - auc: 0.5309 - regularization_loss: 0.0000e+00 - val_loss: 0.6594 - val_auc: 0.5607 - val_regularization_loss: 0.0000e+00
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>1221/1221 [==============================] - 9s 5ms/step - loss: 0.6611 - auc: 0.5249 - regularization_loss: 0.0000e+00 - val_loss: 0.6597 - val_auc: 0.5520 - val_regularization_loss: 0.0000e+00
 </pre></div>
 </div>
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;keras.callbacks.History at 0x7fc573fe1ee0&gt;
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;keras.callbacks.History at 0x7f12be60d220&gt;
 </pre></div>
 </div>
 </div>
@@ -323,18 +324,6 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 <p>We are now ready to wrap our workflow and our model into an Ensemble that we will load on the Triton Inference Server to perform inference.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ls</span> <span class="p">{</span><span class="n">MODEL_DIR</span><span class="p">}</span><span class="o">/</span><span class="n">ensemble</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span><span class=" -Color -Color-Bold -Color-Bold-Blue">0_transformworkflow</span>/  <span class=" -Color -Color-Bold -Color-Bold-Blue">1_predicttensorflow</span>/  <span class=" -Color -Color-Bold -Color-Bold-Blue">ensemble_model</span>/
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">merlin.systems.dag.ensemble</span> <span class="kn">import</span> <span class="n">Ensemble</span>
 <span class="kn">from</span> <span class="nn">merlin.systems.dag.ops.workflow</span> <span class="kn">import</span> <span class="n">TransformWorkflow</span>
 <span class="kn">from</span> <span class="nn">merlin.systems.dag.ops.tensorflow</span> <span class="kn">import</span> <span class="n">PredictTensorflow</span>
@@ -349,23 +338,23 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Unsupported signature for serialization: ((PredictionOutput(predictions=TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/predictions&#39;), targets=TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/targets&#39;), positive_item_ids=None, label_relevant_counts=None, valid_negatives_mask=None, negative_item_ids=None, sample_weight=None), &lt;tensorflow.python.framework.func_graph.UnknownArgument object at 0x7fc573311430&gt;), {}).
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Unsupported signature for serialization: ((PredictionOutput(predictions=TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/predictions&#39;), targets=TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/targets&#39;), positive_item_ids=None, label_relevant_counts=None, valid_negatives_mask=None, negative_item_ids=None, sample_weight=None), &lt;tensorflow.python.framework.func_graph.UnknownArgument object at 0x7f12bc9ee8b0&gt;), {}).
 </pre></div>
 </div>
 <div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>WARNING:absl:Function `_wrapped_model` contains input name(s) movieId, userId with unsupported characters which will be renamed to movieid, userid in the SavedModel.
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Unsupported signature for serialization: ((PredictionOutput(predictions=TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/predictions&#39;), targets=TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/targets&#39;), positive_item_ids=None, label_relevant_counts=None, valid_negatives_mask=None, negative_item_ids=None, sample_weight=None), &lt;tensorflow.python.framework.func_graph.UnknownArgument object at 0x7fc573311430&gt;), {}).
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Unsupported signature for serialization: ((PredictionOutput(predictions=TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/predictions&#39;), targets=TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/targets&#39;), positive_item_ids=None, label_relevant_counts=None, valid_negatives_mask=None, negative_item_ids=None, sample_weight=None), &lt;tensorflow.python.framework.func_graph.UnknownArgument object at 0x7f12bc9ee8b0&gt;), {}).
 </pre></div>
 </div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Unsupported signature for serialization: ((PredictionOutput(predictions=TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/predictions&#39;), targets=TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/targets&#39;), positive_item_ids=None, label_relevant_counts=None, valid_negatives_mask=None, negative_item_ids=None, sample_weight=None), &lt;tensorflow.python.framework.func_graph.UnknownArgument object at 0x7fc573311430&gt;), {}).
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Unsupported signature for serialization: ((PredictionOutput(predictions=TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/predictions&#39;), targets=TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/targets&#39;), positive_item_ids=None, label_relevant_counts=None, valid_negatives_mask=None, negative_item_ids=None, sample_weight=None), &lt;tensorflow.python.framework.func_graph.UnknownArgument object at 0x7f12bc9ee8b0&gt;), {}).
 WARNING:absl:Found untraced functions such as train_compute_metrics, model_context_layer_call_fn, model_context_layer_call_and_return_conditional_losses, output_layer_layer_call_fn, output_layer_layer_call_and_return_conditional_losses while saving (showing 5 of 49). These functions will not be directly callable after loading.
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Assets written to: /tmp/tmpyzli6lmd/model.savedmodel/assets
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Assets written to: /tmp/tmph71tzuey/model.savedmodel/assets
 </pre></div>
 </div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Assets written to: /tmp/tmpyzli6lmd/model.savedmodel/assets
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Assets written to: /tmp/tmph71tzuey/model.savedmodel/assets
 /usr/local/lib/python3.8/dist-packages/merlin/schema/tags.py:148: UserWarning: Compound tags like Tags.USER_ID have been deprecated and will be removed in a future version. Please use the atomic versions of these tags, like [&lt;Tags.USER: &#39;user&#39;&gt;, &lt;Tags.ID: &#39;id&#39;&gt;].
   warnings.warn(
 /usr/local/lib/python3.8/dist-packages/merlin/schema/tags.py:148: UserWarning: Compound tags like Tags.ITEM_ID have been deprecated and will be removed in a future version. Please use the atomic versions of these tags, like [&lt;Tags.ITEM: &#39;item&#39;&gt;, &lt;Tags.ID: &#39;id&#39;&gt;].
@@ -378,17 +367,17 @@ WARNING:absl:Found untraced functions such as train_compute_metrics, model_conte
 <div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>WARNING:tensorflow:No training configuration found in save file, so the model was *not* compiled. Compile it manually.
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Unsupported signature for serialization: ((PredictionOutput(predictions=TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/predictions&#39;), targets=TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/targets&#39;), positive_item_ids=None, label_relevant_counts=None, valid_negatives_mask=None, negative_item_ids=None, sample_weight=None), &lt;tensorflow.python.framework.func_graph.UnknownArgument object at 0x7fc573311430&gt;), {}).
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Unsupported signature for serialization: ((PredictionOutput(predictions=TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/predictions&#39;), targets=TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/targets&#39;), positive_item_ids=None, label_relevant_counts=None, valid_negatives_mask=None, negative_item_ids=None, sample_weight=None), &lt;tensorflow.python.framework.func_graph.UnknownArgument object at 0x7f12bc9ee8b0&gt;), {}).
 </pre></div>
 </div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Unsupported signature for serialization: ((PredictionOutput(predictions=TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/predictions&#39;), targets=TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/targets&#39;), positive_item_ids=None, label_relevant_counts=None, valid_negatives_mask=None, negative_item_ids=None, sample_weight=None), &lt;tensorflow.python.framework.func_graph.UnknownArgument object at 0x7fc573311430&gt;), {}).
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Unsupported signature for serialization: ((PredictionOutput(predictions=TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/predictions&#39;), targets=TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/targets&#39;), positive_item_ids=None, label_relevant_counts=None, valid_negatives_mask=None, negative_item_ids=None, sample_weight=None), &lt;tensorflow.python.framework.func_graph.UnknownArgument object at 0x7f12bc9ee8b0&gt;), {}).
 WARNING:absl:Function `_wrapped_model` contains input name(s) movieId, userId with unsupported characters which will be renamed to movieid, userid in the SavedModel.
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Unsupported signature for serialization: ((PredictionOutput(predictions=TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/predictions&#39;), targets=TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/targets&#39;), positive_item_ids=None, label_relevant_counts=None, valid_negatives_mask=None, negative_item_ids=None, sample_weight=None), &lt;tensorflow.python.framework.func_graph.UnknownArgument object at 0x7fc573311430&gt;), {}).
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Unsupported signature for serialization: ((PredictionOutput(predictions=TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/predictions&#39;), targets=TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/targets&#39;), positive_item_ids=None, label_relevant_counts=None, valid_negatives_mask=None, negative_item_ids=None, sample_weight=None), &lt;tensorflow.python.framework.func_graph.UnknownArgument object at 0x7f12bc9ee8b0&gt;), {}).
 </pre></div>
 </div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Unsupported signature for serialization: ((PredictionOutput(predictions=TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/predictions&#39;), targets=TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/targets&#39;), positive_item_ids=None, label_relevant_counts=None, valid_negatives_mask=None, negative_item_ids=None, sample_weight=None), &lt;tensorflow.python.framework.func_graph.UnknownArgument object at 0x7fc573311430&gt;), {}).
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Unsupported signature for serialization: ((PredictionOutput(predictions=TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/predictions&#39;), targets=TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/targets&#39;), positive_item_ids=None, label_relevant_counts=None, valid_negatives_mask=None, negative_item_ids=None, sample_weight=None), &lt;tensorflow.python.framework.func_graph.UnknownArgument object at 0x7f12bc9ee8b0&gt;), {}).
 WARNING:absl:Found untraced functions such as train_compute_metrics, model_context_layer_call_fn, model_context_layer_call_and_return_conditional_losses, output_layer_layer_call_fn, output_layer_layer_call_and_return_conditional_losses while saving (showing 5 of 49). These functions will not be directly callable after loading.
 </pre></div>
 </div>
@@ -397,678 +386,6 @@ WARNING:absl:Found untraced functions such as train_compute_metrics, model_conte
 </div>
 <div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Assets written to: /root/nvt-examples/models/ensemble/1_predicttensorflow/1/model.savedmodel/assets
 </pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">MODEL_DIR</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">MODEL_DIR</span><span class="p">,</span> <span class="s2">&quot;movielens_nvt&quot;</span><span class="p">))</span>
-<span class="n">model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">MODEL_DIR</span><span class="p">,</span> <span class="s1">&#39;movielens&#39;</span><span class="p">))</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Unsupported signature for serialization: ((PredictionOutput(predictions=TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/predictions&#39;), targets=TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/targets&#39;), positive_item_ids=None, label_relevant_counts=None, valid_negatives_mask=None, negative_item_ids=None, sample_weight=None), &lt;tensorflow.python.framework.func_graph.UnknownArgument object at 0x7fbd8dfddca0&gt;), {}).
-</pre></div>
-</div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>WARNING:absl:Function `_wrapped_model` contains input name(s) movieId, userId with unsupported characters which will be renamed to movieid, userid in the SavedModel.
-</pre></div>
-</div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Unsupported signature for serialization: ((PredictionOutput(predictions=TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/predictions&#39;), targets=TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/targets&#39;), positive_item_ids=None, label_relevant_counts=None, valid_negatives_mask=None, negative_item_ids=None, sample_weight=None), &lt;tensorflow.python.framework.func_graph.UnknownArgument object at 0x7fbd8dfddca0&gt;), {}).
-</pre></div>
-</div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Unsupported signature for serialization: ((PredictionOutput(predictions=TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/predictions&#39;), targets=TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/targets&#39;), positive_item_ids=None, label_relevant_counts=None, valid_negatives_mask=None, negative_item_ids=None, sample_weight=None), &lt;tensorflow.python.framework.func_graph.UnknownArgument object at 0x7fbd8dfddca0&gt;), {}).
-WARNING:absl:Found untraced functions such as train_compute_metrics, model_context_layer_call_fn, model_context_layer_call_and_return_conditional_losses, output_layer_layer_call_fn, output_layer_layer_call_and_return_conditional_losses while saving (showing 5 of 49). These functions will not be directly callable after loading.
-</pre></div>
-</div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Assets written to: /root/nvt-examples/models/movielens/assets
-</pre></div>
-</div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Assets written to: /root/nvt-examples/models/movielens/assets
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># from nvtabular.inference.triton import export_tensorflow_ensemble</span>
-<span class="c1"># export_tensorflow_ensemble(model, workflow.remove_inputs([&quot;rating&quot;]), &#39;movielens&#39;, MODEL_DIR, [&quot;rating&quot;])</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Unsupported signature for serialization: ((PredictionOutput(predictions=TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/predictions&#39;), targets=TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/targets&#39;), positive_item_ids=None, label_relevant_counts=None, valid_negatives_mask=None, negative_item_ids=None, sample_weight=None), &lt;tensorflow.python.framework.func_graph.UnknownArgument object at 0x7f1eca731880&gt;), {}).
-</pre></div>
-</div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>WARNING:absl:Function `_wrapped_model` contains input name(s) movieId, userId with unsupported characters which will be renamed to movieid, userid in the SavedModel.
-</pre></div>
-</div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Unsupported signature for serialization: ((PredictionOutput(predictions=TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/predictions&#39;), targets=TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/targets&#39;), positive_item_ids=None, label_relevant_counts=None, valid_negatives_mask=None, negative_item_ids=None, sample_weight=None), &lt;tensorflow.python.framework.func_graph.UnknownArgument object at 0x7f1eca731880&gt;), {}).
-</pre></div>
-</div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Unsupported signature for serialization: ((PredictionOutput(predictions=TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/predictions&#39;), targets=TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/targets&#39;), positive_item_ids=None, label_relevant_counts=None, valid_negatives_mask=None, negative_item_ids=None, sample_weight=None), &lt;tensorflow.python.framework.func_graph.UnknownArgument object at 0x7f1eca731880&gt;), {}).
-WARNING:absl:Found untraced functions such as train_compute_metrics, model_context_layer_call_fn, model_context_layer_call_and_return_conditional_losses, output_layer_layer_call_fn, output_layer_layer_call_and_return_conditional_losses while saving (showing 5 of 49). These functions will not be directly callable after loading.
-</pre></div>
-</div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Assets written to: /root/nvt-examples/models/movielens_tf/1/model.savedmodel/assets
-</pre></div>
-</div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Assets written to: /root/nvt-examples/models/movielens_tf/1/model.savedmodel/assets
-/usr/local/lib/python3.8/dist-packages/merlin/schema/tags.py:148: UserWarning: Compound tags like Tags.USER_ID have been deprecated and will be removed in a future version. Please use the atomic versions of these tags, like [&lt;Tags.USER: &#39;user&#39;&gt;, &lt;Tags.ID: &#39;id&#39;&gt;].
-  warnings.warn(
-/usr/local/lib/python3.8/dist-packages/merlin/schema/tags.py:148: UserWarning: Compound tags like Tags.ITEM_ID have been deprecated and will be removed in a future version. Please use the atomic versions of these tags, like [&lt;Tags.ITEM: &#39;item&#39;&gt;, &lt;Tags.ID: &#39;id&#39;&gt;].
-  warnings.warn(
-</pre></div>
-</div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>WARNING:tensorflow:No training configuration found in save file, so the model was *not* compiled. Compile it manually.
-</pre></div>
-</div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>WARNING:tensorflow:No training configuration found in save file, so the model was *not* compiled. Compile it manually.
-</pre></div>
-</div>
-</div>
-</div>
-<p>Now, we can move to the next notebook, <a class="reference external" href="https://github.com/NVIDIA-Merlin/NVTabular/blob/main/examples/getting-started-movielens/04-Triton-Inference-with-TF.ipynb">04-Triton-Inference-with-TF.ipynb</a>, to send inference request to the Triton IS.</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># import os</span>
-<span class="c1"># os.environ[&quot;TF_GPU_ALLOCATOR&quot;]=&quot;cuda_malloc_async&quot;</span>
-<span class="c1"># from nvtabular.workflow import Workflow</span>
-
-<span class="c1"># input_path = os.environ.get(&quot;INPUT_FOLDER&quot;, &quot;/workspace/data/&quot;)</span>
-
-<span class="c1"># workflow_stored_path = os.path.join(input_path, &quot;workflow&quot;)</span>
-
-<span class="n">workflow_stored_path</span> <span class="o">=</span> <span class="s2">&quot;workflow_for_inference&quot;</span>
-<span class="n">workflow</span> <span class="o">=</span> <span class="n">nvt</span><span class="o">.</span><span class="n">Workflow</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">workflow_stored_path</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">workflow</span><span class="o">.</span><span class="n">output_schema</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output text_html"><div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>name</th>
-      <th>tags</th>
-      <th>dtype</th>
-      <th>is_list</th>
-      <th>is_ragged</th>
-      <th>properties.num_buckets</th>
-      <th>properties.freq_threshold</th>
-      <th>properties.max_size</th>
-      <th>properties.start_index</th>
-      <th>properties.cat_path</th>
-      <th>properties.embedding_sizes.cardinality</th>
-      <th>properties.embedding_sizes.dimension</th>
-      <th>properties.domain.min</th>
-      <th>properties.domain.max</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>userId</td>
-      <td>(Tags.ID, Tags.USER_ID, Tags.USER, Tags.CATEGO...</td>
-      <td>int64</td>
-      <td>False</td>
-      <td>False</td>
-      <td>None</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>.//categories/unique.userId.parquet</td>
-      <td>162542.0</td>
-      <td>512.0</td>
-      <td>0</td>
-      <td>162541</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>movieId</td>
-      <td>(Tags.ID, Tags.ITEM_ID, Tags.CATEGORICAL, Tags...</td>
-      <td>int64</td>
-      <td>False</td>
-      <td>False</td>
-      <td>None</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>.//categories/unique.movieId.parquet</td>
-      <td>56561.0</td>
-      <td>512.0</td>
-      <td>0</td>
-      <td>56560</td>
-    </tr>
-  </tbody>
-</table>
-</div></div></div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">merlin.models.tf</span> <span class="k">as</span> <span class="nn">mm</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
-<span class="n">input_path</span> <span class="o">=</span> <span class="s2">&quot;./&quot;</span>
-<span class="n">tf_model_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">input_path</span><span class="p">,</span> <span class="s2">&quot;dcn&quot;</span><span class="p">)</span>
-
-<span class="n">model</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="n">tf_model_path</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/usr/local/lib/python3.8/dist-packages/merlin/schema/tags.py:148: UserWarning: Compound tags like Tags.USER_ID have been deprecated and will be removed in a future version. Please use the atomic versions of these tags, like [&lt;Tags.USER: &#39;user&#39;&gt;, &lt;Tags.ID: &#39;id&#39;&gt;].
-  warnings.warn(
-/usr/local/lib/python3.8/dist-packages/merlin/schema/tags.py:148: UserWarning: Compound tags like Tags.ITEM_ID have been deprecated and will be removed in a future version. Please use the atomic versions of these tags, like [&lt;Tags.ITEM: &#39;item&#39;&gt;, &lt;Tags.ID: &#39;id&#39;&gt;].
-  warnings.warn(
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">workflow</span><span class="o">.</span><span class="n">input_schema</span><span class="o">.</span><span class="n">column_names</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[&#39;userId&#39;, &#39;movieId&#39;]
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">workflow</span><span class="o">.</span><span class="n">input_schema</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output text_html"><div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>name</th>
-      <th>tags</th>
-      <th>dtype</th>
-      <th>is_list</th>
-      <th>is_ragged</th>
-      <th>properties.num_buckets</th>
-      <th>properties.freq_threshold</th>
-      <th>properties.max_size</th>
-      <th>properties.start_index</th>
-      <th>properties.cat_path</th>
-      <th>properties.embedding_sizes.cardinality</th>
-      <th>properties.embedding_sizes.dimension</th>
-      <th>properties.domain.min</th>
-      <th>properties.domain.max</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>userId</td>
-      <td>(Tags.CATEGORICAL)</td>
-      <td>int64</td>
-      <td>False</td>
-      <td>False</td>
-      <td>None</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>.//categories/unique.userId.parquet</td>
-      <td>162542.0</td>
-      <td>512.0</td>
-      <td>0</td>
-      <td>162541</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>movieId</td>
-      <td>(Tags.CATEGORICAL)</td>
-      <td>int64</td>
-      <td>False</td>
-      <td>False</td>
-      <td>None</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>.//categories/unique.movieId.parquet</td>
-      <td>56561.0</td>
-      <td>512.0</td>
-      <td>0</td>
-      <td>56560</td>
-    </tr>
-  </tbody>
-</table>
-</div></div></div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">workflow</span><span class="o">.</span><span class="n">output_schema</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output text_html"><div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>name</th>
-      <th>tags</th>
-      <th>dtype</th>
-      <th>is_list</th>
-      <th>is_ragged</th>
-      <th>properties.num_buckets</th>
-      <th>properties.freq_threshold</th>
-      <th>properties.max_size</th>
-      <th>properties.start_index</th>
-      <th>properties.cat_path</th>
-      <th>properties.embedding_sizes.cardinality</th>
-      <th>properties.embedding_sizes.dimension</th>
-      <th>properties.domain.min</th>
-      <th>properties.domain.max</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>userId</td>
-      <td>(Tags.ID, Tags.USER_ID, Tags.USER, Tags.CATEGO...</td>
-      <td>int64</td>
-      <td>False</td>
-      <td>False</td>
-      <td>None</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>.//categories/unique.userId.parquet</td>
-      <td>162542.0</td>
-      <td>512.0</td>
-      <td>0</td>
-      <td>162541</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>movieId</td>
-      <td>(Tags.ID, Tags.ITEM_ID, Tags.CATEGORICAL, Tags...</td>
-      <td>int64</td>
-      <td>False</td>
-      <td>False</td>
-      <td>None</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>.//categories/unique.movieId.parquet</td>
-      <td>56561.0</td>
-      <td>512.0</td>
-      <td>0</td>
-      <td>56560</td>
-    </tr>
-  </tbody>
-</table>
-</div></div></div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># # avoid numba warnings</span>
-<span class="c1"># from numba import config</span>
-<span class="c1"># config.CUDA_LOW_OCCUPANCY_WARNINGS = 0</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="section" id="defining-hyperparameters">
-<h3>Defining Hyperparameters<a class="headerlink" href="#defining-hyperparameters" title="Permalink to this headline"></a></h3>
-<p>First, we define the data schema and differentiate between single-hot and multi-hot categorical features. Note, that we do not have any numerical input features.</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">BATCH_SIZE</span> <span class="o">=</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">32</span>  <span class="c1"># Batch Size</span>
-<span class="n">CATEGORICAL_COLUMNS</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;userId&quot;</span><span class="p">,</span> <span class="s2">&quot;movieId&quot;</span><span class="p">]</span>  <span class="c1"># Single-hot</span>
-<span class="n">CATEGORICAL_MH_COLUMNS</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;genres&quot;</span><span class="p">]</span>  <span class="c1"># Multi-hot</span>
-<span class="n">NUMERIC_COLUMNS</span> <span class="o">=</span> <span class="p">[]</span>
-
-<span class="c1"># Output from ETL-with-NVTabular</span>
-<span class="n">TRAIN_PATHS</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">INPUT_DATA_DIR</span><span class="p">,</span> <span class="s2">&quot;train&quot;</span><span class="p">,</span> <span class="s2">&quot;*.parquet&quot;</span><span class="p">)))</span>
-<span class="n">VALID_PATHS</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">INPUT_DATA_DIR</span><span class="p">,</span> <span class="s2">&quot;valid&quot;</span><span class="p">,</span> <span class="s2">&quot;*.parquet&quot;</span><span class="p">)))</span>
-</pre></div>
-</div>
-</div>
-</div>
-<p>In the previous notebook, we used NVTabular for ETL and stored the workflow to disk. We can load the NVTabular workflow to extract important metadata for our training pipeline.</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">workflow</span> <span class="o">=</span> <span class="n">nvt</span><span class="o">.</span><span class="n">Workflow</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">INPUT_DATA_DIR</span><span class="p">,</span> <span class="s2">&quot;workflow&quot;</span><span class="p">))</span>
-</pre></div>
-</div>
-</div>
-</div>
-<p>The embedding table shows the cardinality of each categorical variable along with its associated embedding size. Each entry is of the form <code class="docutils literal notranslate"><span class="pre">(cardinality,</span> <span class="pre">embedding_size)</span></code>.</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">EMBEDDING_TABLE_SHAPES</span><span class="p">,</span> <span class="n">MH_EMBEDDING_TABLE_SHAPES</span> <span class="o">=</span> <span class="n">nvt</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">get_embedding_sizes</span><span class="p">(</span><span class="n">workflow</span><span class="p">)</span>
-<span class="n">EMBEDDING_TABLE_SHAPES</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">MH_EMBEDDING_TABLE_SHAPES</span><span class="p">)</span>
-<span class="n">EMBEDDING_TABLE_SHAPES</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>{&#39;userId&#39;: (162542, 512), &#39;movieId&#39;: (56561, 512), &#39;genres&#39;: (21, 16)}
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-<div class="section" id="initializing-nvtabular-dataloader-for-tensorflow">
-<h3>Initializing NVTabular Dataloader for Tensorflow<a class="headerlink" href="#initializing-nvtabular-dataloader-for-tensorflow" title="Permalink to this headline"></a></h3>
-<p>We import TensorFlow and some NVTabular TF extensions, such as custom TensorFlow layers supporting multi-hot and the NVTabular TensorFlow data loader.</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">time</span>
-<span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
-
-<span class="c1"># we can control how much memory to give tensorflow with this environment variable</span>
-<span class="c1"># IMPORTANT: make sure you do this before you initialize TF&#39;s runtime, otherwise</span>
-<span class="c1"># TF will have claimed all free GPU memory</span>
-<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;TF_MEMORY_ALLOCATION&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;0.7&quot;</span>  <span class="c1"># fraction of free memory</span>
-<span class="kn">from</span> <span class="nn">nvtabular.loader.tensorflow</span> <span class="kn">import</span> <span class="n">KerasSequenceLoader</span><span class="p">,</span> <span class="n">KerasSequenceValidater</span>
-<span class="kn">from</span> <span class="nn">nvtabular.framework_utils.tensorflow</span> <span class="kn">import</span> <span class="n">layers</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/usr/local/lib/python3.8/dist-packages/nvtabular/loader/tf_utils.py:53: UserWarning: TensorFlow runtime already initialized, may not be enough memory for cudf
-  warnings.warn(
-/usr/local/lib/python3.8/dist-packages/nvtabular/loader/tf_utils.py:63: UserWarning: Virtual devices cannot be modified after being initialized
-  warnings.warn(str(e))
-</pre></div>
-</div>
-</div>
-</div>
-<p>First, we take a look on our data loader and how the data is represented as tensors. The NVTabular data loader are initialized as usually and we specify both single-hot and multi-hot categorical features as cat_names. The data loader will automatically recognize the single/multi-hot columns and represent them accordingly.</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">train_dataset_tf</span> <span class="o">=</span> <span class="n">KerasSequenceLoader</span><span class="p">(</span>
-    <span class="n">TRAIN_PATHS</span><span class="p">,</span>  <span class="c1"># you could also use a glob pattern</span>
-    <span class="n">batch_size</span><span class="o">=</span><span class="n">BATCH_SIZE</span><span class="p">,</span>
-    <span class="n">label_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;rating&quot;</span><span class="p">],</span>
-    <span class="n">cat_names</span><span class="o">=</span><span class="n">CATEGORICAL_COLUMNS</span> <span class="o">+</span> <span class="n">CATEGORICAL_MH_COLUMNS</span><span class="p">,</span>
-    <span class="n">cont_names</span><span class="o">=</span><span class="n">NUMERIC_COLUMNS</span><span class="p">,</span>
-    <span class="n">engine</span><span class="o">=</span><span class="s2">&quot;parquet&quot;</span><span class="p">,</span>
-    <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">buffer_size</span><span class="o">=</span><span class="mf">0.06</span><span class="p">,</span>  <span class="c1"># how many batches to load at once</span>
-    <span class="n">parts_per_chunk</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-<span class="p">)</span>
-
-<span class="n">valid_dataset_tf</span> <span class="o">=</span> <span class="n">KerasSequenceLoader</span><span class="p">(</span>
-    <span class="n">VALID_PATHS</span><span class="p">,</span>  <span class="c1"># you could also use a glob pattern</span>
-    <span class="n">batch_size</span><span class="o">=</span><span class="n">BATCH_SIZE</span><span class="p">,</span>
-    <span class="n">label_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;rating&quot;</span><span class="p">],</span>
-    <span class="n">cat_names</span><span class="o">=</span><span class="n">CATEGORICAL_COLUMNS</span> <span class="o">+</span> <span class="n">CATEGORICAL_MH_COLUMNS</span><span class="p">,</span>
-    <span class="n">cont_names</span><span class="o">=</span><span class="n">NUMERIC_COLUMNS</span><span class="p">,</span>
-    <span class="n">engine</span><span class="o">=</span><span class="s2">&quot;parquet&quot;</span><span class="p">,</span>
-    <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-    <span class="n">buffer_size</span><span class="o">=</span><span class="mf">0.06</span><span class="p">,</span>
-    <span class="n">parts_per_chunk</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-<span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-<p>Let’s generate a batch and take a look on the input features.<br><br>
-We can see, that the single-hot categorical features (<code class="docutils literal notranslate"><span class="pre">userId</span></code> and <code class="docutils literal notranslate"><span class="pre">movieId</span></code>) have a shape of <code class="docutils literal notranslate"><span class="pre">(32768,</span> <span class="pre">1)</span></code>, which is the batchsize (as usually).<br><br>
-For the multi-hot categorical feature <code class="docutils literal notranslate"><span class="pre">genres</span></code>, we receive two Tensors <code class="docutils literal notranslate"><span class="pre">genres__values</span></code> and <code class="docutils literal notranslate"><span class="pre">genres__nnzs</span></code>.<br><br>
-<code class="docutils literal notranslate"><span class="pre">genres__values</span></code> are the actual data, containing the genre IDs. Note that the Tensor has more values than the batch_size. The reason is, that one datapoint in the batch can contain more than one genre (multi-hot).<br>
-<code class="docutils literal notranslate"><span class="pre">genres__nnzs</span></code> are a supporting Tensor, describing how many genres are associated with each datapoint in the batch.<br><br>
-For example,</p>
-<ul class="simple">
-<li><p>if the first value in <code class="docutils literal notranslate"><span class="pre">genres__nnzs</span></code> is <code class="docutils literal notranslate"><span class="pre">5</span></code>, then the first 5 values in <code class="docutils literal notranslate"><span class="pre">genres__values</span></code> are associated with the first datapoint in the batch (movieId/userId).<br></p></li>
-<li><p>if the second value in <code class="docutils literal notranslate"><span class="pre">genres__nnzs</span></code> is <code class="docutils literal notranslate"><span class="pre">2</span></code>, then the 6th and the 7th values in <code class="docutils literal notranslate"><span class="pre">genres__values</span></code> are associated with the second datapoint in the batch (continuing after the previous value stopped).<br></p></li>
-<li><p>if the third value in <code class="docutils literal notranslate"><span class="pre">genres_nnzs</span></code> is <code class="docutils literal notranslate"><span class="pre">1</span></code>, then the 8th value in <code class="docutils literal notranslate"><span class="pre">genres__values</span></code> are associated with the third datapoint in the batch.</p></li>
-<li><p>and so on</p></li>
-</ul>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">batch</span> <span class="o">=</span> <span class="n">train_dataset_tf</span><span class="o">.</span><span class="n">peek</span><span class="p">()</span>
-<span class="n">batch</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output traceback highlight-ipythontb notranslate"><div class="highlight"><pre><span></span><span class="gt">---------------------------------------------------------------------------</span>
-<span class="ne">AttributeError</span><span class="g g-Whitespace">                            </span>Traceback (most recent call last)
-<span class="n">Cell</span> <span class="n">In</span> <span class="p">[</span><span class="mi">30</span><span class="p">],</span> <span class="n">line</span> <span class="mi">1</span>
-<span class="ne">----&gt; </span><span class="mi">1</span> <span class="n">batch</span> <span class="o">=</span> <span class="n">train_dataset_tf</span><span class="o">.</span><span class="n">peek</span><span class="p">()</span>
-<span class="g g-Whitespace">      </span><span class="mi">2</span> <span class="n">batch</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-
-<span class="ne">AttributeError</span>: &#39;KerasSequenceLoader&#39; object has no attribute &#39;peek&#39;
-</pre></div>
-</div>
-</div>
-</div>
-<p>We can see that the sum of <code class="docutils literal notranslate"><span class="pre">genres__nnzs</span></code> is equal to the shape of <code class="docutils literal notranslate"><span class="pre">genres__values</span></code>.</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">tf</span><span class="o">.</span><span class="n">reduce_sum</span><span class="p">(</span><span class="n">batch</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;genres&quot;</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
-</pre></div>
-</div>
-</div>
-</div>
-<p>As each datapoint can have a different number of genres, it is more efficient to represent the genres as two flat tensors: One with the actual values (<code class="docutils literal notranslate"><span class="pre">genres__values</span></code>) and one with the length for each datapoint (<code class="docutils literal notranslate"><span class="pre">genres__nnzs</span></code>).</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">del</span> <span class="n">batch</span>
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-<div class="section" id="defining-neural-network-architecture">
-<h3>Defining Neural Network Architecture<a class="headerlink" href="#defining-neural-network-architecture" title="Permalink to this headline"></a></h3>
-<p>We will define a common neural network architecture for tabular data.</p>
-<ul class="simple">
-<li><p>Single-hot categorical features are fed into an Embedding Layer</p></li>
-<li><p>Each value of a multi-hot categorical features is fed into an Embedding Layer and the multiple Embedding outputs are combined via averaging</p></li>
-<li><p>The output of the Embedding Layers are concatenated</p></li>
-<li><p>The concatenated layers are fed through multiple feed-forward layers (Dense Layers with ReLU activations)</p></li>
-<li><p>The final output is a single number with sigmoid activation function</p></li>
-</ul>
-<p>First, we will define some dictionary/lists for our network architecture.</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">inputs</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># tf.keras.Input placeholders for each feature to be used</span>
-<span class="n">emb_layers</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># output of all embedding layers, which will be concatenated</span>
-</pre></div>
-</div>
-</div>
-</div>
-<p>We create <code class="docutils literal notranslate"><span class="pre">tf.keras.Input</span></code> tensors for all 4 input features.</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">CATEGORICAL_COLUMNS</span><span class="p">:</span>
-    <span class="n">inputs</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">Input</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">col</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,))</span>
-<span class="c1"># Note that we need two input tensors for multi-hot categorical features</span>
-<span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">CATEGORICAL_MH_COLUMNS</span><span class="p">:</span>
-    <span class="n">inputs</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">Input</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">col</span><span class="si">}</span><span class="s2">__values&quot;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">int64</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,)),</span>
-                   <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">Input</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">col</span><span class="si">}</span><span class="s2">__nnzs&quot;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">int64</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,)))</span>
-</pre></div>
-</div>
-</div>
-</div>
-<p>Next, we initialize Embedding Layers with <code class="docutils literal notranslate"><span class="pre">tf.feature_column.embedding_column</span></code>.</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">CATEGORICAL_COLUMNS</span> <span class="o">+</span> <span class="n">CATEGORICAL_MH_COLUMNS</span><span class="p">:</span>
-    <span class="n">emb_layers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-        <span class="n">tf</span><span class="o">.</span><span class="n">feature_column</span><span class="o">.</span><span class="n">embedding_column</span><span class="p">(</span>
-            <span class="n">tf</span><span class="o">.</span><span class="n">feature_column</span><span class="o">.</span><span class="n">categorical_column_with_identity</span><span class="p">(</span>
-                <span class="n">col</span><span class="p">,</span> <span class="n">EMBEDDING_TABLE_SHAPES</span><span class="p">[</span><span class="n">col</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-            <span class="p">),</span>  <span class="c1"># Input dimension (vocab size)</span>
-            <span class="n">EMBEDDING_TABLE_SHAPES</span><span class="p">[</span><span class="n">col</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span>  <span class="c1"># Embedding output dimension</span>
-        <span class="p">)</span>
-    <span class="p">)</span>
-<span class="n">emb_layers</span>
-</pre></div>
-</div>
-</div>
-</div>
-<p>NVTabular implemented a custom TensorFlow layer <code class="docutils literal notranslate"><span class="pre">layers.DenseFeatures</span></code>, which takes as an input the different <code class="docutils literal notranslate"><span class="pre">tf.Keras.Input</span></code> and pre-initialized <code class="docutils literal notranslate"><span class="pre">tf.feature_column</span></code> and automatically concatenate them into a flat tensor. In the case of multi-hot categorical features, <code class="docutils literal notranslate"><span class="pre">DenseFeatures</span></code> organizes the inputs <code class="docutils literal notranslate"><span class="pre">__values</span></code> and <code class="docutils literal notranslate"><span class="pre">__nnzs</span></code> to define a <code class="docutils literal notranslate"><span class="pre">RaggedTensor</span></code> and combine them. <code class="docutils literal notranslate"><span class="pre">DenseFeatures</span></code> can handle numeric inputs, as well, but MovieLens does not provide numerical input features.</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">emb_layer</span> <span class="o">=</span> <span class="n">layers</span><span class="o">.</span><span class="n">DenseFeatures</span><span class="p">(</span><span class="n">emb_layers</span><span class="p">)</span>
-<span class="n">x_emb_output</span> <span class="o">=</span> <span class="n">emb_layer</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
-<span class="n">x_emb_output</span>
-</pre></div>
-</div>
-</div>
-</div>
-<p>We can see that the output shape of the concatenated layer is equal to the sum of the individual Embedding output dimensions (1040 = 16+512+512).</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">EMBEDDING_TABLE_SHAPES</span>
-</pre></div>
-</div>
-</div>
-</div>
-<p>We add multiple Dense Layers. Finally, we initialize the <code class="docutils literal notranslate"><span class="pre">tf.keras.Model</span></code> and add the optimizer.</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">x</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="s2">&quot;relu&quot;</span><span class="p">)(</span><span class="n">x_emb_output</span><span class="p">)</span>
-<span class="n">x</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="s2">&quot;relu&quot;</span><span class="p">)(</span><span class="n">x</span><span class="p">)</span>
-<span class="n">x</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="s2">&quot;relu&quot;</span><span class="p">)(</span><span class="n">x</span><span class="p">)</span>
-<span class="n">x</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="s2">&quot;sigmoid&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;output&quot;</span><span class="p">)(</span><span class="n">x</span><span class="p">)</span>
-
-<span class="n">model</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">Model</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span> <span class="n">outputs</span><span class="o">=</span><span class="n">x</span><span class="p">)</span>
-<span class="n">model</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s2">&quot;sgd&quot;</span><span class="p">,</span> <span class="s2">&quot;binary_crossentropy&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># You need to install the dependencies</span>
-<span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">plot_model</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-<p>The plot is similar to the following figure:</p>
-<p><img alt="Keras model" src="../../_images/gs-keras-model-plot.png" /></p>
-</div>
-<div class="section" id="training-the-deep-learning-model">
-<h3>Training the deep learning model<a class="headerlink" href="#training-the-deep-learning-model" title="Permalink to this headline"></a></h3>
-<p>We can train our model with <code class="docutils literal notranslate"><span class="pre">model.fit</span></code>. We need to use a Callback to add the validation dataloader.</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">validation_callback</span> <span class="o">=</span> <span class="n">KerasSequenceValidater</span><span class="p">(</span><span class="n">valid_dataset_tf</span><span class="p">)</span>
-<span class="n">EPOCHS</span> <span class="o">=</span> <span class="mi">1</span>
-<span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-<span class="n">history</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train_dataset_tf</span><span class="p">,</span> <span class="n">callbacks</span><span class="o">=</span><span class="p">[</span><span class="n">validation_callback</span><span class="p">],</span> <span class="n">epochs</span><span class="o">=</span><span class="n">EPOCHS</span><span class="p">)</span>
-<span class="n">t_final</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span>
-<span class="n">total_rows</span> <span class="o">=</span> <span class="n">train_dataset_tf</span><span class="o">.</span><span class="n">num_rows_processed</span> <span class="o">+</span> <span class="n">valid_dataset_tf</span><span class="o">.</span><span class="n">num_rows_processed</span>
-<span class="nb">print</span><span class="p">(</span>
-    <span class="sa">f</span><span class="s2">&quot;run_time: </span><span class="si">{</span><span class="n">t_final</span><span class="si">}</span><span class="s2"> - rows: </span><span class="si">{</span><span class="n">total_rows</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">EPOCHS</span><span class="si">}</span><span class="s2"> - epochs: </span><span class="si">{</span><span class="n">EPOCHS</span><span class="si">}</span><span class="s2"> - dl_thru: </span><span class="si">{</span><span class="p">(</span><span class="n">EPOCHS</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">total_rows</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">t_final</span><span class="si">}</span><span class="s2">&quot;</span>
-<span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">MODEL_NAME_TF</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;MODEL_NAME_TF&quot;</span><span class="p">,</span> <span class="s2">&quot;movielens_tf&quot;</span><span class="p">)</span>
-<span class="n">MODEL_PATH_TEMP_TF</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">MODEL_BASE_DIR</span><span class="p">,</span> <span class="n">MODEL_NAME_TF</span><span class="p">,</span> <span class="s2">&quot;1/model.savedmodel&quot;</span><span class="p">)</span>
-
-<span class="n">model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">MODEL_PATH_TEMP_TF</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-<p>Before moving to the next notebook, <code class="docutils literal notranslate"><span class="pre">04a-Triton-Inference-with-TF.ipynb</span></code>, we need to generate the Triton Inference Server configurations and save the models in the correct format. We just saved TensorFlow model to disk, and in the previous notebook <code class="docutils literal notranslate"><span class="pre">02-ETL-with-NVTabular</span></code>, we saved the NVTabular workflow. Let’s load the workflow.</p>
-<p>The TensorFlow input layers expect the input datatype to be int32. Therefore, we need to change the output datatypes to int32 for our NVTabular workflow.</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">workflow</span> <span class="o">=</span> <span class="n">nvt</span><span class="o">.</span><span class="n">Workflow</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">INPUT_DATA_DIR</span><span class="p">,</span> <span class="s2">&quot;workflow&quot;</span><span class="p">))</span>
-
-<span class="n">workflow</span><span class="o">.</span><span class="n">output_dtypes</span><span class="p">[</span><span class="s2">&quot;userId&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;int32&quot;</span>
-<span class="n">workflow</span><span class="o">.</span><span class="n">output_dtypes</span><span class="p">[</span><span class="s2">&quot;movieId&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;int32&quot;</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">MODEL_NAME_ENSEMBLE</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;MODEL_NAME_ENSEMBLE&quot;</span><span class="p">,</span> <span class="s2">&quot;movielens&quot;</span><span class="p">)</span>
-<span class="c1"># model path to save the models</span>
-<span class="n">MODEL_PATH</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;MODEL_PATH&quot;</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">MODEL_BASE_DIR</span><span class="p">,</span> <span class="s2">&quot;models&quot;</span><span class="p">))</span>
-</pre></div>
-</div>
-</div>
-</div>
-<p>NVTabular provides a function to save the NVTabular workflow, TensorFlow model and Triton Inference Server (IS) config files via <code class="docutils literal notranslate"><span class="pre">export_tensorflow_ensemble</span></code>. We provide the model, workflow, a model name for ensemble model, path and output column.</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Creates an ensemble triton server model, where</span>
-<span class="c1">#   model: The tensorflow model that should be served</span>
-<span class="c1">#   workflow: The nvtabular workflow used in preprocessing</span>
-<span class="c1">#   name: The base name of the various triton models</span>
-</pre></div>
-</div>
 </div>
 </div>
 </div>
