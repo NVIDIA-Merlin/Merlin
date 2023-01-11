@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.2
-ARG MERLIN_VERSION=22.08
-ARG TRITON_VERSION=22.07
-ARG TENSORFLOW_VERSION=22.07
+ARG MERLIN_VERSION=22.12
+ARG TRITON_VERSION=22.11
+ARG TENSORFLOW_VERSION=22.11
 
 ARG DLFW_IMAGE=nvcr.io/nvidia/tensorflow:${TENSORFLOW_VERSION}-tf2-py3
 ARG FULL_IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-py3
@@ -59,6 +59,9 @@ RUN mkdir -p /usr/local/nvidia/lib64 && \
 
 RUN ln -s /usr/lib/x86_64-linux-gnu/libibverbs.so.1 /usr/lib/x86_64-linux-gnu/libibverbs.so
 
+# Install distributed-embeddings and sok
+ARG INSTALL_DISTRIBUTED_EMBEDDINGS=true
+ARG TFDE_VER=v0.2
 RUN if [ "$HUGECTR_DEV_MODE" == "false" ]; then \
         git clone --branch ${HUGECTR_VER} --depth 1 https://${_CI_JOB_TOKEN}${_HUGECTR_REPO} /hugectr && \
         pushd /hugectr && \
@@ -71,13 +74,11 @@ RUN if [ "$HUGECTR_DEV_MODE" == "false" ]; then \
         cd ../hps_tf && \
         python setup.py install && \
         popd; \
-    fi
-
-# Install distributed-embeddings
-ARG INSTALL_DISTRIBUTED_EMBEDDINGS=true
-ARG TFDE_VER=v0.2
-RUN if [ "$INSTALL_DISTRIBUTED_EMBEDDINGS" == "true" ]; then \
+    fi; \
+    if [ "$INSTALL_DISTRIBUTED_EMBEDDINGS" == "true" ]; then \
         git clone https://github.com/NVIDIA-Merlin/distributed-embeddings.git /distributed_embeddings/ && \
         cd /distributed_embeddings && git checkout ${TFDE_VER} && git submodule update --init --recursive && \
         make pip_pkg && pip install artifacts/*.whl && make clean; \
-    fi
+    fi; \
+    rm -rf /hugectr
+    

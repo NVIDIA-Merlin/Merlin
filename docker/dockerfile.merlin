@@ -44,10 +44,7 @@ RUN apt clean && apt update -y --fix-missing && \
     wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-ubuntu2004.pin && \
     mv cuda-ubuntu2004.pin /etc/apt/preferences.d/cuda-repository-pin-600 && \
     apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/3bf863cc.pub && \
-    add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/ /"
-
-# Install packages
-RUN apt update -y --fix-missing && \
+    add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/ /" && \
     apt install -y --no-install-recommends \
         autoconf \
         automake \
@@ -91,21 +88,30 @@ RUN ln -s /usr/bin/python3 /usr/bin/python
 # https://gitlab.kitware.com/cmake/cmake/-/issues/24119
 # A fix has already been merged but not yet released:
 # https://gitlab.kitware.com/cmake/cmake/-/merge_requests/7859
-RUN pip install "cmake<3.25.0" ninja scikit-build
+RUN pip install "cmake<3.25.0" ninja scikit-build pandas==1.3.5 \
+                cupy-cuda117 nvidia-pyindex pybind11 pytest \
+                transformers==4.12 tensorflow-metadata betterproto \
+                cachetools graphviz nvtx scipy "scikit-learn<1.2" \
+                tritonclient[all] grpcio-channelz fiddle wandb npy-append-array \
+                git+https://github.com/rapidsai/asvdb.git@main \
+                xgboost==1.6.2 lightgbm treelite==2.4.0 treelite_runtime==2.4.0 \
+                lightfm implicit \
+                numba "cuda-python>=11.5,<12.0" fsspec==2022.5.0 llvmlite \
+                pynvml dask==${DASK_VER} distributed==${DASK_VER}
+RUN pip install numpy==1.22.4 protobuf==3.20.3
+RUN pip install dask==${DASK_VER} distributed==${DASK_VER} dask[dataframe]==${DASK_VER}
 
-RUN pip install pandas==1.3.5
-RUN pip install cupy-cuda117 nvidia-pyindex pybind11 pytest transformers==4.12 tensorflow-metadata
-RUN pip install betterproto cachetools graphviz nvtx scipy "scikit-learn<1.2"
-RUN pip install tritonclient[all] grpcio-channelz fiddle wandb npy-append-array
-RUN pip install git+https://github.com/rapidsai/asvdb.git@main
-# xgboost and treelite are pinned from tritonserver support
-RUN pip install xgboost==1.6.2 lightgbm treelite==2.4.0 treelite_runtime==2.4.0
-RUN pip install lightfm implicit
-RUN pip install numba
-RUN pip install "cuda-python>=11.5,<12.0"
-RUN pip install fsspec==2022.5.0 llvmlite
-RUN pip install pynvml dask==${DASK_VER} distributed==${DASK_VER}
-RUN pip install numpy==1.22.4
+
+# RUN pip install tritonclient[all] grpcio-channelz fiddle wandb npy-append-array
+# RUN pip install git+https://github.com/rapidsai/asvdb.git@main
+# # xgboost and treelite are pinned from tritonserver support
+# RUN pip install xgboost==1.6.2 lightgbm treelite==2.4.0 treelite_runtime==2.4.0
+# RUN pip install lightfm implicit
+# RUN pip install numba
+# RUN pip install "cuda-python>=11.5,<12.0"
+# RUN pip install fsspec==2022.5.0 llvmlite
+# RUN pip install pynvml dask==${DASK_VER} distributed==${DASK_VER}
+# RUN pip install numpy==1.22.4
 # protobuf versions
 #   tensorflow: >= 3.9.2, < 3.20
 #     The upper bound here is not strict (it will work with 3.20, though not on Windows, and not with 4.x)
@@ -116,7 +122,7 @@ RUN pip install numpy==1.22.4
 #     https://github.com/rapidsai/cudf/blob/v22.12.01/python/cudf/setup.py#L20
 #   onnx: >= 3.20.2, < 4
 #      https://github.com/onnx/onnx/blob/v1.13.0/requirements.txt#L2
-RUN pip install protobuf==3.20.3
+# RUN pip install protobuf==3.20.3
 
 # Triton Server
 WORKDIR /opt/tritonserver
@@ -134,7 +140,7 @@ COPY --chown=1000:1000 --from=triton /usr/bin/serve /usr/bin/.
 ENV PATH=/opt/tritonserver/bin:${PATH}:
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/tritonserver/lib
 
-RUN pip install dask==${DASK_VER} distributed==${DASK_VER} dask[dataframe]==${DASK_VER}
+# RUN pip install dask==${DASK_VER} distributed==${DASK_VER} dask[dataframe]==${DASK_VER}
 
 # Install NVTabular Triton Backend
 ARG TRITON_VERSION
@@ -194,12 +200,7 @@ RUN apt update -y --fix-missing && \
     wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-ubuntu2004.pin && \
     mv cuda-ubuntu2004.pin /etc/apt/preferences.d/cuda-repository-pin-600 && \
     apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/3bf863cc.pub && \
-    add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/ /"
-
-
-
-# Install packages
-RUN apt update -y --fix-missing && \
+    add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/ /" && \
     apt install -y --no-install-recommends \
         ca-certificates \
         clang-format \
@@ -235,9 +236,9 @@ RUN ln -s /usr/bin/python3 /usr/bin/python
 # Includes
 COPY --chown=1000:1000 --from=build /usr/include /usr/include/
 COPY --chown=1000:1000 --from=build /usr/local/include /usr/local/include/
-COPY --chown=1000:1000 --from=build /usr/lib/ /usr/lib/
-COPY --chown=1000:1000 --from=build /usr/local/lib/ /usr/local/lib/
-COPY --chown=1000:1000 --from=triton /usr/lib/x86_64-linux-gnu/libdcgm.so.2 /usr/lib/x86_64-linux-gnu/libdcgm.so.2
+# COPY --chown=1000:1000 --from=build /usr/lib/ /usr/lib/
+# COPY --chown=1000:1000 --from=build /usr/local/lib/ /usr/local/lib/
+# COPY --chown=1000:1000 --from=triton /usr/lib/x86_64-linux-gnu/libdcgm.so.2 /usr/lib/x86_64-linux-gnu/libdcgm.so.2
 
 # Binaries
 COPY --chown=1000:1000 --from=build /usr/local/bin /usr/local/bin/
@@ -308,32 +309,32 @@ ARG TF4REC_VER
 ARG DL_VER
 
 # Add Merlin Repo
-RUN git clone https://github.com/NVIDIA-Merlin/Merlin/ /Merlin && \
+RUN git clone --depth 1 https://github.com/NVIDIA-Merlin/Merlin/ /Merlin && \
     cd /Merlin/ && git checkout ${MERLIN_VER} && pip install . --no-deps
 
 # Install Merlin Core
-RUN git clone https://github.com/NVIDIA-Merlin/core.git /core/ && \
+RUN git clone --depth 1 https://github.com/NVIDIA-Merlin/core.git /core/ && \
     cd /core/ && git checkout ${CORE_VER} && pip install . --no-deps
 
 # Install Merlin Dataloader
-RUN git clone https://github.com/NVIDIA-Merlin/dataloader.git /dataloader/ && \
+RUN git clone --depth 1 https://github.com/NVIDIA-Merlin/dataloader.git /dataloader/ && \
     cd /dataloader/ && git checkout ${DL_VER} && pip install . --no-deps
 
 # Install NVTabular
 ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
-RUN git clone https://github.com/NVIDIA-Merlin/NVTabular.git /nvtabular/ && \
+RUN git clone --depth 1 https://github.com/NVIDIA-Merlin/NVTabular.git /nvtabular/ && \
     cd /nvtabular/ && git checkout ${NVTAB_VER} && pip install . --no-deps
 
 # Install Merlin Systems
-RUN git clone https://github.com/NVIDIA-Merlin/systems.git /systems/ && \
+RUN git clone --depth 1 https://github.com/NVIDIA-Merlin/systems.git /systems/ && \
     cd /systems/ && git checkout ${SYSTEMS_VER} && pip install --no-deps .
 
 # Install Models
-RUN git clone https://github.com/NVIDIA-Merlin/Models.git /models/ && \
+RUN git clone --depth 1 https://github.com/NVIDIA-Merlin/Models.git /models/ && \
     cd /models/ && git checkout ${MODELS_VER} && pip install . --no-deps;
 
 # Install Transformers4Rec
-RUN git clone https://github.com/NVIDIA-Merlin/Transformers4Rec.git /transformers4rec && \
+RUN git clone --depth 1 https://github.com/NVIDIA-Merlin/Transformers4Rec.git /transformers4rec && \
     cd /transformers4rec/ && git checkout ${TF4REC_VER} && pip install . --no-deps
 
 HEALTHCHECK NONE
