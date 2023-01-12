@@ -17,7 +17,8 @@ COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/tensorflow2 back
 # Tensorflow dependencies (only)
 # Pinning to pass hugectr sok tests
 RUN pip install tensorflow-gpu==2.9.2 transformers==4.23.1\
-    && pip uninstall tensorflow-gpu keras -y
+    && pip uninstall tensorflow-gpu keras -y \
+    && python -m pip cache purge
 
 # DLFW Tensorflow packages
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python3.8/dist-packages/tensorflow /usr/local/lib/python3.8/dist-packages/tensorflow/
@@ -81,4 +82,12 @@ RUN if [ "$HUGECTR_DEV_MODE" == "false" ]; then \
         make pip_pkg && pip install artifacts/*.whl && make clean; \
     fi; \
     rm -rf /hugectr
-    
+
+
+
+# FROM scratch as final
+
+# COPY --chown=1000:1000 --from=base / /
+# HEALTHCHECK NONE
+# CMD ["/bin/bash"]
+# ENTRYPOINT ["/opt/nvidia/nvidia_entrypoint.sh"]
