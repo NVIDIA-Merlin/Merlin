@@ -16,7 +16,7 @@ COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/tensorflow2 back
 
 # Tensorflow dependencies (only)
 # Pinning to pass hugectr sok tests
-RUN pip install tensorflow-gpu==2.9.2 transformers==4.23.1\
+RUN pip install tensorflow-gpu==2.9.2 \
     && pip uninstall tensorflow-gpu keras -y \
     && python -m pip cache purge
 
@@ -30,6 +30,9 @@ COPY --chown=1000:1000 --from=dlfw /usr/local/lib/tensorflow/ /usr/local/lib/ten
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python3.8/dist-packages/horovod /usr/local/lib/python3.8/dist-packages/horovod/
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python3.8/dist-packages/horovod-*.dist-info /usr/local/lib/python3.8/dist-packages/horovod.dist-info/
 COPY --chown=1000:1000 --from=dlfw /usr/local/bin/horovodrun /usr/local/bin/horovodrun
+
+# Need to install transformers after tensorflow has been pulled in, so it builds artifacts correctly.
+RUN pip install transformers==4.23.1
 
 # Install dependencies for hps tf plugin
 RUN apt update -y --fix-missing && \
@@ -81,13 +84,7 @@ RUN if [ "$HUGECTR_DEV_MODE" == "false" ]; then \
         cd /distributed_embeddings && git checkout ${TFDE_VER} && git submodule update --init --recursive && \
         make pip_pkg && pip install artifacts/*.whl && make clean; \
     fi; \
-    rm -rf /hugectr
+    mv /hugectr/ci ~/hugectr-ci ; mv /hugectr/sparse_operation_kit ~/hugectr-sparse_operation_kit ; \
+    rm -rf /hugectr; mkdir -p /hugectr; \
+    mv ~/hugectr-ci /hugectr/ci ; mv ~/hugectr-sparse_operation_kit /hugectr/sparse_operation_kit
 
-
-
-# FROM scratch as final
-
-# COPY --chown=1000:1000 --from=base / /
-# HEALTHCHECK NONE
-# CMD ["/bin/bash"]
-# ENTRYPOINT ["/opt/nvidia/nvidia_entrypoint.sh"]
