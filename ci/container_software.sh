@@ -3,12 +3,19 @@
 container=$1
 devices=$2
 
+exit_code=0
+
+echo "##################"
+echo "# Container size #"
+echo "##################"
+
+cd / && NUMGB=$(du -sh 2> /dev/null | grep -oE '[0-9]*G' | grep -oE '[0-9]*') 
+if [ $NUMGB -ge 15  ]; then echo "Size of container exceeds 15GB, failed build." && exit 1 ; fi;
+
 
 echo "##################"
 echo "# Software check #"
 echo "##################"
-
-exit_code=0
 
 regex="merlin-(.)*"
 if [[ ! "$container" =~ $regex ]]; then
