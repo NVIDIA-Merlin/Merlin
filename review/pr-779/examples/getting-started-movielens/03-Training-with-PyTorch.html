@@ -151,6 +151,7 @@
 <span class="kn">import</span> <span class="nn">glob</span>
 
 <span class="kn">import</span> <span class="nn">nvtabular</span> <span class="k">as</span> <span class="nn">nvt</span>
+<span class="kn">from</span> <span class="nn">merlin.schema.tags</span> <span class="kn">import</span> <span class="n">Tags</span>
 </pre></div>
 </div>
 </div>
@@ -189,7 +190,6 @@
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">from</span> <span class="nn">merlin.loader.torch</span> <span class="kn">import</span> <span class="n">Loader</span>
 
-<span class="c1"># from nvtabular.loader.torch import TorchAsyncItr, DLDataLoader</span>
 <span class="kn">from</span> <span class="nn">nvtabular.framework_utils.torch.models</span> <span class="kn">import</span> <span class="n">Model</span>
 <span class="kn">from</span> <span class="nn">nvtabular.framework_utils.torch.utils</span> <span class="kn">import</span> <span class="n">process_epoch</span>
 </pre></div>
@@ -201,24 +201,18 @@
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">BATCH_SIZE</span> <span class="o">=</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">32</span>  <span class="c1"># Batch Size</span>
 
-<span class="n">label_column</span> <span class="o">=</span> <span class="s1">&#39;rating&#39;</span>
-<span class="k">def</span> <span class="nf">process_batch</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">_</span><span class="p">):</span>
-    <span class="n">x</span> <span class="o">=</span> <span class="p">{</span><span class="n">col</span><span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">if</span> <span class="n">col</span> <span class="o">!=</span> <span class="n">label_column</span><span class="p">}</span>
-    <span class="n">y</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">label_column</span><span class="p">]</span>
-    <span class="k">return</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
-
+<span class="n">train_dataset</span> <span class="o">=</span> <span class="n">nvt</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">TRAIN_PATHS</span><span class="p">)</span>
+<span class="n">validation_dataset</span> <span class="o">=</span> <span class="n">nvt</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">VALID_PATHS</span><span class="p">)</span>
 
 <span class="n">train_loader</span> <span class="o">=</span> <span class="n">Loader</span><span class="p">(</span>
-    <span class="n">nvt</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">TRAIN_PATHS</span><span class="p">),</span>
+    <span class="n">train_dataset</span><span class="p">,</span>
     <span class="n">batch_size</span><span class="o">=</span><span class="n">BATCH_SIZE</span><span class="p">,</span>
-<span class="p">)</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">process_batch</span><span class="p">)</span>
-
-
+<span class="p">)</span>
 
 <span class="n">valid_loader</span> <span class="o">=</span> <span class="n">Loader</span><span class="p">(</span>
-    <span class="n">nvt</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">VALID_PATHS</span><span class="p">),</span>
+    <span class="n">validation_dataset</span><span class="p">,</span>
     <span class="n">batch_size</span><span class="o">=</span><span class="n">BATCH_SIZE</span><span class="p">,</span>
-<span class="p">)</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">process_batch</span><span class="p">)</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -242,29 +236,29 @@ The single-hot categorical features (<code class="docutils literal notranslate">
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>({&#39;genres&#39;: (tensor([ 3, 12,  7,  ...,  8,  1,  4], device=&#39;cuda:0&#39;),
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>({&#39;genres&#39;: (tensor([ 8, 12,  2,  ...,  2,  1, 14], device=&#39;cuda:0&#39;),
    tensor([[    0],
-           [    4],
-           [    7],
+           [    2],
+           [    3],
            ...,
-           [88993],
-           [88996],
-           [88998]], device=&#39;cuda:0&#39;, dtype=torch.int32)),
-  &#39;userId&#39;: tensor([[  225],
-          [ 1540],
-          [  472],
+           [88859],
+           [88864],
+           [88865]], device=&#39;cuda:0&#39;, dtype=torch.int32)),
+  &#39;userId&#39;: tensor([[ 7710],
+          [    9],
+          [ 1679],
           ...,
-          [36721],
-          [15832],
-          [  842]], device=&#39;cuda:0&#39;),
-  &#39;movieId&#39;: tensor([[2964],
-          [3432],
-          [3346],
+          [40315],
+          [  368],
+          [ 3961]], device=&#39;cuda:0&#39;),
+  &#39;movieId&#39;: tensor([[ 175],
+          [8844],
+          [5744],
           ...,
-          [ 304],
-          [ 922],
-          [ 433]], device=&#39;cuda:0&#39;)},
- tensor([0., 0., 1.,  ..., 0., 0., 1.], device=&#39;cuda:0&#39;))
+          [  13],
+          [3683],
+          [ 457]], device=&#39;cuda:0&#39;)},
+ tensor([1., 0., 1.,  ..., 0., 0., 1.], device=&#39;cuda:0&#39;))
 </pre></div>
 </div>
 </div>
@@ -415,8 +409,8 @@ The single-hot categorical features (<code class="docutils literal notranslate">
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Total batches: 610
 Total batches: 152
-Epoch 00. Train loss: 0.1918. Valid loss: 0.1702.
-CPU times: user 17 s, sys: 309 ms, total: 17.3 s
+Epoch 00. Train loss: 0.1908. Valid loss: 0.1695.
+CPU times: user 17 s, sys: 349 ms, total: 17.3 s
 Wall time: 17.3 s
 </pre></div>
 </div>

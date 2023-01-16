@@ -161,6 +161,7 @@
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">shutil</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">merlin.schema.tags</span> <span class="kn">import</span> <span class="n">Tags</span>
 
 <span class="kn">import</span> <span class="nn">nvtabular</span> <span class="k">as</span> <span class="nn">nvt</span>
 
@@ -169,6 +170,12 @@
 <span class="c1"># Get dataframe library - cudf or pandas</span>
 <span class="kn">from</span> <span class="nn">merlin.core.dispatch</span> <span class="kn">import</span> <span class="n">get_lib</span>
 <span class="n">df_lib</span> <span class="o">=</span> <span class="n">get_lib</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/usr/local/lib/python3.8/dist-packages/tqdm/auto.py:22: TqdmWarning: IProgress not found. Please update jupyter and ipywidgets. See https://ipywidgets.readthedocs.io/en/stable/user_install.html
+  from .autonotebook import tqdm as notebook_tqdm
 </pre></div>
 </div>
 </div>
@@ -276,7 +283,7 @@ NVTabular has already implemented multiple calculations, called <code class="doc
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/21a920038bdeb43a474a8bb1aaa25cc794451762a7cb0387d203f5283f3a4cd8.svg" src="../../_images/21a920038bdeb43a474a8bb1aaa25cc794451762a7cb0387d203f5283f3a4cd8.svg" /></div>
+<img alt="../../_images/8e9bd4ea1a6cdb0fff40e95772bf6f4fefe23b6d342f87ef8fca542fe2876cdc.svg" src="../../_images/8e9bd4ea1a6cdb0fff40e95772bf6f4fefe23b6d342f87ef8fca542fe2876cdc.svg" /></div>
 </div>
 <p>Embedding Layers of neural networks require that categorical features are contiguous, incremental Integers: 0, 1, 2, … , |C|-1. We need to ensure that our categorical features fulfill the requirement.<br></p>
 <p>Currently, our genres are a list of Strings. In addition, we should transform the single-hot categorical features userId and movieId, as well.<br>
@@ -292,7 +299,7 @@ NVTabular provides the operator <code class="docutils literal notranslate"><span
 <p>The ratings are on a scale between 1-5. We want to predict a binary target with 1 for ratings <code class="docutils literal notranslate"><span class="pre">&gt;3</span></code> and 0 for  ratings <code class="docutils literal notranslate"><span class="pre">&lt;=3</span></code>. We use the <a class="reference external" href="https://nvidia-merlin.github.io/NVTabular/main/api/ops/lambdaop.html">LambdaOp</a> for it.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ratings</span> <span class="o">=</span> <span class="n">nvt</span><span class="o">.</span><span class="n">ColumnGroup</span><span class="p">([</span><span class="s2">&quot;rating&quot;</span><span class="p">])</span> <span class="o">&gt;&gt;</span> <span class="n">nvt</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">LambdaOp</span><span class="p">(</span><span class="k">lambda</span> <span class="n">col</span><span class="p">:</span> <span class="p">(</span><span class="n">col</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;int8&quot;</span><span class="p">))</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ratings</span> <span class="o">=</span> <span class="n">nvt</span><span class="o">.</span><span class="n">ColumnGroup</span><span class="p">([</span><span class="s2">&quot;rating&quot;</span><span class="p">])</span> <span class="o">&gt;&gt;</span> <span class="n">nvt</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">LambdaOp</span><span class="p">(</span><span class="k">lambda</span> <span class="n">col</span><span class="p">:</span> <span class="p">(</span><span class="n">col</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;int8&quot;</span><span class="p">))</span> <span class="o">&gt;&gt;</span> <span class="n">nvt</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">AddTags</span><span class="p">(</span><span class="n">Tags</span><span class="o">.</span><span class="n">TARGET</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -305,7 +312,7 @@ NVTabular provides the operator <code class="docutils literal notranslate"><span
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/234bb9e9bc7c8b066c66addc070a9efe5b8534d38185833d62fe7cc84c9d515b.svg" src="../../_images/234bb9e9bc7c8b066c66addc070a9efe5b8534d38185833d62fe7cc84c9d515b.svg" /></div>
+<img alt="../../_images/d4be40541e414e93cf3a70eed3a0978db6b68122e84ce74d013863a7a9eb5baf.svg" src="../../_images/d4be40541e414e93cf3a70eed3a0978db6b68122e84ce74d013863a7a9eb5baf.svg" /></div>
 </div>
 <p>We initialize our NVTabular <code class="docutils literal notranslate"><span class="pre">workflow</span></code>.</p>
 <div class="cell docutils container">
@@ -351,11 +358,11 @@ NVTabular provides the operator <code class="docutils literal notranslate"><span
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>CPU times: user 1.7 s, sys: 290 ms, total: 1.99 s
-Wall time: 1.99 s
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>CPU times: user 719 ms, sys: 302 ms, total: 1.02 s
+Wall time: 1.03 s
 </pre></div>
 </div>
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;nvtabular.workflow.workflow.Workflow at 0x7f2972903550&gt;
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;nvtabular.workflow.workflow.Workflow at 0x7f0bda8197f0&gt;
 </pre></div>
 </div>
 </div>
@@ -388,7 +395,7 @@ Wall time: 1.99 s
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>CPU times: user 1 µs, sys: 1 µs, total: 2 µs
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>CPU times: user 1 µs, sys: 1e+03 ns, total: 2 µs
 Wall time: 3.1 µs
 </pre></div>
 </div>
@@ -409,8 +416,8 @@ Wall time: 3.1 µs
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>CPU times: user 1e+03 ns, sys: 0 ns, total: 1e+03 ns
-Wall time: 2.62 µs
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>CPU times: user 1 µs, sys: 0 ns, total: 1 µs
+Wall time: 3.34 µs
 </pre></div>
 </div>
 </div>
@@ -480,37 +487,37 @@ Wall time: 2.62 µs
   <tbody>
     <tr>
       <th>0</th>
-      <td>150011</td>
-      <td>62</td>
-      <td>[5, 13, 10, 2, 9]</td>
+      <td>7710</td>
+      <td>175</td>
+      <td>[8, 12]</td>
       <td>1.0</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>274</td>
-      <td>3762</td>
-      <td>[3, 5, 2]</td>
+      <td>9</td>
+      <td>8844</td>
+      <td>[2]</td>
       <td>0.0</td>
     </tr>
     <tr>
       <th>2</th>
-      <td>11196</td>
-      <td>1120</td>
-      <td>[8, 1, 6]</td>
+      <td>1679</td>
+      <td>5744</td>
+      <td>[2]</td>
       <td>1.0</td>
     </tr>
     <tr>
       <th>3</th>
-      <td>18</td>
-      <td>741</td>
-      <td>[5, 9, 15]</td>
+      <td>19455</td>
+      <td>63</td>
+      <td>[2, 6]</td>
       <td>0.0</td>
     </tr>
     <tr>
       <th>4</th>
-      <td>9171</td>
-      <td>1634</td>
-      <td>[2]</td>
+      <td>14137</td>
+      <td>155</td>
+      <td>[3, 8, 4]</td>
       <td>1.0</td>
     </tr>
   </tbody>
