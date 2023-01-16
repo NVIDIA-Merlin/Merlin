@@ -130,12 +130,13 @@
 <p>This notebook is created using the latest stable <a class="reference external" href="https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-tensorflow-training/tags">merlin-tensorflow-training</a> container.</p>
 <div class="section" id="overview">
 <h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline"></a></h2>
-<p>We observed that TensorFlow training pipelines can be slow as the dataloader is a bottleneck. The native dataloader in TensorFlow randomly samples each item from the dataset, which is very slow. The window dataloader in TensorFlow is not much faster. In our experiments, we are able to speed-up existing TensorFlow pipelines by 9x using a highly optimized dataloader.<br><br></p>
-<p>Applying deep learning models to recommendation systems faces unique challenges in comparison to other domains, such as computer vision and natural language processing. The datasets and common model architectures have unique characteristics, which require custom solutions. Recommendation system datasets have terabytes in size with billion examples but each example is represented by only a few bytes. For example, the <a class="reference external" href="https://ailab.criteo.com/download-criteo-1tb-click-logs-dataset/">Criteo CTR dataset</a>, the largest publicly available dataset, is 1.3TB with 4 billion examples. The model architectures have normally large embedding tables for the users and items, which do not fit on a single GPU.</p>
-<p>To learn more about the Merlin Dataloader, please take a look <a class="reference external" href="https://github.com/NVIDIA-Merlin/dataloader">at its repository</a>.</p>
+<p>In this notebook, we will train a Merlin Models model implementing the Deep and Cross Network (DCN) architecture.</p>
+<p>Merlin Models streamlines the training process and thus despite using a fairly elaborate deep learning architecture, we will only need to write a few lines of code!</p>
+<p>Additionally, to accelerate the training, we will leverage the Merlin Dataloader.</p>
+<p>The <a class="reference external" href="https://github.com/NVIDIA-Merlin/models/tree/main/examples">following notebooks</a> provide a great overview of Merlin Models’ concepts. To learn more about the Merlin Dataloader, please take a look <a class="reference external" href="https://github.com/NVIDIA-Merlin/dataloader">at its repository</a>.</p>
 <div class="section" id="learning-objectives">
 <h3>Learning objectives<a class="headerlink" href="#learning-objectives" title="Permalink to this headline"></a></h3>
-<p>This notebook explains, how to use the NVTabular dataloader to accelerate TensorFlow training.</p>
+<p>This notebook explains, how to use the Merlin dataloader to accelerate TensorFlow training.</p>
 <ol class="arabic simple">
 <li><p>Use <strong>Merlin Dataloader</strong> with TensorFlow Keras model</p></li>
 <li><p>Leverage <strong>multi-hot encoded input features</strong></p></li>
