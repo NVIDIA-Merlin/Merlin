@@ -56,10 +56,10 @@ def test_func():
             os.environ["INPUT_DATA_DIR"] = "{INPUT_DATA_DIR}"
             """
         )
+        tb2.execute()
         assert os.path.isdir("/tmp/input/getting_started/train")
         assert os.path.isdir("/tmp/input/getting_started/valid")
         assert os.path.isdir("/tmp/input/getting_started/workflow")
-        tb2.execute()
 
     with testbook(
         REPO_ROOT
@@ -86,8 +86,6 @@ def test_func():
             os.environ["INPUT_DATA_DIR"] = "{INPUT_DATA_DIR}"
             """
         )
-        # import pdb
-        # pdb.set_trace()
         tb4.execute_cell(list(range(0, 18)))
         with run_triton_server(os.path.join(MODEL_DIR, "ensemble"), grpc_port=8001, backend_config=f'tensorflow,version=2'):
             tb4.execute_cell(list(range(18, len(tb4.cells))))
