@@ -171,50 +171,19 @@
 </div>
 </div>
 </div>
-</div>
-<div class="section" id="defining-hyperparameters">
-<h3>Defining Hyperparameters<a class="headerlink" href="#defining-hyperparameters" title="Permalink to this headline"></a></h3>
-<p>First, we define the data schema and differentiate between single-hot and multi-hot categorical features. Note, that we do not have any numerical input features.</p>
+<p>And the paths to our train and validation datasets.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">BATCH_SIZE</span> <span class="o">=</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">32</span>  <span class="c1"># Batch Size</span>
-<span class="n">CATEGORICAL_COLUMNS</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;userId&quot;</span><span class="p">,</span> <span class="s2">&quot;movieId&quot;</span><span class="p">]</span>  <span class="c1"># Single-hot</span>
-<span class="n">CATEGORICAL_MH_COLUMNS</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;genres&quot;</span><span class="p">]</span>  <span class="c1"># Multi-hot</span>
-<span class="n">NUMERIC_COLUMNS</span> <span class="o">=</span> <span class="p">[]</span>
-
-<span class="c1"># Output from ETL-with-NVTabular</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Output from ETL-with-NVTabular</span>
 <span class="n">TRAIN_PATHS</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">INPUT_DATA_DIR</span><span class="p">,</span> <span class="s2">&quot;train&quot;</span><span class="p">,</span> <span class="s2">&quot;*.parquet&quot;</span><span class="p">)))</span>
 <span class="n">VALID_PATHS</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">INPUT_DATA_DIR</span><span class="p">,</span> <span class="s2">&quot;valid&quot;</span><span class="p">,</span> <span class="s2">&quot;*.parquet&quot;</span><span class="p">)))</span>
 </pre></div>
 </div>
 </div>
 </div>
-<p>In the previous notebook, we used NVTabular for ETL and stored the workflow to disk. We can load the NVTabular workflow to extract important metadata for our training pipeline.</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">proc</span> <span class="o">=</span> <span class="n">nvt</span><span class="o">.</span><span class="n">Workflow</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">INPUT_DATA_DIR</span><span class="p">,</span> <span class="s2">&quot;workflow&quot;</span><span class="p">))</span>
-</pre></div>
 </div>
-</div>
-</div>
-<p>The embedding table shows the cardinality of each categorical variable along with its associated embedding size. Each entry is of the form <code class="docutils literal notranslate"><span class="pre">(cardinality,</span> <span class="pre">embedding_size)</span></code>.</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">EMBEDDING_TABLE_SHAPES</span><span class="p">,</span> <span class="n">MH_EMBEDDING_TABLE_SHAPES</span> <span class="o">=</span> <span class="n">nvt</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">get_embedding_sizes</span><span class="p">(</span><span class="n">proc</span><span class="p">)</span>
-<span class="n">EMBEDDING_TABLE_SHAPES</span><span class="p">,</span> <span class="n">MH_EMBEDDING_TABLE_SHAPES</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>({&#39;userId&#39;: (162542, 512), &#39;movieId&#39;: (56615, 512)}, {&#39;genres&#39;: (21, 16)})
-</pre></div>
-</div>
-</div>
-</div>
-</div>
-<div class="section" id="initializing-nvtabular-dataloader-for-pytorch">
-<h3>Initializing NVTabular Dataloader for PyTorch<a class="headerlink" href="#initializing-nvtabular-dataloader-for-pytorch" title="Permalink to this headline"></a></h3>
-<p>We import PyTorch and the Merlin Dataloader for PyTorch.</p>
+<div class="section" id="initializing-the-merlin-dataloader-for-pytorch">
+<h3>Initializing the Merlin Dataloader for PyTorch<a class="headerlink" href="#initializing-the-merlin-dataloader-for-pytorch" title="Permalink to this headline"></a></h3>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
@@ -227,12 +196,12 @@
 </div>
 </div>
 </div>
-<p>First, we take a look on our dataloader and how the data is represented as tensors. The NVTabular dataloaders are initialized as usual and we specify both single-hot and multi-hot categorical features as cats. The dataloader can automatically recognize the single/multi-hot columns and represent them accordingly.</p>
+<p>First, we take a look on our dataloader and how the data is represented as tensors. The Merlin dataloader can automatically recognize the single/multi-hot columns and represent them accordingly.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">label_column</span> <span class="o">=</span> <span class="s1">&#39;rating&#39;</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">BATCH_SIZE</span> <span class="o">=</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">32</span>  <span class="c1"># Batch Size</span>
 
-
+<span class="n">label_column</span> <span class="o">=</span> <span class="s1">&#39;rating&#39;</span>
 <span class="k">def</span> <span class="nf">process_batch</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">_</span><span class="p">):</span>
     <span class="n">x</span> <span class="o">=</span> <span class="p">{</span><span class="n">col</span><span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">if</span> <span class="n">col</span> <span class="o">!=</span> <span class="n">label_column</span><span class="p">}</span>
     <span class="n">y</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">label_column</span><span class="p">]</span>
@@ -273,29 +242,29 @@ The single-hot categorical features (<code class="docutils literal notranslate">
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>({&#39;genres&#39;: (tensor([ 1, 11,  4,  ..., 11,  8,  4], device=&#39;cuda:0&#39;),
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>({&#39;genres&#39;: (tensor([ 3, 12,  7,  ...,  8,  1,  4], device=&#39;cuda:0&#39;),
    tensor([[    0],
-           [    3],
-           [    6],
+           [    4],
+           [    7],
            ...,
-           [88688],
-           [88691],
-           [88693]], device=&#39;cuda:0&#39;, dtype=torch.int32)),
-  &#39;userId&#39;: tensor([[ 31056],
-          [  7087],
-          [  1696],
+           [88993],
+           [88996],
+           [88998]], device=&#39;cuda:0&#39;, dtype=torch.int32)),
+  &#39;userId&#39;: tensor([[  225],
+          [ 1540],
+          [  472],
           ...,
-          [ 54140],
-          [ 40743],
-          [120070]], device=&#39;cuda:0&#39;),
-  &#39;movieId&#39;: tensor([[ 285],
-          [  87],
-          [4594],
+          [36721],
+          [15832],
+          [  842]], device=&#39;cuda:0&#39;),
+  &#39;movieId&#39;: tensor([[2964],
+          [3432],
+          [3346],
           ...,
-          [1928],
-          [1313],
-          [ 747]], device=&#39;cuda:0&#39;)},
- tensor([1., 1., 0.,  ..., 0., 1., 1.], device=&#39;cuda:0&#39;))
+          [ 304],
+          [ 922],
+          [ 433]], device=&#39;cuda:0&#39;)},
+ tensor([0., 0., 1.,  ..., 0., 0., 1.], device=&#39;cuda:0&#39;))
 </pre></div>
 </div>
 </div>
@@ -309,7 +278,7 @@ The single-hot categorical features (<code class="docutils literal notranslate">
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>68
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>71
 </pre></div>
 </div>
 </div>
@@ -332,22 +301,31 @@ The single-hot categorical features (<code class="docutils literal notranslate">
 </div>
 </div>
 </div>
-<p>We initialize the model. <code class="docutils literal notranslate"><span class="pre">EMBEDDING_TABLE_SHAPES</span></code> needs to be a Tuple representing the cardinality for single-hot and multi-hot input features.</p>
+<p>In order to initialize the model, we need to provide the cardinality and sizes of our embeddings.</p>
+<p>Let’s capture them from our schema file and store this information in dicts.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">EMBEDDING_TABLE_SHAPES_TUPLE</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="p">{</span>
-        <span class="n">CATEGORICAL_COLUMNS</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span> <span class="n">EMBEDDING_TABLE_SHAPES</span><span class="p">[</span><span class="n">CATEGORICAL_COLUMNS</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span>
-        <span class="n">CATEGORICAL_COLUMNS</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="n">EMBEDDING_TABLE_SHAPES</span><span class="p">[</span><span class="n">CATEGORICAL_COLUMNS</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span>
-    <span class="p">},</span>
-    <span class="p">{</span><span class="n">CATEGORICAL_MH_COLUMNS</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span> <span class="n">MH_EMBEDDING_TABLE_SHAPES</span><span class="p">[</span><span class="n">CATEGORICAL_MH_COLUMNS</span><span class="p">[</span><span class="mi">0</span><span class="p">]]},</span>
-<span class="p">)</span>
-<span class="n">EMBEDDING_TABLE_SHAPES_TUPLE</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">extract_info</span><span class="p">(</span><span class="n">col_name</span><span class="p">,</span> <span class="n">schema</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;extracts embedding cardinality and dimension from schema&#39;&#39;&#39;</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="nb">int</span><span class="p">(</span><span class="n">schema</span><span class="o">.</span><span class="n">select_by_name</span><span class="p">(</span><span class="n">col_name</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="o">.</span><span class="n">properties</span><span class="p">[</span><span class="s1">&#39;embedding_sizes&#39;</span><span class="p">][</span><span class="s1">&#39;cardinality&#39;</span><span class="p">]),</span>
+        <span class="nb">int</span><span class="p">(</span><span class="n">schema</span><span class="o">.</span><span class="n">select_by_name</span><span class="p">(</span><span class="n">col_name</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="o">.</span><span class="n">properties</span><span class="p">[</span><span class="s1">&#39;embedding_sizes&#39;</span><span class="p">][</span><span class="s1">&#39;dimension&#39;</span><span class="p">])</span>
+    <span class="p">)</span>
+
+<span class="n">single_hot_embedding_tables_shapes</span> <span class="o">=</span> <span class="p">{</span><span class="n">col_name</span><span class="p">:</span> <span class="n">extract_info</span><span class="p">(</span><span class="n">col_name</span><span class="p">,</span> <span class="n">train_loader</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">schema</span><span class="p">)</span> <span class="k">for</span> <span class="n">col_name</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;userId&#39;</span><span class="p">,</span> <span class="s1">&#39;movieId&#39;</span><span class="p">]}</span>
+<span class="n">mutli_hot_embedding_tables_shapes</span> <span class="o">=</span> <span class="p">{</span><span class="n">col_name</span><span class="p">:</span> <span class="n">extract_info</span><span class="p">(</span><span class="n">col_name</span><span class="p">,</span> <span class="n">train_loader</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">schema</span><span class="p">)</span> <span class="k">for</span> <span class="n">col_name</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;genres&#39;</span><span class="p">]}</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">single_hot_embedding_tables_shapes</span><span class="p">,</span> <span class="n">mutli_hot_embedding_tables_shapes</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>({&#39;userId&#39;: (162542, 512), &#39;movieId&#39;: (56615, 512)}, {&#39;genres&#39;: (21, 16)})
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>({&#39;userId&#39;: (162542, 512), &#39;movieId&#39;: (56666, 512)}, {&#39;genres&#39;: (21, 16)})
 </pre></div>
 </div>
 </div>
@@ -355,7 +333,7 @@ The single-hot categorical features (<code class="docutils literal notranslate">
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span>
-    <span class="n">embedding_table_shapes</span><span class="o">=</span><span class="n">EMBEDDING_TABLE_SHAPES_TUPLE</span><span class="p">,</span>
+    <span class="n">embedding_table_shapes</span><span class="o">=</span><span class="p">(</span><span class="n">single_hot_embedding_tables_shapes</span><span class="p">,</span> <span class="n">mutli_hot_embedding_tables_shapes</span><span class="p">),</span>
     <span class="n">num_continuous</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
     <span class="n">emb_dropout</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
     <span class="n">layer_hidden_dims</span><span class="o">=</span><span class="p">[</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">],</span>
@@ -370,7 +348,7 @@ The single-hot categorical features (<code class="docutils literal notranslate">
   (initial_cat_layer): ConcatenatedEmbeddings(
     (embedding_layers): ModuleList(
       (0): Embedding(162542, 512)
-      (1): Embedding(56615, 512)
+      (1): Embedding(56666, 512)
     )
     (dropout): Dropout(p=0.0, inplace=False)
   )
@@ -437,8 +415,8 @@ The single-hot categorical features (<code class="docutils literal notranslate">
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Total batches: 610
 Total batches: 152
-Epoch 00. Train loss: 0.1909. Valid loss: 0.1694.
-CPU times: user 17 s, sys: 351 ms, total: 17.3 s
+Epoch 00. Train loss: 0.1918. Valid loss: 0.1702.
+CPU times: user 17 s, sys: 309 ms, total: 17.3 s
 Wall time: 17.3 s
 </pre></div>
 </div>
