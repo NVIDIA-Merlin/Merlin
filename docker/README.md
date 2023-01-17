@@ -13,7 +13,7 @@ The following table provides a list of Dockerfiles that you can use to build the
 | `merlin-pytorch`     | `dockerfile.torch` | <https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-pytorch>    | NVTabular and PyTorch                                          |
 
 
-# Building these containers locally
+# Building the Merlin containers locally
 
 Building our containers is a two-step process. We first build the Merlin `BASE_IMAGE` using the `dockerfile.merlin` file. This container depends on two upstream containers: `nvcr.io/nvidia/tritonserver` and `nvcr.io/nvidia/tensorflow`, from which it pulls the necessary dependencies for Triton Inference Server and RAPIDS tools. It also builds and installs other Merlin requirements, such as scikit-learn, XGBoost, etc.
 
@@ -41,4 +41,4 @@ docker build . -f dockerfile.torch -t ngcr.io/mycompany/merlin-torch:${MERLIN_VE
 
 ## Default Arguments
 
-Each of the Dockerfiles have many `ARG`s defined, most of which have defaults set. Sometimes the defaults fall out of date, because the Merlin team overrides them in our build process as demonstrated above. To see the latest versions used in each of our containers, see the [Merlin Support Matrix](https://nvidia-merlin.github.io/Merlin/main/support_matrix/index.html)
+Each of the Dockerfiles have many `ARG`s defined, most of which have defaults set. Sometimes the defaults fall out of date, because the Merlin team overrides them in our build process as demonstrated above. To see the `ARG` values used in each of our released containers, see the [Merlin Support Matrix](https://nvidia-merlin.github.io/Merlin/main/support_matrix/index.html)
