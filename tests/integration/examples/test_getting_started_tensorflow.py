@@ -86,6 +86,5 @@ def test_func():
             os.environ["INPUT_DATA_DIR"] = "{INPUT_DATA_DIR}"
             """
         )
-        tb4.execute_cell(list(range(0, 18)))
         with run_triton_server(os.path.join(MODEL_DIR, "ensemble"), grpc_port=8001, backend_config=f'tensorflow,version=2'):
-            tb4.execute_cell(list(range(18, len(tb4.cells))))
+            tb4.execute()
