@@ -131,16 +131,11 @@
 <p>The last step is to deploy the saved model to production.</p>
 <div class="section" id="launching-and-starting-the-triton-server">
 <h2>Launching and Starting the Triton Server<a class="headerlink" href="#launching-and-starting-the-triton-server" title="Permalink to this headline"></a></h2>
-<p>Before we get started, you should start the container for Triton Inference Server with the following command. This command includes the <code class="docutils literal notranslate"><span class="pre">-v</span></code> argument that mounts your local <code class="docutils literal notranslate"><span class="pre">model-repository</span></code> folder with your saved models from the previous notebook (<code class="docutils literal notranslate"><span class="pre">03-Training-with-TF.ipynb</span></code>).</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>docker run -it --gpus device=0 -p 8000:8000 -p 8001:8001 -p 8002:8002 -v ${PWD}:/model/ nvcr.io/nvidia/merlin/merlin-tensorflow:latest
-</pre></div>
-</div>
-<p>After you started the container, you can start Triton Inference Server with the following command.
-You need to provide correct path for the <code class="docutils literal notranslate"><span class="pre">models</span></code> directory.</p>
+<p>We need to start the Triton Inference Server first. We can do that with the following command. You need to provide correct path for the models directory. Note that since we add <code class="docutils literal notranslate"><span class="pre">--model-control-mode=explicit</span></code> flag the models wont be loaded yet, we will load our model below.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">tritonserver</span> <span class="o">--</span><span class="n">model</span><span class="o">-</span><span class="n">repository</span><span class="o">=</span><span class="n">path_to_models</span> <span class="o">--</span><span class="n">backend</span><span class="o">-</span><span class="n">config</span><span class="o">=</span><span class="n">tensorflow</span><span class="p">,</span><span class="n">version</span><span class="o">=</span><span class="mi">2</span> <span class="o">--</span><span class="n">model</span><span class="o">-</span><span class="n">control</span><span class="o">-</span><span class="n">mode</span><span class="o">=</span><span class="n">explicit</span> 
 </pre></div>
 </div>
-<p>Note: The model-repository path is <code class="docutils literal notranslate"><span class="pre">/root/nvt-examples/models/ensemble</span></code>. The model hasn’t been loaded, yet. Below, we will request the Triton server to load the saved Tensorflow model.</p>
+<p>Note: The model-repository path is <code class="docutils literal notranslate"><span class="pre">/workspace/nvt-examples/models/ensemble</span></code>. The model hasn’t been loaded, yet. Below, we will request the Triton server to load the saved Tensorflow model.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># External dependencies</span>
@@ -162,7 +157,7 @@ You need to provide correct path for the <code class="docutils literal notransla
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># path to preprocessed data</span>
 <span class="n">INPUT_DATA_DIR</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
-    <span class="s2">&quot;INPUT_DATA_DIR&quot;</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="s2">&quot;~/nvt-examples/movielens/data/&quot;</span><span class="p">)</span>
+    <span class="s2">&quot;INPUT_DATA_DIR&quot;</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="s2">&quot;/workspace/nvt-examples/movielens/data/&quot;</span><span class="p">)</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -276,7 +271,7 @@ Wall time: 669 ms
 <div class="section" id="predicting">
 <h1>Predicting<a class="headerlink" href="#predicting" title="Permalink to this headline"></a></h1>
 <p>Let’s now craft a request and obtain a response from the Triton Inference Server.</p>
-<p>We will use the first 3 rows of <code class="docutils literal notranslate"><span class="pre">userId</span></code> and <code class="docutils literal notranslate"><span class="pre">movieId</span></code> as input.</p>
+<p>We will use the first 3 rows of <code class="docutils literal notranslate"><span class="pre">userId</span></code> and <code class="docutils literal notranslate"><span class="pre">movieId</span></code> as input. This is the transformed dataset that we used to train our model.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">batch</span> <span class="o">=</span> <span class="n">df_lib</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span>

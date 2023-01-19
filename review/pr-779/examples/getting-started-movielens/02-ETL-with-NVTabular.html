@@ -174,18 +174,12 @@
 </pre></div>
 </div>
 </div>
-<div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/usr/local/lib/python3.8/dist-packages/tqdm/auto.py:22: TqdmWarning: IProgress not found. Please update jupyter and ipywidgets. See https://ipywidgets.readthedocs.io/en/stable/user_install.html
-  from .autonotebook import tqdm as notebook_tqdm
-</pre></div>
-</div>
-</div>
 </div>
 <p>We define our base input directory, containing the data.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">INPUT_DATA_DIR</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
-    <span class="s2">&quot;INPUT_DATA_DIR&quot;</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="s2">&quot;~/nvt-examples/movielens/data/&quot;</span><span class="p">)</span>
+    <span class="s2">&quot;INPUT_DATA_DIR&quot;</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="s2">&quot;/workspace/nvt-examples/movielens/data/&quot;</span><span class="p">)</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -288,7 +282,7 @@ NVTabular has already implemented multiple calculations, called <code class="doc
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/f13fd54a66f7a7903cda36308f0eac9cebe1860fb3e4413c065ceaa983a98d01.svg" src="../../_images/f13fd54a66f7a7903cda36308f0eac9cebe1860fb3e4413c065ceaa983a98d01.svg" /></div>
+<img alt="../../_images/ad16a833760153c701cf1e9f2daf035e07a25a88a1e9cff96a6f5ca924e014ef.svg" src="../../_images/ad16a833760153c701cf1e9f2daf035e07a25a88a1e9cff96a6f5ca924e014ef.svg" /></div>
 </div>
 <p>Embedding Layers of neural networks require that categorical features are contiguous, incremental Integers: 0, 1, 2, … , |C|-1. We need to ensure that our categorical features fulfill the requirement.<br></p>
 <p>Currently, our genres are a list of Strings. In addition, we should transform the single-hot categorical features userId and movieId, as well.<br>
@@ -317,7 +311,7 @@ NVTabular provides the operator <code class="docutils literal notranslate"><span
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/85fc98ad62c4c8495d4fa543524cee7f470a0d2aa2c8466160ad7ab883a671ad.svg" src="../../_images/85fc98ad62c4c8495d4fa543524cee7f470a0d2aa2c8466160ad7ab883a671ad.svg" /></div>
+<img alt="../../_images/ed1795ca91eab721a7b8be528ed567c7fd80eb349459bb938452a47a856b37ff.svg" src="../../_images/ed1795ca91eab721a7b8be528ed567c7fd80eb349459bb938452a47a856b37ff.svg" /></div>
 </div>
 <p>We initialize our NVTabular <code class="docutils literal notranslate"><span class="pre">workflow</span></code>.</p>
 <div class="cell docutils container">
@@ -369,11 +363,11 @@ NVTabular provides the operator <code class="docutils literal notranslate"><span
   warnings.warn(
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>CPU times: user 725 ms, sys: 312 ms, total: 1.04 s
-Wall time: 1.05 s
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>CPU times: user 1.86 s, sys: 303 ms, total: 2.16 s
+Wall time: 2.16 s
 </pre></div>
 </div>
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;nvtabular.workflow.workflow.Workflow at 0x7ff9a29d9cd0&gt;
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;nvtabular.workflow.workflow.Workflow at 0x7f16d216e8e0&gt;
 </pre></div>
 </div>
 </div>
@@ -401,13 +395,14 @@ Wall time: 1.05 s
     <span class="n">labels</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;rating&quot;</span><span class="p">],</span>
     <span class="n">dtypes</span><span class="o">=</span><span class="n">dict_dtypes</span><span class="p">,</span>
     <span class="n">write_hugectr_keyset</span><span class="o">=</span><span class="kc">True</span>  <span class="c1"># only needed if using this ETL Notebook for training with HugeCTR</span>
+                               <span class="c1"># should be removed otherwise to speed up computation</span>
 <span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>CPU times: user 1 µs, sys: 0 ns, total: 1 µs
-Wall time: 2.62 µs
+Wall time: 2.86 µs
 </pre></div>
 </div>
 </div>
@@ -422,13 +417,14 @@ Wall time: 2.62 µs
     <span class="n">labels</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;rating&quot;</span><span class="p">],</span>
     <span class="n">dtypes</span><span class="o">=</span><span class="n">dict_dtypes</span><span class="p">,</span>
     <span class="n">write_hugectr_keyset</span><span class="o">=</span><span class="kc">True</span>  <span class="c1"># only needed if using this ETL Notebook for training with HugeCTR</span>
+                               <span class="c1"># should be removed otherwise to speed up computation</span>
 <span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>CPU times: user 0 ns, sys: 1 µs, total: 1 µs
-Wall time: 3.1 µs
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>CPU times: user 1 µs, sys: 1 µs, total: 2 µs
+Wall time: 2.86 µs
 </pre></div>
 </div>
 </div>
@@ -437,9 +433,122 @@ Wall time: 3.1 µs
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">workflow</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">INPUT_DATA_DIR</span><span class="p">,</span> <span class="s2">&quot;workflow&quot;</span><span class="p">))</span>
+<span class="n">workflow</span><span class="o">.</span><span class="n">output_schema</span>
 </pre></div>
 </div>
 </div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>name</th>
+      <th>tags</th>
+      <th>dtype</th>
+      <th>is_list</th>
+      <th>is_ragged</th>
+      <th>properties.num_buckets</th>
+      <th>properties.freq_threshold</th>
+      <th>properties.max_size</th>
+      <th>properties.start_index</th>
+      <th>properties.cat_path</th>
+      <th>properties.domain.min</th>
+      <th>properties.domain.max</th>
+      <th>properties.domain.name</th>
+      <th>properties.embedding_sizes.cardinality</th>
+      <th>properties.embedding_sizes.dimension</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>userId</td>
+      <td>(Tags.CATEGORICAL)</td>
+      <td>int64</td>
+      <td>False</td>
+      <td>False</td>
+      <td>NaN</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>.//categories/unique.userId.parquet</td>
+      <td>0.0</td>
+      <td>162541.0</td>
+      <td>userId</td>
+      <td>162542.0</td>
+      <td>512.0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>movieId</td>
+      <td>(Tags.CATEGORICAL)</td>
+      <td>int64</td>
+      <td>False</td>
+      <td>False</td>
+      <td>NaN</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>.//categories/unique.movieId.parquet</td>
+      <td>0.0</td>
+      <td>56729.0</td>
+      <td>movieId</td>
+      <td>56730.0</td>
+      <td>512.0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>genres</td>
+      <td>(Tags.CATEGORICAL)</td>
+      <td>int64</td>
+      <td>True</td>
+      <td>True</td>
+      <td>NaN</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>0.0</td>
+      <td>.//categories/unique.genres.parquet</td>
+      <td>0.0</td>
+      <td>20.0</td>
+      <td>genres</td>
+      <td>21.0</td>
+      <td>16.0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>rating</td>
+      <td>(Tags.TARGET)</td>
+      <td>int8</td>
+      <td>False</td>
+      <td>False</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
 </div>
 </div>
 <div class="section" id="checking-the-pre-processing-outputs">
@@ -456,13 +565,13 @@ Wall time: 3.1 µs
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>([&#39;/root/nvt-examples/movielens/data/train/part_0.parquet&#39;],
- [&#39;/root/nvt-examples/movielens/data/valid/part_0.parquet&#39;])
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>([&#39;/workspace/nvt-examples/movielens/data/train/part_0.parquet&#39;],
+ [&#39;/workspace/nvt-examples/movielens/data/valid/part_0.parquet&#39;])
 </pre></div>
 </div>
 </div>
 </div>
-<p>We can see, that genres are a list of Integers</p>
+<p>We can see that genres are a list of Integers</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df</span> <span class="o">=</span> <span class="n">df_lib</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="n">TRAIN_PATHS</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
@@ -498,37 +607,37 @@ Wall time: 3.1 µs
   <tbody>
     <tr>
       <th>0</th>
-      <td>12525</td>
-      <td>333</td>
-      <td>[2, 1]</td>
+      <td>2579</td>
+      <td>6546</td>
+      <td>[1]</td>
       <td>1.0</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>15310</td>
-      <td>5395</td>
-      <td>[2]</td>
+      <td>91</td>
+      <td>4216</td>
+      <td>[2, 1, 6]</td>
       <td>1.0</td>
     </tr>
     <tr>
       <th>2</th>
-      <td>56134</td>
-      <td>366</td>
-      <td>[3, 5, 2, 7]</td>
+      <td>883</td>
+      <td>4651</td>
+      <td>[1]</td>
       <td>1.0</td>
     </tr>
     <tr>
       <th>3</th>
-      <td>105</td>
-      <td>380</td>
-      <td>[2, 1, 6]</td>
-      <td>0.0</td>
+      <td>84180</td>
+      <td>71</td>
+      <td>[1, 6, 7]</td>
+      <td>1.0</td>
     </tr>
     <tr>
       <th>4</th>
-      <td>8306</td>
-      <td>741</td>
-      <td>[3, 2, 9, 12]</td>
+      <td>7101</td>
+      <td>5880</td>
+      <td>[2, 6]</td>
       <td>1.0</td>
     </tr>
   </tbody>

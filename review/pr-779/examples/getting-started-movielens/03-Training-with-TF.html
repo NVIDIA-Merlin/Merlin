@@ -156,6 +156,7 @@
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># External dependencies</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">glob</span>
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;TF_GPU_ALLOCATOR&quot;</span><span class="p">]</span><span class="o">=</span><span class="s2">&quot;cuda_malloc_async&quot;</span>
 
 <span class="kn">import</span> <span class="nn">nvtabular</span> <span class="k">as</span> <span class="nn">nvt</span>
 </pre></div>
@@ -166,10 +167,10 @@
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">INPUT_DATA_DIR</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
-    <span class="s2">&quot;INPUT_DATA_DIR&quot;</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="s2">&quot;~/nvt-examples/movielens/data/&quot;</span><span class="p">)</span>
+    <span class="s2">&quot;INPUT_DATA_DIR&quot;</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="s2">&quot;/workspace/nvt-examples/movielens/data/&quot;</span><span class="p">)</span>
 <span class="p">)</span>
 <span class="c1"># path to save the models</span>
-<span class="n">MODEL_DIR</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;MODEL_DIR&quot;</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="s2">&quot;~/nvt-examples/models&quot;</span><span class="p">))</span>
+<span class="n">MODEL_DIR</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;MODEL_DIR&quot;</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="s2">&quot;/workspace/nvt-examples/models&quot;</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
@@ -178,10 +179,6 @@
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-
-<span class="kn">from</span> <span class="nn">nvtabular.loader.tf_utils</span> <span class="kn">import</span> <span class="n">configure_tensorflow</span>
-
-<span class="n">configure_tensorflow</span><span class="p">()</span>
 
 <span class="kn">import</span> <span class="nn">nvtabular</span> <span class="k">as</span> <span class="nn">nvt</span>
 <span class="kn">from</span> <span class="nn">nvtabular.ops</span> <span class="kn">import</span> <span class="o">*</span>
@@ -200,18 +197,19 @@
 <div class="cell_output docutils container">
 <div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/usr/lib/python3/dist-packages/requests/__init__.py:89: RequestsDependencyWarning: urllib3 (1.26.12) or chardet (3.0.4) doesn&#39;t match a supported version!
   warnings.warn(&quot;urllib3 ({}) or chardet ({}) doesn&#39;t match a supported &quot;
-2023-01-18 01:41:40.918762: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:991] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
-2023-01-18 01:41:40.919152: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:991] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
-2023-01-18 01:41:40.919309: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:991] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
-2023-01-18 01:41:40.945923: I tensorflow/core/platform/cpu_feature_guard.cc:194] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  SSE3 SSE4.1 SSE4.2 AVX
+2023-01-19 03:07:21.927452: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:991] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2023-01-19 03:07:21.927851: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:991] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2023-01-19 03:07:21.928005: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:991] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2023-01-19 03:07:21.948932: I tensorflow/core/platform/cpu_feature_guard.cc:194] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  SSE3 SSE4.1 SSE4.2 AVX
 To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
-2023-01-18 01:41:40.947018: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:991] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
-2023-01-18 01:41:40.947197: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:991] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
-2023-01-18 01:41:40.947334: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:991] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
-2023-01-18 01:41:41.674997: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:991] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
-2023-01-18 01:41:41.675182: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:991] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
-2023-01-18 01:41:41.675322: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:991] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
-2023-01-18 01:41:41.675446: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1532] Created device /job:localhost/replica:0/task:0/device:GPU:0 with 24576 MB memory:  -&gt; device: 0, name: Quadro RTX 8000, pci bus id: 0000:08:00.0, compute capability: 7.5
+2023-01-19 03:07:21.949882: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:991] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2023-01-19 03:07:21.950055: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:991] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2023-01-19 03:07:21.950185: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:991] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2023-01-19 03:07:22.679824: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:991] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2023-01-19 03:07:22.680007: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:991] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2023-01-19 03:07:22.680151: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:991] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2023-01-19 03:07:22.680260: I tensorflow/core/common_runtime/gpu/gpu_process_state.cc:222] Using CUDA malloc Async allocator for GPU: 0
+2023-01-19 03:07:22.680365: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1532] Created device /job:localhost/replica:0/task:0/device:GPU:0 with 24576 MB memory:  -&gt; device: 0, name: Quadro RTX 8000, pci bus id: 0000:08:00.0, compute capability: 7.5
 </pre></div>
 </div>
 </div>
@@ -251,7 +249,7 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
     <span class="n">train_ds</span><span class="o">.</span><span class="n">schema</span><span class="p">,</span>
     <span class="n">depth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
     <span class="n">deep_block</span><span class="o">=</span><span class="n">mm</span><span class="o">.</span><span class="n">MLPBlock</span><span class="p">([</span><span class="mi">64</span><span class="p">,</span> <span class="mi">32</span><span class="p">]),</span>
-    <span class="n">prediction_tasks</span><span class="o">=</span><span class="n">mm</span><span class="o">.</span><span class="n">BinaryClassificationTask</span><span class="p">(</span><span class="n">target_column</span><span class="p">),</span>
+    <span class="n">prediction_tasks</span><span class="o">=</span><span class="n">mm</span><span class="o">.</span><span class="n">BinaryOutput</span><span class="p">(</span><span class="n">target_column</span><span class="p">),</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -273,6 +271,9 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 <h2>Training our model<a class="headerlink" href="#id1" title="Permalink to this headline"></a></h2>
 <p>During training, we pass our dataset to the <code class="docutils literal notranslate"><span class="pre">fit</span></code> function of the model and everything is taken care of for us.</p>
 <p>Internally, <code class="docutils literal notranslate"><span class="pre">Merlin</span> <span class="pre">Dataloader</span></code> is used to feed the data in a highly optimized way to our model during training.</p>
+<p>The DCN-V2 is an architecture proposed as an improvement upon the original <a class="reference external" href="https://arxiv.org/pdf/1708.05123.pdf">DCN model</a>. The explicit feature interactions of the inputs are learned through cross layers, and then combined with a deep network to learn complementary implicit interactions. The overall model architecture is depicted in Figure below, with two ways to combine the cross network with the deep network: (1) stacked and (2) parallel. The output of the embbedding layer is the concatenation of all the embedded vectors and the normalized dense features: x<sub>0</sub> = [x<sub>embed,1</sub>; … ; x<sub>embed,𝑛</sub>; 𝑥<sub>dense</sub>].</p>
+<p><img alt="DCN" src="examples/getting-started-movielens/imgs/DCN.png" /></p>
+<p><a href="https://arxiv.org/abs/2008.13535">Image Source: DCN V2 paper</a></p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">opt</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">optimizers</span><span class="o">.</span><span class="n">Adagrad</span><span class="p">(</span><span class="n">learning_rate</span><span class="o">=</span><span class="n">LR</span><span class="p">)</span>
@@ -282,10 +283,10 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>1221/1221 [==============================] - 9s 5ms/step - loss: 0.6614 - auc: 0.5168 - regularization_loss: 0.0000e+00 - val_loss: 0.6605 - val_auc: 0.5410 - val_regularization_loss: 0.0000e+00
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>1221/1221 [==============================] - 10s 6ms/step - loss: 0.6615 - auc: 0.5193 - regularization_loss: 0.0000e+00 - val_loss: 0.6603 - val_auc: 0.5452 - val_regularization_loss: 0.0000e+00
 </pre></div>
 </div>
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;keras.callbacks.History at 0x7f88e0910940&gt;
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;keras.callbacks.History at 0x7f0c31c6c280&gt;
 </pre></div>
 </div>
 </div>
@@ -311,23 +312,23 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Unsupported signature for serialization: ((PredictionOutput(predictions=TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/predictions&#39;), targets=TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/targets&#39;), positive_item_ids=None, label_relevant_counts=None, valid_negatives_mask=None, negative_item_ids=None, sample_weight=None), &lt;tensorflow.python.framework.func_graph.UnknownArgument object at 0x7f88e0541ca0&gt;), {}).
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Unsupported signature for serialization: ((Prediction(outputs={&#39;rating/binary_output&#39;: TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/outputs/rating/binary_output&#39;)}, targets={&#39;rating/binary_output&#39;: TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/targets/rating/binary_output&#39;)}, sample_weight={&#39;rating/binary_output&#39;: None}, features=None), &lt;tensorflow.python.framework.func_graph.UnknownArgument object at 0x7f0c30b49550&gt;), {}).
 </pre></div>
 </div>
 <div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>WARNING:absl:Function `_wrapped_model` contains input name(s) movieId, userId with unsupported characters which will be renamed to movieid, userid in the SavedModel.
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Unsupported signature for serialization: ((PredictionOutput(predictions=TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/predictions&#39;), targets=TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/targets&#39;), positive_item_ids=None, label_relevant_counts=None, valid_negatives_mask=None, negative_item_ids=None, sample_weight=None), &lt;tensorflow.python.framework.func_graph.UnknownArgument object at 0x7f88e0541ca0&gt;), {}).
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Unsupported signature for serialization: ((Prediction(outputs={&#39;rating/binary_output&#39;: TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/outputs/rating/binary_output&#39;)}, targets={&#39;rating/binary_output&#39;: TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/targets/rating/binary_output&#39;)}, sample_weight={&#39;rating/binary_output&#39;: None}, features=None), &lt;tensorflow.python.framework.func_graph.UnknownArgument object at 0x7f0c30b49550&gt;), {}).
 </pre></div>
 </div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Unsupported signature for serialization: ((PredictionOutput(predictions=TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/predictions&#39;), targets=TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/targets&#39;), positive_item_ids=None, label_relevant_counts=None, valid_negatives_mask=None, negative_item_ids=None, sample_weight=None), &lt;tensorflow.python.framework.func_graph.UnknownArgument object at 0x7f88e0541ca0&gt;), {}).
-WARNING:absl:Found untraced functions such as train_compute_metrics, model_context_layer_call_fn, model_context_layer_call_and_return_conditional_losses, output_layer_layer_call_fn, output_layer_layer_call_and_return_conditional_losses while saving (showing 5 of 49). These functions will not be directly callable after loading.
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Unsupported signature for serialization: ((Prediction(outputs={&#39;rating/binary_output&#39;: TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/outputs/rating/binary_output&#39;)}, targets={&#39;rating/binary_output&#39;: TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/targets/rating/binary_output&#39;)}, sample_weight={&#39;rating/binary_output&#39;: None}, features=None), &lt;tensorflow.python.framework.func_graph.UnknownArgument object at 0x7f0c30b49550&gt;), {}).
+WARNING:absl:Found untraced functions such as train_compute_metrics, model_context_layer_call_fn, model_context_layer_call_and_return_conditional_losses, dense_5_layer_call_fn, dense_5_layer_call_and_return_conditional_losses while saving (showing 5 of 47). These functions will not be directly callable after loading.
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Assets written to: /tmp/tmp2kkaz4vc/model.savedmodel/assets
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Assets written to: /tmp/tmpet9piz3u/model.savedmodel/assets
 </pre></div>
 </div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Assets written to: /tmp/tmp2kkaz4vc/model.savedmodel/assets
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Assets written to: /tmp/tmpet9piz3u/model.savedmodel/assets
 </pre></div>
 </div>
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>WARNING:tensorflow:No training configuration found in save file, so the model was *not* compiled. Compile it manually.
@@ -338,7 +339,7 @@ WARNING:absl:Found untraced functions such as train_compute_metrics, model_conte
 </div>
 </div>
 </div>
-<p>And let’s now write it to disk to load onto the server in the subsequent notebook.</p>
+<p>And let’s now write it to disk along with the config files to load onto the server in the subsequent notebook.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">export_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">MODEL_DIR</span><span class="p">,</span> <span class="s2">&quot;ensemble&quot;</span><span class="p">)</span>
@@ -348,24 +349,24 @@ WARNING:absl:Found untraced functions such as train_compute_metrics, model_conte
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Unsupported signature for serialization: ((PredictionOutput(predictions=TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/predictions&#39;), targets=TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/targets&#39;), positive_item_ids=None, label_relevant_counts=None, valid_negatives_mask=None, negative_item_ids=None, sample_weight=None), &lt;tensorflow.python.framework.func_graph.UnknownArgument object at 0x7f88e0541ca0&gt;), {}).
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Unsupported signature for serialization: ((Prediction(outputs={&#39;rating/binary_output&#39;: TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/outputs/rating/binary_output&#39;)}, targets={&#39;rating/binary_output&#39;: TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/targets/rating/binary_output&#39;)}, sample_weight={&#39;rating/binary_output&#39;: None}, features=None), &lt;tensorflow.python.framework.func_graph.UnknownArgument object at 0x7f0c30b49550&gt;), {}).
 </pre></div>
 </div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Unsupported signature for serialization: ((PredictionOutput(predictions=TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/predictions&#39;), targets=TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/targets&#39;), positive_item_ids=None, label_relevant_counts=None, valid_negatives_mask=None, negative_item_ids=None, sample_weight=None), &lt;tensorflow.python.framework.func_graph.UnknownArgument object at 0x7f88e0541ca0&gt;), {}).
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Unsupported signature for serialization: ((Prediction(outputs={&#39;rating/binary_output&#39;: TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/outputs/rating/binary_output&#39;)}, targets={&#39;rating/binary_output&#39;: TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/targets/rating/binary_output&#39;)}, sample_weight={&#39;rating/binary_output&#39;: None}, features=None), &lt;tensorflow.python.framework.func_graph.UnknownArgument object at 0x7f0c30b49550&gt;), {}).
 WARNING:absl:Function `_wrapped_model` contains input name(s) movieId, userId with unsupported characters which will be renamed to movieid, userid in the SavedModel.
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Unsupported signature for serialization: ((PredictionOutput(predictions=TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/predictions&#39;), targets=TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/targets&#39;), positive_item_ids=None, label_relevant_counts=None, valid_negatives_mask=None, negative_item_ids=None, sample_weight=None), &lt;tensorflow.python.framework.func_graph.UnknownArgument object at 0x7f88e0541ca0&gt;), {}).
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Unsupported signature for serialization: ((Prediction(outputs={&#39;rating/binary_output&#39;: TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/outputs/rating/binary_output&#39;)}, targets={&#39;rating/binary_output&#39;: TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/targets/rating/binary_output&#39;)}, sample_weight={&#39;rating/binary_output&#39;: None}, features=None), &lt;tensorflow.python.framework.func_graph.UnknownArgument object at 0x7f0c30b49550&gt;), {}).
 </pre></div>
 </div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Unsupported signature for serialization: ((PredictionOutput(predictions=TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/predictions&#39;), targets=TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/targets&#39;), positive_item_ids=None, label_relevant_counts=None, valid_negatives_mask=None, negative_item_ids=None, sample_weight=None), &lt;tensorflow.python.framework.func_graph.UnknownArgument object at 0x7f88e0541ca0&gt;), {}).
-WARNING:absl:Found untraced functions such as train_compute_metrics, model_context_layer_call_fn, model_context_layer_call_and_return_conditional_losses, output_layer_layer_call_fn, output_layer_layer_call_and_return_conditional_losses while saving (showing 5 of 49). These functions will not be directly callable after loading.
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Unsupported signature for serialization: ((Prediction(outputs={&#39;rating/binary_output&#39;: TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/outputs/rating/binary_output&#39;)}, targets={&#39;rating/binary_output&#39;: TensorSpec(shape=(None, 1), dtype=tf.float32, name=&#39;outputs/targets/rating/binary_output&#39;)}, sample_weight={&#39;rating/binary_output&#39;: None}, features=None), &lt;tensorflow.python.framework.func_graph.UnknownArgument object at 0x7f0c30b49550&gt;), {}).
+WARNING:absl:Found untraced functions such as train_compute_metrics, model_context_layer_call_fn, model_context_layer_call_and_return_conditional_losses, dense_5_layer_call_fn, dense_5_layer_call_and_return_conditional_losses while saving (showing 5 of 47). These functions will not be directly callable after loading.
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Assets written to: /root/nvt-examples/models/ensemble/predicttensorflow/1/model.savedmodel/assets
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Assets written to: /workspace/nvt-examples/models/ensemble/predicttensorflow/1/model.savedmodel/assets
 </pre></div>
 </div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Assets written to: /root/nvt-examples/models/ensemble/predicttensorflow/1/model.savedmodel/assets
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Assets written to: /workspace/nvt-examples/models/ensemble/predicttensorflow/1/model.savedmodel/assets
 </pre></div>
 </div>
 <div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>name: &quot;predicttensorflow&quot;
@@ -383,7 +384,7 @@ input {
   dims: 1
 }
 output {
-  name: &quot;rating/binary_classification_task&quot;
+  name: &quot;rating/binary_output&quot;
   data_type: TYPE_FP32
   dims: -1
   dims: 1
