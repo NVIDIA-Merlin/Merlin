@@ -66,7 +66,7 @@ def test_func():
     with testbook(
         REPO_ROOT
         / "examples/getting-started-movielens/03-Training-with-PyTorch.ipynb",
-        execute=True,
+        execute=False,
     ) as tb3:
         tb3.inject(
             f"""
@@ -74,3 +74,4 @@ def test_func():
             os.environ["INPUT_DATA_DIR"] = "{INPUT_DATA_DIR}"
             """
         )
+        tb3.execute()
