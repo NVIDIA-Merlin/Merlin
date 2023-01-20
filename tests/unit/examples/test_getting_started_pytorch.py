@@ -33,10 +33,10 @@ def test_func():
         ).to_csv(f'{INPUT_DATA_DIR}ml-25m/movies.csv', index=False)
         pd.DataFrame(
             data={
-                'userId': np.random.randint(0, 162542, 100_000),
-                'movieId': np.random.randint(0, 56632, 100_000),
-                'rating': np.random.rand(100_000) * 5,
-                'timestamp': ['_'] * 100_000
+                'userId': np.random.randint(0, 162542, 1_000_000),
+                'movieId': np.random.randint(0, 56632, 1_000_000),
+                'rating': np.random.rand(1_000_000) * 5,
+                'timestamp': ['_'] * 1_000_000
                 }
             ).to_csv(f'{INPUT_DATA_DIR}ml-25m/ratings.csv', index=False)
         tb1.execute()
