@@ -237,31 +237,31 @@
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>POST /v2/repository/index, headers None
 
-&lt;HTTPSocketPoolResponse status=200 headers={&#39;content-type&#39;: &#39;application/json&#39;, &#39;content-length&#39;: &#39;30&#39;}&gt;
-bytearray(b&#39;[{&quot;name&quot;:&quot;predicttensorflow&quot;}]&#39;)
+&lt;HTTPSocketPoolResponse status=200 headers={&#39;content-type&#39;: &#39;application/json&#39;, &#39;content-length&#39;: &#39;64&#39;}&gt;
+bytearray(b&#39;[{&quot;name&quot;:&quot;0_predicttensorflowtriton&quot;},{&quot;name&quot;:&quot;ensemble_model&quot;}]&#39;)
 </pre></div>
 </div>
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[{&#39;name&#39;: &#39;predicttensorflow&#39;}]
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[{&#39;name&#39;: &#39;0_predicttensorflowtriton&#39;}, {&#39;name&#39;: &#39;ensemble_model&#39;}]
 </pre></div>
 </div>
 </div>
 </div>
-<p>We load the <code class="docutils literal notranslate"><span class="pre">predicttensorflow</span></code> model.</p>
+<p>We load the <code class="docutils literal notranslate"><span class="pre">0_predicttensorflowtriton</span></code> model.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%time</span>
 
-<span class="n">triton_client</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="n">model_name</span><span class="o">=</span><span class="s2">&quot;predicttensorflow&quot;</span><span class="p">)</span>
+<span class="n">triton_client</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="n">model_name</span><span class="o">=</span><span class="s2">&quot;0_predicttensorflowtriton&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>POST /v2/repository/models/predicttensorflow/load, headers None
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>POST /v2/repository/models/0_predicttensorflowtriton/load, headers None
 {}
 &lt;HTTPSocketPoolResponse status=200 headers={&#39;content-type&#39;: &#39;application/json&#39;, &#39;content-length&#39;: &#39;0&#39;}&gt;
-Loaded model &#39;predicttensorflow&#39;
-CPU times: user 586 µs, sys: 929 µs, total: 1.51 ms
-Wall time: 669 ms
+Loaded model &#39;0_predicttensorflowtriton&#39;
+CPU times: user 0 ns, sys: 1.86 ms, total: 1.86 ms
+Wall time: 623 ms
 </pre></div>
 </div>
 </div>
@@ -283,9 +283,9 @@ Wall time: 669 ms
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>          userId  movieId
-6032531    39065    45950
-4665292    30509   108190
-13682653   88600    52604
+9098613    59266      553
+2556225    17037      608
+20514728  133412    40583
 </pre></div>
 </div>
 </div>
@@ -297,11 +297,11 @@ Wall time: 669 ms
 
 <span class="n">outputs</span> <span class="o">=</span> <span class="p">[</span>
     <span class="n">grpcclient</span><span class="o">.</span><span class="n">InferRequestedOutput</span><span class="p">(</span><span class="n">col</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;rating/binary_classification_task&quot;</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;rating/binary_output&quot;</span><span class="p">]</span>
 <span class="p">]</span>
 
 <span class="k">with</span> <span class="n">grpcclient</span><span class="o">.</span><span class="n">InferenceServerClient</span><span class="p">(</span><span class="s2">&quot;localhost:8001&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">client</span><span class="p">:</span>
-    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">infer</span><span class="p">(</span><span class="s2">&quot;predicttensorflow&quot;</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">request_id</span><span class="o">=</span><span class="s2">&quot;1&quot;</span><span class="p">,</span> <span class="n">outputs</span><span class="o">=</span><span class="n">outputs</span><span class="p">)</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">infer</span><span class="p">(</span><span class="s2">&quot;0_predicttensorflowtriton&quot;</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">request_id</span><span class="o">=</span><span class="s2">&quot;1&quot;</span><span class="p">,</span> <span class="n">outputs</span><span class="o">=</span><span class="n">outputs</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -309,14 +309,14 @@ Wall time: 669 ms
 <p>Let’s decode the request and see what information we receive.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">as_numpy</span><span class="p">(</span><span class="s2">&quot;rating/binary_classification_task&quot;</span><span class="p">),</span> <span class="n">response</span><span class="o">.</span><span class="n">as_numpy</span><span class="p">(</span><span class="s2">&quot;rating/binary_classification_task&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">as_numpy</span><span class="p">(</span><span class="s2">&quot;rating/binary_output&quot;</span><span class="p">),</span> <span class="n">response</span><span class="o">.</span><span class="n">as_numpy</span><span class="p">(</span><span class="s2">&quot;rating/binary_output&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[[0.6221579 ]
- [0.6234495 ]
- [0.61855626]] (3, 1)
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[[0.60931313]
+ [0.6242866 ]
+ [0.6068166 ]] (3, 1)
 </pre></div>
 </div>
 </div>
