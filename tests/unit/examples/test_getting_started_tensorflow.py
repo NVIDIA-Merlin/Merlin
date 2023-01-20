@@ -3,6 +3,7 @@ import os
 from testbook import testbook
 import pandas as pd
 import os
+import shutil
 import numpy as np
 
 from merlin.systems.triton.utils import run_triton_server
@@ -28,6 +29,8 @@ def test_func():
             os.environ["INPUT_DATA_DIR"] = "{INPUT_DATA_DIR}"
             """
         )
+        if os.path.exists(INPUT_DATA_DIR) and os.path.isdir(INPUT_DATA_DIR):
+            shutil.rmtree(INPUT_DATA_DIR)
         os.makedirs(f"{INPUT_DATA_DIR}ml-25m", exist_ok=True)
         pd.DataFrame(
             data={'movieId': list(range(56632)), 'genres': ['abcdefghijkl'[i] for i in np.random.randint(0, 12, 56632)] ,'title': ['_'] * 56632}
