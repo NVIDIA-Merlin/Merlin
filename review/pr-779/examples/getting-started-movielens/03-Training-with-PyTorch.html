@@ -156,7 +156,9 @@
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/usr/local/lib/python3.8/dist-packages/tqdm/auto.py:22: TqdmWarning: IProgress not found. Please update jupyter and ipywidgets. See https://ipywidgets.readthedocs.io/en/stable/user_install.html
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/usr/local/lib/python3.8/dist-packages/merlin/dtypes/mappings/tf.py:52: UserWarning: Tensorflow dtype mappings did not load successfully due to an error: No module named &#39;tensorflow&#39;
+  warn(f&quot;Tensorflow dtype mappings did not load successfully due to an error: {exc.msg}&quot;)
+/usr/local/lib/python3.8/dist-packages/tqdm/auto.py:22: TqdmWarning: IProgress not found. Please update jupyter and ipywidgets. See https://ipywidgets.readthedocs.io/en/stable/user_install.html
   from .autonotebook import tqdm as notebook_tqdm
 </pre></div>
 </div>
@@ -201,8 +203,8 @@
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">BATCH_SIZE</span> <span class="o">=</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">32</span>  <span class="c1"># Batch Size</span>
 
-<span class="n">train_dataset</span> <span class="o">=</span> <span class="n">nvt</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">TRAIN_PATHS</span><span class="p">)</span>
-<span class="n">validation_dataset</span> <span class="o">=</span> <span class="n">nvt</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">VALID_PATHS</span><span class="p">)</span>
+<span class="n">train_dataset</span> <span class="o">=</span> <span class="n">nvt</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">TRAIN_PATHS</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="s1">&#39;parquet&#39;</span><span class="p">)</span>
+<span class="n">validation_dataset</span> <span class="o">=</span> <span class="n">nvt</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">VALID_PATHS</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="s1">&#39;parquet&#39;</span><span class="p">)</span>
 
 <span class="n">train_loader</span> <span class="o">=</span> <span class="n">Loader</span><span class="p">(</span>
     <span class="n">train_dataset</span><span class="p">,</span>
@@ -236,29 +238,29 @@ The single-hot categorical features (<code class="docutils literal notranslate">
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>({&#39;genres&#39;: (tensor([ 2,  2, 13,  ..., 17,  1,  7], device=&#39;cuda:0&#39;),
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>({&#39;genres&#39;: (tensor([1, 2, 6,  ..., 8, 1, 4], device=&#39;cuda:0&#39;),
    tensor([[    0],
            [    1],
-           [    2],
+           [    3],
            ...,
-           [88796],
-           [88800],
-           [88802]], device=&#39;cuda:0&#39;, dtype=torch.int32)),
-  &#39;userId&#39;: tensor([[20751],
-          [42040],
-          [31047],
+           [88555],
+           [88556],
+           [88557]], device=&#39;cuda:0&#39;, dtype=torch.int32)),
+  &#39;userId&#39;: tensor([[1691],
+          [1001],
+          [ 967],
           ...,
-          [ 3791],
-          [ 1177],
-          [21517]], device=&#39;cuda:0&#39;),
-  &#39;movieId&#39;: tensor([[1589],
-          [2867],
-          [ 583],
+          [ 848],
+          [1847],
+          [5456]], device=&#39;cuda:0&#39;),
+  &#39;movieId&#39;: tensor([[ 332],
+          [ 154],
+          [ 245],
           ...,
-          [ 635],
-          [ 582],
-          [2203]], device=&#39;cuda:0&#39;)},
- tensor([0., 0., 0.,  ..., 0., 1., 1.], device=&#39;cuda:0&#39;))
+          [3095],
+          [1062],
+          [3705]], device=&#39;cuda:0&#39;)},
+ tensor([1., 1., 0.,  ..., 1., 1., 0.], device=&#39;cuda:0&#39;))
 </pre></div>
 </div>
 </div>
@@ -319,7 +321,7 @@ The single-hot categorical features (<code class="docutils literal notranslate">
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>({&#39;userId&#39;: (162542, 512), &#39;movieId&#39;: (56730, 512)}, {&#39;genres&#39;: (21, 16)})
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>({&#39;userId&#39;: (162542, 512), &#39;movieId&#39;: (56659, 512)}, {&#39;genres&#39;: (21, 16)})
 </pre></div>
 </div>
 </div>
@@ -342,7 +344,7 @@ The single-hot categorical features (<code class="docutils literal notranslate">
   (initial_cat_layer): ConcatenatedEmbeddings(
     (embedding_layers): ModuleList(
       (0): Embedding(162542, 512)
-      (1): Embedding(56730, 512)
+      (1): Embedding(56659, 512)
     )
     (dropout): Dropout(p=0.0, inplace=False)
   )
@@ -410,9 +412,9 @@ The single-hot categorical features (<code class="docutils literal notranslate">
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Total batches: 610
 Total batches: 152
-Epoch 00. Train loss: 0.5216. Valid loss: 2.1868.
-CPU times: user 17.1 s, sys: 312 ms, total: 17.4 s
-Wall time: 17.4 s
+Epoch 00. Train loss: 0.5204. Valid loss: 2.2798.
+CPU times: user 17 s, sys: 323 ms, total: 17.4 s
+Wall time: 17.3 s
 </pre></div>
 </div>
 </div>
