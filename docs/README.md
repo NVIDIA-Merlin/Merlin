@@ -6,30 +6,40 @@ documentation. You can view the documentation at
 
 ## Contributing to Docs
 
-Perform the following steps to build the docs.
+You build the documentation with the `tox` command and specify the `docs` environment.
+The following steps are one way of many to build the documentation before opening a merge request.
 
-1. Install the documentation dependencies:
-
-   ```shell
-   python -m pip install -r docs/requirements-doc.txt
-   ```
-
-1. Run the build command:
+1. Create a virtual environment:
 
    ```shell
-   make -C docs clean html
+   python -m venv .venv
    ```
 
-   Remove the `-C docs` argument if you are already in the `docs/` directory.
+1. Activate the virtual environment:
 
-These steps should run Sphinx in your shell and create HTML in the `build/html/`
+   ```shell
+   source .venv/bin/activate
+   ```
+
+1. Install tox in the virtual environment:
+
+   ```shell
+   python -m pip install --upgrade pip
+   python -m pip install tox
+   ```
+
+1. Build the documentation with tox:
+
+   ```shell
+   tox -e docs
+   ```
+
+These steps run Sphinx in your shell and create HTML in the `docs/build/html/`
 directory.
 
-The build for Merlin is unique because the support matrix is generated during
-the build.
-The build reads the `docs/data.json` file and creates several RST snippet files
-in `docs/source/generated`.
-The `docs/data.json` file is updated by the `docs-smx-data` GitHub workflow.
+The build for Merlin is unique because the support matrix is generated during the build.
+The build reads the `docs/data.json` file and creates several RST snippet files in `docs/source/generated`.
+The `docs/data.json` file is updated by the `docs-smx-data` job that runs in Blossom.
 
 ## Preview the Changes
 
@@ -44,7 +54,7 @@ Afterward, open a web browser and access <https://localhost:8000>.
 
 Check that yours edits formatted correctly and read well.
 
-## Tests
+## Tests for the smx2rst program
 
 1. Start Python in a container:
 
@@ -86,7 +96,7 @@ jq 'walk(if type == "object" then del(.cuparse) else . end)' < data.json > x
 ```shell
 jq --sort-keys 'walk(if type == "object" and has("base_container") then
     . += {"distributed_embeddings":"Not applicable"}
-  else . 
+  else .
   end)' < docs/data.json > x
 
 # Always check your work.
