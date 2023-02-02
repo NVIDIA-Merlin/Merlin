@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.2
-ARG MERLIN_VERSION=22.10
-ARG TRITON_VERSION=22.09
-ARG TORCH_VERSION=22.09
+ARG MERLIN_VERSION=22.12
+ARG TRITON_VERSION=22.11
+ARG TORCH_VERSION=22.11
 
 ARG DLFW_IMAGE=nvcr.io/nvidia/pytorch:${TORCH_VERSION}-py3
 ARG FULL_IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-py3
@@ -15,15 +15,15 @@ FROM ${BASE_IMAGE} as base
 RUN apt update -y --fix-missing && \
     apt install -y --no-install-recommends \
         libatlas-base-dev \
-        libmkl-dev && \
-    apt autoremove -y && \
+    && apt autoremove -y && \
     apt clean && \
     rm -rf /var/lib/apt/lists/*
 
 # Torch Metrics (without torch)
 RUN pip install --no-cache-dir --no-deps torch torchmetrics \
-    && rm -rf /usr/local/lib/python3.8/dist-packages/torch \
-    && rm -rf /usr/local/lib/python3.8/dist-packages/caffe2
+        && pip install --upgrade pip && python -m pip cache purge \
+        && rm -rf /usr/local/lib/python3.8/dist-packages/torch \
+        && rm -rf /usr/local/lib/python3.8/dist-packages/caffe2
 
 # Triton Torch backend
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/pytorch backends/pytorch
@@ -33,8 +33,12 @@ COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python3.8/dist-packages/numba 
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python3.8/dist-packages/numpy /usr/local/lib/python3.8/dist-packages/numpy
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python3.8/dist-packages/torch /usr/local/lib/python3.8/dist-packages/torch
 
+COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python3.8/dist-packages/numba-*.dist-info /usr/local/lib/python3.8/dist-packages/numba.dist-info/
+COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python3.8/dist-packages/numpy-*.dist-info /usr/local/lib/python3.8/dist-packages/numpy.dist-info/
+COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python3.8/dist-packages/torch-*.egg-info /usr/local/lib/python3.8/dist-packages/torch.egg-info/
+
+
 # Add all torch libraries to /usr/local
 RUN ln -s /opt/tritonserver/backends/pytorch/* /usr/local/lib/
 
-RUN pip install --no-deps fastai fastcore fastprogress fastdownload
 RUN pip install matplotlib
