@@ -16,9 +16,8 @@ COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/tensorflow2 back
 
 # Tensorflow dependencies (only)
 # Pinning to pass hugectr sok tests
-RUN pip install tensorflow-gpu==2.9.2 \
-    && pip uninstall tensorflow-gpu keras -y \
-    && python -m pip cache purge
+RUN pip install --no-cache-dir tensorflow-gpu==2.9.2 \
+    && pip uninstall tensorflow-gpu keras -y
 
 # DLFW Tensorflow packages
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python3.8/dist-packages/tensorflow /usr/local/lib/python3.8/dist-packages/tensorflow/
@@ -32,7 +31,7 @@ COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python3.8/dist-packages/horovo
 COPY --chown=1000:1000 --from=dlfw /usr/local/bin/horovodrun /usr/local/bin/horovodrun
 
 # Need to install transformers after tensorflow has been pulled in, so it builds artifacts correctly.
-RUN pip install transformers==4.23.1
+RUN pip install --no-cache-dir transformers==4.23.1
 
 # Install dependencies for hps tf plugin
 RUN apt update -y --fix-missing && \
@@ -69,7 +68,7 @@ ARG TFDE_VER=v0.2
 RUN if [ "$HUGECTR_DEV_MODE" == "false" ]; then \
         git clone --branch ${HUGECTR_VER} --depth 1 https://${_CI_JOB_TOKEN}${_HUGECTR_REPO} /hugectr && \
         pushd /hugectr && \
-	pip install ninja && \
+	pip install --no-cache-dir ninja && \
 	git submodule update --init --recursive && \
         # Install SOK
         cd sparse_operation_kit && \
@@ -82,7 +81,7 @@ RUN if [ "$HUGECTR_DEV_MODE" == "false" ]; then \
     if [ "$INSTALL_DISTRIBUTED_EMBEDDINGS" == "true" ]; then \
         git clone https://github.com/NVIDIA-Merlin/distributed-embeddings.git /distributed_embeddings/ && \
         cd /distributed_embeddings && git checkout ${TFDE_VER} && git submodule update --init --recursive && \
-        make pip_pkg && pip install artifacts/*.whl && make clean; \
+        make pip_pkg && pip install --no-cache-dir artifacts/*.whl && make clean; \
     fi; \
     mv /hugectr/ci ~/hugectr-ci ; mv /hugectr/sparse_operation_kit ~/hugectr-sparse_operation_kit ; \
     rm -rf /hugectr; mkdir -p /hugectr; \
