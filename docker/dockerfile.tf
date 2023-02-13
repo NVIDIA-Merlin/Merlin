@@ -64,11 +64,11 @@ RUN if [ "$HUGECTR_DEV_MODE" == "false" ]; then \
         # Install HPS TF plugin
         cd ../hps_tf && \
         python setup.py install && \
-        popd; &&\
+        popd &&\
 	mv /hugectr/ci ~/hugectr-ci && mv /hugectr/sparse_operation_kit ~/hugectr-sparse_operation_kit && \
     	rm -rf /hugectr && mkdir -p /hugectr && \
-        mv ~/hugectr-ci /hugectr/ci && mv ~/hugectr-sparse_operation_kit /hugectr/sparse_operation_kit \
-    fi \
+        mv ~/hugectr-ci /hugectr/ci && mv ~/hugectr-sparse_operation_kit /hugectr/sparse_operation_kit; \
+    fi; \
     if [ "$INSTALL_DISTRIBUTED_EMBEDDINGS" == "true" ]; then \
         git clone https://github.com/NVIDIA-Merlin/distributed-embeddings.git /distributed_embeddings/ && \
         cd /distributed_embeddings && git checkout ${TFDE_VER} && git submodule update --init --recursive && \
