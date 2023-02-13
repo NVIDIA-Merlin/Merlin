@@ -85,8 +85,9 @@ RUN if [[ "${HUGECTR_DEV_MODE}" == "false" ]]; then \
         rm -rf ./* && \
         chmod +x ${HUGECTR_HOME}/bin/* ${HUGECTR_HOME}/lib/*.so && \
         cd ../onnx_converter && \
-        python setup.py install \
-    ; fi ; mv /hugectr/ci ~/hugectr-ci ; rm -rf /hugectr; mkdir -p /hugectr; mv ~/hugectr-ci /hugectr/ci
+        python setup.py install && \
+        mv /hugectr/ci ~/hugectr-ci && rm -rf /hugectr && mkdir -p /hugectr && mv ~/hugectr-ci /hugectr/ci \
+    ; fi
 
 
 ENV PATH=$PATH:${HUGECTR_HOME}/bin \
@@ -111,8 +112,9 @@ RUN if [ "${HUGECTR_DEV_MODE}" == "false" ]; then \
         make install && \
         cd ../.. && \
         rm -rf hugectr_triton_backend && \
-        chmod +x ${HUGECTR_HOME}/lib/*.so ${HUGECTR_HOME}/backends/hugectr/*.so \
-    ; fi ; rm -rf /repos
+        chmod +x ${HUGECTR_HOME}/lib/*.so ${HUGECTR_HOME}/backends/hugectr/*.so && \
+        rm -rf /repos
+    ; fi
 RUN ln -s ${HUGECTR_HOME}/backends/hugectr /opt/tritonserver/backends/hugectr
 
 # Remove fake lib
