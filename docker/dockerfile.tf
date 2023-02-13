@@ -16,7 +16,7 @@ COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/tensorflow2 back
 
 # Tensorflow dependencies (only)
 # Pinning to pass hugectr sok tests
-RUN pip install tensorflow-gpu==2.9.2 \
+RUN pip install tensorflow-gpu==2.9.2 protobuf==3.20.3 \
     && pip uninstall tensorflow-gpu keras -y \
     && python -m pip cache purge
 
@@ -34,32 +34,15 @@ COPY --chown=1000:1000 --from=dlfw /usr/local/bin/horovodrun /usr/local/bin/horo
 # Need to install transformers after tensorflow has been pulled in, so it builds artifacts correctly.
 RUN pip install transformers==4.23.1
 
-# Install dependencies for hps tf plugin
-RUN apt update -y --fix-missing && \
-    apt install -y --no-install-recommends \
-        #   Required to build RocksDB.
-            libgflags-dev \
-            zlib1g-dev libbz2-dev libsnappy-dev liblz4-dev libzstd-dev \
-        #   Required to build RdKafka.
-            zlib1g-dev libzstd-dev \
-            libssl-dev libsasl2-dev && \
-    apt clean && \
-    rm -rf /var/lib/apt/lists/*
-
-
 # Install HugeCTR
 # Arguments "_XXXX" are only valid when $HUGECTR_DEV_MODE==false
 ARG HUGECTR_DEV_MODE=false
 ARG _HUGECTR_REPO="github.com/NVIDIA-Merlin/HugeCTR.git"
 ARG _CI_JOB_TOKEN=""
 ARG HUGECTR_VER=main
-ARG HUGECTR_BACKEND_VER=main
-ARG _HUGECTR_BACKEND_REPO="github.com/triton-inference-server/hugectr_backend.git"
-ARG HUGECTR_HOME=/usr/local/hugectr
-ARG TRITON_VERSION
 
 ENV CPATH=$CPATH:${HUGECTR_HOME}/include \
-    LD_LIBRARY_PATH=${HUGECTR_HOME}/lib:$LD_LIBRARY_PATH \
+    LD_LIBRARY_PATH=${HUGECTR_HOME}/lib:/usr/local/lib/python3.8/dist-packages/tensorflow:$LD_LIBRARY_PATH \
     LIBRARY_PATH=${HUGECTR_HOME}/lib:$LIBRARY_PATH \
     SOK_COMPILE_UNIT_TEST=ON
 
@@ -82,36 +65,6 @@ RUN if [ "$HUGECTR_DEV_MODE" == "false" ]; then \
         # Install HPS TF plugin
         cd ../hps_tf && \
         python setup.py install && \
-	# Install HugeCTR inference which is needed by hps_backend
-        mkdir -p /hugectr/build && \
-	cd /hugectr/build && \
-	cmake -DCMAKE_BUILD_TYPE=Release -DSM="60;61;70;75;80" -DENABLE_INFERENCE=ON .. && \
-        make -j$(nproc) && \
-        make install && \
-	rm -rf ./* && \
-	# Install HPS trt plugin
-        cd ../hps_trt && \
-	mkdir build && \
-	cd build && \
-	cmake .. && \
-	make -j$(nproc) && \
-        make install && \
-	rm -rf ./* && \
-	# Install HPS backend
-	git clone --branch ${HUGECTR_BACKEND_VER} --depth 1 https://${_CI_JOB_TOKEN}${_HUGECTR_BACKEND_REPO} /repos/hugectr_triton_backend && \
-        mkdir -p /repos/hugectr_triton_backend/hps_backend/build && \
-        cd /repos/hugectr_triton_backend/hps_backend/build && \
-	echo "r${TRITON_VERSION}" && \
-        cmake \
-            -DCMAKE_INSTALL_PREFIX:PATH=${HUGECTR_HOME} \
-            -DTRITON_COMMON_REPO_TAG="r${TRITON_VERSION}" \
-            -DTRITON_CORE_REPO_TAG="r${TRITON_VERSION}" \
-            -DTRITON_BACKEND_REPO_TAG="r${TRITON_VERSION}" .. && \
-        make -j$(nproc) && \
-        make install && \
-        cd / && \
-        rm -rf /repos && \
-	chmod +x ${HUGECTR_HOME}/lib/*.so ${HUGECTR_HOME}/backends/hps/*.so && \
         popd; \
     fi; \
     if [ "$INSTALL_DISTRIBUTED_EMBEDDINGS" == "true" ]; then \
