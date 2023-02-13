@@ -16,15 +16,9 @@ COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/tensorflow2 back
 
 # Tensorflow dependencies (only)
 # Pinning to pass hugectr sok tests
-<<<<<<< HEAD
 RUN pip install tensorflow-gpu==2.9.2 protobuf==3.20.3 \
     && pip uninstall tensorflow-gpu keras -y \
     && python -m pip cache purge
-=======
-# Restrict protobuf version to 3.20.3 for onnx
-RUN pip install tensorflow-gpu==2.9.2 transformers==4.23.1 protobuf==3.20.3 \
-    && pip uninstall tensorflow-gpu keras -y
->>>>>>> Add cmake parameter for trt plugin
 
 # DLFW Tensorflow packages
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python3.8/dist-packages/tensorflow /usr/local/lib/python3.8/dist-packages/tensorflow/
@@ -37,12 +31,9 @@ COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python3.8/dist-packages/horovo
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python3.8/dist-packages/horovod-*.dist-info /usr/local/lib/python3.8/dist-packages/horovod.dist-info/
 COPY --chown=1000:1000 --from=dlfw /usr/local/bin/horovodrun /usr/local/bin/horovodrun
 
-<<<<<<< HEAD
 # Need to install transformers after tensorflow has been pulled in, so it builds artifacts correctly.
 RUN pip install transformers==4.23.1
 
-=======
->>>>>>> Move inference,hps_backend,trt_plugin to merlin-base
 # Install HugeCTR
 # Arguments "_XXXX" are only valid when $HUGECTR_DEV_MODE==false
 ARG HUGECTR_DEV_MODE=false
