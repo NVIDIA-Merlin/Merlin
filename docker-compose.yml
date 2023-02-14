@@ -1,0 +1,31 @@
+---
+services:
+
+  dev-tf:
+    build:
+      context: .
+      dockerfile: docker/dev.tf.Dockerfile
+      args:
+        - UID
+        - GID
+        - USER
+    volumes:
+      - .:/workspace/dev
+      - /dev/shm:/dev/shm  # required for memory mapping to work as non-root user
+    ports:
+      - "8888:8888"
+    command: "jupyter-nbclassic --ip 0.0.0.0 --allow-root"
+    entrypoint: "/opt/nvidia/nvidia_entrypoint.sh"
+    environment:
+      HISTFILE: "/workspace/.bash_history"
+      IPYTHONDIR: "/workspace/.ipython"
+      BASE_DIR: "/workspace/data/base"
+      FEAST_USAGE: "False"  # disale usage logging
+      TF_CPP_MIN_LOG_LEVEL: "1"  # disable INFO logging
+    ipc: "host"
+    shm_size: '200mb'
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
