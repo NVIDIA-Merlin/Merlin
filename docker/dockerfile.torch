@@ -21,7 +21,7 @@ RUN apt update -y --fix-missing && \
 
 # Torch Metrics (without torch)
 RUN pip install --no-cache-dir --no-deps torch torchmetrics \
-        && pip install --upgrade pip && python -m pip cache purge \
+        && pip install --no-cache-dir --upgrade pip \
         && rm -rf /usr/local/lib/python3.8/dist-packages/torch \
         && rm -rf /usr/local/lib/python3.8/dist-packages/caffe2
 
@@ -41,4 +41,4 @@ COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python3.8/dist-packages/torch-
 # Add all torch libraries to /usr/local
 RUN ln -s /opt/tritonserver/backends/pytorch/* /usr/local/lib/
 
-RUN pip install matplotlib
+RUN pip install --no-cache-dir matplotlib
