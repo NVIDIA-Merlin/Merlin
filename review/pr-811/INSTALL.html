@@ -91,7 +91,7 @@
 <p>Many users have different preferences on how to run their machine learning pipeline. We want to provide a guide for the most common platforms. Merlin can be easily installed via <code class="docutils literal notranslate"><span class="pre">pip</span></code>, but resolving the dependencies can be sometimes challenging (GPU Driver, TensorFlow/PyTorch, RAPIDs, Triton Inference Server).</p>
 <div class="section" id="docker-preferred-option">
 <h2>Docker (Preferred Option)<a class="headerlink" href="#docker-preferred-option" title="Permalink to this headline"></a></h2>
-<p>Our recommendation is to use our hosted docker containers, which are accessible on NVIDIA GPU Cloud (NCG) catalog at <a class="reference external" href="https://catalog.ngc.nvidia.com/containers">https://catalog.ngc.nvidia.com/containers</a>.</p>
+<p>Our recommendation is to use our hosted docker containers, which are accessible on NVIDIA GPU Cloud (NCG) catalog at (<a class="reference external" href="https://catalog.ngc.nvidia.com/containers">https://catalog.ngc.nvidia.com/containers</a>)[<a class="reference external" href="https://catalog.ngc.nvidia.com/containers">https://catalog.ngc.nvidia.com/containers</a>].</p>
 <table class="colwidths-auto docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Container Name</p></th>
@@ -99,49 +99,51 @@
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p><a class="reference external" href="https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-hugectr">merlin-hugectr</a></p></td>
+<tr class="row-even"><td><p>(merlin-hugectr)[<a class="reference external" href="https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-hugectr">https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-hugectr</a>]</p></td>
 <td><p>Merlin Libraries - in particular HugeCTR, Triton</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference external" href="https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-tensorflow">merlin-tensorflow</a></p></td>
+<tr class="row-odd"><td><p>(merlin-tensorflow)[<a class="reference external" href="https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-tensorflow">https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-tensorflow</a>]</p></td>
 <td><p>Merlin Libraries - in particular Merlin Models and SOK, Triton, TensorFlow</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference external" href="https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-pytorch">merlin-pytorch</a></p></td>
+<tr class="row-even"><td><p>(merlin-pytorch)[<a class="reference external" href="https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-pytorch">https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-pytorch</a>]</p></td>
 <td><p>Merlin Libraries - in particular Transformer4Rec, Triton, PyTorch</p></td>
 </tr>
 </tbody>
 </table>
-<p>To use these containers, you must install the <a class="reference external" href="https://github.com/NVIDIA/nvidia-docker">NVIDIA Container Toolkit</a> to provide GPU support for Docker.</p>
-<p>You can find the Dockerfiles in our <a class="reference external" href="https://github.com/NVIDIA-Merlin/Merlin/tree/main/docker">GitHub repository</a></p>
+<p>To use these containers, you must install the (NVIDIA Container Toolkit)[<a class="reference external" href="https://github.com/NVIDIA/nvidia-docker">https://github.com/NVIDIA/nvidia-docker</a>] to provide GPU support for Docker.</p>
+<p>You can find the Dockerfiles in our (GitHub repository)[<a class="reference external" href="https://github.com/NVIDIA-Merlin/Merlin/tree/main/docker">https://github.com/NVIDIA-Merlin/Merlin/tree/main/docker</a>]</p>
 <p>You can use the NGC links referenced in the preceding table for more information about how to launch and run these containers.</p>
 </div>
 <div class="section" id="using-pip">
 <h2>Using PIP<a class="headerlink" href="#using-pip" title="Permalink to this headline"></a></h2>
-<p>In some cases, you need to build your own docker container or build on top of another base image. You can install Merlin and its dependencies via <code class="docutils literal notranslate"><span class="pre">pip</span></code> for training your models with TensorFlow or PyTorch. Review the <a class="reference external" href="https://github.com/triton-inference-server/server#documentation">Triton Documentation</a> to install Triton Inference Server without docker or use our docker container.</p>
+<p>In some cases, you need to build your own docker container or build on top of another base image. You can install Merlin and its dependencies via <code class="docutils literal notranslate"><span class="pre">pip</span></code> for training your models with TensorFlow or PyTorch. Review the (Triton Documentation)[<a class="reference external" href="https://github.com/triton-inference-server/server#documentation">https://github.com/triton-inference-server/server#documentation</a>] to install Triton Inference Server without docker or use our docker container.</p>
 <p>Pre-Requirements:
-CUDA&gt;=11.8 for <a class="reference external" href="https://rapids.ai/pip.html">RAPIDs cuDF</a>. An example installation can be found <a class="reference external" href="https://developer.nvidia.com/cuda-11-8-0-download-archive?target_os=Linux&amp;target_arch=x86_64&amp;Distribution=Ubuntu&amp;target_version=18.04&amp;target_type=runfile_local">here</a>
+CUDA&gt;=11.8 for (RAPIDs cuDF)[<a class="reference external" href="https://rapids.ai/pip.html">https://rapids.ai/pip.html</a>]. An example installation can be found (here)[<a class="reference external" href="https://developer.nvidia.com/cuda-11-8-0-download-archive?target_os=Linux&amp;amp;target_arch=x86_64&amp;amp;Distribution=Ubuntu&amp;amp;target_version=18.04&amp;amp;target_type=runfile_local">https://developer.nvidia.com/cuda-11-8-0-download-archive?target_os=Linux&amp;target_arch=x86_64&amp;Distribution=Ubuntu&amp;target_version=18.04&amp;target_type=runfile_local</a>]
 Python3.8
 docker Image <code class="docutils literal notranslate"><span class="pre">nvcr.io/nvidia/cuda:11.8.0-devel-ubuntu22.04</span></code> or equivalent
-docker with <a class="reference external" href="https://github.com/NVIDIA/nvidia-docker">NVIDIA Container Toolkit</a></p>
-<ol class="arabic simple">
-<li><p>Installation of basic requirements, Python3.8 and other libraries via apt</p></li>
-</ol>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>apt<span class="w"> </span>update<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>apt<span class="w"> </span>install<span class="w"> </span>software-properties-common<span class="w"> </span>curl<span class="w"> </span>git<span class="w"> </span>-y<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>add-apt-repository<span class="w"> </span>ppa:deadsnakes/ppa<span class="w"> </span>-y
-
-apt<span class="w"> </span>update<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">    </span><span class="nv">TZ</span><span class="o">=</span>Etc/UTC<span class="w"> </span>apt<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span><span class="se">\</span>
-<span class="w">        </span>python3.8<span class="w"> </span><span class="se">\</span>
-<span class="w">        </span>python3.8-dev<span class="w"> </span><span class="se">\</span>
-<span class="w">        </span>python3.8-distutils<span class="w"> </span><span class="se">\</span>
-<span class="w">        </span>graphviz<span class="w"> </span><span class="se">\ </span><span class="w">                </span>
-<span class="w">        </span>Libcudnn8
+docker with (NVIDIA Container Toolkit)[<a class="reference external" href="https://github.com/NVIDIA/nvidia-docker">https://github.com/NVIDIA/nvidia-docker</a>]</p>
+<ol class="arabic">
+<li><p>Installation of basic requirements, Python3.8 and other libraries via apt</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>
 </pre></div>
 </div>
-<ol class="arabic simple" start="2">
-<li><p>Create symbolic link to use python3.8</p></li>
+</li>
 </ol>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>ln<span class="w"> </span>-s<span class="w"> </span>/usr/bin/python3.8<span class="w"> </span>/usr/bin/python
+<p>apt update &amp;&amp; <br />
+apt install software-properties-common curl git -y &amp;&amp; <br />
+add-apt-repository ppa:deadsnakes/ppa -y</p>
+<p>apt update &amp;&amp; <br />
+TZ=Etc/UTC apt install -y <br />
+python3.8 <br />
+python3.8-dev <br />
+python3.8-distutils <br />
+graphviz \<br />
+Libcudnn8</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>
+2. Create symbolic link to use python3.8
+
+```shell
+ln -s /usr/bin/python3.8 /usr/bin/python
 </pre></div>
 </div>
 <ol class="arabic simple" start="3">
@@ -160,8 +162,8 @@ apt<span class="w"> </span>update<span class="w"> </span><span class="o">&amp;&a
 <ol class="arabic simple" start="5">
 <li><p>Install preferred deep learning framework. It is possible to install both TensorFlow and PyTorch.</p></li>
 </ol>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="w">    </span>pip<span class="w"> </span>install<span class="w"> </span>tensorflow-gpu<span class="o">==</span><span class="m">2</span>.9.2
-<span class="w">    </span>pip<span class="w"> </span>install<span class="w"> </span><span class="nv">torchmetrics</span><span class="o">==</span><span class="m">0</span>.10.0<span class="w"> </span>torch<span class="w"> </span>--extra-index-url<span class="w"> </span>https://download.pytorch.org/whl/cu117
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="w">    </span>pip<span class="w"> </span>install<span class="w"> </span>tensorflow-gpu<span class="o">==</span><span class="m">2</span>.9.2<span class="w">        </span><span class="c1"># TensorFlow</span>
+<span class="w">    </span>pip<span class="w"> </span>install<span class="w"> </span><span class="nv">torchmetrics</span><span class="o">==</span><span class="m">0</span>.10.0<span class="w"> </span>torch<span class="w"> </span>--extra-index-url<span class="w"> </span>https://download.pytorch.org/whl/cu117<span class="w">       </span><span class="c1"># PyTorch</span>
 </pre></div>
 </div>
 <ol class="arabic simple" start="6">
@@ -177,20 +179,20 @@ apt<span class="w"> </span>update<span class="w"> </span><span class="o">&amp;&a
 </div>
 <div class="section" id="using-conda">
 <h2>Using Conda<a class="headerlink" href="#using-conda" title="Permalink to this headline"></a></h2>
-<p>In some cases, you need to build your own docker container or build on top of another base image. You can install Merlin and its dependencies via <code class="docutils literal notranslate"><span class="pre">conda</span></code> for training your models with TensorFlow or PyTorch. Review the <a class="reference external" href="https://github.com/triton-inference-server/server#documentation">Triton Documentation</a> to install Triton Inference Server without docker or use our docker container.</p>
+<p>In some cases, you need to build your own docker container or build on top of another base image. You can install Merlin and its dependencies via <code class="docutils literal notranslate"><span class="pre">conda</span></code> for training your models with TensorFlow or PyTorch. Review the (Triton Documentation)[<a class="reference external" href="https://github.com/triton-inference-server/server#documentation">https://github.com/triton-inference-server/server#documentation</a>] to install Triton Inference Server without docker or use our docker container.</p>
 <p>Requirements:
 Docker Image: Ubuntu18.04</p>
 </div>
-<div class="section" id="hosted-on-nvidia-launchpad">
-<h2>Hosted on NVIDIA LaunchPad<a class="headerlink" href="#hosted-on-nvidia-launchpad" title="Permalink to this headline"></a></h2>
-<p><a class="reference external" href="https://www.nvidia.com/en-us/launchpad/">NVIDIA LaunchPad</a> provides free, short-term access to many hands-on labs. We provide a hands-on tutorial for session-based recommender systems to predict the next item using Transformer4Rec in PyTorch.</p>
-<p>Sign up and check it out for free: <a class="reference external" href="https://www.nvidia.com/en-us/launchpad/ai/build-session-based-recommenders/">Build Session-Based Recommenders on NVIDIA LaunchPad</a></p>
+<div class="section" id="nvidia-launchpad">
+<h2>NVIDIA LaunchPad<a class="headerlink" href="#nvidia-launchpad" title="Permalink to this headline"></a></h2>
+<p>(NVIDIA LaunchPad)[<a class="reference external" href="https://www.nvidia.com/en-us/launchpad/">https://www.nvidia.com/en-us/launchpad/</a>] provides free, short-term access to many hands-on labs. We provide a hands-on tutorial for session-based recommender systems to predict the next item using Transformer4Rec in PyTorch.</p>
+<p>Sign up and check it out for free: (Build Session-Based Recommenders on NVIDIA LaunchPad)[<a class="reference external" href="https://www.nvidia.com/en-us/launchpad/ai/build-session-based-recommenders/">https://www.nvidia.com/en-us/launchpad/ai/build-session-based-recommenders/</a>]</p>
 <p>After sign-up, it will take ˜3-5 business days until the request is granted. You will receive an email.</p>
 </div>
-<div class="section" id="hosted-on-google-colab-experimental">
-<h2>Hosted on Google Colab (experimental)<a class="headerlink" href="#hosted-on-google-colab-experimental" title="Permalink to this headline"></a></h2>
+<div class="section" id="google-colab-experimental">
+<h2>Google Colab (experimental)<a class="headerlink" href="#google-colab-experimental" title="Permalink to this headline"></a></h2>
 <p>As Colab runs on Python3.8 and RAPIDs supports <code class="docutils literal notranslate"><span class="pre">pip</span></code> installation, we successfully were able to run our examples on the Google Colab environment. We cannot automate regular testing of our installation scripts and examples. Therefore, we share our instructions for the Merlin 22.12 version, but cannot guarantee that it will continuously work.</p>
-<p>You can read how to run Merlin on Colab in <a class="reference external" href="https://medium.com/nvidia-merlin/how-to-run-merlin-on-google-colab-83b5805c63e0">our blog</a>.</p>
+<p>You can read how to run Merlin on Colab in (our blog)[<a class="reference external" href="https://medium.com/nvidia-merlin/how-to-run-merlin-on-google-colab-83b5805c63e0">https://medium.com/nvidia-merlin/how-to-run-merlin-on-google-colab-83b5805c63e0</a>].</p>
 </div>
 </div>
 
