@@ -281,32 +281,39 @@ ARG DL_VER
 
 # Add Merlin Repo
 RUN git clone --depth 1 https://github.com/NVIDIA-Merlin/Merlin/ /Merlin && \
-    cd /Merlin/ && git checkout ${MERLIN_VER} && pip install . --no-deps
+    cd /Merlin/ && git checkout ${MERLIN_VER} && pip install . --no-deps  && \
+    rm -rf /Merlin/.git
 
 # Install Merlin Core
 RUN git clone --depth 1 https://github.com/NVIDIA-Merlin/core.git /core/ && \
-    cd /core/ && git checkout ${CORE_VER} && pip install . --no-deps
+    cd /core/ && git checkout ${CORE_VER} && pip install . --no-deps && \
+    rm -rf /core
 
 # Install Merlin Dataloader
 RUN git clone --depth 1 https://github.com/NVIDIA-Merlin/dataloader.git /dataloader/ && \
-    cd /dataloader/ && git checkout ${DL_VER} && pip install . --no-deps
+    cd /dataloader/ && git checkout ${DL_VER} && pip install . --no-deps && \
+    rm -rf /dataloader
 
 # Install NVTabular
 ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
 RUN git clone --depth 1 https://github.com/NVIDIA-Merlin/NVTabular.git /nvtabular/ && \
-    cd /nvtabular/ && git checkout ${NVTAB_VER} && pip install . --no-deps
+    cd /nvtabular/ && git checkout ${NVTAB_VER} && pip install . --no-deps && \
+    rm -rf /nvtabular
 
 # Install Merlin Systems
 RUN git clone --depth 1 https://github.com/NVIDIA-Merlin/systems.git /systems/ && \
-    cd /systems/ && git checkout ${SYSTEMS_VER} && pip install --no-deps .
+    cd /systems/ && git checkout ${SYSTEMS_VER} && pip install --no-deps . && \
+    rm -rf /systems
 
 # Install Models
 RUN git clone --depth 1 https://github.com/NVIDIA-Merlin/Models.git /models/ && \
-    cd /models/ && git checkout ${MODELS_VER} && pip install . --no-deps;
+    cd /models/ && git checkout ${MODELS_VER} && pip install . --no-deps && \
+    rm -rf /models
 
 # Install Transformers4Rec
 RUN git clone --depth 1 https://github.com/NVIDIA-Merlin/Transformers4Rec.git /transformers4rec && \
-    cd /transformers4rec/ && git checkout ${TF4REC_VER} && pip install . --no-deps
+    cd /transformers4rec/ && git checkout ${TF4REC_VER} && pip install . --no-deps && \
+    rm -rf /transformers4rec
 
 HEALTHCHECK NONE
 CMD ["/bin/bash"]

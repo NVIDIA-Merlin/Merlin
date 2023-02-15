@@ -85,5 +85,6 @@ RUN if [ "$HUGECTR_DEV_MODE" == "false" ]; then \
     fi; \
     mv /hugectr/ci ~/hugectr-ci ; mv /hugectr/sparse_operation_kit ~/hugectr-sparse_operation_kit ; \
     rm -rf /hugectr; mkdir -p /hugectr; \
-    mv ~/hugectr-ci /hugectr/ci ; mv ~/hugectr-sparse_operation_kit /hugectr/sparse_operation_kit
+    mv ~/hugectr-ci /hugectr/ci ; mv ~/hugectr-sparse_operation_kit /hugectr/sparse_operation_kit  && \
+    rm -rf /hugectr
 
