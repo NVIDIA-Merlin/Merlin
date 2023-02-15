@@ -79,11 +79,10 @@ RUN if [ "$HUGECTR_DEV_MODE" == "false" ]; then \
         popd; \
     fi; \
     if [ "$INSTALL_DISTRIBUTED_EMBEDDINGS" == "true" ]; then \
-        git clone https://github.com/NVIDIA-Merlin/distributed-embeddings.git /distributed_embeddings/ && \
-        cd /distributed_embeddings && git checkout ${TFDE_VER} && git submodule update --init --recursive && \
+        git clone --branch ${TFDE_VER} --depth 1 https://github.com/NVIDIA-Merlin/distributed-embeddings.git /distributed_embeddings/ && \
+        cd /distributed_embeddings && git submodule update --init --recursive && \
         make pip_pkg && pip install --no-cache-dir artifacts/*.whl && make clean; \
     fi; \
     mv /hugectr/ci ~/hugectr-ci ; mv /hugectr/sparse_operation_kit ~/hugectr-sparse_operation_kit ; \
     rm -rf /hugectr; mkdir -p /hugectr; \
     mv ~/hugectr-ci /hugectr/ci ; mv ~/hugectr-sparse_operation_kit /hugectr/sparse_operation_kit
-
