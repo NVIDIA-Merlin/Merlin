@@ -66,10 +66,10 @@ RUN ln -s /usr/lib/x86_64-linux-gnu/libibverbs.so.1 /usr/lib/x86_64-linux-gnu/li
 ARG INSTALL_DISTRIBUTED_EMBEDDINGS=true
 ARG TFDE_VER=v0.2
 RUN if [ "$HUGECTR_DEV_MODE" == "false" ]; then \
-        git clone --branch ${HUGECTR_VER} --depth 1 https://${_CI_JOB_TOKEN}${_HUGECTR_REPO} /hugectr && \
+        git clone --branch ${HUGECTR_VER} --depth 1 --recurse-submodules --shallow-submodules https://${_CI_JOB_TOKEN}${_HUGECTR_REPO} /hugectr && \
         pushd /hugectr && \
+        rm -rf .git/modules && \
 	pip install --no-cache-dir ninja && \
-	git submodule update --init --recursive && \
         # Install SOK
         cd sparse_operation_kit && \
         python setup.py install && \
@@ -83,7 +83,4 @@ RUN if [ "$HUGECTR_DEV_MODE" == "false" ]; then \
         cd /distributed_embeddings && git checkout ${TFDE_VER} && git submodule update --init --recursive && \
         make pip_pkg && pip install --no-cache-dir artifacts/*.whl && make clean; \
     fi; \
-    mv /hugectr/ci ~/hugectr-ci ; mv /hugectr/sparse_operation_kit ~/hugectr-sparse_operation_kit ; \
-    rm -rf /hugectr; mkdir -p /hugectr; \
-    mv ~/hugectr-ci /hugectr/ci ; mv ~/hugectr-sparse_operation_kit /hugectr/sparse_operation_kit
 
