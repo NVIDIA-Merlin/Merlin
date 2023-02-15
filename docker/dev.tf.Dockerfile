@@ -57,8 +57,8 @@ ENV PYTHONPATH="${VIRTUALENV_PATH}/lib/python3.8/site-packages:/usr/local/lib/py
 WORKDIR /workspace/dev
 
 # install common dev requirements
-COPY requirements.in /tmp/requirements.in
-RUN python -m pip install -r /tmp/requirements.in
+COPY requirements/dev.txt /tmp/requirements.txt
+RUN python -m pip install -r /tmp/requirements.txt
 
 # -----------------------------------------------------------------------------
 # Install Merlin Repos
