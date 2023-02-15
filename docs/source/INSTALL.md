@@ -36,7 +36,7 @@ Python3.8
 docker Image `nvcr.io/nvidia/cuda:11.8.0-devel-ubuntu22.04` or equivalent
 docker with [NVIDIA Container Toolkit](https://github.com/NVIDIA/nvidia-docker)
 
-1. Installation of basic requirements, Python3.8 and other libraries via apt
+1. Installation of basic requirements, Python3.8 and other libraries via `apt`
 
 ```shell
 apt update && \
@@ -87,8 +87,6 @@ pip install protobuf==3.20.3 pynvml ipython ipykernel graphviz && \
 pip install merlin-core nvtabular merlin-dataloader merlin-systems merlin-models transformers4rec
 ```
 
-
-
 [7. Optional: Clone the Merlin, Merlin Models or Transformer4Rec repositories to download the examples. **Important You need to checkout the version (tag) corresponding to the pip install**.]
 
 
@@ -97,7 +95,91 @@ pip install merlin-core nvtabular merlin-dataloader merlin-systems merlin-models
 In some cases, you need to build your own docker container or build on top of another base image. You can install Merlin and its dependencies via `conda` for training your models with TensorFlow or PyTorch. Review the [Triton Documentation](https://github.com/triton-inference-server/server#documentation) to install Triton Inference Server without docker or use our docker container.
 
 Requirements:
-Docker Image: Ubuntu18.04
+- Docker Image (Ubuntu18.04)
+- NVIDIA Driver bsaed on [support matrix](https://nvidia-merlin.github.io/Merlin/main/support_matrix/index.html)
+
+1. Installation of basic requirements via `apt`
+
+```shell
+sudo apt update -y && \
+    sudo apt install -y build-essential && \
+    sudo apt install -y --no-install-recommends software-properties-common
+```
+
+2. Install NVIDIA Driver. Find more versions [here](https://developer.nvidia.com/cuda-toolkit-archive)
+
+```shell
+wget https://developer.download.nvidia.com/compute/cuda/11.4.1/local_installers/cuda_11.4.1_470.57.02_linux.run
+sudo sh cuda_11.4.1_470.57.02_linux.run
+```
+
+
+3. Install Python3.8 and other libraries via `apt`
+
+```shell
+wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/cuda-ubuntu1804.pin  && \
+    sudo mv cuda-ubuntu1804.pin /etc/apt/preferences.d/cuda-repository-pin-600  && \
+    sudo apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub  && \
+    sudo add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/ /"  && \
+    sudo apt-get update -y && sudo apt install -y --allow-change-held-packages git python3.8 python3-setuptools wget openssl libssl-dev zlib1g-dev libcudnn8 libcudnn8-dev
+```
+
+4. Install Miniconda
+
+```shell
+wget https://repo.anaconda.com/miniconda/Miniconda3-py38_4.10.3-Linux-x86_64.sh && bash Miniconda3-py38_4.10.3-Linux-x86_64.sh -b
+~/miniconda3/bin/conda init
+bash
+```
+
+5. Install RAPIDs via `conda` and activate the environment. **Note: cudatoolkit version needs to match CUDA Version, which was installed at Step 2.**
+
+```shell
+conda create -y -n rapids -c rapidsai -c nvidia -c conda-forge rapids=22.06 python=3.8 cudatoolkit=11.4
+conda activate rapids
+```
+
+6. Install additional libraries via `pip`
+
+```shell
+pip install torch pytest torchmetrics testbook
+git clone https://github.com/rapidsai/asvdb.git build-env && \
+    pushd build-env && \
+      python setup.py install && \
+    popd && \
+    rm -rf build-env
+```
+
+7. Install Merlin libraries via `pip`
+
+```shell
+pip install merlin-core nvtabular merlin-dataloader merlin-systems merlin-models transformers4rec
+```
+
+8. Install more libraries and keep versions correct.
+
+```shell
+pip install numpy==1.20.3
+pip install tensorflow-gpu==2.10.0
+pip install fiddle wandb
+pip install numpy==1.20.3
+pip install protobuf==3.20.1
+```
+
+9. Set symbolic link to avoid import errors for PyTorch - see [here](https://stackoverflow.com/questions/59366730/changing-order-of-imports-results-in-error-in-python)
+
+```shell
+export LD_PRELOAD=~/miniconda3/pkgs/libstdcxx-ng-12.2.0-h46fd767_19/lib/libstdc++.so
+```
+
+10. Set symbolic link for TensorFlow - otherwise some operators will fail.
+
+```shell
+ln -s ~/miniconda3/envs/rapids/lib/libcublas.so.11 ~/miniconda3/envs/rapids/lib/libcublas.so.10
+ln -s ~/miniconda3/envs/rapids/lib/libcublasLt.so.11 ~/miniconda3/envs/rapids/lib/libcublasLt.so.10
+```
+
+[11. Optional: Clone the Merlin, Merlin Models or Transformer4Rec repositories to download the examples. **Important You need to checkout the version (tag) corresponding to the pip install**.]
 
 
 ## Hosted on NVIDIA LaunchPad
