@@ -280,35 +280,29 @@ ARG TF4REC_VER
 ARG DL_VER
 
 # Add Merlin Repo
-RUN git clone --depth 1 https://github.com/NVIDIA-Merlin/Merlin/ /Merlin && \
-    cd /Merlin/ && git checkout ${MERLIN_VER} && pip install . --no-deps  && \
-    rm -rf /Merlin/.git
+RUN git clone --branch ${MERLIN_VER} --depth 1 https://github.com/NVIDIA-Merlin/Merlin/ /Merlin && \
+    cd /Merlin/ && pip install . --no-deps
 
 # Install Merlin Core
-RUN git clone --depth 1 https://github.com/NVIDIA-Merlin/core.git /core/ && \
-    cd /core/ && git checkout ${CORE_VER} && pip install . --no-deps && \
-    rm -rf /core/.git
+RUN git clone --branch ${CORE_VER} --depth 1 https://github.com/NVIDIA-Merlin/core.git /core/ && \
+    cd /core/ && pip install . --no-deps
 
 # Install Merlin Dataloader
-RUN git clone --depth 1 https://github.com/NVIDIA-Merlin/dataloader.git /dataloader/ && \
-    cd /dataloader/ && git checkout ${DL_VER} && pip install . --no-deps && \
-    rm -rf /dataloader/.git
+RUN git clone --branch ${DL_VER} --depth 1 https://github.com/NVIDIA-Merlin/dataloader.git /dataloader/ && \
+    cd /dataloader/ && pip install . --no-deps
 
 # Install NVTabular
 ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
-RUN git clone --depth 1 https://github.com/NVIDIA-Merlin/NVTabular.git /nvtabular/ && \
-    cd /nvtabular/ && git checkout ${NVTAB_VER} && pip install . --no-deps && \
-    rm -rf /nvtabular/.git
+RUN git clone --branch ${NVTAB_VER} --depth 1 https://github.com/NVIDIA-Merlin/NVTabular.git /nvtabular/ && \
+    cd /nvtabular/ && pip install . --no-deps
 
 # Install Merlin Systems
-RUN git clone --depth 1 https://github.com/NVIDIA-Merlin/systems.git /systems/ && \
-    cd /systems/ && git checkout ${SYSTEMS_VER} && pip install --no-deps . && \
-    rm -rf /systems/.git
+RUN git clone --branch ${SYSTEMS_VER} --depth 1 https://github.com/NVIDIA-Merlin/systems.git /systems/ && \
+    cd /systems/ && pip install . --no-deps
 
 # Install Models
-RUN git clone --depth 1 https://github.com/NVIDIA-Merlin/Models.git /models/ && \
-    cd /models/ && git checkout ${MODELS_VER} && pip install . --no-deps && \
-    rm -rf /models/.git
+RUN git clone --branch ${MODELS_VER} --depth 1 https://github.com/NVIDIA-Merlin/Models.git /models/ && \
+    cd /models/ && pip install . --no-deps
 
 # Install Transformers4Rec
 RUN git clone --depth 1 https://github.com/NVIDIA-Merlin/Transformers4Rec.git /transformers4rec && \
