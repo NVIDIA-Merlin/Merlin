@@ -54,7 +54,7 @@ ENV PATH="${VIRTUALENV_PATH}/bin:${PATH}"
 # e.g 'cudf', 'cuda-python' and others in /usr/local/lib/
 ENV PYTHONPATH="${VIRTUALENV_PATH}/lib/python3.8/site-packages:/usr/local/lib/python3.8/dist-packages"
 
-WORKDIR /workspace/dev
+WORKDIR /workspace
 
 # install common dev requirements
 COPY requirements/dev.txt /tmp/requirements.txt
