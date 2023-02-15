@@ -132,7 +132,7 @@ Python3.8
 docker Image <code class="docutils literal notranslate"><span class="pre">nvcr.io/nvidia/cuda:11.8.0-devel-ubuntu22.04</span></code> or equivalent
 docker with <a class="reference external" href="https://github.com/NVIDIA/nvidia-docker">NVIDIA Container Toolkit</a></p>
 <ol class="arabic simple">
-<li><p>Installation of basic requirements, Python3.8 and other libraries via apt</p></li>
+<li><p>Installation of basic requirements, Python3.8 and other libraries via <code class="docutils literal notranslate"><span class="pre">apt</span></code></p></li>
 </ol>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>apt<span class="w"> </span>update<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>apt<span class="w"> </span>install<span class="w"> </span>software-properties-common<span class="w"> </span>curl<span class="w"> </span>git<span class="w"> </span>-y<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="se">\</span>
@@ -187,8 +187,92 @@ pip<span class="w"> </span>install<span class="w"> </span>merlin-core<span class
 <div class="section" id="using-conda">
 <h2>Using Conda<a class="headerlink" href="#using-conda" title="Permalink to this headline"></a></h2>
 <p>In some cases, you need to build your own docker container or build on top of another base image. You can install Merlin and its dependencies via <code class="docutils literal notranslate"><span class="pre">conda</span></code> for training your models with TensorFlow or PyTorch. Review the <a class="reference external" href="https://github.com/triton-inference-server/server#documentation">Triton Documentation</a> to install Triton Inference Server without docker or use our docker container.</p>
-<p>Requirements:
-Docker Image: Ubuntu18.04</p>
+<p>Requirements:</p>
+<ul class="simple">
+<li><p>Docker Image (Ubuntu18.04)</p></li>
+<li><p>NVIDIA Driver bsaed on <a class="reference external" href="https://nvidia-merlin.github.io/Merlin/main/support_matrix/index.html">support matrix</a></p></li>
+</ul>
+<ol class="arabic simple">
+<li><p>Installation of basic requirements via <code class="docutils literal notranslate"><span class="pre">apt</span></code></p></li>
+</ol>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>apt<span class="w"> </span>update<span class="w"> </span>-y<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>sudo<span class="w"> </span>apt<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>build-essential<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>sudo<span class="w"> </span>apt<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>--no-install-recommends<span class="w"> </span>software-properties-common
+</pre></div>
+</div>
+<ol class="arabic simple" start="2">
+<li><p>Install NVIDIA Driver. Find more versions <a class="reference external" href="https://developer.nvidia.com/cuda-toolkit-archive">here</a></p></li>
+</ol>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>wget<span class="w"> </span>https://developer.download.nvidia.com/compute/cuda/11.4.1/local_installers/cuda_11.4.1_470.57.02_linux.run
+sudo<span class="w"> </span>sh<span class="w"> </span>cuda_11.4.1_470.57.02_linux.run
+</pre></div>
+</div>
+<ol class="arabic simple" start="3">
+<li><p>Install Python3.8 and other libraries via <code class="docutils literal notranslate"><span class="pre">apt</span></code></p></li>
+</ol>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>wget<span class="w"> </span>https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/cuda-ubuntu1804.pin<span class="w">  </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>sudo<span class="w"> </span>mv<span class="w"> </span>cuda-ubuntu1804.pin<span class="w"> </span>/etc/apt/preferences.d/cuda-repository-pin-600<span class="w">  </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>sudo<span class="w"> </span>apt-key<span class="w"> </span>adv<span class="w"> </span>--fetch-keys<span class="w"> </span>https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub<span class="w">  </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>sudo<span class="w"> </span>add-apt-repository<span class="w"> </span><span class="s2">&quot;deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/ /&quot;</span><span class="w">  </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>sudo<span class="w"> </span>apt-get<span class="w"> </span>update<span class="w"> </span>-y<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>sudo<span class="w"> </span>apt<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>--allow-change-held-packages<span class="w"> </span>git<span class="w"> </span>python3.8<span class="w"> </span>python3-setuptools<span class="w"> </span>wget<span class="w"> </span>openssl<span class="w"> </span>libssl-dev<span class="w"> </span>zlib1g-dev<span class="w"> </span>libcudnn8<span class="w"> </span>libcudnn8-dev
+</pre></div>
+</div>
+<ol class="arabic simple" start="4">
+<li><p>Install Miniconda</p></li>
+</ol>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>wget<span class="w"> </span>https://repo.anaconda.com/miniconda/Miniconda3-py38_4.10.3-Linux-x86_64.sh<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>bash<span class="w"> </span>Miniconda3-py38_4.10.3-Linux-x86_64.sh<span class="w"> </span>-b
+~/miniconda3/bin/conda<span class="w"> </span>init
+bash
+</pre></div>
+</div>
+<ol class="arabic simple" start="5">
+<li><p>Install RAPIDs via <code class="docutils literal notranslate"><span class="pre">conda</span></code> and activate the environment. <strong>Note: cudatoolkit version needs to match CUDA Version, which was installed at Step 2.</strong></p></li>
+</ol>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>create<span class="w"> </span>-y<span class="w"> </span>-n<span class="w"> </span>rapids<span class="w"> </span>-c<span class="w"> </span>rapidsai<span class="w"> </span>-c<span class="w"> </span>nvidia<span class="w"> </span>-c<span class="w"> </span>conda-forge<span class="w"> </span><span class="nv">rapids</span><span class="o">=</span><span class="m">22</span>.06<span class="w"> </span><span class="nv">python</span><span class="o">=</span><span class="m">3</span>.8<span class="w"> </span><span class="nv">cudatoolkit</span><span class="o">=</span><span class="m">11</span>.4
+conda<span class="w"> </span>activate<span class="w"> </span>rapids
+</pre></div>
+</div>
+<ol class="arabic simple" start="6">
+<li><p>Install additional libraries via <code class="docutils literal notranslate"><span class="pre">pip</span></code></p></li>
+</ol>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>torch<span class="w"> </span>pytest<span class="w"> </span>torchmetrics<span class="w"> </span>testbook
+git<span class="w"> </span>clone<span class="w"> </span>https://github.com/rapidsai/asvdb.git<span class="w"> </span>build-env<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="nb">pushd</span><span class="w"> </span>build-env<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">      </span>python<span class="w"> </span>setup.py<span class="w"> </span>install<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="nb">popd</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>rm<span class="w"> </span>-rf<span class="w"> </span>build-env
+</pre></div>
+</div>
+<ol class="arabic simple" start="7">
+<li><p>Install Merlin libraries via <code class="docutils literal notranslate"><span class="pre">pip</span></code></p></li>
+</ol>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>merlin-core<span class="w"> </span>nvtabular<span class="w"> </span>merlin-dataloader<span class="w"> </span>merlin-systems<span class="w"> </span>merlin-models<span class="w"> </span>transformers4rec
+</pre></div>
+</div>
+<ol class="arabic simple" start="8">
+<li><p>Install more libraries and keep versions correct.</p></li>
+</ol>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span><span class="nv">numpy</span><span class="o">==</span><span class="m">1</span>.20.3
+pip<span class="w"> </span>install<span class="w"> </span>tensorflow-gpu<span class="o">==</span><span class="m">2</span>.10.0
+pip<span class="w"> </span>install<span class="w"> </span>fiddle<span class="w"> </span>wandb
+pip<span class="w"> </span>install<span class="w"> </span><span class="nv">numpy</span><span class="o">==</span><span class="m">1</span>.20.3
+pip<span class="w"> </span>install<span class="w"> </span><span class="nv">protobuf</span><span class="o">==</span><span class="m">3</span>.20.1
+</pre></div>
+</div>
+<ol class="arabic simple" start="9">
+<li><p>Set symbolic link to avoid import errors for PyTorch - see <a class="reference external" href="https://stackoverflow.com/questions/59366730/changing-order-of-imports-results-in-error-in-python">here</a></p></li>
+</ol>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">LD_PRELOAD</span><span class="o">=</span>~/miniconda3/pkgs/libstdcxx-ng-12.2.0-h46fd767_19/lib/libstdc++.so
+</pre></div>
+</div>
+<ol class="arabic simple" start="10">
+<li><p>Set symbolic link for TensorFlow - otherwise some operators will fail.</p></li>
+</ol>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>ln<span class="w"> </span>-s<span class="w"> </span>~/miniconda3/envs/rapids/lib/libcublas.so.11<span class="w"> </span>~/miniconda3/envs/rapids/lib/libcublas.so.10
+ln<span class="w"> </span>-s<span class="w"> </span>~/miniconda3/envs/rapids/lib/libcublasLt.so.11<span class="w"> </span>~/miniconda3/envs/rapids/lib/libcublasLt.so.10
+</pre></div>
+</div>
+<p>[11. Optional: Clone the Merlin, Merlin Models or Transformer4Rec repositories to download the examples. <strong>Important You need to checkout the version (tag) corresponding to the pip install</strong>.]</p>
 </div>
 <div class="section" id="hosted-on-nvidia-launchpad">
 <h2>Hosted on NVIDIA LaunchPad<a class="headerlink" href="#hosted-on-nvidia-launchpad" title="Permalink to this headline"></a></h2>
