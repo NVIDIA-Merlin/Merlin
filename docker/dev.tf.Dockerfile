@@ -33,8 +33,8 @@ ARG GID
 ARG USER
 
 RUN addgroup --gid $GID $USER
-RUN adduser --disabled-password --gecos '' --uid $UID --gid $GID $USER
-RUN adduser $USER sudo
+RUN useradd --no-log-init --no-user-group --create-home --home-dir /home/$USER --password '' --uid $UID --gid $GID $USER
+RUN usermod -a -G sudo $USER
 RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
 USER $USER
