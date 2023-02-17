@@ -57,7 +57,7 @@ RUN if [ "$HUGECTR_DEV_MODE" == "false" ]; then \
         git clone --branch ${HUGECTR_VER} --depth 1 --recurse-submodules --shallow-submodules https://${_CI_JOB_TOKEN}${_HUGECTR_REPO} /hugectr && \
         pushd /hugectr && \
         rm -rf .git/modules && \
-	      pip --no-cache-dirinstall ninja tf2onnx && \
+        pip --no-cache-dir install ninja tf2onnx && \
         # Install SOK
         cd sparse_operation_kit && \
         python setup.py install && \
@@ -74,4 +74,4 @@ RUN if [ "$HUGECTR_DEV_MODE" == "false" ]; then \
         cd /distributed_embeddings && git submodule update --init --recursive && \
         make pip_pkg && pip install --no-cache-dir artifacts/*.whl && make clean; \
     fi; 
-    
+
