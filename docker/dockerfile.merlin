@@ -119,23 +119,6 @@ COPY --chown=1000:1000 --from=triton /usr/bin/serve /usr/bin/.
 ENV PATH=/opt/tritonserver/bin:${PATH}:
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/tritonserver/lib
 
-# Install NVTabular Triton Backend
-ARG TRITON_VERSION
-RUN git clone https://github.com/NVIDIA-Merlin/nvtabular_triton_backend.git build-env && \
-    cd build-env && git checkout ${NVTAB_BACKEND_VER} && cd .. && \
-    pushd build-env && \
-      mkdir build && \
-      cd build && \
-      cmake -Dpybind11_DIR=/usr/local/lib/python3.8/dist-packages/pybind11/share/cmake/pybind11 \
-            -D TRITON_COMMON_REPO_TAG="r$TRITON_VERSION"    \
-            -D TRITON_CORE_REPO_TAG="r$TRITON_VERSION"      \
-            -D TRITON_BACKEND_REPO_TAG="r$TRITON_VERSION" .. \
-      && make -j && \
-      mkdir -p /opt/tritonserver/backends/nvtabular && \
-      cp libtriton_nvtabular.so /opt/tritonserver/backends/nvtabular/ && \
-    popd && \
-    rm -rf build-env
-
 # Install faiss (with sm80 support since the faiss-gpu wheels
 # don't include it https://github.com/kyamagu/faiss-wheels/issues/54)
 RUN git clone --branch v1.7.2 https://github.com/facebookresearch/faiss.git build-env && \
