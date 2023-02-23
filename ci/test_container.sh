@@ -12,7 +12,7 @@ else
     ci_script_dir=./
 fi
 
-if "$container" != "merlin-ci-runner"; then
+if [ $container != 'merlin-ci-runner' ]; then
     ${ci_script_dir}container_size.sh $container $devices
 fi
 
