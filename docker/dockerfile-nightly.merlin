@@ -9,22 +9,33 @@ FROM ${FULL_IMAGE} as current
 ARG CONTAINER
 
 # Add Merlin Repo
-RUN cd /Merlin && git checkout main && git pull origin main
+RUN rm -rf /Merlin && git clone --depth 1 https://github.com/NVIDIA-Merlin/Merlin/ /Merlin && \
+    cd /Merlin/ && pip install . --no-deps
 
-# Install Merlin Core main branch
-RUN cd /core/ && git checkout main && git pull origin main && pip install . --no-deps
+# Install Merlin Core
+RUN rm -rf /core && git clone --depth 1 https://github.com/NVIDIA-Merlin/core.git /core/ && \
+    cd /core/ && pip install . --no-deps
 
-# Install NVTabular main branch
-RUN cd /nvtabular/ && git checkout main && git pull origin main && pip install . --no-deps
+# Install Merlin Dataloader
+RUN rm -rf /dataloader && git clone --depth 1 https://github.com/NVIDIA-Merlin/dataloader.git /dataloader/ && \
+    cd /dataloader/ && pip install . --no-deps
 
-# Install Merlin Systems main branch
-RUN cd /systems/ && git checkout main && git pull origin main && pip install . --no-deps
+# Install NVTabular
+ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
+RUN rm -rf /nvtabular && git clone --depth 1 https://github.com/NVIDIA-Merlin/NVTabular.git /nvtabular/ && \
+    cd /nvtabular/ && pip install . --no-deps
 
-# Install Models main branch
-RUN cd /models/ && git checkout main && git pull origin main && pip install . --no-deps
+# Install Merlin Systems
+RUN rm -rf /systems && git clone --depth 1 https://github.com/NVIDIA-Merlin/systems.git /systems/ && \
+    cd /systems/ && pip install . --no-deps
 
-# Install Transformers4Rec main branch
-RUN cd /transformers4rec/ && git checkout main && git pull origin main && pip install . --no-deps
+# Install Models
+RUN rm -rf /models && git clone --depth 1 https://github.com/NVIDIA-Merlin/Models.git /models/ && \
+    cd /models/ && pip install . --no-deps
+
+# Install Transformers4Rec
+RUN rm -rf /transformers4rec && git clone --depth 1 https://github.com/NVIDIA-Merlin/Transformers4Rec.git /transformers4rec && \
+    cd /transformers4rec/ && pip install . --no-deps
 
 
 # -----------------------------------------------------------------------------
