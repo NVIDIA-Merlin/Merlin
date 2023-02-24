@@ -9,6 +9,7 @@ FROM ${BASE_IMAGE}
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/tensorflow2 backends/tensorflow2/
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/pytorch backends/pytorch/
 
+RUN pip install dask==2022.7.1 distributed==2022.7.1
 RUN pip install tensorflow-gpu==2.9.2
 RUN pip install torch --extra-index-url https://download.pytorch.org/whl/cu117
 RUN pip install torchmetrics==0.10.0 matplotlib
