@@ -156,7 +156,7 @@ ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/cuda/extra
 ENV PATH=${CUDA_HOME}/lib64/:${PATH}:${CUDA_HOME}/bin
 
 # Set up NVIDIA package repository
-RUN v=8.5.1-1+cuda11.8 && apt update -y --fix-missing && \
+RUN apt update -y --fix-missing && \
     apt install -y --no-install-recommends software-properties-common && \
     wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-ubuntu2004.pin && \
     mv cuda-ubuntu2004.pin /etc/apt/preferences.d/cuda-repository-pin-600 && \
@@ -206,7 +206,7 @@ RUN v=8.5.1-1+cuda11.8 && apt update -y --fix-missing && \
         # [ HugeCTR ]
         libaio-dev \
         # TensorRT dependencies
-        python3-libnvinfer=$v && \
+        python3-libnvinfer=8.5.1-1+cuda11.8 && \
     apt autoremove -y && \
     apt clean && \
     rm -rf /var/lib/apt/lists/*
