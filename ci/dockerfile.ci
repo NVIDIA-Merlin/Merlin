@@ -9,7 +9,6 @@ FROM ${BASE_IMAGE}
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/tensorflow2 backends/tensorflow2/
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/pytorch backends/pytorch/
 
-RUN pip install dask==2022.7.1 distributed==2022.7.1
 RUN pip install tensorflow-gpu==2.9.2
 RUN pip install torch --extra-index-url https://download.pytorch.org/whl/cu117
 RUN pip install torchmetrics==0.10.0 matplotlib
@@ -20,6 +19,10 @@ RUN pip install pytest-cov pytest-xdist sphinx-multiversion; pip install -r /nvt
 RUN pip install astroid==2.5.6 'feast<0.20' sklearn
 RUN echo 'import sphinx.domains' >> /usr/local/lib/python3.8/dist-packages/sphinx/__init__.py
 RUN HOROVOD_GPU_OPERATIONS=NCCL python -m pip install --no-cache-dir horovod && horovodrun --check-build
+
+# Pin dask/distributed package versions after other installs
+# to make sure we have the right ones
+RUN pip install dask==2022.7.1 distributed==2022.7.1
 
 RUN pip install tox
 
