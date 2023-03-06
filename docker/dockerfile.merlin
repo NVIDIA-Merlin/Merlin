@@ -109,10 +109,11 @@ RUN if [ $(uname -m) == "aarch64" ] ; then \
         pip install cupy-cuda117 ; \
     fi
 
+# tritonclient[all]==2.29.0: latest tritonclient removes the perf_* binaries, so specified to version 2.29.0
 RUN pip install --no-cache-dir nvidia-pyindex pybind11 pytest \
                 transformers==4.12 tensorflow-metadata betterproto \
                 cachetools graphviz nvtx scipy "scikit-learn<1.2" \
-                tritonclient[all] grpcio-channelz fiddle wandb npy-append-array \
+                tritonclient[all]==2.29.0 grpcio-channelz fiddle wandb npy-append-array \
                 git+https://github.com/rapidsai/asvdb.git@main \
                 xgboost==1.6.2 lightgbm treelite==2.4.0 treelite_runtime==2.4.0 \
                 lightfm implicit \
@@ -120,9 +121,9 @@ RUN pip install --no-cache-dir nvidia-pyindex pybind11 pytest \
 
 # 2023-02-22: pynvml==11.5.0 is currently incompatible with our version of dask/distributed
 RUN pip install --no-cache-dir pynvml==11.4.1
-RUN pip install --no-cache-dir numpy==1.22.4 protobuf==3.20.3
+RUN pip install --no-cache-dir numpy==1.22.4 protobuf==3.20.3 onnx onnxruntime==1.11.1 pycuda
 RUN pip install --no-cache-dir dask==${DASK_VER} distributed==${DASK_VER} dask[dataframe]==${DASK_VER} 
-
+RUN pip install --no-cache-dir onnx_graphsurgeon --index-url https://pypi.ngc.nvidia.com
 
 # Triton Server
 WORKDIR /opt/tritonserver
@@ -196,6 +197,7 @@ RUN repo_arch="$(uname -m | sed 's/aarch64/sbsa/')" && \
         ca-certificates \
         clang-format \
         curl \
+        libcurl4-openssl-dev \
         git \
         graphviz \
         libarchive-dev \
@@ -216,12 +218,34 @@ RUN repo_arch="$(uname -m | sed 's/aarch64/sbsa/')" && \
         rapidjson-dev \
         tree \
         wget \
-        zlib1g-dev && \
+        zlib1g-dev \
+        # Required to build RocksDB and RdKafka..
+        libgflags-dev \
+        libbz2-dev \
+        libsnappy-dev \
+        liblz4-dev \
+        libzstd-dev \
+        libsasl2-dev \
+        #   Required to build Protocol Buffers.
+        autoconf automake libtool \
+        #   Required to build Hadoop.
+        default-jdk maven pkg-config \
+        libpmem-dev \
+        libsnappy-dev \
+        #   Required to run Hadoop.
+        openssh-server \
+        # [ HugeCTR ]
+        libaio-dev \
+        # TensorRT dependencies
+        python3-libnvinfer=8.5.1-1+cuda11.8 && \
     apt autoremove -y && \
     apt clean && \
     rm -rf /var/lib/apt/lists/*
 
 RUN ln -s /usr/bin/python3 /usr/bin/python
+
+ENV JAVA_HOME=/usr/lib/jvm/default-java
+ENV LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${JAVA_HOME}/lib:${JAVA_HOME}/lib/server
 
 # Includes
 COPY --chown=1000:1000 --from=build /usr/local/include/spdlog/ /usr/local/include/spdlog/
@@ -229,6 +253,7 @@ COPY --chown=1000:1000 --from=build /usr/local/include/spdlog/ /usr/local/includ
 # Binaries
 COPY --chown=1000:1000 --from=build /usr/local/bin/cmake /usr/local/bin/
 COPY --chown=1000:1000 --from=build /usr/local/bin/pytest /usr/local/bin/
+COPY --chown=1000:1000 --from=build /usr/local/bin/perf_* /usr/local/bin/
 
 # Triton Server
 WORKDIR /opt/tritonserver
@@ -240,6 +265,7 @@ COPY --chown=1000:1000 --from=triton /opt/tritonserver/lib lib/
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/include include/
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/repoagents/ repoagents/
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/python backends/python/
+COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/tensorrt backends/tensorrt/
 COPY --chown=1000:1000 --from=triton /usr/bin/serve /usr/bin/.
 
 
@@ -256,7 +282,10 @@ ENV PYTHONPATH=$PYTHONPATH:/usr/local/lib/python3.8/dist-packages/
 COPY --chown=1000:1000 --from=dlfw /usr/lib/libcudf* /usr/lib/
 COPY --chown=1000:1000 --from=dlfw /usr/lib/libarrow* /usr/lib/
 COPY --chown=1000:1000 --from=dlfw /usr/lib/libparquet* /usr/lib/
+COPY --chown=1000:1000 --from=dlfw /usr/lib/cmake/arrow /usr/lib/cmake/arrow/
 COPY --chown=1000:1000 --from=dlfw /usr/lib/libnvcomp* /usr/lib/
+COPY --chown=1000:1000 --from=dlfw /usr/include/parquet /usr/include/parquet/
+COPY --chown=1000:1000 --from=dlfw /usr/include/arrow /usr/include/arrow/
 COPY --chown=1000:1000 --from=dlfw /usr/include/cudf /usr/include/cudf/
 COPY --chown=1000:1000 --from=dlfw /usr/include/rmm /usr/include/rmm/
 ARG PYTHON_VERSION=3.8
@@ -324,6 +353,83 @@ RUN git clone --depth 1 --branch ${MODELS_VER} https://github.com/NVIDIA-Merlin/
 # Install Transformers4Rec
 RUN git clone --depth 1 --branch ${TF4REC_VER} https://github.com/NVIDIA-Merlin/Transformers4Rec.git /transformers4rec && \
     cd /transformers4rec/ && pip install . --no-deps
+
+# Optional dependency: Build and install protocol buffers and Hadoop/HDFS.
+ARG INSTALL_HDFS=false
+# Env for HDFS
+ENV HADOOP_HOME=/opt/hadoop
+ENV PATH=${PATH}:${HADOOP_HOME}/bin:${HADOOP_HOME}/sbin \
+    HDFS_NAMENODE_USER=root \
+    HDFS_SECONDARYNAMENODE_USER=root \
+    HDFS_DATANODE_USER=root \
+    YARN_RESOURCEMANAGER_USER=root \
+    YARN_NODEMANAGER_USER=root \
+    # Tackles with ThreadReaper stack overflow issues: https://bugs.openjdk.java.net/browse/JDK-8153057
+    LIBHDFS_OPTS='-Djdk.lang.processReaperUseDefaultStackSize=true' \
+    # Tackles with JVM setting error signals that UCX library will check (GitLab issue #425).
+    UCX_ERROR_SIGNALS='' \
+    CLASSPATH=${CLASSPATH}:\
+${HADOOP_HOME}/etc/hadoop/*:\
+${HADOOP_HOME}/share/hadoop/common/*:\
+${HADOOP_HOME}/share/hadoop/common/lib/*:\
+${HADOOP_HOME}/share/hadoop/hdfs/*:\
+${HADOOP_HOME}/share/hadoop/hdfs/lib/*:\
+${HADOOP_HOME}/share/hadoop/mapreduce/*:\
+${HADOOP_HOME}/share/hadoop/yarn/*:\
+${HADOOP_HOME}/share/hadoop/yarn/lib/*
+
+# Install Inference and HPS Backend
+ARG HUGECTR_DEV_MODE=false
+ARG HUGECTR_VER=main
+ARG _HUGECTR_REPO="github.com/NVIDIA-Merlin/HugeCTR.git"
+ARG HUGECTR_BACKEND_VER=main
+ARG _CI_JOB_TOKEN=""
+ARG _HUGECTR_BACKEND_REPO="github.com/triton-inference-server/hugectr_backend.git"
+ARG HUGECTR_HOME=/usr/local/hugectr
+ARG TRITON_VERSION
+
+ENV PATH=$PATH:${HUGECTR_HOME}/bin \
+    CPATH=$CPATH:${HUGECTR_HOME}/include \
+    LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${HUGECTR_HOME}/lib
+
+RUN if [ "${HUGECTR_DEV_MODE}" == "false" ]; then \
+        # Install HugeCTR inference which is dependency for hps_backenc
+        git clone --branch ${HUGECTR_VER} --depth 1 https://${_CI_JOB_TOKEN}${_HUGECTR_REPO} /hugectr && \
+        cd /hugectr && \
+        git submodule update --init --recursive && \
+        mkdir build && \
+        cd build && \
+        if [[ "${INSTALL_HDFS}" == "false" ]]; then \
+            cmake -DCMAKE_BUILD_TYPE=Release -DSM="70;75;80" -DENABLE_INFERENCE=ON .. \
+        ; else \
+            cmake -DCMAKE_BUILD_TYPE=Release -DSM="70;75;80" -DENABLE_INFERENCE=ON -DENABLE_HDFS=ON .. \
+        ; fi && \
+        make -j$(nproc) && \
+        make install && \
+        # Install HPS trt pugin
+        cd ../hps_trt && \
+        mkdir build && \
+        cd build && \
+        cmake -DSM="70;75;80" .. && \
+        make -j$(nproc) && \
+        make install && \
+        cd / && rm -rf /hugectr && \
+        # Install hps_backend
+        git clone --branch ${HUGECTR_BACKEND_VER} --depth 1 https://${_CI_JOB_TOKEN}${_HUGECTR_BACKEND_REPO} /repos/hugectr_triton_backend && \
+        mkdir /repos/hugectr_triton_backend/hps_backend/build && \
+        cd /repos/hugectr_triton_backend/hps_backend/build && \
+        cmake \
+            -DCMAKE_INSTALL_PREFIX:PATH=${HUGECTR_HOME} \
+            -DTRITON_COMMON_REPO_TAG="r${TRITON_VERSION}" \
+            -DTRITON_CORE_REPO_TAG="r${TRITON_VERSION}" \
+            -DTRITON_BACKEND_REPO_TAG="r${TRITON_VERSION}" .. && \
+        make -j$(nproc) && \
+        make install && \
+        cd ../../.. && \
+        rm -rf hugectr_triton_backend && \
+        chmod +x ${HUGECTR_HOME}/lib/*.so ${HUGECTR_HOME}/backends/hps/*.so \
+    ; fi
+RUN ln -s ${HUGECTR_HOME}/backends/hps /opt/tritonserver/backends/hps
 
 HEALTHCHECK NONE
 CMD ["/bin/bash"]

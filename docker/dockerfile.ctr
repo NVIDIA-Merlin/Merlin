@@ -19,43 +19,8 @@ ENV PATH=${CUDA_HOME}/lib64/:${PATH}:${CUDA_HOME}/bin
 ENV PATH=$PATH:/usr/lib/x86_64-linux-gnu/
 RUN ln -s /usr/local/cuda/lib64/stubs/libcuda.so /usr/local/cuda/lib64/stubs/libcuda.so.1
 
-RUN apt update -y --fix-missing && \
-    apt install -y --no-install-recommends \
-       graphviz \
-       libexpat1-dev \
-       openssl \
-       pkg-config \
-       protobuf-compiler \
-        # [ HugeCTR dependencies ]
-        #   Required to build RocksDB.
-            libgflags-dev \
-            zlib1g-dev libbz2-dev libsnappy-dev liblz4-dev libzstd-dev \
-        #   Required to build RdKafka.
-            zlib1g-dev libzstd-dev \
-            libssl-dev libsasl2-dev \
-        #   Required to build Protocol Buffers.
-            autoconf automake libtool \
-        #   Required to build Hadoop.
-            default-jdk maven \
-            libpmem-dev \
-            libsasl2-dev libssl-dev \
-            libsnappy-dev libzstd-dev zlib1g-dev \
-        #   Required to run Hadoop.
-            openssh-server \
-        # [ HugeCTR ]
-            libaio-dev libtbb-dev \
-            clang-format \
-       software-properties-common  && \
-    apt clean && \
-    rm -rf /var/lib/apt/lists/*
-
-ENV JAVA_HOME=/usr/lib/jvm/default-java
-ENV LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${JAVA_HOME}/lib:${JAVA_HOME}/lib/server
-
-RUN pip install --no-cache-dir mpi4py onnx onnxruntime==1.11.1 betterproto \
-                pybind11 pydot pytest protobuf==3.20.3 
 RUN pip install --no-cache-dir --upgrade notebook ipython 
-
+RUN pip install --no-cache-dir mpi4py
 
 # Install CUDA-Aware hwloc
 ARG HWLOC_VER=2.4.1
@@ -75,28 +40,6 @@ RUN mkdir -p /var/tmp && wget -q -nc --no-check-certificate -P /var/tmp https://
 
 # Optional dependency: Build and install protocol buffers and Hadoop/HDFS.
 ARG INSTALL_HDFS=false
-
-# Env for HDFS
-ENV HADOOP_HOME=/opt/hadoop
-ENV PATH=${PATH}:${HADOOP_HOME}/bin:${HADOOP_HOME}/sbin \
-    HDFS_NAMENODE_USER=root \
-    HDFS_SECONDARYNAMENODE_USER=root \
-    HDFS_DATANODE_USER=root \
-    YARN_RESOURCEMANAGER_USER=root \
-    YARN_NODEMANAGER_USER=root \
-    # Tackles with ThreadReaper stack overflow issues: https://bugs.openjdk.java.net/browse/JDK-8153057
-    LIBHDFS_OPTS='-Djdk.lang.processReaperUseDefaultStackSize=true' \
-    # Tackles with JVM setting error signals that UCX library will check (GitLab issue #425).
-    UCX_ERROR_SIGNALS='' \
-    CLASSPATH=${CLASSPATH}:\
-${HADOOP_HOME}/etc/hadoop/*:\
-${HADOOP_HOME}/share/hadoop/common/*:\
-${HADOOP_HOME}/share/hadoop/common/lib/*:\
-${HADOOP_HOME}/share/hadoop/hdfs/*:\
-${HADOOP_HOME}/share/hadoop/hdfs/lib/*:\
-${HADOOP_HOME}/share/hadoop/mapreduce/*:\
-${HADOOP_HOME}/share/hadoop/yarn/*:\
-${HADOOP_HOME}/share/hadoop/yarn/lib/*
 
 # Arguments "_XXXX" are only valid when $HUGECTR_DEV_MODE==false
 ARG HUGECTR_DEV_MODE=false
@@ -122,29 +65,12 @@ RUN ln -s /usr/lib/x86_64-linux-gnu/libibverbs.so.1 /usr/lib/x86_64-linux-gnu/li
 RUN rm -rf /usr/lib/x86_64-linux-gnu/libibverbs.so && \
     ln -s /usr/lib/x86_64-linux-gnu/libibverbs.so.1.14.36.0 /usr/lib/x86_64-linux-gnu/libibverbs.so
 
-
 # Install HugeCTR
 ARG HUGECTR_HOME=/usr/local/hugectr
 RUN if [[ "${HUGECTR_DEV_MODE}" == "false" ]]; then \
         git clone --branch ${HUGECTR_VER} --depth 1 https://${_CI_JOB_TOKEN}${_HUGECTR_REPO} /hugectr && \
         cd /hugectr && \
         git submodule update --init --recursive && \
-        mkdir build && \
-        cd build && \
-        if [[ "${INSTALL_HDFS}" == "false" ]]; then \
-            cmake -DCMAKE_BUILD_TYPE=Release -DSM="60;61;70;75;80" -DENABLE_INFERENCE=ON .. \
-        ; else \
-            cmake -DCMAKE_BUILD_TYPE=Release -DSM="60;61;70;75;80" -DENABLE_INFERENCE=ON -DENABLE_HDFS=ON .. \
-        ; fi && \
-        make -j$(nproc) && \
-        make install && \
-        rm -rf ./* && \
-        chmod +x ${HUGECTR_HOME}/bin/* ${HUGECTR_HOME}/lib/*.so \
-    ; fi ; \
-    if [[ "${HUGECTR_DEV_MODE}" == "false" ]]; then \
-        cd /hugectr && \
-        git submodule update --init --recursive && \
-        rm -rf build && \
         mkdir build && \
         cd build && \
         LD_LIBRARY_PATH=/usr/local/cuda/lib64/stubs/:$LD_LIBRARY_PATH && \
@@ -159,8 +85,9 @@ RUN if [[ "${HUGECTR_DEV_MODE}" == "false" ]]; then \
         rm -rf ./* && \
         chmod +x ${HUGECTR_HOME}/bin/* ${HUGECTR_HOME}/lib/*.so && \
         cd ../onnx_converter && \
-        python setup.py install \
-    ; fi ; mv /hugectr/ci ~/hugectr-ci ; rm -rf /hugectr; mkdir -p /hugectr; mv ~/hugectr-ci /hugectr/ci
+        python setup.py install && \
+        mv /hugectr/ci ~/hugectr-ci && rm -rf /hugectr && mkdir -p /hugectr && mv ~/hugectr-ci /hugectr/ci \
+    ; fi
 
 
 ENV PATH=$PATH:${HUGECTR_HOME}/bin \
@@ -185,8 +112,9 @@ RUN if [ "${HUGECTR_DEV_MODE}" == "false" ]; then \
         make install && \
         cd ../.. && \
         rm -rf hugectr_triton_backend && \
-        chmod +x ${HUGECTR_HOME}/lib/*.so ${HUGECTR_HOME}/backends/hugectr/*.so \
-    ; fi ; rm -rf /repos
+        chmod +x ${HUGECTR_HOME}/lib/*.so ${HUGECTR_HOME}/backends/hugectr/*.so && \
+        rm -rf /repos \
+    ; fi
 RUN ln -s ${HUGECTR_HOME}/backends/hugectr /opt/tritonserver/backends/hugectr
 
 # Remove fake lib
