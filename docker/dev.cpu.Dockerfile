@@ -1,11 +1,30 @@
-FROM python:3.8.16-slim-buster
+FROM ubuntu:22.04
+
+# -----------------------------------------------------------------------------
+# Install system packages
+# -----------------------------------------------------------------------------
+
+ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && apt-get install -y \
     curl \
     git \
-    build-essential `For building NVTabular C++ code` \
+    build-essential \
+    software-properties-common \
     graphviz `# For visualizing merlin graphs` \
     ripgrep
+
+RUN add-apt-repository ppa:deadsnakes/ppa -y
+
+RUN apt-get update && TZ=Etc/UTC apt install -y \
+    python3.8 \
+    python3.8-dev \
+    python3.8-distutils
+
+RUN ln -s /usr/bin/python3.8 /usr/bin/python
+
+RUN curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
+    python get-pip.py
 
 # Update pip
 RUN pip install --no-cache-dir --upgrade \
