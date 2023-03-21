@@ -75,7 +75,7 @@ def test_func():
                 "/tmp/examples/poc_ensemble", ensemble.graph.input_schema, batch, outputs,  "executor_model"
             )
             ordered_ids = [x.tolist() for x in response["ordered_ids"]]
-            # shutil.rmtree("/tmp/examples/", ignore_errors=True)
+            shutil.rmtree("/tmp/examples/", ignore_errors=True)
             """
         )
         tb2.execute_cell(NUM_OF_CELLS - 2)
