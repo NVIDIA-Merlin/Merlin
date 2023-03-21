@@ -74,10 +74,11 @@ def test_func():
             response = run_ensemble_on_tritonserver(
                 "/tmp/examples/poc_ensemble", ensemble.graph.input_schema, batch, outputs,  "executor_model"
             )
-            response = [x.tolist()[0] for x in response["ordered_ids"]]
-            shutil.rmtree("/tmp/examples/", ignore_errors=True)
+            ordered_ids = [x.tolist() for x in response["ordered_ids"]]
+            # shutil.rmtree("/tmp/examples/", ignore_errors=True)
             """
         )
         tb2.execute_cell(NUM_OF_CELLS - 2)
-        response = tb2.ref("response")
-        assert len(response) == top_k
+        ordered_ids = tb2.ref("ordered_ids")
+
+        assert len(ordered_ids[0]) == top_k
