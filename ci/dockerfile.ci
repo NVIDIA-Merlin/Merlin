@@ -9,14 +9,14 @@ FROM ${BASE_IMAGE}
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/tensorflow2 backends/tensorflow2/
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/pytorch backends/pytorch/
 
-RUN pip install tensorflow-gpu==2.9.2 transformers==4.26.1
+RUN pip install tensorflow-gpu==2.10.1 transformers==4.26.1
 RUN pip install torch --extra-index-url https://download.pytorch.org/whl/cu117
 RUN pip install torchmetrics==0.10.0 matplotlib
 RUN pip install fastai fastcore fastprogress fastdownload --no-deps
 
 # install dependencies for systems testing 
 RUN pip install pytest-cov pytest-xdist sphinx-multiversion; pip install -r /nvtabular/requirements/dev.txt
-RUN pip install astroid==2.5.6 'feast<0.20' sklearn
+RUN pip install astroid==2.5.6 'feast<0.20' scikit-learn
 RUN echo 'import sphinx.domains' >> /usr/local/lib/python3.8/dist-packages/sphinx/__init__.py
 RUN HOROVOD_GPU_OPERATIONS=NCCL python -m pip install --no-cache-dir horovod && horovodrun --check-build
 
@@ -29,6 +29,7 @@ RUN pip install tox
 # Update the Merlin repos (to avoid needed to rebuild underlying images to get updates)
 RUN cd /Merlin && git pull origin main
 RUN cd /core/ && git pull origin main && pip install . --no-deps
+RUN cd /dataloader/ && git pull origin main && pip install . --no-deps
 RUN cd /nvtabular/ && git pull origin main && pip install . --no-deps
 RUN cd /systems/ && git pull origin main && pip install . --no-deps
 RUN cd /models/ && git pull origin main && pip install . --no-deps
