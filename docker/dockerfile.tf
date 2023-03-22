@@ -52,7 +52,7 @@ RUN ln -s /usr/lib/x86_64-linux-gnu/libibverbs.so.1 /usr/lib/x86_64-linux-gnu/li
 
 # Install distributed-embeddings and sok
 ARG INSTALL_DISTRIBUTED_EMBEDDINGS=true
-ARG TFDE_VER=v0.2
+ARG TFDE_VER=v0.3
 RUN if [ "$HUGECTR_DEV_MODE" == "false" ]; then \
         git clone --branch ${HUGECTR_VER} --depth 1 --recurse-submodules --shallow-submodules https://${_CI_JOB_TOKEN}${_HUGECTR_REPO} /hugectr && \
         pushd /hugectr && \
