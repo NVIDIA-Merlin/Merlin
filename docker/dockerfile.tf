@@ -31,7 +31,7 @@ COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python3.8/dist-packages/horovo
 COPY --chown=1000:1000 --from=dlfw /usr/local/bin/horovodrun /usr/local/bin/horovodrun
 
 # Need to install transformers after tensorflow has been pulled in, so it builds artifacts correctly.
-RUN pip install --no-cache-dir transformers==4.25.1
+RUN pip install --no-cache-dir transformers==4.26.0
 
 # Install HugeCTR
 # Arguments "_XXXX" are only valid when $HUGECTR_DEV_MODE==false
