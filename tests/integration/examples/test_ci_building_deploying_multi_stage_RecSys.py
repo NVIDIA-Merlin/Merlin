@@ -79,9 +79,9 @@ def test_func():
             response = run_ensemble_on_tritonserver(
                 "/tmp/examples/poc_ensemble", ensemble.graph.input_schema, request, outputs,  "executor_model"
             )
-            response = [x.tolist()[0] for x in response["ordered_ids"]]
+            ordered_ids = [x.tolist() for x in response["ordered_ids"]]
             shutil.rmtree("/tmp/examples/", ignore_errors=True)
             """
         )
-        response = tb2.ref("response")
-        assert len(response) == top_k
+        ordered_ids = tb2.ref("ordered_ids")
+        assert len(ordered_ids[0]) == top_k
