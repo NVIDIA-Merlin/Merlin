@@ -32,10 +32,6 @@ COPY --chown=1000:1000 --from=dlfw /usr/local/bin/horovodrun /usr/local/bin/horo
 
 # Need to install transformers after tensorflow has been pulled in, so it builds artifacts correctly.
 RUN pip install --no-cache-dir transformers==4.26.0
-# Install horovod with pip because tensorflow:22.02 has horovod 0.26 which is incompatible with TF 2.11.
-# This can be removed when TF container has horovod >= 0.27.
-RUN HOROVOD_GPU_OPERATIONS=NCCL HOROVOD_WITH_TENSORFLOW=1 pip install --no-cache-dir horovod==0.27.0 && \
-    horovodrun --check-build
 
 # Install HugeCTR
 # Arguments "_XXXX" are only valid when $HUGECTR_DEV_MODE==false
