@@ -65,11 +65,11 @@ def test_func():
             from merlin.dataloader.tf_utils import configure_tensorflow
             configure_tensorflow()
             df_lib = get_lib()
-            batch = df_lib.read_parquet(
+            train = df_lib.read_parquet(
                 os.path.join("/tmp/data/processed_nvt/", "train", "part_0.parquet"),
-                num_rows=1,
                 columns=["user_id_raw"],
             )
+            batch = train[:1]
             from merlin.systems.triton.utils import run_ensemble_on_tritonserver
             response = run_ensemble_on_tritonserver(
                 "/tmp/examples/poc_ensemble", ensemble.graph.input_schema, batch, outputs,  "executor_model"
