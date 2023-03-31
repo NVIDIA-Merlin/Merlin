@@ -253,11 +253,11 @@
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df_lib</span> <span class="o">=</span> <span class="n">get_lib</span><span class="p">()</span>
 <span class="n">input_cols</span> <span class="o">=</span> <span class="n">workflow</span><span class="o">.</span><span class="n">input_schema</span><span class="o">.</span><span class="n">column_names</span>
 <span class="c1"># read in data for request</span>
-<span class="n">batch</span> <span class="o">=</span> <span class="n">df_lib</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">df_lib</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span>
     <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">original_data_path</span> <span class="o">+</span> <span class="s2">&quot;/*.parquet&quot;</span><span class="p">))[</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span>
-    <span class="n">num_rows</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
     <span class="n">columns</span><span class="o">=</span><span class="n">input_cols</span>
 <span class="p">)</span>
+<span class="n">batch</span> <span class="o">=</span> <span class="n">data</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span>
 <span class="n">batch</span>
 </pre></div>
 </div>
