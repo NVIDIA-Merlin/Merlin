@@ -40,7 +40,7 @@ if [ "$container" == "merlin-hugectr" ]; then
     /hugectr/ci/test_unit.sh $container $devices || exit_code=1
 fi
 
-## Test distributed-embeddings
+## Test SOK
 if [ "$container" == "merlin-tensorflow" ]; then
     echo "Run unit tests for merlin-sok"
     /hugectr/ci/test_unit.sh $container $devices || exit_code=1

@@ -35,8 +35,9 @@ if [ "$container" == "merlin-tensorflow" ]; then
     python -c "import tensorflow; print(tensorflow.__version__)" || exit_code=1
     echo "Check merlin-sok for tf-training container"
     python -c "import sparse_operation_kit; print(sparse_operation_kit.__version__)" || exit_code=1
-    echo "Check distributed-embeddings for tf-training container"
-    python -c "import distributed_embeddings as tfde; print(tfde.__doc__)" || exit_code=1
+    # 2023-04-14 Removed until distributed-embeddings are re-added.
+    # echo "Check distributed-embeddings for tf-training container"
+    # python -c "import distributed_embeddings as tfde; print(tfde.__doc__)" || exit_code=1
 
     # TODO: remove this block once
     # https://github.com/NVIDIA-Merlin/HugeCTR/pull/328
