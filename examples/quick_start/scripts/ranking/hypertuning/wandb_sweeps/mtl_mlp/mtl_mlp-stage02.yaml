@@ -1,0 +1,103 @@
+program: ranking_train_eval.py
+method: bayes
+metric:
+  name: auc_avg
+  goal: maximize
+#Based on best params from https://wandb.ai/merlin-research/mm_quick_start/runs/hiurxmqe?workspace=user-gspmoreira
+parameters:
+  tasks:
+    distribution: categorical
+    values:
+      - "click,like,share,follow"
+  mtl_pos_class_weight_click:
+    distribution: int_uniform
+    min: 1
+    max: 10
+  mtl_pos_class_weight_like:
+    distribution: int_uniform
+    min: 1
+    max: 100
+  mtl_pos_class_weight_share:
+    distribution: int_uniform
+    min: 1
+    max: 100
+  mtl_pos_class_weight_follow:
+    distribution: int_uniform
+    min: 1
+    max: 100
+  mtl_loss_weight_click:
+    distribution: categorical
+    values:
+      - 5
+  mtl_loss_weight_like:
+    distribution: int_uniform
+    min: 1
+    max: 10
+  mtl_loss_weight_share:
+    distribution: int_uniform
+    min: 1
+    max: 10
+  mtl_loss_weight_follow:
+    distribution: int_uniform
+    min: 1
+    max: 10
+  activation:
+    distribution: categorical
+    values:
+      - relu
+  model:
+    distribution: categorical
+    values:
+      - mlp
+  dropout:
+    distribution: categorical
+    values:
+      - 0.053124071932931054
+  embeddings_l2_reg:
+    distribution: categorical
+    values:
+      - 4.435685530165334e-08
+  embedding_sizes_multiplier:
+    distribution: categorical
+    values:
+      - 2
+  l2_reg:
+    distribution: categorical
+    values:
+      - 1.986254153581112e-05
+  lr:
+    distribution: categorical
+    values:
+      - 0.002391546144360452
+  lr_decay_rate:
+    distribution: categorical
+    values:
+      - 0.9822597974832766
+  lr_decay_steps:
+    distribution: categorical
+    values:
+      - 144
+  mlp_layers:
+    distribution: categorical
+    values:
+      - 128,64
+  use_task_towers:
+    distribution: categorical
+    values:
+      - True
+  tower_layers:
+    distribution: categorical
+    values:
+      - 128,64
+  train_batch_size:
+    distribution: categorical
+    values:
+      - 65536
+  eval_batch_size:
+    distribution: categorical
+    values:
+      - 65536
+  epochs:
+    distribution: categorical
+    values:
+      - 1

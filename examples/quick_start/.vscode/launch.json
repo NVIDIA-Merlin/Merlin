@@ -1,0 +1,121 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Current File",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            //docker run --runtime=nvidia --rm -it --ipc=host --cap-add SYS_NICE -v /home/gmoreira/projects/nvidia/nvidia_merlin/models/examples/quick_start:/quick_start -v /mnt/nvme0n1/datasets/tenrec/Tenrec/Tenrec/:/data -v /mnt/nvme0n1/quick_start/quick_start_outputs_large:/outputs nvcr.io/nvidia/merlin/merlin-tensorflow:22.12 /bin/bash
+            "name": "Preproc-TenRec-small-Docker",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/scripts/preproc/preprocessing.py",
+            "cwd": "${workspaceFolder}/scripts/preproc",
+            "env": {
+                "CUDA_VISIBLE_DEVICES": "0",
+            },
+            "console": "integratedTerminal",
+            "args": [
+                "--input_data_format=csv",
+                "--csv_na_values=\\N",
+                "--data_path",
+                //"/data/QK-video-10M.csv",
+                "/data/QK-video.csv",
+                "--filter_query=click==1 or (click==0 and follow==0 and like==0 and share==0)",
+                "--output_path=/outputs/",
+                "--categorical_features=user_id,item_id,video_category,gender,age",
+                "--binary_classif_targets=click,follow,like,share",
+                "--regression_targets=watching_times",
+                "--to_int32=user_id,item_id",
+                "--to_int16=watching_times",
+                "--to_int8=gender,age,video_category,click,follow,like,share",
+                "--min_item_freq=30",
+                "--min_user_freq=30",
+                "--max_user_freq=150",
+                "--num_max_rounds_filtering=5",
+                "--user_id_feature=user_id",
+                "--item_id_feature=item_id",
+                //"--persist_intermediate_files",
+                "--dataset_split_strategy=random_by_user",
+                "--random_split_eval_perc=0.2",
+            ],
+            "justMyCode": false
+        },
+        {
+            //docker run --runtime=nvidia --rm -it --ipc=host --cap-add SYS_NICE -v /home/gmoreira/projects/nvidia/nvidia_merlin/models/examples/quick_start:/quick_start -v /mnt/nvme0n1/datasets/recsyschallenge2023_shrcht/dataset/raw:/data -v /mnt/nvme0n1/datasets/recsyschallenge2023_shrcht/outputs:/outputs nvcr.io/nvidia/merlin/merlin-tensorflow:23.02 /bin/bash
+            "name": "Preproc-RecSysChallenge-Docker",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/scripts/preproc/preprocessing.py",
+            "cwd": "${workspaceFolder}/scripts/preproc",
+            "env": {
+                "CUDA_VISIBLE_DEVICES": "0",
+            },
+            "console": "integratedTerminal",
+            "args": [
+                "--input_data_format=csv",
+                "--csv_sep=<tab>",
+                "--data_path",
+                "/data/train/*.csv",
+                "--test_data_path",
+                "/data/test/*.csv",
+                "--output_path=/outputs/dataset",
+                "--categorical_features=f_2,f_3,f_4,f_5,f_6,f_7,f_8,f_9,f_10,f_11,f_12,f_13,f_14,f_15,f_16,f_17,f_18,f_19,f_20,f_21,f_22,f_23,f_24,f_25,f_26,f_27,f_28,f_29,f_30,f_31,f_32",
+                "--continuous_features=f_33,f_34,f_35,f_36,f_37,f_38,f_39,f_40,f_41,f_42,f_43,f_44,f_45,f_46,f_47,f_48,f_49,f_50,f_51,f_52,f_53,f_54,f_55,f_56,f_57,f_58,f_59,f_60,f_61,f_62,f_63,f_64,f_65,f_66,f_67,f_68,f_69,f_70,f_71,f_72,f_73,f_74,f_75,f_76,f_77,f_78,f_79",
+                "--continuous_features_fillna=<median>",
+                "--to_int8=is_clicked,is_installed",
+                "--binary_classif_targets=is_clicked,is_installed",
+                "--dataset_split_strategy=temporal",
+                "--dataset_split_temporal_timestamp=66",
+                "--timestamp_feature=f_1",
+            ],
+            "justMyCode": false
+        },
+        {
+            //docker run --runtime=nvidia --rm -it --ipc=host --cap-add SYS_NICE -v /home/gmoreira/projects/nvidia/nvidia_merlin/models/examples/quick_start:/quick_start -v /mnt/nvme0n1/datasets/recsyschallenge2023_shrcht/dataset/raw:/data -v /mnt/nvme0n1/datasets/recsyschallenge2023_shrcht/outputs:/outputs nvcr.io/nvidia/merlin/merlin-tensorflow:23.02 /bin/bash
+            "name": "Train-RecSysChallenge-Docker",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/scripts/ranking/ranking_train_eval.py",
+            "cwd": "${workspaceFolder}/scripts/ranking",
+            "env": {
+                "CUDA_VISIBLE_DEVICES": "0",
+                "TF_GPU_ALLOCATOR": "cuda_malloc_async"
+            },
+            "console": "integratedTerminal",
+            "args": [
+                "--train_path",
+                "/outputs/dataset/train",
+                "--eval_path",
+                "/outputs/dataset/eval",
+                "--output_path=./outputs/",
+                "--tasks=is_clicked",
+                "--stl_positive_class_weight=4",
+                "--model=dlrm",
+                "--embeddings_dim=64",
+                "--l2_reg=1e-2",
+                "--embeddings_l2_reg=1e-6",
+                "--dropout=0.05",
+                "--mlp_layers=64,32",
+                "--lr=1e-4",
+                "--lr_decay_rate=0.99",
+                "--lr_decay_steps=100",
+                "--train_batch_size=65536",
+                "--eval_batch_size=65536",
+                "--epochs=1",
+                "--train_steps_per_epoch=3",
+                "--predict",
+                //"--predict_keep_columns="row_id"
+            ],
+            "justMyCode": false
+        },
+    ]
+}
