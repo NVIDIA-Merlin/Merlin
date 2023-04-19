@@ -122,4 +122,4 @@ You can find more quick-start information on multi-task learning and MMOE archit
 ## Hyperparameter tuning
 We provide a [tutorial](../scripts/ranking/hypertuning/tutorial_with_wb_sweeps.md) on how to do **hyperparameter tuning with Merlin models and Weights&Biases Sweeps**.
 
-We also make it available a [benchmark](../scripts/ranking/hpo/README.md) resulted from our own hyperparameter tuning of TenRec dataset. It compares the different single-task and multi-task learning models. It provides also empirical information on what were the improvements obtained with hyperparameter tuning, the curated hypertuning search space for modeling hyperparameters of `ranking.py` and the most important hyperparameters.
+We also make it available a [benchmark](../scripts/ranking/hypertuning/README.md) resulted from our own hyperparameter tuning of TenRec dataset. It compares the different single-task and multi-task learning models. It provides also empirical information on what were the improvements obtained with hyperparameter tuning, the curated hypertuning search space for modeling hyperparameters of `ranking.py` and the most important hyperparameters.
