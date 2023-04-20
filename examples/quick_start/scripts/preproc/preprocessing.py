@@ -5,6 +5,7 @@ from functools import reduce
 from typing import Optional
 
 import nvtabular as nvt
+from merlin.core.dispatch import HAS_GPU
 from merlin.schema import Tags
 from nvtabular import ops as nvt_ops
 
@@ -30,16 +31,15 @@ class PreprocessingRunner:
     def __init__(self, args):
         self.args = args
 
-        if args.device == "gpu":
+        self.gpu = HAS_GPU
+        if self.gpu:
             import dask_cudf
 
             self.df_lib = dask_cudf
-            self.cpu = False
         else:
             import pandas
 
             self.df_lib = pandas
-            self.cpu = True
         pass
 
     def read_data(self, path):
@@ -131,7 +131,7 @@ class PreprocessingRunner:
                 f"Splitting dataset into train and eval using strategy "
                 f"'{args.dataset_split_strategy}'"
             )
-            if self.args.device == "gpu":
+            if self.gpu:
                 # Converts dask_cudf to cudf DataFrame to split data
                 df = df.compute()
             df = df.sample(frac=1.0).reset_index(drop=True)
@@ -140,14 +140,14 @@ class PreprocessingRunner:
             train_df = df[:-split_index]
             eval_df = df[-split_index:]
 
-            if self.args.device == "gpu":
+            if self.gpu:
                 train_df = self.df_lib.from_cudf(train_df, args.output_num_partitions)
                 eval_df = self.df_lib.from_cudf(eval_df, args.output_num_partitions)
 
             return train_df, eval_df
 
         elif args.dataset_split_strategy == "random_by_user":
-            if self.args.device == "gpu":
+            if self.gpu:
                 # Converts dask_cudf to cudf DataFrame to split data
                 df = df.compute()
             df = df.sample(frac=1.0).reset_index(drop=True)
@@ -174,7 +174,7 @@ class PreprocessingRunner:
             train_df.drop(["per_user_example_perc"], axis=1, inplace=True)
             eval_df.drop(["per_user_example_perc"], axis=1, inplace=True)
 
-            if self.args.device == "gpu":
+            if self.gpu:
                 train_df = self.df_lib.from_cudf(train_df, args.output_num_partitions)
                 eval_df = self.df_lib.from_cudf(eval_df, args.output_num_partitions)
 
@@ -279,7 +279,7 @@ class PreprocessingRunner:
 
     def setup_dask_cuda_cluster(
         self,
-        visible_devices: str = "0",
+        visible_devices: str = None,
         device_spill_frac: float = 0.7,
         dask_work_dir: Optional[str] = None,
     ):
@@ -322,9 +322,9 @@ class PreprocessingRunner:
     def run(self):
         args = self.args
 
-        logging.info(f"Running on {args.device.upper()} device")
+        logging.info(f"Running device: {'GPU' if self.gpu else 'CPU'}")
 
-        if args.device == "gpu":
+        if self.gpu:
             self.setup_dask_cuda_cluster(
                 visible_devices=args.visible_gpu_devices,
                 device_spill_frac=args.gpu_device_spill_frac,
@@ -364,7 +364,7 @@ class PreprocessingRunner:
 
         output_dataset_path = args.output_path
 
-        train_dataset = nvt.Dataset(ddf, cpu=self.cpu)
+        train_dataset = nvt.Dataset(ddf, cpu=not self.gpu)
         # Processing features and targets in separate workflows, because
         # targets might not be available for test_dataset
         train_dataset_features = nvt_workflow_features.fit_transform(train_dataset)
@@ -375,7 +375,7 @@ class PreprocessingRunner:
                 axis=1,
             ),
             schema=train_dataset_features.schema + train_dataset_targets.schema,
-            cpu=self.cpu,
+            cpu=not self.gpu,
         )
 
         output_train_dataset_path = os.path.join(output_dataset_path, "train")
@@ -396,7 +396,7 @@ class PreprocessingRunner:
                     axis=1,
                 ),
                 schema=eval_dataset_features.schema + eval_dataset_targets.schema,
-                cpu=self.cpu,
+                cpu=not self.gpu,
             )
 
             output_eval_dataset_path = os.path.join(output_dataset_path, "eval")
@@ -407,7 +407,7 @@ class PreprocessingRunner:
             )
 
         if args.test_data_path:
-            test_dataset = nvt.Dataset(test_ddf, cpu=self.cpu)
+            test_dataset = nvt.Dataset(test_ddf, cpu=not self.gpu)
             new_test_dataset = nvt_workflow_features.transform(test_dataset)
 
             output_test_dataset_path = os.path.join(output_dataset_path, "test")

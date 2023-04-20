@@ -2,19 +2,19 @@ import logging
 import os
 from typing import Optional
 
+import merlin.models.tf as mm
 import numpy as np
 import tensorflow as tf
+from merlin.io.dataset import Dataset
+from merlin.models.tf.transforms.negative_sampling import InBatchNegatives
+from merlin.schema.tags import Tags
+from tensorflow.keras.losses import binary_crossentropy
+from tensorflow.keras.metrics import Mean
+
 from args_parsing import Task, parse_arguments
 from mtl import get_mtl_loss_weights, get_mtl_prediction_tasks
 from ranking_models import get_model
 from run_logging import WandbLogger, get_callbacks
-from tensorflow.keras.losses import binary_crossentropy
-from tensorflow.keras.metrics import Mean
-
-import merlin.models.tf as mm
-from merlin.io.dataset import Dataset
-from merlin.models.tf.transforms.negative_sampling import InBatchNegatives
-from merlin.schema.tags import Tags
 
 
 def get_datasets(args):
@@ -38,7 +38,11 @@ class RankingTrainEvalRunner:
         self.train_ds = train_ds
         self.eval_ds = eval_ds
 
-        self.schema, eval_schema, self.targets = self.filter_schema_with_selected_targets(
+        (
+            self.schema,
+            eval_schema,
+            self.targets,
+        ) = self.filter_schema_with_selected_targets(
             self.train_ds.schema, self.eval_ds.schema
         )
         self.set_dataloaders(self.schema, eval_schema)
@@ -112,8 +116,12 @@ class RankingTrainEvalRunner:
             metrics.update(
                 {
                     f"{target}/binary_output": [
-                        tf.keras.metrics.AUC(name="auc", curve="ROC", num_thresholds=int(1e5)),
-                        tf.keras.metrics.AUC(name="prauc", curve="PR", num_thresholds=int(1e5)),
+                        tf.keras.metrics.AUC(
+                            name="auc", curve="ROC", num_thresholds=int(1e5)
+                        ),
+                        tf.keras.metrics.AUC(
+                            name="prauc", curve="PR", num_thresholds=int(1e5)
+                        ),
                         LogLossMetric(name="logloss"),
                     ]
                     for target in self.targets[Task.BINARY_CLASSIFICATION]
@@ -122,7 +130,10 @@ class RankingTrainEvalRunner:
 
         if Task.REGRESSION in self.targets:
             metrics.update(
-                {f"{target}/regression_output": "rmse" for target in self.targets[Task.REGRESSION]}
+                {
+                    f"{target}/regression_output": "rmse"
+                    for target in self.targets[Task.REGRESSION]
+                }
             )
 
         if len(metrics) == 1:
@@ -141,13 +152,9 @@ class RankingTrainEvalRunner:
             )
 
         if self.args.optimizer == "adam":
-            opt = tf.keras.optimizers.Adam(
-                learning_rate=lerning_rate,
-            )
+            opt = tf.keras.optimizers.Adam(learning_rate=lerning_rate,)
         elif self.args.optimizer == "adagrad":
-            opt = tf.keras.optimizers.Adagrad(
-                learning_rate=lerning_rate,
-            )
+            opt = tf.keras.optimizers.Adagrad(learning_rate=lerning_rate,)
         else:
             raise ValueError("Invalid optimizer")
 
@@ -155,7 +162,9 @@ class RankingTrainEvalRunner:
 
     def train_eval_stl(self):
         if Task.BINARY_CLASSIFICATION in self.targets:
-            prediction_task = mm.BinaryOutput(self.targets[Task.BINARY_CLASSIFICATION][0])
+            prediction_task = mm.BinaryOutput(
+                self.targets[Task.BINARY_CLASSIFICATION][0]
+            )
         elif Task.REGRESSION in self.targets:
             prediction_task = mm.RegressionOutput(self.targets[Task.REGRESSION][0])
         else:
@@ -165,9 +174,7 @@ class RankingTrainEvalRunner:
 
         metrics = self.get_metrics()
         model.compile(
-            self.get_optimizer(),
-            run_eagerly=False,
-            metrics=metrics,
+            self.get_optimizer(), run_eagerly=False, metrics=metrics,
         )
 
         callbacks = get_callbacks(self.args)
@@ -266,7 +273,9 @@ class RankingTrainEvalRunner:
             )
 
             auc_metric_results = {
-                k.split("/")[0]: v for k, v in eval_metrics.items() if "binary_output/auc" in k
+                k.split("/")[0]: v
+                for k, v in eval_metrics.items()
+                if "binary_output/auc" in k
             }
 
             auc_metric_results = {f"{k}-auc": v for k, v in auc_metric_results.items()}
@@ -292,8 +301,7 @@ class RankingTrainEvalRunner:
         logging.info("Starting the batch predict of the evaluation set")
 
         predictions_ds = model.batch_predict(
-            dataset,
-            batch_size=self.args.eval_batch_size,
+            dataset, batch_size=self.args.eval_batch_size,
         )
         predictions_ddf = predictions_ds.to_ddf()
 

@@ -27,12 +27,7 @@ def build_arg_parser():
         choices=["csv", "tsv", "parquet"],
         help="Input data format",
     )
-    parser.add_argument(
-        "--device",
-        default="gpu",
-        choices=["gpu", "cpu"],
-        help="Device to use for preprocessing (gpu or cpu)",
-    )
+
     parser.add_argument(
         "--csv_sep",
         default=",",
