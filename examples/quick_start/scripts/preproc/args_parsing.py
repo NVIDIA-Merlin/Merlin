@@ -28,6 +28,12 @@ def build_arg_parser():
         help="Input data format",
     )
     parser.add_argument(
+        "--device",
+        default="gpu",
+        choices=["gpu", "cpu"],
+        help="Device to use for preprocessing (gpu or cpu)",
+    )
+    parser.add_argument(
         "--csv_sep",
         default=",",
         help="Character separator for CSV files."
@@ -43,13 +49,17 @@ def build_arg_parser():
     parser.add_argument(
         "--output_path",
         default="./results/",
-        help="Output path where the preprocessed files " "will be saved" "Default is ./results/",
+        help="Output path where the preprocessed files "
+        "will be saved"
+        "Default is ./results/",
     )
     parser.add_argument(
         "--output_num_partitions",
         default=10,
         type=int,
-        help="Number of partitions " "that result in this number of output files" "Default is 10.",
+        help="Number of partitions "
+        "that result in this number of output files"
+        "Default is 10.",
     )
     parser.add_argument(
         "--persist_intermediate_files",
@@ -141,12 +151,16 @@ def build_arg_parser():
         "if --dataset_split_strategy=temporal is used.",
     )
     parser.add_argument(
-        "--session_id_feature", default="", help="This is just for tagging this feature."
+        "--session_id_feature",
+        default="",
+        help="This is just for tagging this feature.",
     )
 
     # parser.add_argument("--groupby_feature", default="", help="")
 
-    parser.add_argument("--to_int32", default="", help="Cast these columns (comma-sep) to int32.")
+    parser.add_argument(
+        "--to_int32", default="", help="Cast these columns (comma-sep) to int32."
+    )
     parser.add_argument(
         "--to_int16",
         default="",

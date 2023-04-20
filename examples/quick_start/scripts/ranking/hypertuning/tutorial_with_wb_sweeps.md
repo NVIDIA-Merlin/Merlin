@@ -1,6 +1,8 @@
 # Hyperparameter tuning with Quick-start and Weights&Biases Sweeps
 
-The Command Line Interface (CLI) of the Quick-start scripts makes it easy to setup a hyperparameter tuning for models training in Cloud solutions like [Google Vertex AI](https://cloud.google.com/vertex-ai/docs/training/hyperparameter-tuning-overview) and [MS Azure ML](https://learn.microsoft.com/en-us/azure/machine-learning/how-to-tune-hyperparameters?view=azureml-api-2), which can launch distributed hypertuning jobs.
+In machine learning, hyperparameter tuning is the process of adjusting the model or training hyperparameters to get better values for metrics of interest (e.g. accuracy).
+
+The Command Line Interface (CLI) of the Quick-start scripts makes it easy to setup a hyperparameter tuning jobs in Cloud solutions like [Google Vertex AI](https://cloud.google.com/vertex-ai/docs/training/hyperparameter-tuning-overview) and [MS Azure ML](https://learn.microsoft.com/en-us/azure/machine-learning/how-to-tune-hyperparameters?view=azureml-api-2), which can launch distributed hypertuning jobs.
 
 In this tutorial, we demonstrate how to setup a hypertuning process of the `ranking.py` script in a single server/cloud instance using [Weights&Biases Sweeps](https://docs.wandb.ai/guides/sweeps/).
 
@@ -197,7 +199,7 @@ CUDA_VISIBLE_DEVICES=0 TF_GPU_ALLOCATOR=cuda_malloc_async nohup wandb agent --co
 
 That is it! You can now let hypertuning work improving your model accuracy while you go for other activities! 
 
-## 5. Monitoring the hypertuning process
+## 5. Monitoring the hypertuning process & analysing results
 
 You can track the hypertuning process by checking the W&B Sweep URL provided when you created it. As show in below image, Weights&Biases provides a nice interface to explore the Sweep results. It lists all the runs, which you can sort by your optimization metric (`auc-final` in this case). 
 

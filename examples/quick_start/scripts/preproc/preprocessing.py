@@ -4,20 +4,14 @@ import os
 from functools import reduce
 from typing import Optional
 
-import dask_cudf
 import nvtabular as nvt
-from args_parsing import parse_arguments
-from dask.distributed import Client
-from dask_cuda import LocalCUDACluster
+from merlin.schema import Tags
 from nvtabular import ops as nvt_ops
 
-from merlin.core.utils import device_mem_size
-from merlin.schema import Tags
+from args_parsing import parse_arguments
 
 
-def filter_by_freq(
-    df_to_filter, df_for_stats, column, min_freq, max_freq=None
-) -> dask_cudf.DataFrame:
+def filter_by_freq(df_to_filter, df_for_stats, column, min_freq, max_freq=None):
     # Frequencies of each value in the column.
     freq = df_for_stats[column].value_counts()
 
@@ -35,15 +29,28 @@ def filter_by_freq(
 class PreprocessingRunner:
     def __init__(self, args):
         self.args = args
+
+        if args.device == "gpu":
+            import dask_cudf
+
+            self.df_lib = dask_cudf
+            self.cpu = False
+        else:
+            import pandas
+
+            self.df_lib = pandas
+            self.cpu = True
         pass
 
-    def read_data(self, path) -> dask_cudf.DataFrame:
+    def read_data(self, path):
         args = self.args
         logging.info(f"Reading data: {args.data_path}")
         if args.input_data_format in ["csv", "tsv"]:
-            ddf = dask_cudf.read_csv(path, sep=args.csv_sep, na_values=args.csv_na_values)
+            ddf = self.df_lib.read_csv(
+                path, sep=args.csv_sep, na_values=args.csv_na_values
+            )
         elif args.input_data_format == "parquet":
-            ddf = dask_cudf.read_parquet(path)
+            ddf = self.df_lib.read_parquet(path)
         else:
             raise ValueError(f"Invalid input data format: {args.input_data_format}")
 
@@ -63,15 +70,21 @@ class PreprocessingRunner:
         args = self.args
         columns = set(ddf.columns)
         if args.to_int32:
-            ddf[args.to_int32] = ddf[list(set(args.to_int32).intersection(columns))].astype("int32")
+            ddf[args.to_int32] = ddf[
+                list(set(args.to_int32).intersection(columns))
+            ].astype("int32")
         if args.to_int16:
-            ddf[args.to_int16] = ddf[list(set(args.to_int16).intersection(columns))].astype("int16")
+            ddf[args.to_int16] = ddf[
+                list(set(args.to_int16).intersection(columns))
+            ].astype("int16")
         if args.to_int8:
-            ddf[args.to_int8] = ddf[list(set(args.to_int8).intersection(columns))].astype("int8")
+            ddf[args.to_int8] = ddf[
+                list(set(args.to_int8).intersection(columns))
+            ].astype("int8")
         if args.to_float32:
-            ddf[args.to_float32] = ddf[list(set(args.to_float32).intersection(columns))].astype(
-                "float32"
-            )
+            ddf[args.to_float32] = ddf[
+                list(set(args.to_float32).intersection(columns))
+            ].astype("float32")
         return ddf
 
     def filter_by_user_item_freq(self, ddf):
@@ -79,7 +92,12 @@ class PreprocessingRunner:
         args = self.args
 
         filtered_ddf = ddf
-        if args.min_user_freq or args.max_user_freq or args.min_item_freq or args.max_item_freq:
+        if (
+            args.min_user_freq
+            or args.max_user_freq
+            or args.min_item_freq
+            or args.max_item_freq
+        ):
             print("Before filtering: ", len(filtered_ddf))
             for r in range(args.num_max_rounds_filtering):
                 print(f"Round #{r+1}")
@@ -106,30 +124,41 @@ class PreprocessingRunner:
 
         return filtered_ddf
 
-    def split_datasets(self, ddf):
+    def split_datasets(self, df):
         args = self.args
         if args.dataset_split_strategy == "random":
             logging.info(
                 f"Splitting dataset into train and eval using strategy "
                 f"'{args.dataset_split_strategy}'"
             )
-            # Converts dask_cudf to cudf DataFrame to split data
-            df = ddf.compute()
+            if self.args.device == "gpu":
+                # Converts dask_cudf to cudf DataFrame to split data
+                df = df.compute()
             df = df.sample(frac=1.0).reset_index(drop=True)
             split_index = int(len(df) * args.random_split_eval_perc)
-            train_ddf = dask_cudf.from_cudf(df[:-split_index], args.output_num_partitions)
-            eval_ddf = dask_cudf.from_cudf(df[-split_index:], args.output_num_partitions)
 
-            return train_ddf, eval_ddf
+            train_df = df[:-split_index]
+            eval_df = df[-split_index:]
+
+            if self.args.device == "gpu":
+                train_df = self.df_lib.from_cudf(train_df, args.output_num_partitions)
+                eval_df = self.df_lib.from_cudf(eval_df, args.output_num_partitions)
+
+            return train_df, eval_df
 
         elif args.dataset_split_strategy == "random_by_user":
-            # Converts dask_cudf to cudf DataFrame to split data
-            df = ddf.compute()
+            if self.args.device == "gpu":
+                # Converts dask_cudf to cudf DataFrame to split data
+                df = df.compute()
             df = df.sample(frac=1.0).reset_index(drop=True)
 
             # Getting number of examples per user
-            users_count_df = df.groupby(args.user_id_feature).size().to_frame("user_count")
-            df = df.merge(users_count_df, left_on=args.user_id_feature, right_index=True)
+            users_count_df = (
+                df.groupby(args.user_id_feature).size().to_frame("user_count")
+            )
+            df = df.merge(
+                users_count_df, left_on=args.user_id_feature, right_index=True
+            )
 
             # Assigning to each user example a percentage value according to the number
             # of available examples. For example, if the user has 20 events, each example
@@ -145,19 +174,26 @@ class PreprocessingRunner:
             train_df.drop(["per_user_example_perc"], axis=1, inplace=True)
             eval_df.drop(["per_user_example_perc"], axis=1, inplace=True)
 
-            train_ddf = dask_cudf.from_cudf(train_df, args.output_num_partitions)
-            eval_ddf = dask_cudf.from_cudf(eval_df, args.output_num_partitions)
+            if self.args.device == "gpu":
+                train_df = self.df_lib.from_cudf(train_df, args.output_num_partitions)
+                eval_df = self.df_lib.from_cudf(eval_df, args.output_num_partitions)
 
-            return train_ddf, eval_ddf
+            return train_df, eval_df
 
         elif args.dataset_split_strategy == "temporal":
-            train_ddf = ddf[ddf[args.timestamp_feature] < args.dataset_split_temporal_timestamp]
-            eval_ddf = ddf[ddf[args.timestamp_feature] >= args.dataset_split_temporal_timestamp]
+            train_df = df[
+                df[args.timestamp_feature] < args.dataset_split_temporal_timestamp
+            ]
+            eval_df = df[
+                df[args.timestamp_feature] >= args.dataset_split_temporal_timestamp
+            ]
 
-            return train_ddf, eval_ddf
+            return train_df, eval_df
 
         else:
-            raise ValueError(f"Invalid sampling strategy: {args.dataset_split_strategy}")
+            raise ValueError(
+                f"Invalid sampling strategy: {args.dataset_split_strategy}"
+            )
 
     def generate_nvt_workflow_features(self):
         logging.info("Generating NVTabular workflow  for preprocessing features")
@@ -167,14 +203,18 @@ class PreprocessingRunner:
         for col in args.control_features:
             feats[col] = [col]
         for col in args.categorical_features:
-            feats[col] = [col] >> nvt_ops.Categorify(freq_threshold=args.categ_min_freq_capping)
+            feats[col] = [col] >> nvt_ops.Categorify(
+                freq_threshold=args.categ_min_freq_capping
+            )
         for col in args.continuous_features:
             feats[col] = [col]
             if args.continuous_features_fillna is not None:
                 if args.continuous_features_fillna.lower() == "median":
                     feats[col] = feats[col] >> nvt_ops.FillMedian()
                 else:
-                    feats[col] = feats[col] >> nvt_ops.FillMissing(args.continuous_features_fillna)
+                    feats[col] = feats[col] >> nvt_ops.FillMissing(
+                        args.continuous_features_fillna
+                    )
                 feats[col] = feats[col] >> nvt_ops.Normalize()
 
         for col in args.user_features:
@@ -183,18 +223,24 @@ class PreprocessingRunner:
             feats[col] = feats[col] >> nvt_ops.TagAsItemFeatures()
 
         if args.user_id_feature:
-            feats[args.user_id_feature] = feats[args.user_id_feature] >> nvt_ops.TagAsUserID()
+            feats[args.user_id_feature] = (
+                feats[args.user_id_feature] >> nvt_ops.TagAsUserID()
+            )
 
         if args.item_id_feature:
-            feats[args.item_id_feature] = feats[args.item_id_feature] >> nvt_ops.TagAsItemID()
+            feats[args.item_id_feature] = (
+                feats[args.item_id_feature] >> nvt_ops.TagAsItemID()
+            )
 
         if args.timestamp_feature:
-            feats[args.timestamp_feature] = [args.timestamp_feature] >> nvt_ops.AddTags([Tags.TIME])
+            feats[args.timestamp_feature] = [args.timestamp_feature] >> nvt_ops.AddTags(
+                [Tags.TIME]
+            )
 
         if args.session_id_feature:
-            feats[args.session_id_feature] = [args.session_id_feature] >> nvt_ops.AddTags(
-                [Tags.SESSION_ID, Tags.SESSION, Tags.ID]
-            )
+            feats[args.session_id_feature] = [
+                args.session_id_feature
+            ] >> nvt_ops.AddTags([Tags.SESSION_ID, Tags.SESSION, Tags.ID])
 
         # Combining all features
         outputs = reduce(lambda x, y: x + y, list(feats.values()))
@@ -208,9 +254,13 @@ class PreprocessingRunner:
         feats = dict()
 
         for col in args.binary_classif_targets:
-            feats[col] = [col] >> nvt_ops.AddTags([Tags.BINARY_CLASSIFICATION, Tags.TARGET])
+            feats[col] = [col] >> nvt_ops.AddTags(
+                [Tags.BINARY_CLASSIFICATION, Tags.TARGET]
+            )
         for col in args.regression_targets:
-            feats[col] = [col] >> nvt_ops.AddTags([Tags.REGRESSION, Tags.TARGET, Tags.BINARY])
+            feats[col] = [col] >> nvt_ops.AddTags(
+                [Tags.REGRESSION, Tags.TARGET, Tags.BINARY]
+            )
 
         # Combining all features
         outputs = reduce(lambda x, y: x + y, list(feats.values()))
@@ -224,7 +274,7 @@ class PreprocessingRunner:
         ddf.to_parquet(path)
         del ddf
         gc.collect()
-        ddf = dask_cudf.read_parquet(path)
+        ddf = self.df_lib.read_parquet(path)
         return ddf
 
     def setup_dask_cuda_cluster(
@@ -232,7 +282,7 @@ class PreprocessingRunner:
         visible_devices: str = "0",
         device_spill_frac: float = 0.7,
         dask_work_dir: Optional[str] = None,
-    ) -> Client:
+    ):
         """Starts a Dask CUDA Cluster, so that multiple
         GPUs (memory and compute) can be used for the preprocessing.
 
@@ -249,6 +299,10 @@ class PreprocessingRunner:
         Client
             Dask-distributed client
         """
+        from dask.distributed import Client
+        from dask_cuda import LocalCUDACluster
+        from merlin.core.utils import device_mem_size
+
         capacity = device_mem_size(kind="total")  # Get device memory capacity
         # Reduce if spilling fails to prevent
         # device memory errors.
@@ -268,10 +322,13 @@ class PreprocessingRunner:
     def run(self):
         args = self.args
 
-        ddf = self.setup_dask_cuda_cluster(
-            visible_devices=args.visible_gpu_devices,
-            device_spill_frac=args.gpu_device_spill_frac,
-        )
+        logging.info(f"Running on {args.device.upper()} device")
+
+        if args.device == "gpu":
+            self.setup_dask_cuda_cluster(
+                visible_devices=args.visible_gpu_devices,
+                device_spill_frac=args.gpu_device_spill_frac,
+            )
 
         ddf = self.read_data(args.data_path)
         ddf = self.cast_dtypes(ddf)
@@ -307,58 +364,57 @@ class PreprocessingRunner:
 
         output_dataset_path = args.output_path
 
-        train_dataset = nvt.Dataset(ddf)
+        train_dataset = nvt.Dataset(ddf, cpu=self.cpu)
         # Processing features and targets in separate workflows, because
         # targets might not be available for test_dataset
         train_dataset_features = nvt_workflow_features.fit_transform(train_dataset)
         train_dataset_targets = nvt_workflow_targets.fit_transform(train_dataset)
         train_dataset_preproc = nvt.Dataset(
-            dask_cudf.concat(
+            self.df_lib.concat(
                 [train_dataset_features.to_ddf(), train_dataset_targets.to_ddf()],
                 axis=1,
             ),
             schema=train_dataset_features.schema + train_dataset_targets.schema,
+            cpu=self.cpu,
         )
 
         output_train_dataset_path = os.path.join(output_dataset_path, "train")
         logging.info(f"Fitting and transforming train set: {output_train_dataset_path}")
         train_dataset_preproc.to_parquet(
-            output_train_dataset_path,
-            output_files=args.output_num_partitions,
+            output_train_dataset_path, output_files=args.output_num_partitions,
         )
 
         if args.eval_data_path or args.dataset_split_strategy:
-            eval_dataset = nvt.Dataset(eval_ddf)
+            eval_dataset = nvt.Dataset(eval_ddf, cpu=self.cpu)
             # Processing features and targets in separate workflows, because
             # targets might not be available for test_dataset
             eval_dataset_features = nvt_workflow_features.transform(eval_dataset)
             eval_dataset_targets = nvt_workflow_targets.transform(eval_dataset)
             eval_dataset_preproc = nvt.Dataset(
-                dask_cudf.concat(
+                self.df_lib.concat(
                     [eval_dataset_features.to_ddf(), eval_dataset_targets.to_ddf()],
                     axis=1,
                 ),
                 schema=eval_dataset_features.schema + eval_dataset_targets.schema,
+                cpu=self.cpu,
             )
 
             output_eval_dataset_path = os.path.join(output_dataset_path, "eval")
             logging.info(f"Transforming eval set: {output_eval_dataset_path}")
 
             eval_dataset_preproc.to_parquet(
-                output_eval_dataset_path,
-                output_files=args.output_num_partitions,
+                output_eval_dataset_path, output_files=args.output_num_partitions,
             )
 
         if args.test_data_path:
-            test_dataset = nvt.Dataset(test_ddf)
+            test_dataset = nvt.Dataset(test_ddf, cpu=self.cpu)
             new_test_dataset = nvt_workflow_features.transform(test_dataset)
 
             output_test_dataset_path = os.path.join(output_dataset_path, "test")
             logging.info(f"Transforming test set: {output_test_dataset_path}")
 
             new_test_dataset.to_parquet(
-                output_test_dataset_path,
-                output_files=args.output_num_partitions,
+                output_test_dataset_path, output_files=args.output_num_partitions,
             )
 
 
