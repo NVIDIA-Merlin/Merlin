@@ -53,6 +53,12 @@ docker run --gpus all --rm -it --ipc=host -v $INPUT_DATA_PATH:/data -v $OUTPUT_P
   nvcr.io/nvidia/merlin/merlin-tensorflow:latest /bin/bash
 ```
 
+4. Inside the container, go to `/Merlin/examples/quick_start` folder and install the Quick-start dependencies.
+```bash
+cd /Merlin/examples/quick_start
+pip install -r requirements.txt
+```
+
 
 ## Preprocessing
 
@@ -76,7 +82,7 @@ In this example, we set some options for preprocessing. Here is the explanation 
 - `--filter_query` - A filter query condition compatible with dask-cudf `DataFrame.query()`
 
 ```bash
-cd /models/examples/quick_start/scripts/preproc/
+cd /Merlin/examples/quick_start/scripts/preproc/
 OUT_DATASET_PATH=/outputs/
 python preprocessing.py --input_data_format=csv --csv_na_values=\\N --input_data_path /data/QK-video.csv --filter_query="click==1 or (click==0 and follow==0 and like==0 and share==0)" --output_path=$OUT_DATASET_PATH --categorical_features=user_id,item_id,video_category,gender,age --binary_classif_targets=click,follow,like,share --regression_targets=watching_times --to_int32=user_id,item_id --to_int16=watching_times --to_int8=gender,age,video_category,click,follow,like,share --user_id_feature=user_id --item_id_feature=item_id --min_item_freq=30 --min_user_freq=30 --max_user_freq=150 --num_max_rounds_filtering=5 --dataset_split_strategy=random_by_user --random_split_eval_perc=0.2
 ```
@@ -93,7 +99,7 @@ There are many target columns available in the dataset, and you can select one o
 
 
 ```bash
-cd /models/examples/quick_start/scripts/ranking/
+cd /Merlin/examples/quick_start/scripts/ranking/
 CUDA_VISIBLE_DEVICES=0 TF_GPU_ALLOCATOR=cuda_malloc_async python  ranking.py --train_path $OUT_DATASET_PATH/dataset/train --eval_path $OUT_DATASET_PATH/dataset/eval --output_path ./outputs/ --tasks=click --stl_positive_class_weight 3 --model dlrm --embeddings_dim 64 --l2_reg 1e-2 --embeddings_l2_reg 1e-6 --dropout 0.05 --mlp_layers 64,32  --lr 1e-4 --lr_decay_rate 0.99 --lr_decay_steps 100 --train_batch_size 65536 --eval_batch_size 65536 --epochs 1 --train_steps_per_epoch 10 
 ```
 You can explore the [full documentation and best practices for ranking models](../scripts/ranking/README.md), which contains details about the command line arguments.
@@ -110,7 +116,7 @@ In the following example, we use the popular **MMOE** (`--model mmoe`) architect
 You can also balance the loss weights by setting `--mtl_loss_weight_*` arguments and the tasks positive class weight by setting `--mtl_pos_class_weight_*`.
 
 ```bash
-cd /models/examples/quick_start/scripts/ranking/
+cd /Merlin/examples/quick_start/scripts/ranking/
 DATA_PATH=/quick_start/scripts/preproc/output/final_dataset
 
 CUDA_VISIBLE_DEVICES=0 TF_MEMORY_ALLOCATION=0.8 python  ranking.py --train_path $DATA_PATH/train --eval_path $DATA_PATH/eval --output_path ./outputs/ --tasks=click,like,follow,share --model mmoe --mmoe_num_mlp_experts 3 --expert_mlp_layers 128 --gate_dim 32 --use_task_towers=True --tower_layers 64 --embedding_sizes_multiplier 4 --l2_reg 1e-5 --embeddings_l2_reg 1e-6 --dropout 0.05  --lr 1e-4 --lr_decay_rate 0.99 --lr_decay_steps 100 --train_batch_size 65536 --eval_batch_size 65536 --epochs 1 --mtl_pos_class_weight_click=1 --mtl_pos_class_weight_follow=1 --mtl_pos_class_weight_like=1 --mtl_loss_weight_click=4 --mtl_loss_weight_follow=3 --mtl_loss_weight_like=2 --mtl_loss_weight_share=1 

@@ -87,12 +87,22 @@ def build_arg_parser():
     )
 
     # Inputs
-    parser.add_argument("--train_path", default="/data/train/", help="Path of the train set.")
-    parser.add_argument("--eval_path", default="/data/eval/", help="Path of the eval set.")
+    parser.add_argument(
+        "--train_path",
+        default="/data/train/",
+        help="Path of the train set. " "It expects a folder with parquet files",
+    )
+    parser.add_argument(
+        "--eval_path",
+        default="/data/eval/",
+        help="Path of the eval set. " "It expects a folder with parquet files",
+    )
     # Outputs
 
     parser.add_argument(
-        "--output_path", default="./output/", help="Folder to save training assets and logging."
+        "--output_path",
+        default="./output/",
+        help="Folder to save training assets and logging.",
     )
 
     parser.add_argument(
@@ -182,7 +192,10 @@ def build_arg_parser():
         help="Keras initializer for MLP layers." "By default 'glorot_uniform'.",
     )
     parser.add_argument(
-        "--l2_reg", default=1e-5, type=float, help="L2 regularization factor. By default 1e-5."
+        "--l2_reg",
+        default=1e-5,
+        type=float,
+        help="L2 regularization factor. By default 1e-5.",
     )
     parser.add_argument(
         "--embeddings_l2_reg",
@@ -206,7 +219,9 @@ def build_arg_parser():
     )
 
     # MLPs args
-    parser.add_argument("--dropout", default=0.0, type=float, help="Dropout rate. By default 0.0")
+    parser.add_argument(
+        "--dropout", default=0.0, type=float, help="Dropout rate. By default 0.0"
+    )
 
     # hyperparams for STL models
     parser.add_argument(
@@ -377,7 +392,9 @@ def build_arg_parser():
         help="Eval batch size. By default 1024. Larger batch sizes are recommended "
         "for better performance.",
     )
-    parser.add_argument("--epochs", default=1, type=int, help="Number of epochs. By default 1.")
+    parser.add_argument(
+        "--epochs", default=1, type=int, help="Number of epochs. By default 1."
+    )
     parser.add_argument(
         "--optimizer",
         default="adam",
@@ -466,7 +483,7 @@ def build_arg_parser():
     )
     parser.add_argument(
         "--wandb_entity",
-        default="merlin-research",
+        default=None,
         help="Name of the Weights&Biases team/org to log",
     )
     parser.add_argument(

@@ -97,13 +97,17 @@ For TenRec dataset, you could use `--tasks click,like,share,follow` and `--tasks
 
 ## Command line arguments
 
+In this section we describe the command line arguments of the `ranking.py` script.
+
+> You can check how to [setup the environment](../../ranking/README.md) to run `ranking.py` script with Docker.
+
 ### Inputs
 
 ```
   --train_path
-                        Path of the train set.
+                        Path of the train set. It expects a folder with parquet files.
   --eval_path
-                        Path of the eval set.
+                        Path of the eval set. It expects a folder with parquet files.
 ```
 
 ### Tasks
