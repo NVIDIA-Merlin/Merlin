@@ -85,32 +85,35 @@
              
   <div class="section" id="benchmark-of-ranking-models">
 <h1>Benchmark of ranking models<a class="headerlink" href="#benchmark-of-ranking-models" title="Permalink to this headline"></a></h1>
-<p>In this document, we describe a benchmark of ranking models available in Merlin <a class="reference external" href="https://github.com/NVIDIA-Merlin/models/">models</a> library for the TenRec dataset (described <span class="xref myst">here</span>), which you can use as a reference when deciding the models an hyperparameters you might want to try with your own dataset. We also share the search space used for hyperparameter optimization, that you reuse for your own hyperparameter tuning.
-These results are reproduceable by using the TenRec and the quick-start scripts for preprocessing and training.</p>
+<p>In this document, we describe a hyperparameter tuning benchmark of the ranking models available in in <a class="reference external" href="https://github.com/NVIDIA-Merlin/models/">Merlin Models</a> library. You can use this benchmark as a reference when deciding the models and hyperparameters you want to explore with your own dataset.</p>
+<p>The experiments used the <span class="xref myst">Quick-Start for ranking script</span> on the TenRec dataset (described <span class="xref myst">here</span>). <a class="reference external" href="https://docs.wandb.ai/guides/sweeps">Weights&amp;Biases Sweeps</a> was used for hyperparameter tuning.</p>
 <div class="section" id="neural-ranking-models">
 <h2>Neural ranking models.<a class="headerlink" href="#neural-ranking-models" title="Permalink to this headline"></a></h2>
-<p>This benchmark includes the following neural architectures for ranking, which are described in the <span class="xref myst">ranking script</span> and include links to the paper references and to models API docs.</p>
+<p>This benchmark includes the following neural architectures for ranking, which are described in more detail <span class="xref myst">here</span>. They are divided in two groups of models, which are trained with Single-Task or Multi-Task Learning (MTL).</p>
 <ul class="simple">
-<li><p><strong>Single-Task Learning (STL)</strong>: MLP, Wide&amp;Deep, DeepFM, DLRM, DCN-v2</p></li>
-<li><p><strong>Multi-Task Learning (MTL)</strong>: MLP, MMOE, PLE</p></li>
+<li><p><strong>Single-Task Learning (STL)</strong>: MLP, Wide&amp;Deep, DeepFM, DLRM, DCN-v2, training with a single prediction head.</p></li>
+<li><p><strong>Multi-Task Learning (MTL)</strong>: MLP, MMOE, PLE. All these models were built with a separate tower (MLP layers) and a head for each task. While MLP model shares bottom layers, MMOE and PLE are specialized MTL models that uses experts and gates designed to control the weight sharing between tasks.</p></li>
 </ul>
 </div>
 <div class="section" id="hyperparameter-tuning-setup">
 <h2>Hyperparameter tuning setup<a class="headerlink" href="#hyperparameter-tuning-setup" title="Permalink to this headline"></a></h2>
-<p>For a fair comparison of the models, we ran a separate hyperparameter tuning process for each model architecture using TenRec dataset, which we call experiment group. We use the <a class="reference external" href="https://docs.wandb.ai/guides/sweeps">Weights&amp;Biases Sweeps</a> feature for managing the hypertuning process for each experiment group. The hypertuning uses bayesian optimization (<code class="docutils literal notranslate"><span class="pre">method=bayes</span></code>) to improve the <code class="docutils literal notranslate"><span class="pre">AUC</span></code> metric, which is different for STL and MTL, as explained below.</p>
-<p>You can find the <span class="xref myst">hyperparameter space configurations</span> and a <a class="reference internal" href="tutorial_with_wb_sweeps.html"><span class="doc std std-doc">tutorial</span></a> on how to use <a class="reference external" href="https://docs.wandb.ai/guides/sweeps">Weights&amp;Biases Sweeps</a> to run the hyperparameter tuning.</p>
+<p>For a fair comparison of the models, we ran a separate hyperparameter tuning process for each model architecture using TenRec dataset, which we call experiment group.</p>
+<p>We use the <a class="reference external" href="https://docs.wandb.ai/guides/sweeps">Weights&amp;Biases Sweeps</a> feature for managing the hypertuning process for each experiment group. The hypertuning uses bayesian optimization (<code class="docutils literal notranslate"><span class="pre">method=bayes</span></code>) to improve the <code class="docutils literal notranslate"><span class="pre">AUC</span></code> metric, which is different for STL and MTL, as explained below.</p>
+<p>You can check our <a class="reference internal" href="tutorial_with_wb_sweeps.html"><span class="doc std std-doc">tutorial</span></a> for more details on how to setup the hypertuning of Quick-start for ranking using W&amp;B Sweeps.
+We share the <span class="xref myst">hyperparameter space configurations</span> we used for this benchmark, so that you can reuse for your own hyperparameter tuning.</p>
+</div>
 <div class="section" id="single-task-learning">
-<h3>Single-task learning<a class="headerlink" href="#single-task-learning" title="Permalink to this headline"></a></h3>
-<p>For benchmarking the ranking models with single-task learning we used the <code class="docutils literal notranslate"><span class="pre">click</span></code> binary target, as it is the most frequent event in the dataset. 200 trials were performed for each experiment group.</p>
-<div class="section" id="benchmark-results">
-<h4>Benchmark results<a class="headerlink" href="#benchmark-results" title="Permalink to this headline"></a></h4>
-<p>In the following table, you can see the models with the best accuracy (AUC) for predicting the <code class="docutils literal notranslate"><span class="pre">click</span></code> target. You can see the models have a similar level of accuracy, maybe because the dataset contains only 5 basic features (which are presented <span class="xref myst">here</span>). But you can notice that models more advanced than MLP can provide better accuracy.</p>
+<h2>Single-task learning<a class="headerlink" href="#single-task-learning" title="Permalink to this headline"></a></h2>
+<p>For benchmarking the ranking models with single-task learning we used the <code class="docutils literal notranslate"><span class="pre">click</span></code> binary target, as it is the most frequent event in the dataset. It was performed 200 trials for each experiment group.</p>
+<div class="section" id="stl-benchmark-results">
+<h3>STL Benchmark results<a class="headerlink" href="#stl-benchmark-results" title="Permalink to this headline"></a></h3>
+<p>In Table 1, you can see the models with the best accuracy (AUC) for predicting the <code class="docutils literal notranslate"><span class="pre">click</span></code> target. You can see the models have a similar level of accuracy, maybe because the dataset contains only 5 basic features (which are presented <span class="xref myst">here</span>). But you can notice that models more advanced than MLP can provide better accuracy.</p>
 <center>
-<img src="../../../images/stl_benchmark.png" alt="Multi-task learning architectures" >
+<img src="../../../images/stl_benchmark.png" alt="Multi-task learning architectures" ><br>Table 1. Single-task learning ranking models benchmark
 </center>
 </div>
 <div class="section" id="most-important-hyperparameters">
-<h4>Most important hyperparameters<a class="headerlink" href="#most-important-hyperparameters" title="Permalink to this headline"></a></h4>
+<h3>Most important hyperparameters<a class="headerlink" href="#most-important-hyperparameters" title="Permalink to this headline"></a></h3>
 <p><strong>MLP</strong></p>
 <center>
 <img src="../../../images/most_important_hparams/stl_mlp_click.png">
@@ -133,24 +136,35 @@ These results are reproduceable by using the TenRec and the quick-start scripts 
 </center>
 </div>
 <div class="section" id="best-runs-hyperparameters">
-<h4>Best runs hyperparameters<a class="headerlink" href="#best-runs-hyperparameters" title="Permalink to this headline"></a></h4>
-<p>TO INCLUDE</p>
+<h3>Best runs hyperparameters<a class="headerlink" href="#best-runs-hyperparameters" title="Permalink to this headline"></a></h3>
+<p>TODO: Include top-5 runs for each experiment group</p>
 </div>
 </div>
 <div class="section" id="multi-task-learning">
-<h3>Multi-task learning<a class="headerlink" href="#multi-task-learning" title="Permalink to this headline"></a></h3>
-<p>For multi-task learning models we use as hypertuning maximization objective the average AUC of the binary targets: <code class="docutils literal notranslate"><span class="pre">click</span></code>,<code class="docutils literal notranslate"><span class="pre">like</span></code>,<code class="docutils literal notranslate"><span class="pre">share</span></code> and <code class="docutils literal notranslate"><span class="pre">follow</span></code>.</p>
-<p>We use the following strategy for hypertuning the models:</p>
+<h2>Multi-task learning<a class="headerlink" href="#multi-task-learning" title="Permalink to this headline"></a></h2>
+<p>For hypertuning the multi-task learning models we use as maximization metric the average AUC of the four binary targets: <code class="docutils literal notranslate"><span class="pre">click</span></code>,<code class="docutils literal notranslate"><span class="pre">like</span></code>,<code class="docutils literal notranslate"><span class="pre">share</span></code> and <code class="docutils literal notranslate"><span class="pre">follow</span></code>.</p>
+<p>As the search space for MTL models is much larger compared to STL models, we split the hypertuning in two stages, each with 200 trials:</p>
 <ol class="arabic simple">
-<li><p>200 trials optimizing all hyperparameters except the ones that deal with positive class weight and losses weight, to reduce the search space</p></li>
-<li><p>Take the best model hyperparameters from (1) and optimize only positive class weight and losses weight, for 200 trials.</p></li>
+<li><p>We optimize all hyperparameters except the ones that deal with positive class weight and losses weight, to find the best architecture design with equal class and losses weights.</p></li>
+<li><p>We take the best model hyperparameters from (1) and optimize only the hyperparameters that sets positive class weight (<code class="docutils literal notranslate"><span class="pre">--mtl_pos_class_weight_*</span></code>) and losses weight (<code class="docutils literal notranslate"><span class="pre">--mtl_loss_weight_*</span></code>), where <code class="docutils literal notranslate"><span class="pre">*</span></code> is the target name.</p></li>
 </ol>
-<p>TODO: Describe results</p>
+<div class="section" id="mtl-benchmark-results">
+<h3>MTL Benchmark results<a class="headerlink" href="#mtl-benchmark-results" title="Permalink to this headline"></a></h3>
+<p>In this benchmark, we trained baseline MLP models using single-task learning for the four binary targets. The multi-task learning models were trained to predict all binary tasks. The results are reported in Table 2, where <code class="docutils literal notranslate"><span class="pre">Avg</span></code> is the average of the targets.</p>
+<p>For each of the MTL models we present two rows with the metrics from the runs with the best <strong>Avg AUC</strong> and the best <strong>Click AUC</strong> (from the Stage 2, as described in previous section). We highlight in <b>bold</b> metrics from MTL models that are better than the baseline STL model and in <b style="color: #2266CC">blue</b> the highest metrics per task.</p>
+<p>We can see in general that multi-task learning models can provide better accuracy than single-task learning models, which are optimized for a single task. For example, the hypertuning process found for <strong>MMOE</strong> a run (best <strong>Avg AUC</strong>) whose metrics are all higher than the best individual STL models.</p>
+<p>In particular, we can observe that the higher accuracy improvements of MTL models compared to the baseline STL models are for the sparser targets <code class="docutils literal notranslate"><span class="pre">share</span></code> and <code class="docutils literal notranslate"><span class="pre">follow</span></code> (target density is the first line of the table), which makes sense as they can benefit from the other targets training that are denser, i.e., have more positive examples.</p>
+<p>When comparing the two runs with the best <strong>Avg AUC</strong> and <strong>Click AUC</strong> for each MTL model, it can be seen that the models with the best <strong>Avg AUC</strong> don’t necessarily provide the best <strong>Click AUC</strong>, and that is related to the tasks importance balance governed by the loss weights, which are hypertuned in Stage 2.</p>
 <center>
-<img src="../../../images/stl_mtl_benchmark.png" alt="Multi-task learning architectures" >
+<img src="../../../images/mtl_benchmark.png" alt="Multi-task learning architectures" >
+<br>Table 2. Multi-task learning ranking models benchmark
 </center>
+<blockquote>
+<div><p>Besides the accuracy improvement observed with MTL models compared to STL models, there are also deployment benefits for production pipelines. With MTL you can train, deploy, serve and mantain a single model for multiple tasks instead of many models, leading to simpler pipeline and lower costs.</p>
+</div></blockquote>
+</div>
 <div class="section" id="id1">
-<h4>Most important hyperparameters<a class="headerlink" href="#id1" title="Permalink to this headline"></a></h4>
+<h3>Most important hyperparameters<a class="headerlink" href="#id1" title="Permalink to this headline"></a></h3>
 <p><strong>MLP</strong></p>
 <center>
 <img src="../../../images/most_important_hparams/mtl_mlp.png">
@@ -165,16 +179,34 @@ These results are reproduceable by using the TenRec and the quick-start scripts 
 </center>
 </div>
 <div class="section" id="id2">
-<h4>Best runs hyperparameters<a class="headerlink" href="#id2" title="Permalink to this headline"></a></h4>
-<p>TODO</p>
+<h3>Best runs hyperparameters<a class="headerlink" href="#id2" title="Permalink to this headline"></a></h3>
+<p>TODO: Include top-5 runs for each experiment group</p>
 </div>
+<div class="section" id="analysis-of-the-hyperparameter-tuning-process">
+<h3>Analysis of the hyperparameter tuning process<a class="headerlink" href="#analysis-of-the-hyperparameter-tuning-process" title="Permalink to this headline"></a></h3>
 </div>
-<div class="section" id="improvements-with-hyperparameter-tuning">
-<h3>Improvements with hyperparameter tuning<a class="headerlink" href="#improvements-with-hyperparameter-tuning" title="Permalink to this headline"></a></h3>
-<p>Analysis on the number of experiments necessary to achieve best accuracy</p>
+<div class="section" id="variance-of-accuracy-and-its-improvement-over-runs">
+<h3>Variance of accuracy and its improvement over runs<a class="headerlink" href="#variance-of-accuracy-and-its-improvement-over-runs" title="Permalink to this headline"></a></h3>
+<p>In the following figure you can see how the accuracy evolves over time during hyperparameter tuning for the DeepFM experiment group, where <code class="docutils literal notranslate"><span class="pre">y</span></code> axis is the AUC and <code class="docutils literal notranslate"><span class="pre">x</span></code> axis the sequence of the trials. It is possible to observe that the bayesian optimization does a good job improving the hyperparameter choices for maximizing the accuracy over time.</p>
+<p>We can also notice the sensitive the model accuracy (AUC) can be due to the hyperparameter choices. For DeepFM case, the accuracy ranged from <code class="docutils literal notranslate"><span class="pre">0.7023</span></code> to <code class="docutils literal notranslate"><span class="pre">0.7828</span></code>. The best run was the trial #180 (<code class="docutils literal notranslate"><span class="pre">0.7828</span></code>), closely followed by the run #105 (<code class="docutils literal notranslate"><span class="pre">0.7826</span></code>).</p>
+<blockquote>
+<div><p>In general, after a given number of trials has explored the search space, the chances of finding a more accurate model diminishes, and that could be taken into account to save some compute budget.</p>
+</div></blockquote>
+<center>
+<img src="../../../images/hpo_evolution_deepfm.png">
+</center>
+</div>
+<div class="section" id="refine-the-search-space">
+<h3>Refine the search space<a class="headerlink" href="#refine-the-search-space" title="Permalink to this headline"></a></h3>
+<p>This parallel bars chat, also provide by W&amp;B, allows to understand the seach space of the hyperparameters and where are the hot spots for better accuracy (hotter colors). We can notice in next figure summarizing the sweep of DeepFM experiment group that the trials with better accuracy had smaller batch size (16k), smaller learning rate, higher positive class weight, small embedding regularization, small embedding dim with median LR reg and dropout.</p>
+<p>You can use this tool to refine your search space for a next hypertuning experiment, either reducing or expanding the search space for individual hyperparameters for better accuracy with lower number of hypertuning trials.</p>
+<center>
+<img src="../../../images/hpo_parallel_bars_deepfm.png">
+</center>
+<p>TODO: Include these analyzes</p>
 <ul class="simple">
-<li><p>Plot the boxplot per model of the accuracy, to showcase how much it might vary</p></li>
-<li><p>Plot the HPO avg curves over 200 trials for the different models (maybe also keep the dots), to showcase for how many trials HPO should be run</p></li>
+<li><p>Plot the boxplot per model of the accuracy, to showcase how much it might vary for different hyperparameters</p></li>
+<li><p>Plot the HPO avg curves over 200 trials for the different models (also keep the dots), to showcase for how many trials HPO should be run to achive the better accuracies</p></li>
 </ul>
 </div>
 </div>
