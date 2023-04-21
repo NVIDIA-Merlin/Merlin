@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 from typing import Optional
@@ -18,10 +19,23 @@ from run_logging import WandbLogger, get_callbacks
 
 
 def get_datasets(args):
-    train_ds = Dataset(os.path.join(args.train_path, "*.parquet"), part_size="500MB")
-    eval_ds = Dataset(os.path.join(args.eval_path, "*.parquet"), part_size="500MB")
+    train_ds = (
+        Dataset(os.path.join(args.train_data_path, "*.parquet"), part_size="500MB")
+        if args.train_data_path
+        else None
+    )
+    eval_ds = (
+        Dataset(os.path.join(args.eval_data_path, "*.parquet"), part_size="500MB")
+        if args.eval_data_path
+        else None
+    )
+    predict_ds = (
+        Dataset(os.path.join(args.predict_data_path, "*.parquet"), part_size="500MB")
+        if args.predict_data_path
+        else None
+    )
 
-    return train_ds, eval_ds
+    return train_ds, eval_ds, predict_ds
 
 
 class RankingTrainEvalRunner:
@@ -30,21 +44,21 @@ class RankingTrainEvalRunner:
     eval_ds = None
     train_loader = None
     eval_loader = None
+    predict_loader = None
     args = None
 
-    def __init__(self, logger, train_ds, eval_ds, args):
+    def __init__(self, logger, train_ds, eval_ds, predict_ds, args):
         self.args = args
         self.logger = logger
         self.train_ds = train_ds
         self.eval_ds = eval_ds
+        self.predict_ds = predict_ds
 
         (
             self.schema,
             eval_schema,
             self.targets,
-        ) = self.filter_schema_with_selected_targets(
-            self.train_ds.schema, self.eval_ds.schema
-        )
+        ) = self.filter_schema_with_selected_targets()
         self.set_dataloaders(self.schema, eval_schema)
 
     def get_targets(self, schema):
@@ -59,60 +73,85 @@ class RankingTrainEvalRunner:
             Tags.BINARY_CLASSIFICATION
         ).column_names
         if len(binary_classif_targets) > 0:
-            targets[Task.BINARY_CLASSIFICATION] = binary_classif_targets
+            targets[Task.BINARY_CLASSIFICATION.value] = binary_classif_targets
 
         regression_targets = targets_schema.select_by_tag(Tags.REGRESSION).column_names
         if len(regression_targets) > 0:
-            targets[Task.REGRESSION] = regression_targets
+            targets[Task.REGRESSION.value] = regression_targets
 
         return targets
 
-    def filter_schema_with_selected_targets(self, train_schema, eval_schema):
-        targets = self.get_targets(train_schema)
+    def filter_schema_with_selected_targets(self):
+        targets = None
+        train_schema = None
+        if self.train_ds:
+            train_schema = self.train_ds.schema
+            targets = self.get_targets(train_schema)
 
-        if "all" not in self.args.tasks:
+        eval_schema = None
+        if self.eval_ds:
+            eval_schema = self.eval_ds.schema
+            targets = self.get_targets(eval_schema)
+
+        if targets and "all" not in self.args.tasks:
             flattened_targets = [y for x in targets.values() for y in x]
             # Removing targets not used from schema
             targets_to_remove = list(
-                set(train_schema.select_by_tag(Tags.TARGET).column_names).difference(
-                    set(flattened_targets)
-                )
+                set(
+                    (train_schema or eval_schema)
+                    .select_by_tag(Tags.TARGET)
+                    .column_names
+                ).difference(set(flattened_targets))
             )
-            train_schema = train_schema.excluding_by_name(targets_to_remove)
-            eval_schema = eval_schema.excluding_by_name(targets_to_remove)
+            if train_schema:
+                train_schema = train_schema.excluding_by_name(targets_to_remove)
+            if eval_schema:
+                eval_schema = eval_schema.excluding_by_name(targets_to_remove)
 
-        return train_schema, eval_schema, targets
+        schema = train_schema or eval_schema or self.predict_ds.schema
+        return schema, eval_schema, targets
 
     def set_dataloaders(self, train_schema, eval_schema):
         args = self.args
-        train_loader_kwargs = {}
-        if self.args.in_batch_negatives_train:
-            train_loader_kwargs["transform"] = InBatchNegatives(
-                train_schema, args.in_batch_negatives_train
-            )
-        self.train_loader = mm.Loader(
-            self.train_ds,
-            batch_size=args.train_batch_size,
-            schema=train_schema,
-            **train_loader_kwargs,
-        )
 
-        eval_loader_kwargs = {}
-        if args.in_batch_negatives_eval:
-            eval_loader_kwargs["transform"] = InBatchNegatives(
-                eval_schema, args.in_batch_negatives_eval
+        self.train_loader = None
+        if self.train_ds:
+            train_loader_kwargs = {}
+            if self.args.in_batch_negatives_train:
+                train_loader_kwargs["transform"] = InBatchNegatives(
+                    train_schema, args.in_batch_negatives_train
+                )
+            self.train_loader = mm.Loader(
+                self.train_ds,
+                batch_size=args.train_batch_size,
+                schema=train_schema,
+                **train_loader_kwargs,
             )
 
-        self.eval_loader = mm.Loader(
-            self.eval_ds,
-            batch_size=args.eval_batch_size,
-            schema=eval_schema,
-            **eval_loader_kwargs,
-        )
+        self.eval_loader = None
+        if self.eval_ds:
+            eval_loader_kwargs = {}
+            if args.in_batch_negatives_eval:
+                eval_loader_kwargs["transform"] = InBatchNegatives(
+                    eval_schema, args.in_batch_negatives_eval
+                )
+
+            self.eval_loader = mm.Loader(
+                self.eval_ds,
+                batch_size=args.eval_batch_size,
+                schema=eval_schema,
+                **eval_loader_kwargs,
+            )
+
+        self.predict_loader = None
+        if self.predict_ds:
+            self.predict_loader = mm.Loader(
+                self.predict_ds, batch_size=args.eval_batch_size,
+            )
 
     def get_metrics(self):
         metrics = dict()
-        if Task.BINARY_CLASSIFICATION in self.targets:
+        if Task.BINARY_CLASSIFICATION.value in self.targets:
             metrics.update(
                 {
                     f"{target}/binary_output": [
@@ -124,15 +163,15 @@ class RankingTrainEvalRunner:
                         ),
                         LogLossMetric(name="logloss"),
                     ]
-                    for target in self.targets[Task.BINARY_CLASSIFICATION]
+                    for target in self.targets[Task.BINARY_CLASSIFICATION.value]
                 }
             )
 
-        if Task.REGRESSION in self.targets:
+        if Task.REGRESSION.value in self.targets:
             metrics.update(
                 {
                     f"{target}/regression_output": "rmse"
-                    for target in self.targets[Task.REGRESSION]
+                    for target in self.targets[Task.REGRESSION.value]
                 }
             )
 
@@ -160,18 +199,22 @@ class RankingTrainEvalRunner:
 
         return opt
 
-    def train_eval_stl(self):
-        if Task.BINARY_CLASSIFICATION in self.targets:
+    def build_stl_model(self):
+        if Task.BINARY_CLASSIFICATION.value in self.targets:
             prediction_task = mm.BinaryOutput(
-                self.targets[Task.BINARY_CLASSIFICATION][0]
+                self.targets[Task.BINARY_CLASSIFICATION.value][0]
             )
         elif Task.REGRESSION in self.targets:
-            prediction_task = mm.RegressionOutput(self.targets[Task.REGRESSION][0])
+            prediction_task = mm.RegressionOutput(
+                self.targets[Task.REGRESSION.value][0]
+            )
         else:
             raise ValueError(f"Unrecognized task: {self.targets}")
 
         model = get_model(self.schema, prediction_task, self.args)
+        return model
 
+    def train_eval_stl(self, model):
         metrics = self.get_metrics()
         model.compile(
             self.get_optimizer(), run_eagerly=False, metrics=metrics,
@@ -180,31 +223,30 @@ class RankingTrainEvalRunner:
         callbacks = get_callbacks(self.args)
         class_weights = {0: 1.0, 1: self.args.stl_positive_class_weight}
 
-        fit_kwargs = {}
-        if not self.args.predict:
-            fit_kwargs = {
-                "validation_data": self.eval_loader,
-                "validation_steps": self.args.validation_steps,
-            }
+        if self.train_loader:
+            logging.info("Starting to train the model")
 
-        logging.info("Starting to train the model")
-        model.fit(
-            self.train_loader,
-            epochs=self.args.epochs,
-            batch_size=self.args.train_batch_size,
-            steps_per_epoch=self.args.train_steps_per_epoch,
-            shuffle=False,
-            drop_last=False,
-            callbacks=callbacks,
-            train_metrics_steps=self.args.train_metrics_steps,
-            class_weight=class_weights,
-            **fit_kwargs,
-        )
+            fit_kwargs = {}
+            if self.eval_loader:
+                fit_kwargs = {
+                    "validation_data": self.eval_loader,
+                    "validation_steps": self.args.validation_steps,
+                }
 
-        if self.args.predict:
-            self.save_predictions(model, self.eval_loader.dataset)
+            model.fit(
+                self.train_loader,
+                epochs=self.args.epochs,
+                batch_size=self.args.train_batch_size,
+                steps_per_epoch=self.args.train_steps_per_epoch,
+                shuffle=False,
+                drop_last=False,
+                callbacks=callbacks,
+                train_metrics_steps=self.args.train_metrics_steps,
+                class_weight=class_weights,
+                **fit_kwargs,
+            )
 
-        else:
+        if self.eval_loader:
             logging.info("Starting the evaluation of the model")
 
             eval_metrics = model.evaluate(
@@ -217,14 +259,16 @@ class RankingTrainEvalRunner:
             logging.info(f"EVALUATION METRICS: {eval_metrics}")
             self.log_final_metrics(eval_metrics)
 
+        if self.predict_loader:
+            self.save_predictions(model, self.predict_loader.dataset)
+
+    def build_mtl_model(self):
+        prediction_tasks = get_mtl_prediction_tasks(self.targets, self.args)
+        model = get_model(self.schema, prediction_tasks, self.args)
         return model
 
-    def train_eval_mtl(self):
+    def train_eval_mtl(self, model):
         args = self.args
-
-        prediction_tasks = get_mtl_prediction_tasks(self.targets, self.args)
-
-        model = get_model(self.schema, prediction_tasks, self.args)
 
         loss_weights = get_mtl_loss_weights(args, self.targets)
 
@@ -237,32 +281,28 @@ class RankingTrainEvalRunner:
         )
         callbacks = get_callbacks(self.args)
 
-        logging.info(f"MODEL: {model}")
+        if self.train_loader:
+            logging.info("Starting to train the model (fit())")
+            fit_kwargs = {}
+            if self.eval_loader:
+                fit_kwargs = {
+                    "validation_data": self.eval_loader,
+                    "validation_steps": self.args.validation_steps,
+                }
 
-        fit_kwargs = {}
-        if not self.args.predict:
-            fit_kwargs = {
-                "validation_data": self.eval_loader,
-                "validation_steps": self.args.validation_steps,
-            }
+            model.fit(
+                self.train_loader,
+                epochs=args.epochs,
+                batch_size=args.train_batch_size,
+                steps_per_epoch=args.train_steps_per_epoch,
+                shuffle=False,
+                drop_last=False,
+                callbacks=callbacks,
+                train_metrics_steps=args.train_metrics_steps,
+                **fit_kwargs,
+            )
 
-        logging.info("Starting to train the model (fit())")
-        model.fit(
-            self.train_loader,
-            epochs=args.epochs,
-            batch_size=args.train_batch_size,
-            steps_per_epoch=args.train_steps_per_epoch,
-            shuffle=False,
-            drop_last=False,
-            callbacks=callbacks,
-            train_metrics_steps=args.train_metrics_steps,
-            **fit_kwargs,
-        )
-
-        if self.args.predict:
-            self.save_predictions(model, self.eval_loader.dataset)
-
-        else:
+        if self.eval_loader:
             logging.info("Starting the evaluation the model (evaluate())")
 
             eval_metrics = model.evaluate(
@@ -295,7 +335,9 @@ class RankingTrainEvalRunner:
             # log final metrics
             self.log_final_metrics(all_metrics)
 
-        return model
+        if self.predict_loader:
+            logging.info("Starting to save predictions")
+            self.save_predictions(model, self.predict_loader.dataset)
 
     def save_predictions(self, model, dataset):
         logging.info("Starting the batch predict of the evaluation set")
@@ -305,14 +347,21 @@ class RankingTrainEvalRunner:
         )
         predictions_ddf = predictions_ds.to_ddf()
 
-        if self.args.predict_keep_cols:
+        if self.args.predict_output_keep_cols:
             cols = set(predictions_ddf.columns)
             pred_cols = sorted(
                 list(cols.difference(set(self.eval_loader.dataset.to_ddf().columns)))
             )
             # Keeping only selected features and all targets
-            predictions_ddf = predictions_ddf[self.args.predict_keep_cols + pred_cols]
+            predictions_ddf = predictions_ddf[
+                self.args.predict_output_keep_cols + pred_cols
+            ]
 
+        if not self.args.predict_output_path:
+            raise Exception(
+                "You need to specify the path to save the predictions "
+                "using --predict_output_path"
+            )
         output_path = self.args.predict_output_path
 
         if self.args.predict_output_format == "parquet":
@@ -343,24 +392,61 @@ class RankingTrainEvalRunner:
         try:
             logging.info(f"TARGETS: {self.targets}")
 
+            model = None
+            if self.args.load_model_path:
+                model = self.load_model(self.args.load_model_path)
+
+            # If a single-task learning model (if only --predict_data_path is
+            # provided, as self.targets will not be available, it checks the
+            # --tasks arg to discover if its STL or MTL)
             if len(self.targets) == 1 and len(list(self.targets.values())[0]) == 1:
+                if not model:
+                    model = self.build_stl_model()
+
+                logging.info(f"MODEL: {model}")
                 # Single target = Single-Task Learning
-                model = self.train_eval_stl()
+                model = self.train_eval_stl(model)
             else:
+                if not model:
+                    model = self.build_mtl_model()
+
+                logging.info(f"MODEL: {model}")
                 # Multiple targets = Multi-Task Learning
-                model = self.train_eval_mtl()
+                self.train_eval_mtl(model)
 
             logging.info("Finished training / evaluation / prediction")
 
-            if self.args.save_trained_model_path:
-                logging.info(f"Saving model to {self.args.save_trained_model_path}")
-                model.save(self.args.save_trained_model_path)
+            if self.args.save_model_path:
+                self.save_model(model, self.args.save_model_path)
 
-            logging.info("Script successfully finished")
+            logging.info("Script finished successfully")
 
         finally:
             if self.logger:
                 self.logger.teardown()
+
+    def save_model(self, model, path):
+        logging.info(f"Saving model to {path}")
+        model.save(path)
+
+        # Saving the model targets
+        output_targets_path = os.path.join(path, "targets.json")
+        logging.info(f"Saving model targets metadata to {output_targets_path}")
+        json_object = json.dumps(self.targets, indent=4)
+        with open(output_targets_path, "w") as outfile:
+            outfile.write(json_object)
+
+    def load_model(self, path):
+        logging.info(f"Loading model from: {path}")
+        model = mm.Model.load(path)
+
+        # Loading the model targets
+        output_targets_path = os.path.join(path, "targets.json")
+        logging.info(f"Loading model targets metadata from: {output_targets_path}")
+        with open(output_targets_path, "r") as outfile:
+            self.targets = json.loads(outfile.read())
+
+        return model
 
 
 def main():
@@ -379,9 +465,9 @@ def main():
             logging_path=args.output_path,
         )
 
-    train_ds, eval_ds = get_datasets(args)
+    train_ds, eval_ds, predict_ds = get_datasets(args)
 
-    runner = RankingTrainEvalRunner(logger, train_ds, eval_ds, args)
+    runner = RankingTrainEvalRunner(logger, train_ds, eval_ds, predict_ds, args)
     runner.run()
 
 

@@ -15,11 +15,11 @@ def build_arg_parser():
         "Must have the same schema as train data (in --data_path).",
     )
     parser.add_argument(
-        "--test_data_path",
+        "--predict_data_path",
         default=None,
-        help="Path to test data, if data was already split. "
-        "This data is expected to have the same input features as train data but targets "
-        "are not necessary, as this data is typically used for prediction.",
+        help="Path to data to be preprocessed for prediction."
+        "This data is expected to have the same input features as train data but not targets, "
+        "as this data is used for prediction.",
     )
     parser.add_argument(
         "--input_data_format",
@@ -254,15 +254,24 @@ def build_arg_parser():
     )
 
     parser.add_argument(
-        "--visible_gpu_devices",
-        default="0",
+        "--enable_dask_cuda_cluster",
+        type=str2bool,
+        nargs="?",
+        const=True,
+        default=False,
+        help="Initializes a LocalCUDACluster for multi-GPU preprocessing.",
+    )
+
+    parser.add_argument(
+        "--dask_cuda_visible_gpu_devices",
+        default=None,
         type=str,
         help="Ids of GPU devices that should be used "
         "for preprocessing, if any. For example: --visible_gpu_devices=0,1. "
-        "Default is 0",
+        "Default is None, for using all GPUs",
     )
     parser.add_argument(
-        "--gpu_device_spill_frac",
+        "--dask_cuda_gpu_device_spill_frac",
         default=0.7,
         type=float,
         help="Percentage of GPU memory used at which "

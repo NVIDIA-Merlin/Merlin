@@ -90,11 +90,10 @@ The input and format can be CSV, TSV or Parquet, but the latter is recommended f
   --eval_data_path 
                         Path to eval data, if data was already splitMust have
                         the same schema as train data (in --data_path).
-  --test_data_path 
-                        Path to test data, if data was already split. This
-                        data is expected to have the same input features as
-                        train data but targets are not necessary, as this data
-                        is typically used for prediction.
+  --predict_data_path 
+                        Path to data to be preprocessed for prediction.
+                        This data is expected to have the same input features as 
+                        train data but not targets, as this data is used for prediction.
   --input_data_format {csv,tsv,parquet}
                         Input data format
   --csv_sep             Character separator for CSV files.Default is ','. You
@@ -238,12 +237,16 @@ The input and format can be CSV, TSV or Parquet, but the latter is recommended f
 ```
 
 ### CUDA cluster options
-```                      
-  --visible_gpu_devices 
+```       
+  --enable_dask_cuda_cluster
+                        Initializes a LocalCUDACluster for multi-GPU preprocessing.
+                        This is recommended for larger dataset to avoid out-of-memory
+                        errors, when multiple GPUs are available. By default is False.
+  --dask_cuda_visible_gpu_devices 
                         Ids of GPU devices that should be used for
                         preprocessing, if any. For example:
-                        --visible_gpu_devices=0,1. Default is 0
-  --gpu_device_spill_frac 
+                        --visible_gpu_devices=0,1. Default is None, for using all GPUs
+  --dask_cuda_gpu_device_spill_frac 
                         Percentage of GPU memory used at which
                         LocalCUDACluster should spill memory to CPU, before
                         raising out-of-memory errors. Default is 0.7

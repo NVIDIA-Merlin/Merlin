@@ -16,7 +16,7 @@ INT_LIST_ARGS = ["mlp_layers", "expert_mlp_layers", "tower_layers"]
 STR_LIST_ARGS = [
     "tasks",
     "tasks_sample_space",
-    "predict_keep_cols",
+    "predict_output_keep_cols",
     "wnd_ignore_combinations",
 ]
 
@@ -88,17 +88,28 @@ def build_arg_parser():
 
     # Inputs
     parser.add_argument(
-        "--train_path",
-        default="/data/train/",
-        help="Path of the train set. " "It expects a folder with parquet files",
+        "--train_data_path",
+        default=None,
+        help="Path of the train set. It expects a folder with parquet files. "
+        "If not provided, the model will not be trained (in case you want to use "
+        "--load_model_path to load a pre-trained model)",
     )
     parser.add_argument(
-        "--eval_path",
-        default="/data/eval/",
-        help="Path of the eval set. " "It expects a folder with parquet files",
+        "--eval_data_path",
+        default=None,
+        help="Path of the eval set. It expects a folder with parquet files. "
+        "If not provided, the model will not be evaluated",
     )
-    # Outputs
 
+    parser.add_argument(
+        "--predict_data_path",
+        default=None,
+        help="Path of a dataset for prediction. It expects a folder with parquet files. "
+        "If provided, it will compute the predictions for this dataset and "
+        "save those predictions to --predict_output_path",
+    )
+
+    # Outputs
     parser.add_argument(
         "--output_path",
         default="./output/",
@@ -106,25 +117,21 @@ def build_arg_parser():
     )
 
     parser.add_argument(
-        "--save_trained_model_path",
+        "--save_model_path",
         default=None,
-        help="If provided, model is saved to this path after training.",
+        help="If provided, model is saved to this path after training. "
+        "It can be loaded later with --load_model_path ",
     )
 
     parser.add_argument(
-        "--predict",
-        type=str2bool,
-        nargs="?",
-        const=True,
-        default=False,
-        help="If enabled, the dataset provided in --eval_path "
-        "will be used for prediction (instead of evaluation). "
-        "The prediction scores for the that dataset will "
-        "be saved to --predict_output_path, "
-        "according to the --predict_output_format choice. ",
+        "--load_model_path",
+        default=None,
+        help="If provided, loads a model saved by --save_model_path "
+        "instead of initializing the parameters randomly",
     )
+
     parser.add_argument(
-        "--predict_keep_cols",
+        "--predict_output_keep_cols",
         default=None,
         help="Comma-separated list of columns to keep in the output "
         "prediction file. If no columns is provided, all columns "

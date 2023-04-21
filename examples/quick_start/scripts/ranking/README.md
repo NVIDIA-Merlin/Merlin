@@ -104,10 +104,20 @@ In this section we describe the command line arguments of the `ranking.py` scrip
 ### Inputs
 
 ```
-  --train_path
+  --train_data_path
                         Path of the train set. It expects a folder with parquet files.
-  --eval_path
+                        If not provided, the model will not be trained (in case you want to use
+                        --load_model_path to load a pre-trained model)
+  --eval_data_path
                         Path of the eval set. It expects a folder with parquet files.
+                        If not provided, the model will not be evaluated
+  --predict_data_path
+                        Path of a dataset for prediction. It expects a folder with parquet files
+                        If provided, it will compute the predictions for this dataset and
+                        save those predictions to --predict_output_path
+  --load_model_path     
+                        If provided, loads a model saved by --save_model_path
+                        instead of initializing the parameters randomly
 ```
 
 ### Tasks
@@ -343,23 +353,18 @@ This requires sign-up for a free Weights&Biases account at https://wandb.ai/home
 ```
   --output_path
                         Folder to save training and logging assets.
-  --save_trained_model_path 
+  --save_model_path 
                         If provided, model is saved to this path after
-                        training.
-  --predict             If enabled, the dataset provided in
-                        --eval_path will be used for prediction (instead
-                        of evaluation). The prediction scores for the
-                        that dataset will be saved to
-                        --predict_output_path,
-                        according to the --predict_output_format choice.
-  --predict_keep_cols 
+                        training. It can be loaded later with --load_model_path 
+  --predict_output_path 
+                        If provided the prediction scores will be saved
+                        to this path, according to --predict_output_format
+                        and --predict_output_keep_cols 
+  --predict_output_keep_cols 
                         Comma-separated list of columns to keep in the
                         output prediction file. If no columns is
                         provided, all columns are kept together with the
-                        prediction scores.
-  --predict_output_path 
-                        If provided the prediction scores will be saved
-                        to this path. 
+                        prediction scores.  
   --predict_output_format {parquet,csv,tsv}
                         Format of the output prediction files. By
                         default 'parquet', which is the most performant

@@ -1,10 +1,12 @@
-from args_parsing import MtlArgsPrefix, Task
+import merlin.models.tf as mm
 from tensorflow.keras import regularizers
 
-import merlin.models.tf as mm
+from args_parsing import MtlArgsPrefix, Task
 
 
-def get_task_sample_weights(target, binary_output, tasks_pos_class_weights, tasks_space):
+def get_task_sample_weights(
+    target, binary_output, tasks_pos_class_weights, tasks_space
+):
     sample_weight_block = None
     if binary_output:
         sample_weight_block = mm.ColumnBasedSampleWeight(
@@ -13,7 +15,9 @@ def get_task_sample_weights(target, binary_output, tasks_pos_class_weights, task
         )
 
     if tasks_space[target]:
-        sample_space_block = mm.ColumnBasedSampleWeight(weight_column_name=tasks_space[target])
+        sample_space_block = mm.ColumnBasedSampleWeight(
+            weight_column_name=tasks_space[target]
+        )
 
         if sample_weight_block:
             sample_weight_block = mm.SequentialBlock(
@@ -27,6 +31,7 @@ def get_task_sample_weights(target, binary_output, tasks_pos_class_weights, task
 
 def get_mtl_loss_weights(args, targets):
     flattened_targets = [y for x in targets.values() for y in x]
+
     loss_weights = {
         target: float(args[f"{MtlArgsPrefix.LOSS_WEIGHT_ARG_PREFIX.value}{target}"])
         if f"{MtlArgsPrefix.LOSS_WEIGHT_ARG_PREFIX.value}{target}" in args
@@ -35,20 +40,20 @@ def get_mtl_loss_weights(args, targets):
     }
 
     mtl_loss_weights = {}
-    if Task.BINARY_CLASSIFICATION in targets:
+    if Task.BINARY_CLASSIFICATION.value in targets:
         mtl_loss_weights.update(
             {
                 f"{target}/binary_output": loss_weights[target]
-                for target in targets[Task.BINARY_CLASSIFICATION]
+                for target in targets[Task.BINARY_CLASSIFICATION.value]
             }
         )
-    if Task.REGRESSION in targets:
+    if Task.REGRESSION.value in targets:
         mtl_loss_weights.update(
             {
                 f"{target}/regression_output": loss_weights[target]
                 if target in loss_weights
                 else 1.0
-                for target in targets[Task.REGRESSION]
+                for target in targets[Task.REGRESSION.value]
             }
         )
 
@@ -57,12 +62,14 @@ def get_mtl_loss_weights(args, targets):
 
 def get_mtl_positive_class_weights(targets, args):
     pos_class_weights = {}
-    if Task.BINARY_CLASSIFICATION in targets:
+    if Task.BINARY_CLASSIFICATION.value in targets:
         pos_class_weights = {
-            target: float(args[f"{MtlArgsPrefix.POS_CLASS_WEIGHT_ARG_PREFIX.value}{target}"])
+            target: float(
+                args[f"{MtlArgsPrefix.POS_CLASS_WEIGHT_ARG_PREFIX.value}{target}"]
+            )
             if f"{MtlArgsPrefix.POS_CLASS_WEIGHT_ARG_PREFIX.value}{target}" in args
             else 1.0
-            for target in targets[Task.BINARY_CLASSIFICATION]
+            for target in targets[Task.BINARY_CLASSIFICATION.value]
         }
     return pos_class_weights
 
@@ -96,7 +103,7 @@ def get_mtl_prediction_tasks(targets, args):
         tasks_space = {t: None for t in args.tasks}
 
     prediction_tasks = []
-    if Task.BINARY_CLASSIFICATION in targets:
+    if Task.BINARY_CLASSIFICATION.value in targets:
         prediction_tasks.extend(
             [
                 mm.BinaryOutput(
@@ -105,13 +112,15 @@ def get_mtl_prediction_tasks(targets, args):
                         target, True, tasks_pos_class_weights, tasks_space
                     ),
                     # Cloning task tower
-                    pre=task_block.from_config(task_block.get_config()) if task_block else None,
+                    pre=task_block.from_config(task_block.get_config())
+                    if task_block
+                    else None,
                 )
-                for target in targets[Task.BINARY_CLASSIFICATION]
+                for target in targets[Task.BINARY_CLASSIFICATION.value]
             ]
         )
 
-    if Task.REGRESSION in targets:
+    if Task.REGRESSION.value in targets:
         prediction_tasks.extend(
             [
                 mm.RegressionOutput(
@@ -120,9 +129,11 @@ def get_mtl_prediction_tasks(targets, args):
                         target, False, tasks_pos_class_weights, tasks_space
                     ),
                     # Cloning task tower
-                    pre=task_block.from_config(task_block.get_config()) if task_block else None,
+                    pre=task_block.from_config(task_block.get_config())
+                    if task_block
+                    else None,
                 )
-                for target in targets[Task.REGRESSION]
+                for target in targets[Task.REGRESSION.value]
             ]
         )
 
