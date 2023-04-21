@@ -194,10 +194,20 @@ For TenRec dataset, you could use <code class="docutils literal notranslate"><sp
 </div></blockquote>
 <div class="section" id="inputs">
 <h3>Inputs<a class="headerlink" href="#inputs" title="Permalink to this headline"></a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>  <span class="o">--</span><span class="n">train_path</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>  <span class="o">--</span><span class="n">train_data_path</span>
                         <span class="n">Path</span> <span class="n">of</span> <span class="n">the</span> <span class="n">train</span> <span class="nb">set</span><span class="o">.</span> <span class="n">It</span> <span class="n">expects</span> <span class="n">a</span> <span class="n">folder</span> <span class="k">with</span> <span class="n">parquet</span> <span class="n">files</span><span class="o">.</span>
-  <span class="o">--</span><span class="n">eval_path</span>
+                        <span class="n">If</span> <span class="ow">not</span> <span class="n">provided</span><span class="p">,</span> <span class="n">the</span> <span class="n">model</span> <span class="n">will</span> <span class="ow">not</span> <span class="n">be</span> <span class="n">trained</span> <span class="p">(</span><span class="ow">in</span> <span class="n">case</span> <span class="n">you</span> <span class="n">want</span> <span class="n">to</span> <span class="n">use</span>
+                        <span class="o">--</span><span class="n">load_model_path</span> <span class="n">to</span> <span class="n">load</span> <span class="n">a</span> <span class="n">pre</span><span class="o">-</span><span class="n">trained</span> <span class="n">model</span><span class="p">)</span>
+  <span class="o">--</span><span class="n">eval_data_path</span>
                         <span class="n">Path</span> <span class="n">of</span> <span class="n">the</span> <span class="nb">eval</span> <span class="nb">set</span><span class="o">.</span> <span class="n">It</span> <span class="n">expects</span> <span class="n">a</span> <span class="n">folder</span> <span class="k">with</span> <span class="n">parquet</span> <span class="n">files</span><span class="o">.</span>
+                        <span class="n">If</span> <span class="ow">not</span> <span class="n">provided</span><span class="p">,</span> <span class="n">the</span> <span class="n">model</span> <span class="n">will</span> <span class="ow">not</span> <span class="n">be</span> <span class="n">evaluated</span>
+  <span class="o">--</span><span class="n">predict_data_path</span>
+                        <span class="n">Path</span> <span class="n">of</span> <span class="n">a</span> <span class="n">dataset</span> <span class="k">for</span> <span class="n">prediction</span><span class="o">.</span> <span class="n">It</span> <span class="n">expects</span> <span class="n">a</span> <span class="n">folder</span> <span class="k">with</span> <span class="n">parquet</span> <span class="n">files</span>
+                        <span class="n">If</span> <span class="n">provided</span><span class="p">,</span> <span class="n">it</span> <span class="n">will</span> <span class="n">compute</span> <span class="n">the</span> <span class="n">predictions</span> <span class="k">for</span> <span class="n">this</span> <span class="n">dataset</span> <span class="ow">and</span>
+                        <span class="n">save</span> <span class="n">those</span> <span class="n">predictions</span> <span class="n">to</span> <span class="o">--</span><span class="n">predict_output_path</span>
+  <span class="o">--</span><span class="n">load_model_path</span>     
+                        <span class="n">If</span> <span class="n">provided</span><span class="p">,</span> <span class="n">loads</span> <span class="n">a</span> <span class="n">model</span> <span class="n">saved</span> <span class="n">by</span> <span class="o">--</span><span class="n">save_model_path</span>
+                        <span class="n">instead</span> <span class="n">of</span> <span class="n">initializing</span> <span class="n">the</span> <span class="n">parameters</span> <span class="n">randomly</span>
 </pre></div>
 </div>
 </div>
@@ -445,23 +455,18 @@ For TenRec dataset, you could use <code class="docutils literal notranslate"><sp
 <h3>Outputs<a class="headerlink" href="#outputs" title="Permalink to this headline"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>  <span class="o">--</span><span class="n">output_path</span>
                         <span class="n">Folder</span> <span class="n">to</span> <span class="n">save</span> <span class="n">training</span> <span class="ow">and</span> <span class="n">logging</span> <span class="n">assets</span><span class="o">.</span>
-  <span class="o">--</span><span class="n">save_trained_model_path</span> 
+  <span class="o">--</span><span class="n">save_model_path</span> 
                         <span class="n">If</span> <span class="n">provided</span><span class="p">,</span> <span class="n">model</span> <span class="ow">is</span> <span class="n">saved</span> <span class="n">to</span> <span class="n">this</span> <span class="n">path</span> <span class="n">after</span>
-                        <span class="n">training</span><span class="o">.</span>
-  <span class="o">--</span><span class="n">predict</span>             <span class="n">If</span> <span class="n">enabled</span><span class="p">,</span> <span class="n">the</span> <span class="n">dataset</span> <span class="n">provided</span> <span class="ow">in</span>
-                        <span class="o">--</span><span class="n">eval_path</span> <span class="n">will</span> <span class="n">be</span> <span class="n">used</span> <span class="k">for</span> <span class="n">prediction</span> <span class="p">(</span><span class="n">instead</span>
-                        <span class="n">of</span> <span class="n">evaluation</span><span class="p">)</span><span class="o">.</span> <span class="n">The</span> <span class="n">prediction</span> <span class="n">scores</span> <span class="k">for</span> <span class="n">the</span>
-                        <span class="n">that</span> <span class="n">dataset</span> <span class="n">will</span> <span class="n">be</span> <span class="n">saved</span> <span class="n">to</span>
-                        <span class="o">--</span><span class="n">predict_output_path</span><span class="p">,</span>
-                        <span class="n">according</span> <span class="n">to</span> <span class="n">the</span> <span class="o">--</span><span class="n">predict_output_format</span> <span class="n">choice</span><span class="o">.</span>
-  <span class="o">--</span><span class="n">predict_keep_cols</span> 
+                        <span class="n">training</span><span class="o">.</span> <span class="n">It</span> <span class="n">can</span> <span class="n">be</span> <span class="n">loaded</span> <span class="n">later</span> <span class="k">with</span> <span class="o">--</span><span class="n">load_model_path</span> 
+  <span class="o">--</span><span class="n">predict_output_path</span> 
+                        <span class="n">If</span> <span class="n">provided</span> <span class="n">the</span> <span class="n">prediction</span> <span class="n">scores</span> <span class="n">will</span> <span class="n">be</span> <span class="n">saved</span>
+                        <span class="n">to</span> <span class="n">this</span> <span class="n">path</span><span class="p">,</span> <span class="n">according</span> <span class="n">to</span> <span class="o">--</span><span class="n">predict_output_format</span>
+                        <span class="ow">and</span> <span class="o">--</span><span class="n">predict_output_keep_cols</span> 
+  <span class="o">--</span><span class="n">predict_output_keep_cols</span> 
                         <span class="n">Comma</span><span class="o">-</span><span class="n">separated</span> <span class="nb">list</span> <span class="n">of</span> <span class="n">columns</span> <span class="n">to</span> <span class="n">keep</span> <span class="ow">in</span> <span class="n">the</span>
                         <span class="n">output</span> <span class="n">prediction</span> <span class="n">file</span><span class="o">.</span> <span class="n">If</span> <span class="n">no</span> <span class="n">columns</span> <span class="ow">is</span>
                         <span class="n">provided</span><span class="p">,</span> <span class="nb">all</span> <span class="n">columns</span> <span class="n">are</span> <span class="n">kept</span> <span class="n">together</span> <span class="k">with</span> <span class="n">the</span>
-                        <span class="n">prediction</span> <span class="n">scores</span><span class="o">.</span>
-  <span class="o">--</span><span class="n">predict_output_path</span> 
-                        <span class="n">If</span> <span class="n">provided</span> <span class="n">the</span> <span class="n">prediction</span> <span class="n">scores</span> <span class="n">will</span> <span class="n">be</span> <span class="n">saved</span>
-                        <span class="n">to</span> <span class="n">this</span> <span class="n">path</span><span class="o">.</span> 
+                        <span class="n">prediction</span> <span class="n">scores</span><span class="o">.</span>  
   <span class="o">--</span><span class="n">predict_output_format</span> <span class="p">{</span><span class="n">parquet</span><span class="p">,</span><span class="n">csv</span><span class="p">,</span><span class="n">tsv</span><span class="p">}</span>
                         <span class="n">Format</span> <span class="n">of</span> <span class="n">the</span> <span class="n">output</span> <span class="n">prediction</span> <span class="n">files</span><span class="o">.</span> <span class="n">By</span>
                         <span class="n">default</span> <span class="s1">&#39;parquet&#39;</span><span class="p">,</span> <span class="n">which</span> <span class="ow">is</span> <span class="n">the</span> <span class="n">most</span> <span class="n">performant</span>

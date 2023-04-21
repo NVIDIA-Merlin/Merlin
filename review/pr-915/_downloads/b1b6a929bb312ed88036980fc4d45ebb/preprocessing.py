@@ -40,7 +40,8 @@ class PreprocessingRunner:
             import pandas
 
             self.df_lib = pandas
-        pass
+
+        self.dask_cluster_client = None
 
     def read_data(self, path):
         args = self.args
@@ -245,10 +246,10 @@ class PreprocessingRunner:
         # Combining all features
         outputs = reduce(lambda x, y: x + y, list(feats.values()))
 
-        workflow = nvt.Workflow(outputs)
+        workflow = nvt.Workflow(outputs, client=self.dask_cluster_client)
         return workflow
 
-    def generate_nvt_workflow_targets(self):
+    def generate_nvt_workflow_targets(self, client=None):
         logging.info("Generating NVTabular workflow for preprocessing targets")
         args = self.args
         feats = dict()
@@ -265,7 +266,7 @@ class PreprocessingRunner:
         # Combining all features
         outputs = reduce(lambda x, y: x + y, list(feats.values()))
 
-        workflow = nvt.Workflow(outputs)
+        workflow = nvt.Workflow(outputs, client=self.dask_cluster_client)
         return workflow
 
     def persist_intermediate(self, ddf, folder):
@@ -309,25 +310,25 @@ class PreprocessingRunner:
         cluster = None  # (Optional) Specify existing scheduler port
         if cluster is None:
             cluster = LocalCUDACluster(
-                protocol="tcp",
-                CUDA_VISIBLE_DEVICES=visible_devices,
+                CUDA_VISIBLE_DEVICES="0,1",  # visible_devices,
                 local_directory=dask_work_dir,
                 device_memory_limit=capacity * device_spill_frac,
             )
 
         # Create the distributed client
-        client = Client(cluster)
-        return client
+        self.dask_cluster_client = Client(cluster)
 
     def run(self):
         args = self.args
 
         logging.info(f"Running device: {'GPU' if self.gpu else 'CPU'}")
 
-        if self.gpu:
+        if self.gpu and args.enable_dask_cuda_cluster:
+            logging.info("Setting up Dask CUDA Cluster")
             self.setup_dask_cuda_cluster(
-                visible_devices=args.visible_gpu_devices,
-                device_spill_frac=args.gpu_device_spill_frac,
+                visible_devices=args.dask_cuda_visible_gpu_devices,
+                device_spill_frac=args.dask_cuda_gpu_device_spill_frac,
+                dask_work_dir=args.output_path,
             )
 
         ddf = self.read_data(args.data_path)
@@ -341,8 +342,8 @@ class PreprocessingRunner:
             eval_ddf = self.read_data(args.eval_data_path)
             eval_ddf = self.cast_dtypes(eval_ddf)
 
-        if args.test_data_path:
-            test_ddf = self.read_data(args.test_data_path)
+        if args.predict_data_path:
+            test_ddf = self.read_data(args.predict_data_path)
             test_ddf = self.cast_dtypes(test_ddf)
 
         if args.dataset_split_strategy:
@@ -366,7 +367,7 @@ class PreprocessingRunner:
 
         train_dataset = nvt.Dataset(ddf, cpu=not self.gpu)
         # Processing features and targets in separate workflows, because
-        # targets might not be available for test_dataset
+        # targets might not be available for test/predict_dataset
         train_dataset_features = nvt_workflow_features.fit_transform(train_dataset)
         train_dataset_targets = nvt_workflow_targets.fit_transform(train_dataset)
         train_dataset_preproc = nvt.Dataset(
@@ -385,9 +386,9 @@ class PreprocessingRunner:
         )
 
         if args.eval_data_path or args.dataset_split_strategy:
-            eval_dataset = nvt.Dataset(eval_ddf, cpu=self.cpu)
+            eval_dataset = nvt.Dataset(eval_ddf, cpu=not self.gpu)
             # Processing features and targets in separate workflows, because
-            # targets might not be available for test_dataset
+            # targets might not be available for test/predict_dataset
             eval_dataset_features = nvt_workflow_features.transform(eval_dataset)
             eval_dataset_targets = nvt_workflow_targets.transform(eval_dataset)
             eval_dataset_preproc = nvt.Dataset(
@@ -406,15 +407,15 @@ class PreprocessingRunner:
                 output_eval_dataset_path, output_files=args.output_num_partitions,
             )
 
-        if args.test_data_path:
-            test_dataset = nvt.Dataset(test_ddf, cpu=not self.gpu)
-            new_test_dataset = nvt_workflow_features.transform(test_dataset)
+        if args.predict_data_path:
+            predict_dataset = nvt.Dataset(test_ddf, cpu=not self.gpu)
+            new_predict_dataset = nvt_workflow_features.transform(predict_dataset)
 
-            output_test_dataset_path = os.path.join(output_dataset_path, "test")
-            logging.info(f"Transforming test set: {output_test_dataset_path}")
+            output_predict_dataset_path = os.path.join(output_dataset_path, "predict")
+            logging.info(f"Transforming predict set: {output_predict_dataset_path}")
 
-            new_test_dataset.to_parquet(
-                output_test_dataset_path, output_files=args.output_num_partitions,
+            new_predict_dataset.to_parquet(
+                output_predict_dataset_path, output_files=args.output_num_partitions,
             )
 
 
