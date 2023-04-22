@@ -1,0 +1,53 @@
+---
+services:
+
+  dev-cpu:
+    build:
+      context: .
+      dockerfile: docker/dev.cpu.Dockerfile
+    volumes:
+      - .:/workspace
+    working_dir: "/workspace"
+    ports:
+      - "8888:8888"
+    command: "jupyter notebook --ip 0.0.0.0 --allow-root"
+    environment:
+      HISTFILE: "/workspace/.bash_history"
+      IPYTHONDIR: "/workspace/.ipython"
+      BASE_DIR: "/workspace/base"
+      FEAST_USAGE: "False"  # disale usage logging
+      TF_CPP_MIN_LOG_LEVEL: "1"  # disable INFO logging
+    shm_size: '1gb'
+
+  dev-gpu:
+    build:
+      context: .
+      dockerfile: docker/dev.gpu.Dockerfile
+    volumes:
+      - .:/workspace
+    working_dir: "/workspace"
+    ports:
+      - "8888:8888"
+    command: "jupyter notebook --ip 0.0.0.0 --allow-root"
+    entrypoint: "/opt/nvidia/nvidia_entrypoint.sh"
+    environment:
+      HISTFILE: "/workspace/.bash_history"
+      IPYTHONDIR: "/workspace/.ipython"
+      BASE_DIR: "/workspace/base"
+      FEAST_USAGE: "False"  # disale usage logging
+      TF_CPP_MIN_LOG_LEVEL: "1"  # disable INFO logging
+    shm_size: '1gb'
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
+
+  requirements:
+    build:
+      context: .
+      dockerfile: docker/requirements.Dockerfile
+    volumes:
+      - ./requirements:/workspace
+      - ./merlin:/workspace/merlin
+    working_dir: "/workspace"
