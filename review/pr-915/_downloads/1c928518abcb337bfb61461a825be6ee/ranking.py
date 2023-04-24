@@ -368,6 +368,8 @@ class RankingTrainEvalRunner:
             )
         output_path = self.args.predict_output_path
 
+        logging.info(f"Saving predictions to {output_path}")
+
         if self.args.predict_output_format == "parquet":
             predictions_ddf.to_parquet(output_path, write_index=False)
         elif self.args.predict_output_format in ["csv", "tsv"]:
@@ -381,6 +383,8 @@ class RankingTrainEvalRunner:
                 "Only supported formats for output prediction files"
                 f" are parquet or csv, but got '{self.args.predict_output_format}'"
             )
+
+        logging.info(f"Predictions saved to {output_path}")
 
     def log_final_metrics(self, metrics_results):
         if self.logger:
@@ -418,9 +422,8 @@ class RankingTrainEvalRunner:
                 # Multiple targets = Multi-Task Learning
                 self.train_eval_mtl(model)
 
-            logging.info("Finished training / evaluation / prediction")
-
             if self.args.save_model_path:
+                logging.info("Saving the model")
                 self.save_model(model, self.args.save_model_path)
 
             logging.info("Script finished successfully")
