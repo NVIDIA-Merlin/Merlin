@@ -355,10 +355,8 @@ class RankingTrainEvalRunner:
 
         if self.args.predict_output_keep_cols:
             cols = set(predictions_ddf.columns)
-            pred_cols = sorted(
-                list(cols.difference(set(self.eval_loader.dataset.to_ddf().columns)))
-            )
-            # Keeping only selected features and all targets
+            pred_cols = sorted(list(cols.difference(set(dataset.to_ddf().columns))))
+            # Keeping only selected features and all predictions
             predictions_ddf = predictions_ddf[
                 self.args.predict_output_keep_cols + pred_cols
             ]
