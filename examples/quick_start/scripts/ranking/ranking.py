@@ -422,9 +422,8 @@ class RankingTrainEvalRunner:
                 # Multiple targets = Multi-Task Learning
                 self.train_eval_mtl(model)
 
-            logging.info("Finished training / evaluation / prediction")
-
             if self.args.save_model_path:
+                logging.info("Saving the model")
                 self.save_model(model, self.args.save_model_path)
 
             logging.info("Script finished successfully")
