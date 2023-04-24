@@ -1,0 +1,118 @@
+program: ranking.py
+method: bayes
+metric:
+  name: auc_avg-final
+  goal: maximize
+parameters:
+  tasks:
+    distribution: categorical
+    values:
+      - "click,like,share,follow"
+  mtl_pos_class_weight_click:
+    distribution: int_uniform
+    min: 1
+    max: 10
+  mtl_pos_class_weight_like:
+    distribution: int_uniform
+    min: 1
+    max: 100
+  mtl_pos_class_weight_share:
+    distribution: int_uniform
+    min: 1
+    max: 100
+  mtl_pos_class_weight_follow:
+    distribution: int_uniform
+    min: 1
+    max: 100
+  mtl_loss_weight_click:
+    distribution: categorical
+    values:
+      - 5
+  mtl_loss_weight_like:
+    distribution: int_uniform
+    min: 1
+    max: 10
+  mtl_loss_weight_share:
+    distribution: int_uniform
+    min: 1
+    max: 10
+  mtl_loss_weight_follow:
+    distribution: int_uniform
+    min: 1
+    max: 10
+  activation:
+    distribution: categorical
+    values:
+      - relu
+  model:
+    distribution: categorical
+    values:
+      - ple
+  dropout:
+    distribution: categorical
+    values:
+      - 0.08325612474817677
+  embeddings_l2_reg:
+    distribution: categorical
+    values:
+      - 4.1713773287719545e-08
+  embedding_sizes_multiplier:
+    distribution: categorical
+    values:
+      - 2
+  l2_reg:
+    distribution: categorical
+    values:
+      - 4.467706867589544e-06
+  lr:
+    distribution: categorical
+    values:
+      - 0.003820015479695904
+  lr_decay_rate:
+    distribution: categorical
+    values:
+      - 0.9803210281777572
+  lr_decay_steps:
+    distribution: categorical
+    values:
+      - 105
+  expert_mlp_layers:
+    distribution: categorical
+    values:
+      - 256,128
+  ple_num_layers:
+    distribution: categorical
+    values:
+      - 3
+  cgc_num_task_experts:
+    distribution: categorical
+    values:
+      - 1
+  cgc_num_shared_experts:
+    distribution: categorical
+    values:
+      - 3
+  gate_dim:
+    distribution: categorical
+    values:
+      - 64
+  use_task_towers:
+    distribution: categorical
+    values:
+      - "True"
+  tower_layers:
+    distribution: categorical
+    values:
+      - 64,32
+  train_batch_size:
+    distribution: categorical
+    values:
+      - 65536
+  eval_batch_size:
+    distribution: categorical
+    values:
+      - 65536
+  epochs:
+    distribution: categorical
+    values:
+      - 1
