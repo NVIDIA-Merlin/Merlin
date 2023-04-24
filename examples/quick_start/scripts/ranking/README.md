@@ -99,7 +99,7 @@ For TenRec dataset, you could use `--tasks click,like,share,follow` and `--tasks
 
 In this section we describe the command line arguments of the `ranking.py` script.
 
-> You can check how to [setup the environment](../../ranking/README.md) to run `ranking.py` script with Docker.
+> You can check how to [setup the environment](../../ranking.md) to run `ranking.py` script with Docker.
 
 ### Inputs
 

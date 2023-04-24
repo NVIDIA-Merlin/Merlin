@@ -81,7 +81,7 @@ In this section we describe the command line arguments of the preprocessing scri
 
 The input and format can be CSV, TSV or Parquet, but the latter is recommended for being a columnar format which is faster to preprocess. Output preprocessing format is parquet format.
 
-> You can check how to [setup the environment](../../ranking/README.md) to run `preprocessing.py` script with Docker.
+> You can check how to [setup the environment](../../ranking.md) to run `preprocessing.py` script with Docker.
 
 ### Inputs
 ```

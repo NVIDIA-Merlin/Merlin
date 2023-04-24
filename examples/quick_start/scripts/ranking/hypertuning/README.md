@@ -24,7 +24,7 @@ For benchmarking the ranking models with single-task learning we used the `click
 
 
 ### STL Benchmark results
-In Table 1, you can see the models with the best accuracy (AUC) for predicting the `click` target. You can see the models have a similar level of accuracy, maybe because the dataset contains only 5 basic features (which are presented [here](../ranking/README.md)). But you can notice that models more advanced than MLP can provide better accuracy.
+In Table 1, you can see the models with the best accuracy (AUC) for predicting the `click` target. You can see the models have a similar level of accuracy, maybe because the dataset contains only 5 basic features (which are presented [here](../ranking.md)). But you can notice that models more advanced than MLP can provide better accuracy.
 
 <center>
 <img src="../../../images/stl_benchmark.png" alt="Multi-task learning architectures" ><br>Table 1. Single-task learning ranking models benchmark

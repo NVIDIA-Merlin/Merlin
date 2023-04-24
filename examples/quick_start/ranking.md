@@ -4,7 +4,7 @@
 
 We iterate in this guide over a typical Data Science process which involves data preprocessing / feature engineering, model training and evaluation and hyperparameter tuning.
 <center>
-<img src="../images/quick_start_process.png" alt="Data science process with Merlin" >
+<img src="images/quick_start_process.png" alt="Data science process with Merlin" >
 </center>
 
 We use as example here the [TenRec dataset](https://static.qblv.qq.com/qblv/h5/algo-frontend/tenrec_dataset.html), which is large (140 million positive interactions from 5 million users), contains explicit negative feedback (items exposed to the user and not interacted) and multiple target columns (click, like, share, follow).
@@ -23,7 +23,7 @@ The TenRec dataset contains a number of CSV files. We will be using the `QK-vide
 
 Here is an example on how the data looks like. For ranking models, you typically have user, item and contextual features and one or more targets, that can be a binary (e.g. has the customer clicked or liked and item) or regression target (e.g. watch times).
 
-![TenRec dataset structure](../images/tenrec_dataset.png)
+![TenRec dataset structure](images/tenrec_dataset.png)
 
 As `QK-video.csv` has a reasonable size (~15 GB), feel free to reduce it for less rows you want to test the pipeline more quickly or if you don't have a powerful GPU available (V100 with 32 GB or better). For example, with the following command you can truncate the file keeping the first 10 million rows (header line included).
 
@@ -62,12 +62,12 @@ pip install -r requirements.txt
 
 ## Preprocessing
 
-In order to make it easy getting the data ready for model training, we provide a generic script: [preprocessing.py](../scripts/preproc/preprocessing.py). That script is based on **dask_cudf** and **NVTabular** libraries that leverage GPUs for accelerated and distributed preprocessing.  
+In order to make it easy getting the data ready for model training, we provide a generic script: [preprocessing.py](scripts/preproc/preprocessing.py). That script is based on **dask_cudf** and **NVTabular** libraries that leverage GPUs for accelerated and distributed preprocessing.  
 P.s. **NVTabular** also supports CPU which is suitable for prototyping in dev environments.
 
 The preprocessing script outputs preprocessed data as a number of parquet files, as well as a *schema* that stores output features metadata like statistics and tags.
 
-In this example, we set some options for preprocessing. Here is the explanation of the main arguments; you can check the [full documentation and best practices for preprocessing](../scripts/preproc/README.md).
+In this example, we set some options for preprocessing. Here is the explanation of the main arguments; you can check the [full documentation and best practices for preprocessing](scripts/preproc/README.md).
 
 - `--categorical_features` - Names of the categorical/discrete features (concatenated with "," without space).
 - `--binary_classif_targets` - Names of the available target columns for binary classification task
@@ -92,7 +92,7 @@ After you execute this script, a folder `preproc` will be created in `--output_p
 ## Training a ranking model
 Merlin Models is a Merlin library that makes it easy to build and train RecSys models. It is built on top of TensorFlow, and provides building blocks for creating input layers based on the features in the schema, different feature interaction layers and output layers based on the target columns defined in the schema.
 
-A number of popular ranking models are available in Merlin Models API like **DLRM**, **DCN-v2**, **Wide&Deep**, **DeepFM**. This Quick-start provides a generic ranking script [ranking.py](../scripts/ranking/ranking.py) for building and training those models using Models API.
+A number of popular ranking models are available in Merlin Models API like **DLRM**, **DCN-v2**, **Wide&Deep**, **DeepFM**. This Quick-start provides a generic ranking script [ranking.py](scripts/ranking/ranking.py) for building and training those models using Models API.
 
  In the following command example, you can easily train the popular **DLRM** model which performs 2nd level feature interaction. It sets `--model dlrm` and `--embeddings_dim 64` because DLRM models require all categorical columns to be embedded with the same dimension for the feature interaction. You notice that we can set many of the common model (e.g. top `--mlp_layers`) and training hyperparameters like learning rate (`--lr`) and its decay (`--lr_decay_rate`, `--lr_decay_steps`), L2 regularization (`--l2_reg`, `embeddings_l2_reg`), `--dropout` among others.  We set `--epochs 1` and `--train_steps_per_epoch 10` to train for just 10 batches and make runtime faster. If you have a more GPU with more memory (e.g. V100 with 32 GB), you might increase `--train_batch_size` and `--eval_batch_size` to a much larger batch size, for example to `65536`.  
 There are many target columns available in the dataset, and you can select one of them for training by setting `--tasks=click`. In this dataset, there are about 3.7 negative examples (`click=0`) for each positive example (`click=1`). That leads to some class unbalance. We can deal with that by setting `--stl_positive_class_weight` to give more weight to the loss for positive examples, which are rarer.
@@ -102,13 +102,13 @@ There are many target columns available in the dataset, and you can select one o
 cd /Merlin/examples/quick_start/scripts/ranking/
 CUDA_VISIBLE_DEVICES=0 TF_GPU_ALLOCATOR=cuda_malloc_async python  ranking.py --train_path $OUT_DATASET_PATH/dataset/train --eval_path $OUT_DATASET_PATH/dataset/eval --output_path ./outputs/ --tasks=click --stl_positive_class_weight 3 --model dlrm --embeddings_dim 64 --l2_reg 1e-2 --embeddings_l2_reg 1e-6 --dropout 0.05 --mlp_layers 64,32  --lr 1e-4 --lr_decay_rate 0.99 --lr_decay_steps 100 --train_batch_size 65536 --eval_batch_size 65536 --epochs 1 --train_steps_per_epoch 10 
 ```
-You can explore the [full documentation and best practices for ranking models](../scripts/ranking/README.md), which contains details about the command line arguments.
+You can explore the [full documentation and best practices for ranking models](scripts/ranking/README.md), which contains details about the command line arguments.
 
 ## Training a ranking model with multi-task learning
 When multiple targets are available for the same features, models typically benefit from joint training a single model with multiple heads / losses. Merlin Models supports some architectures designed specifically for multi-task learning based on experts. You can find an example notebook with detailed explanations [here](https://github.com/NVIDIA-Merlin/models/blob/main/examples/usecases/ranking_with_multitask_learning.ipynb).
 
 
-The [ranking.py](../scripts/ranking/ranking.py) script makes it easy to train ranking models with multi-task learning by setting more than one target, e.g. `--tasks="click,like,follow,share"`). 
+The [ranking.py](scripts/ranking/ranking.py) script makes it easy to train ranking models with multi-task learning by setting more than one target, e.g. `--tasks="click,like,follow,share"`). 
 
 
 ### Training an MMOE model
@@ -123,9 +123,9 @@ CUDA_VISIBLE_DEVICES=0 TF_MEMORY_ALLOCATION=0.8 python  ranking.py --train_path 
 //--train_steps_per_epoch 3  
 ```
 
-You can find more quick-start information on multi-task learning and MMOE architecture [here](../scripts/ranking/README.md).
+You can find more quick-start information on multi-task learning and MMOE architecture [here](scripts/ranking/README.md).
 
 ## Hyperparameter tuning
-We provide a [tutorial](../scripts/ranking/hypertuning/tutorial_with_wb_sweeps.md) on how to do **hyperparameter tuning with Merlin models and Weights&Biases Sweeps**.
+We provide a [tutorial](scripts/ranking/hypertuning/tutorial_with_wb_sweeps.md) on how to do **hyperparameter tuning with Merlin models and Weights&Biases Sweeps**.
 
-We also make it available a [benchmark](../scripts/ranking/hypertuning/README.md) resulted from our own hyperparameter tuning of TenRec dataset. It compares the different single-task and multi-task learning models. It provides also empirical information on what were the improvements obtained with hyperparameter tuning, the curated hypertuning search space for modeling hyperparameters of `ranking.py` and the most important hyperparameters.
+We also make it available a [benchmark](scripts/ranking/hypertuning/README.md) resulted from our own hyperparameter tuning of TenRec dataset. It compares the different single-task and multi-task learning models. It provides also empirical information on what were the improvements obtained with hyperparameter tuning, the curated hypertuning search space for modeling hyperparameters of `ranking.py` and the most important hyperparameters.
