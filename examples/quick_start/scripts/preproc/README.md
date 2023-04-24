@@ -74,14 +74,24 @@ This preprocessing script provides just basic feature engineering. For more usin
 There are many approaches for splitting (`--dataset_split_strategy`) train and evaluation data:
 - **random** - Examples are randomly assigned to train and eval sets (according to a percentage, `--random_split_eval_perc`).
 - **random by user** - It is like random but stratified by user.Ensures that users have examples in both train and eval sets. This approach doesn't provide cold-start users on eval set.
-- **temporal** - Uses a reference timestamp (`dataset_split_temporal_timestamp`) to split train and eval sets. Typically this is the most realistic approach, as when deployed models will not have access to future information when performing predictions.
+- **temporal** - Uses a reference timestamp (`--dataset_split_temporal_timestamp`) to split train and eval sets. Typically this is the most realistic approach, as when deployed models will not have access to future information when performing predictions.
 
 ## Command line arguments
 In this section we describe the command line arguments of the preprocessing script.
 
 The input and format can be CSV, TSV or Parquet, but the latter is recommended for being a columnar format which is faster to preprocess. Output preprocessing format is parquet format.
 
-> You can check how to [setup the environment](../../ranking.md) to run `preprocessing.py` script with Docker.
+> You can check how to [setup the Docker container](../../ranking.md) to run `preprocessing.py` script with Docker.
+
+Here is an example command line for running preprocessing for the TenRec dataset in our Docker image, which is explained [here](../../ranking.md).
+ The parameters and their values can be separated by either space or by `=`.
+
+```bash
+cd /Merlin/examples/quick_start/scripts/preproc/
+OUT_DATASET_PATH=/outputs/dataset
+python preprocessing.py --input_data_format=csv --csv_na_values=\\N --data_path /data/QK-video.csv --filter_query="click==1 or (click==0 and follow==0 and like==0 and share==0)" --min_item_freq=30 --min_user_freq=30 --max_user_freq=150 --num_max_rounds_filtering=5 --enable_dask_cuda_cluster --persist_intermediate_files --output_path=$OUT_DATASET_PATH --categorical_features=user_id,item_id,video_category,gender,age --binary_classif_targets=click,follow,like,share --regression_targets=watching_times --to_int32=user_id,item_id --to_int16=watching_times --to_int8=gender,age,video_category,click,follow,like,share --user_id_feature=user_id --item_id_feature=item_id --dataset_split_strategy=random_by_user --random_split_eval_perc=0.2
+```
+
 
 ### Inputs
 ```

@@ -13,9 +13,9 @@ First, you need to create a sweep configuration file, which defines the hyperpar
 Here is an example of the config file for the [ranking.py](../../ranking/ranking.py) script. You will notice that we specify in `program: ranking.py` the script we want to execute, the `method: bayes` for bayesian optimization of the hyperparameters, toward maximizing the `auc-final` metric, which is computed on the evaluation set by the ranking script.  
 Then you specify the hyperparameters distribution, which can be `categorical`, `int_uniform`, `uniform`, `log_uniform`, among others. 
 
-The constant parameters that will not vary in the hyperparameter tuning (e.g. `--epochs`, `--train_path`, `--eval_path`) can be provided using a `categorical` distribution with a single value.
+The constant parameters that will not vary in the hyperparameter tuning (e.g. `--epochs`, `--train_data_path`, `--eval_data_path`) can be provided using a `categorical` distribution with a single value.
 
-You can learn about more about the [W&B sweeps configuration](https://docs.wandb.ai/guides/sweeps/define-sweep-configuration) or about the [ranking.py script](../../ranking/README.md) hyperparameters available in its CLI.
+You can learn about more about the [W&B sweeps configuration](https://docs.wandb.ai/guides/sweeps/define-sweep-configuration) or about the [ranking.py script](../../ranking.md) hyperparameters available in its CLI.
 
 ```yaml
 program: ranking.py
@@ -93,11 +93,11 @@ parameters:
     distribution: categorical
     values:
       - 1
-  train_path: 
+  train_data_path: 
     distribution: categorical
     values:
       - /preproc_data/train
-  eval_path: 
+  eval_data_path: 
     distribution: categorical
     values:
       - /preproc_data/eval
@@ -107,9 +107,9 @@ parameters:
 
 ## 2. Environment setup
 
-We need to prepare the environment configured for running the Quick-start scripts. The easiest way is to pull and run the Merlin Tensorflow image, as explained [here](../../../ranking/README.md), mapping the folder with the TenRec dataset.
+We need to prepare the environment configured for running the Quick-start scripts. The easiest way is to pull and run the Merlin Tensorflow image, as explained [here](../../../ranking.md), mapping the folder with the TenRec dataset.
 
-> It assumes that you have already preprocessed the TenRec dataset using `preprocessing.py`, as explained [here](../../../ranking/README.md).
+> It assumes that you have already preprocessed the TenRec dataset using `preprocessing.py`, as explained [here](../../../ranking.md).
 
 ```bash
 PREPROC_INPUT_DATA_PATH=/path/to/input/preprocessed/dataset/
@@ -156,7 +156,7 @@ Go to the folder with the `ranking.py` and run it with some basic parameters, to
 ```bash
 cd /Merlin/examples/quick_start/scripts/ranking
 PREPROC_DATA_PATH=/preproc_data
-CUDA_VISIBLE_DEVICES=0 TF_GPU_ALLOCATOR=cuda_malloc_async python ranking.py --train_path $PREPROC_DATA_PATH/train --eval_path $PREPROC_DATA_PATH/eval --output_path ./outputs/ --tasks=click --stl_positive_class_weight 3 --model dlrm --embeddings_dim 64 --l2_reg 1e-2 --embeddings_l2_reg 1e-6 --dropout 0.05 --mlp_layers 64,32  --lr 1e-4 --lr_decay_rate 0.99 --lr_decay_steps 100 --train_batch_size 65536 --eval_batch_size 65536 --epochs 1 --train_steps_per_epoch 10 --log_to_wandb
+CUDA_VISIBLE_DEVICES=0 TF_GPU_ALLOCATOR=cuda_malloc_async python ranking.py --train_data_path $PREPROC_DATA_PATH/train --eval_data_path $PREPROC_DATA_PATH/eval --output_path ./outputs/ --tasks=click --stl_positive_class_weight 3 --model dlrm --embeddings_dim 64 --l2_reg 1e-2 --embeddings_l2_reg 1e-6 --dropout 0.05 --mlp_layers 64,32  --lr 1e-4 --lr_decay_rate 0.99 --lr_decay_steps 100 --train_batch_size 65536 --eval_batch_size 65536 --epochs 1 --train_steps_per_epoch 10 --log_to_wandb
 ```
 
 The above command includes `--log_to_wandb`, that enables logging with Weights&Biases. You can also configure the W&B team (`--wandb_entity`) and project (`--wandb_project`) to create the run.
@@ -169,7 +169,9 @@ After that, the `ranking.py` script should finish sucessfully until the end, to 
 
 ## 4. Creating the Sweep at Weights&Biases 
 
-You need to create a Sweep at Weights&Biases, that will manage the hypertuning process. You can either create it at [https://wandb.ai/](https://wandb.ai/) website, or via `wandb` CLI like in this example, where we use one of our existing sweep config files.
+You need to create a Sweep at Weights&Biases, that will manage the hypertuning process. You can either create it at [https://wandb.ai/](https://wandb.ai/) website, or via `wandb` CLI like in this example, where we use one of our existing sweep config files. 
+
+> Remember to add to set in the sweep config file the `--train_data_path` and `--eval_data_path`, as in the example above.
 
 ```bash
 wandb sweep --name <SWEEP_NAME> /Merlin/examples/quick_start/scripts/ranking/hypertuning/wandb_sweeps/stl_mlp/stl_click_mlp.yaml
