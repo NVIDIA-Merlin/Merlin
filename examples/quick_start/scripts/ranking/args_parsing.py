@@ -44,6 +44,7 @@ def parse_dynamic_args(dyn_args):
     for arg in dyn_args:
         if "=" in arg:
             k, v = arg.split("=")
+            k = arg.replace("--", "")
             output[k] = v
             k = None
         else:
