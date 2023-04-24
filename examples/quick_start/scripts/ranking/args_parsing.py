@@ -39,8 +39,30 @@ class AttrDict(dict):
 
 
 def parse_dynamic_args(dyn_args):
-    dyn_args_dict = dict([arg.replace("--", "").split("=") for arg in dyn_args])
-    return dyn_args_dict
+    k = None
+    output = dict()
+    for arg in dyn_args:
+        if "=" in arg:
+            k, v = arg.split("=")
+            output[k] = v
+            k = None
+        else:
+            if arg.startswith("--"):
+                k = arg.replace("--", "")
+            elif k is not None:
+                v = arg
+                output[k] = v
+                k = None
+            else:
+                raise Exception(
+                    "Invalid command line arguments structure. "
+                    "Each argument name and its value should be "
+                    "separated by either '=' or space=' '. "
+                    "For example, '--lr=1e-4' or 'lr 1e-4'. "
+                    f"Invalid arg: {arg}"
+                )
+
+    return output
 
 
 def parse_list_arg(value, vtype=str):
@@ -55,6 +77,7 @@ def parse_list_arg(value, vtype=str):
 def parse_arguments():
     parser = build_arg_parser()
     args, dynamic_args = parser.parse_known_args()
+
     dynamic_args = parse_dynamic_args(dynamic_args)
 
     unknown_args = list(
