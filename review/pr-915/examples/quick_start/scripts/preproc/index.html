@@ -161,7 +161,7 @@ Categorical features (<code class="docutils literal notranslate"><span class="pr
 <ul class="simple">
 <li><p><strong>random</strong> - Examples are randomly assigned to train and eval sets (according to a percentage, <code class="docutils literal notranslate"><span class="pre">--random_split_eval_perc</span></code>).</p></li>
 <li><p><strong>random by user</strong> - It is like random but stratified by user.Ensures that users have examples in both train and eval sets. This approach doesn’t provide cold-start users on eval set.</p></li>
-<li><p><strong>temporal</strong> - Uses a reference timestamp (<code class="docutils literal notranslate"><span class="pre">dataset_split_temporal_timestamp</span></code>) to split train and eval sets. Typically this is the most realistic approach, as when deployed models will not have access to future information when performing predictions.</p></li>
+<li><p><strong>temporal</strong> - Uses a reference timestamp (<code class="docutils literal notranslate"><span class="pre">--dataset_split_temporal_timestamp</span></code>) to split train and eval sets. Typically this is the most realistic approach, as when deployed models will not have access to future information when performing predictions.</p></li>
 </ul>
 </div>
 </div>
@@ -170,8 +170,15 @@ Categorical features (<code class="docutils literal notranslate"><span class="pr
 <p>In this section we describe the command line arguments of the preprocessing script.</p>
 <p>The input and format can be CSV, TSV or Parquet, but the latter is recommended for being a columnar format which is faster to preprocess. Output preprocessing format is parquet format.</p>
 <blockquote>
-<div><p>You can check how to <a class="reference internal" href="../../ranking.html"><span class="doc std std-doc">setup the environment</span></a> to run <code class="docutils literal notranslate"><span class="pre">preprocessing.py</span></code> script with Docker.</p>
+<div><p>You can check how to <a class="reference internal" href="../../ranking.html"><span class="doc std std-doc">setup the Docker container</span></a> to run <code class="docutils literal notranslate"><span class="pre">preprocessing.py</span></code> script with Docker.</p>
 </div></blockquote>
+<p>Here is an example command line for running preprocessing for the TenRec dataset in our Docker image, which is explained <a class="reference internal" href="../../ranking.html"><span class="doc std std-doc">here</span></a>.
+The parameters and their values can be separated by either space or by <code class="docutils literal notranslate"><span class="pre">=</span></code>.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>/Merlin/examples/quick_start/scripts/preproc/
+<span class="nv">OUT_DATASET_PATH</span><span class="o">=</span>/outputs/dataset
+python<span class="w"> </span>preprocessing.py<span class="w"> </span>--input_data_format<span class="o">=</span>csv<span class="w"> </span>--csv_na_values<span class="o">=</span><span class="se">\\</span>N<span class="w"> </span>--data_path<span class="w"> </span>/data/QK-video.csv<span class="w"> </span>--filter_query<span class="o">=</span><span class="s2">&quot;click==1 or (click==0 and follow==0 and like==0 and share==0)&quot;</span><span class="w"> </span>--min_item_freq<span class="o">=</span><span class="m">30</span><span class="w"> </span>--min_user_freq<span class="o">=</span><span class="m">30</span><span class="w"> </span>--max_user_freq<span class="o">=</span><span class="m">150</span><span class="w"> </span>--num_max_rounds_filtering<span class="o">=</span><span class="m">5</span><span class="w"> </span>--enable_dask_cuda_cluster<span class="w"> </span>--persist_intermediate_files<span class="w"> </span>--output_path<span class="o">=</span><span class="nv">$OUT_DATASET_PATH</span><span class="w"> </span>--categorical_features<span class="o">=</span>user_id,item_id,video_category,gender,age<span class="w"> </span>--binary_classif_targets<span class="o">=</span>click,follow,like,share<span class="w"> </span>--regression_targets<span class="o">=</span>watching_times<span class="w"> </span>--to_int32<span class="o">=</span>user_id,item_id<span class="w"> </span>--to_int16<span class="o">=</span>watching_times<span class="w"> </span>--to_int8<span class="o">=</span>gender,age,video_category,click,follow,like,share<span class="w"> </span>--user_id_feature<span class="o">=</span>user_id<span class="w"> </span>--item_id_feature<span class="o">=</span>item_id<span class="w"> </span>--dataset_split_strategy<span class="o">=</span>random_by_user<span class="w"> </span>--random_split_eval_perc<span class="o">=</span><span class="m">0</span>.2
+</pre></div>
+</div>
 <div class="section" id="inputs">
 <h3>Inputs<a class="headerlink" href="#inputs" title="Permalink to this headline"></a></h3>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>  <span class="o">--</span><span class="n">data_path</span>

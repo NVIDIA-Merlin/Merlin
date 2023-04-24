@@ -67,8 +67,14 @@ class RankingTrainEvalRunner:
             tasks = schema.select_by_tag(Tags.TARGET).column_names
 
         targets_schema = schema.select_by_name(tasks)
-        targets = dict()
 
+        if set(tasks) != set(targets_schema.column_names):
+            raise ValueError(
+                "Some tasks were not found in the dataset schema: "
+                f"{set(tasks).difference(set(targets_schema.column_names))}"
+            )
+
+        targets = dict()
         binary_classif_targets = targets_schema.select_by_tag(
             Tags.BINARY_CLASSIFICATION
         ).column_names
