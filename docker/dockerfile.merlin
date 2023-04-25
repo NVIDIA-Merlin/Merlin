@@ -100,7 +100,7 @@ RUN ln -s /usr/bin/python3 /usr/bin/python
 # https://gitlab.kitware.com/cmake/cmake/-/issues/24119
 # A fix has already been merged but not yet released:
 # https://gitlab.kitware.com/cmake/cmake/-/merge_requests/7859
-RUN pip install --no-cache-dir --upgrade pip; pip install --no-cache-dir "cmake<3.25.0" ninja scikit-build pandas==1.3.5
+RUN pip install --no-cache-dir --upgrade pip; pip install --no-cache-dir "cmake<3.25.0" ninja scikit-build pandas==1.5.2
 
 # cupy-cuda wheels come from a different URL on aarch64
 RUN if [ $(uname -m) == "aarch64" ] ; then \
@@ -139,6 +139,7 @@ COPY --chown=1000:1000 --from=triton /usr/bin/serve /usr/bin/.
 
 ENV PATH=/opt/tritonserver/bin:${PATH}:
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/tritonserver/lib
+
 
 # Install faiss (with sm80 support since the faiss-gpu wheels
 # don't include it https://github.com/kyamagu/faiss-wheels/issues/54)
@@ -267,7 +268,8 @@ COPY --chown=1000:1000 --from=triton /opt/tritonserver/repoagents/ repoagents/
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/python backends/python/
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/tensorrt backends/tensorrt/
 COPY --chown=1000:1000 --from=triton /usr/bin/serve /usr/bin/.
-
+COPY --chown=1000:1000 --from=triton /usr/lib/x86_64-linux-gnu/libdcgm.so.2 /usr/lib/x86_64-linux-gnu/libdcgm.so.2
+COPY --chown=1000:1000 --from=triton /usr/local/cuda-12.0/targets/x86_64-linux/lib/libcupti.so.12 /usr/local/cuda-12.0/targets/x86_64-linux/lib/libcupti.so.12
 
 
 ENV PATH=/opt/tritonserver/bin:${PATH}:
@@ -295,12 +297,19 @@ COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-p
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cudf /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cudf
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/dask_cudf /usr/local/lib/python${PYTHON_VERSION}/dist-packages/dask_cudf
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/dask_cuda /usr/local/lib/python${PYTHON_VERSION}/dist-packages/dask_cuda
+COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cupy /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cupy
+COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cupyx /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cupyx
+COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cupy_backends /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cupy_backends
+COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/numba /usr/local/lib/python${PYTHON_VERSION}/dist-packages/numba
+
 
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python3.8/dist-packages/cudf-*.dist-info /usr/local/lib/python3.8/dist-packages/cudf.dist-info/
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python3.8/dist-packages/dask_cudf-*.dist-info /usr/local/lib/python3.8/dist-packages/dask_cudf.dist-info/
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python3.8/dist-packages/dask_cuda-*.dist-info /usr/local/lib/python3.8/dist-packages/dask_cuda.dist-info/
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python3.8/dist-packages/pyarrow-*.dist-info /usr/local/lib/python3.8/dist-packages/pyarrow.dist-info/
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python3.8/dist-packages/rmm-*.dist-info /usr/local/lib/python3.8/dist-packages/rmm.dist-info/
+COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python3.8/dist-packages/cupy_*.dist-info /usr/local/lib/python3.8/dist-packages/cupy.dist-info/
+COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python3.8/dist-packages/numba-*.dist-info /usr/local/lib/python3.8/dist-packages/numba.dist-info/
 
 
 RUN pip install --no-cache-dir jupyterlab pydot testbook numpy==1.22.4
