@@ -4,19 +4,11 @@ ARG DLFW_VERSION=23.02
 
 ARG FULL_IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-py3
 ARG BASE_IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-py3-min
-ARG DLFW_IMAGE=nvcr.io/nvidia/tensorflow:${DLFW_VERSION}-tf2-py3
-ARG TARGETARCH=amd64
+ARG DLFW_IMAGE=nvcr.io/nvidia/tensorflow:${TRITON_VERSION}-tf2-py3
 
 FROM ${FULL_IMAGE} as triton
 FROM ${DLFW_IMAGE} as dlfw
-
-FROM ${BASE_IMAGE} as build-amd64
-ONBUILD COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/fil /opt/tritonserver/backends/fil/
-
-FROM ${BASE_IMAGE} as build-arm64
-RUN echo "Skipping copy of /opt/tritonserver/backends/fil. (Why does this fail on arm64?)"
-
-FROM build-${TARGETARCH} as build
+FROM ${BASE_IMAGE} as build
 
 # Args
 ARG DASK_VER=2022.11.1
@@ -33,7 +25,6 @@ ENV MERLIN_VER=${MERLIN_VER}
 ENV CORE_VER=${CORE_VER}
 ENV MODELS_VER=${MODELS_VER}
 ENV NVTAB_VER=${NVTAB_VER}
-ENV NVTAB_BACKEND_VER=${NVTAB_BACKEND_VER}
 ENV SYSTEMS_VER=${SYSTEMS_VER}
 ENV TF4REC_VER=${TF4REC_VER}
 ENV DL_VER=${DL_VER}
@@ -46,21 +37,18 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64:/usr/local/lib:/repos/dist/lib
 ENV PATH=${CUDA_HOME}/lib64/:${PATH}:${CUDA_HOME}/bin
 
-RUN apt clean && apt update -y --fix-missing && \
-    apt install -y --no-install-recommends software-properties-common
-
 # Set up NVIDIA package repository
-RUN repo_arch="$(uname -m | sed 's/aarch64/sbsa/')" && \
-    wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/${repo_arch}/cuda-ubuntu2004.pin && \
+RUN apt clean && apt update -y --fix-missing && \
+    apt install -y --no-install-recommends software-properties-common && \
+    wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-ubuntu2004.pin && \
     mv cuda-ubuntu2004.pin /etc/apt/preferences.d/cuda-repository-pin-600 && \
-    apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/${repo_arch}/3bf863cc.pub && \
-    add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/${repo_arch}/ /" && \
+    apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/3bf863cc.pub && \
+    add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/ /" && \
     apt install -y --no-install-recommends \
         autoconf \
         automake \
         build-essential \
         ca-certificates \
-        cargo \
         clang-format \
         curl \
         datacenter-gpu-manager \
@@ -82,7 +70,6 @@ RUN repo_arch="$(uname -m | sed 's/aarch64/sbsa/')" && \
         python3 \
         python3-pip \
         python3-dev \
-        rustc \
         swig \
         rapidjson-dev \
         nlohmann-json3-dev \
@@ -100,27 +87,20 @@ RUN ln -s /usr/bin/python3 /usr/bin/python
 # https://gitlab.kitware.com/cmake/cmake/-/issues/24119
 # A fix has already been merged but not yet released:
 # https://gitlab.kitware.com/cmake/cmake/-/merge_requests/7859
-RUN pip install --no-cache-dir --upgrade pip; pip install --no-cache-dir "cmake<3.25.0" ninja scikit-build pandas==1.5.2
-
-# cupy-cuda wheels come from a different URL on aarch64
-RUN if [ $(uname -m) == "aarch64" ] ; then \
-        pip install cupy-cuda11x -f https://pip.cupy.dev/aarch64/ ; \
-    else \
-        pip install cupy-cuda11x ; \
-    fi
-
+# 2023-02-22: pynvml==11.5.0 is currently incompatible with our version of dask/distributed
 # tritonclient[all]==2.29.0: latest tritonclient removes the perf_* binaries, so specified to version 2.29.0
-RUN pip install --no-cache-dir nvidia-pyindex pybind11 pytest \
+#cupy-cuda12x 
+
+RUN pip install --no-cache-dir --upgrade pip; pip install --no-cache-dir "cmake<3.25.0" ninja scikit-build pandas==1.5.2 \
+                fastrlock nvidia-pyindex pybind11 pytest \ 
                 transformers==4.12 tensorflow-metadata betterproto \
                 cachetools graphviz nvtx scipy "scikit-learn<1.2" \
                 tritonclient[all]==2.29.0 grpcio-channelz fiddle wandb npy-append-array \
                 git+https://github.com/rapidsai/asvdb.git@main \
                 xgboost==1.6.2 lightgbm treelite==2.4.0 treelite_runtime==2.4.0 \
                 lightfm implicit \
-                numba "cuda-python>=11.5,<12.0" fsspec==2022.5.0 llvmlite
-
-# 2023-02-22: pynvml==11.5.0 is currently incompatible with our version of dask/distributed
-RUN pip install --no-cache-dir pynvml==11.4.1
+                numba "cuda-python>=11.5,<12.0" fsspec==2022.5.0 llvmlite \
+                pynvml==11.4.1
 RUN pip install --no-cache-dir numpy==1.22.4 protobuf==3.20.3 onnx onnxruntime==1.11.1 pycuda
 RUN pip install --no-cache-dir dask==${DASK_VER} distributed==${DASK_VER} dask[dataframe]==${DASK_VER} 
 RUN pip install --no-cache-dir onnx_graphsurgeon --index-url https://pypi.ngc.nvidia.com
@@ -135,11 +115,11 @@ COPY --chown=1000:1000 --from=triton /opt/tritonserver/lib lib/
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/include include/
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/repoagents/ repoagents/
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/python backends/
+COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/fil backends/fil/
 COPY --chown=1000:1000 --from=triton /usr/bin/serve /usr/bin/.
 
 ENV PATH=/opt/tritonserver/bin:${PATH}:
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/tritonserver/lib
-
 
 # Install faiss (with sm80 support since the faiss-gpu wheels
 # don't include it https://github.com/kyamagu/faiss-wheels/issues/54)
@@ -166,17 +146,7 @@ RUN rm -rf /repos
 HEALTHCHECK NONE
 CMD ["/bin/bash"]
 
-FROM ${BASE_IMAGE} as base-amd64
-ONBUILD COPY --chown=1000:1000 --from=triton /usr/lib/x86_64-linux-gnu/libdcgm.so.2 /usr/lib/x86_64-linux-gnu/libdcgm.so.2
-ONBUILD COPY --chown=1000:1000 --from=triton /usr/local/cuda-12.0/targets/x86_64-linux/lib/libcupti.so.12 /usr/local/cuda-12.0/targets/x86_64-linux/lib/libcupti.so.12
-ONBUILD COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/fil /opt/tritonserver/backends/fil/
-
-FROM ${BASE_IMAGE} as base-arm64
-ONBUILD COPY --chown=1000:1000 --from=triton /usr/lib/aarch64-linux-gnu/libdcgm.so.2 /usr/lib/aarch64-linux-gnu/libdcgm.so.2
-ONBUILD COPY --chown=1000:1000 --from=triton /usr/local/cuda-12.0/targets/sbsa-linux/lib/libcupti.so.12 /usr/local/cuda-12.0/targets/sbsa-linux/lib/libcupti.so.12
-RUN echo "Skipping copy of /opt/tritonserver/backends/fil. (Why does this fail on arm64?)"
-
-FROM base-${TARGETARCH} as base
+FROM ${BASE_IMAGE} as base
 
 # Envs
 ENV CUDA_HOME=/usr/local/cuda
@@ -187,13 +157,12 @@ ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/cuda/extra
 ENV PATH=${CUDA_HOME}/lib64/:${PATH}:${CUDA_HOME}/bin
 
 # Set up NVIDIA package repository
-RUN repo_arch="$(uname -m | sed 's/aarch64/sbsa/')" && \
-    apt update -y --fix-missing && \
+RUN apt update -y --fix-missing && \
     apt install -y --no-install-recommends software-properties-common && \
-    wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/${repo_arch}/cuda-ubuntu2004.pin && \
+    wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-ubuntu2004.pin && \
     mv cuda-ubuntu2004.pin /etc/apt/preferences.d/cuda-repository-pin-600 && \
-    apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/${repo_arch}/3bf863cc.pub && \
-    add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/${repo_arch}/ /" && \
+    apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/3bf863cc.pub && \
+    add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/ /" && \
     apt install -y --no-install-recommends \
         ca-certificates \
         clang-format \
@@ -266,9 +235,11 @@ COPY --chown=1000:1000 --from=triton /opt/tritonserver/lib lib/
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/include include/
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/repoagents/ repoagents/
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/python backends/python/
+COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/fil backends/fil/
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/tensorrt backends/tensorrt/
 COPY --chown=1000:1000 --from=triton /usr/bin/serve /usr/bin/.
 COPY --chown=1000:1000 --from=triton /usr/lib/x86_64-linux-gnu/libdcgm.so.2 /usr/lib/x86_64-linux-gnu/libdcgm.so.2
+COPY --chown=1000:1000 --from=triton /usr/local/cuda-12.0/targets/x86_64-linux/lib/libcupti.so.12 /usr/local/cuda-12.0/targets/x86_64-linux/lib/libcupti.so.12
 
 
 ENV PATH=/opt/tritonserver/bin:${PATH}:
@@ -338,28 +309,28 @@ RUN git clone --branch ${MERLIN_VER} --depth 1 https://github.com/NVIDIA-Merlin/
     cd /Merlin/ && pip install . --no-deps
 
 # Install Merlin Core
-RUN git clone --depth 1 --branch ${CORE_VER} https://github.com/NVIDIA-Merlin/core.git /core/ && \
+RUN git clone --branch ${CORE_VER} --depth 1 https://github.com/NVIDIA-Merlin/core.git /core/ && \
     cd /core/ && pip install . --no-deps
 
 # Install Merlin Dataloader
-RUN git clone --depth 1 --branch ${DL_VER} https://github.com/NVIDIA-Merlin/dataloader.git /dataloader/ && \
+RUN git clone --branch ${DL_VER} --depth 1 https://github.com/NVIDIA-Merlin/dataloader.git /dataloader/ && \
     cd /dataloader/ && pip install . --no-deps
 
 # Install NVTabular
 ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
-RUN git clone --depth 1 --branch ${NVTAB_VER} https://github.com/NVIDIA-Merlin/NVTabular.git /nvtabular/ && \
+RUN git clone --branch ${NVTAB_VER} --depth 1 https://github.com/NVIDIA-Merlin/NVTabular.git /nvtabular/ && \
     cd /nvtabular/ && pip install . --no-deps
 
 # Install Merlin Systems
-RUN git clone --depth 1 --branch ${SYSTEMS_VER} https://github.com/NVIDIA-Merlin/systems.git /systems/ && \
+RUN git clone --branch ${SYSTEMS_VER} --depth 1 https://github.com/NVIDIA-Merlin/systems.git /systems/ && \
     cd /systems/ && pip install . --no-deps
 
 # Install Models
-RUN git clone --depth 1 --branch ${MODELS_VER} https://github.com/NVIDIA-Merlin/Models.git /models/ && \
+RUN git clone --branch ${MODELS_VER} --depth 1 https://github.com/NVIDIA-Merlin/Models.git /models/ && \
     cd /models/ && pip install . --no-deps
 
 # Install Transformers4Rec
-RUN git clone --depth 1 --branch ${TF4REC_VER} https://github.com/NVIDIA-Merlin/Transformers4Rec.git /transformers4rec && \
+RUN git clone --branch ${TF4REC_VER} --depth 1 https://github.com/NVIDIA-Merlin/Transformers4Rec.git /transformers4rec && \
     cd /transformers4rec/ && pip install . --no-deps
 
 # Optional dependency: Build and install protocol buffers and Hadoop/HDFS.
@@ -442,4 +413,3 @@ RUN ln -s ${HUGECTR_HOME}/backends/hps /opt/tritonserver/backends/hps
 HEALTHCHECK NONE
 CMD ["/bin/bash"]
 ENTRYPOINT ["/opt/nvidia/nvidia_entrypoint.sh"]
-
