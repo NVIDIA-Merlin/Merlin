@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.2
-ARG TRITON_VERSION=22.11
-ARG DLFW_VERSION=22.11
+ARG TRITON_VERSION=23.02
+ARG DLFW_VERSION=23.02
 
 ARG FULL_IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-py3
 ARG BASE_IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-py3-min
@@ -19,7 +19,7 @@ RUN echo "Skipping copy of /opt/tritonserver/backends/fil. (Why does this fail o
 FROM build-${TARGETARCH} as build
 
 # Args
-ARG DASK_VER=2022.07.1
+ARG DASK_VER=2022.11.1
 ARG MERLIN_VER=main
 ARG CORE_VER=main
 ARG MODELS_VER=main
@@ -168,12 +168,12 @@ CMD ["/bin/bash"]
 
 FROM ${BASE_IMAGE} as base-amd64
 ONBUILD COPY --chown=1000:1000 --from=triton /usr/lib/x86_64-linux-gnu/libdcgm.so.2 /usr/lib/x86_64-linux-gnu/libdcgm.so.2
-ONBUILD COPY --chown=1000:1000 --from=triton /usr/local/cuda-11.8/targets/x86_64-linux/lib/libcupti.so.11.8 /usr/local/cuda-11.8/targets/x86_64-linux/lib/libcupti.so.11.8
+ONBUILD COPY --chown=1000:1000 --from=triton /usr/local/cuda-12.0/targets/x86_64-linux/lib/libcupti.so.12 /usr/local/cuda-12.0/targets/x86_64-linux/lib/libcupti.so.12
 ONBUILD COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/fil /opt/tritonserver/backends/fil/
 
 FROM ${BASE_IMAGE} as base-arm64
 ONBUILD COPY --chown=1000:1000 --from=triton /usr/lib/aarch64-linux-gnu/libdcgm.so.2 /usr/lib/aarch64-linux-gnu/libdcgm.so.2
-ONBUILD COPY --chown=1000:1000 --from=triton /usr/local/cuda-11.8/targets/sbsa-linux/lib/libcupti.so.11.8 /usr/local/cuda-11.8/targets/sbsa-linux/lib/libcupti.so.11.8
+ONBUILD COPY --chown=1000:1000 --from=triton /usr/local/cuda-12.0/targets/sbsa-linux/lib/libcupti.so.12 /usr/local/cuda-12.0/targets/sbsa-linux/lib/libcupti.so.12
 RUN echo "Skipping copy of /opt/tritonserver/backends/fil. (Why does this fail on arm64?)"
 
 FROM base-${TARGETARCH} as base
@@ -269,7 +269,6 @@ COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/python backends/
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/tensorrt backends/tensorrt/
 COPY --chown=1000:1000 --from=triton /usr/bin/serve /usr/bin/.
 COPY --chown=1000:1000 --from=triton /usr/lib/x86_64-linux-gnu/libdcgm.so.2 /usr/lib/x86_64-linux-gnu/libdcgm.so.2
-COPY --chown=1000:1000 --from=triton /usr/local/cuda-12.0/targets/x86_64-linux/lib/libcupti.so.12 /usr/local/cuda-12.0/targets/x86_64-linux/lib/libcupti.so.12
 
 
 ENV PATH=/opt/tritonserver/bin:${PATH}:
