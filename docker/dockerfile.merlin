@@ -379,9 +379,9 @@ RUN if [ "${HUGECTR_DEV_MODE}" == "false" ]; then \
         mkdir build && \
         cd build && \
         if [[ "${INSTALL_HDFS}" == "false" ]]; then \
-            cmake -DCMAKE_BUILD_TYPE=Release -DSM="70;75;80" -DENABLE_INFERENCE=ON .. \
+            cmake -DCMAKE_BUILD_TYPE=Release -DSM="70;75;80;90" -DENABLE_INFERENCE=ON .. \
         ; else \
-            cmake -DCMAKE_BUILD_TYPE=Release -DSM="70;75;80" -DENABLE_INFERENCE=ON -DENABLE_HDFS=ON .. \
+            cmake -DCMAKE_BUILD_TYPE=Release -DSM="70;75;80;90" -DENABLE_INFERENCE=ON -DENABLE_HDFS=ON .. \
         ; fi && \
         make -j$(nproc) && \
         make install && \
@@ -389,7 +389,7 @@ RUN if [ "${HUGECTR_DEV_MODE}" == "false" ]; then \
         cd ../hps_trt && \
         mkdir build && \
         cd build && \
-        cmake -DSM="70;75;80" .. && \
+        cmake -DSM="70;75;80;90" .. && \
         make -j$(nproc) && \
         make install && \
         cd / && rm -rf /hugectr && \
