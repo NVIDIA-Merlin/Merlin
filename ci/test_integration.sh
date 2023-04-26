@@ -29,6 +29,6 @@ if [ "$container" == "merlin-tensorflow" ]; then
     # with the current version of cudf 22.12
     # pinning the version of pyarrow here to match the cudf-supported version
     pip install 'feast<0.20' pyarrow==9.0.0
-    pip install dask==2022.11.1 distributed==2022.11.1
+    pip install dask==2022.11.1 distributed==2022.11.1 protobuf==3.20.3
     CUDA_VISIBLE_DEVICES="$devices"  pytest -rxs tests/integration
 fi
