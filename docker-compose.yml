@@ -43,6 +43,23 @@ services:
           devices:
             - capabilities: [gpu]
 
+  triton:
+    build:
+      context: .
+      dockerfile: docker/triton.Dockerfile
+    command: "tritonserver --model-repository=/workspace/model_repository"
+    volumes:
+      - .:/workspace
+    working_dir: "/workspace"
+    shm_size: '1gb'
+    ipc: "host"
+    pid: "host"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
+
   requirements:
     build:
       context: .
