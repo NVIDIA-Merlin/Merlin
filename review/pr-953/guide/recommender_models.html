@@ -59,6 +59,9 @@
 <li class="toctree-l1"><a class="reference internal" href="../README.html">Introduction</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="recommender_system_guide.html">Recommender System Guide</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="#"><span class="sectnum">1</span> Recommender Models Guide</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#ranking-models"><span class="sectnum">2</span> Ranking Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#retrieval-models"><span class="sectnum">3</span> Retrieval Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#sequential-and-session-based-models"><span class="sectnum">4</span> Sequential and Session-Based Models</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../examples/index.html">Example Notebooks</a></li>
@@ -94,8 +97,9 @@
 <h1><span class="sectnum">1</span> Recommender Models Guide<a class="headerlink" href="#recommender-models-guide" title="Permalink to this headline"></a></h1>
 <p>This guide explains the different type of recommender models with a focus on deep-learning based ones.</p>
 <p>A <cite>recommender model</cite> is a single model, e.g. rule-based or trained one, which outputs a score or set of candidates. Generating final recommendations often requires multiple steps, called <cite>recommender systems</cite>. There is more information on recommender systems in the next guide (will follow soon).</p>
+</div>
 <div class="section" id="ranking-models">
-<h2><span class="sectnum">1.1</span> Ranking Models<a class="headerlink" href="#ranking-models" title="Permalink to this headline"></a></h2>
+<h1><span class="sectnum">2</span> Ranking Models<a class="headerlink" href="#ranking-models" title="Permalink to this headline"></a></h1>
 <img alt="../_images/models_ranking.png" src="../_images/models_ranking.png" />
 <p>Ranking models are probably the most common use-case in recommender systems. When the community talks about recommender models, they probably mean ranking models.</p>
 <p>The ranking model predicts a specific target. For example, it could be the review a customer would give an item or it could be the likelihood a user will click on an item. Click-through-rate prediction is a typical use-case for that. The Figure 1a above provides a simple example of a dataset. The dataset has different input features (<cite>user_id</cite>, <cite>user_age</cite>, etc.) and the target (<cite>click</cite>). The dataset contains both the positive (<cite>click=1</cite>) and negative (<cite>click=0</cite>) interaction data. If negative examples are not available, then negative sampling strategies are required. An example architecture is visualized by Figure 1b. The inputs are concatenated and fed through an Multi-Layer Perceptron (MLP) Block (multiple fully connected layers).</p>
@@ -111,7 +115,7 @@
 </ul>
 </div>
 <div class="section" id="retrieval-models">
-<h2><span class="sectnum">1.2</span> Retrieval Models<a class="headerlink" href="#retrieval-models" title="Permalink to this headline"></a></h2>
+<h1><span class="sectnum">3</span> Retrieval Models<a class="headerlink" href="#retrieval-models" title="Permalink to this headline"></a></h1>
 <img alt="../_images/models_retrieval.png" src="../_images/models_retrieval.png" />
 <p>The goal of retrieval models are to retrieve hundreds of candidates from large item catalogs. In order to be scalable, they have a special neural network architecture: It usually processes the input data into two fully separated towers as visualized above Figure 2b.</p>
 <p>One tower is the user tower (query tower, yellow) and one tower is the item tower (candidate tower, blue). The input features for each tower are only relevant to their context. The user tower has access only to the user features and the item tower has access only to the item features. The output of the towers are the user embedding (user representation) and item embedding (item representation). At the last step, we calculate the final score by applying the dot-product (cosine similarity) of the two embedding vectors.</p>
@@ -126,7 +130,7 @@
 </ul>
 </div>
 <div class="section" id="sequential-and-session-based-models">
-<h2><span class="sectnum">1.3</span> Sequential and Session-Based Models<a class="headerlink" href="#sequential-and-session-based-models" title="Permalink to this headline"></a></h2>
+<h1><span class="sectnum">4</span> Sequential and Session-Based Models<a class="headerlink" href="#sequential-and-session-based-models" title="Permalink to this headline"></a></h1>
 <img alt="guide/imgs/model_sequentialinteactions.png" src="guide/imgs/model_sequentialinteactions.png" />
 <p>Users often interact with items in a sequential order (see Figure 3). One way to use the sequential nature in ranking or retrieval models is to sort the training data and train the models without shuffling the data. In that way the model was updated with the latest information per user. However, there will be a delay between retraining a model and receiving new information from a user.</p>
 <img alt="../_images/models_sessionbased.png" src="../_images/models_sessionbased.png" />
@@ -143,7 +147,6 @@
 <li><p><a class="reference external" href="https://github.com/NVIDIA-Merlin/Transformers4Rec/tree/main/examples/end-to-end-session-based">End-to-end session-based recommendation</a> is an example using a public available dataset for session-based, transformer-based models with <strong>Transformers4Rec in PyTorch</strong>.</p></li>
 <li><p><a class="reference external" href="https://medium.com/nvidia-merlin/transformers4rec-4523cc7d8fa8?source=friends_link&amp;sk=390245e60c10211c381f7a26ce12cfc6">Transformers4Rec: A flexible library for Sequential and Session-based recommendation</a> is a blog post summarizing our research paper with <strong>Transformers4Rec</strong>.</p></li>
 </ul>
-</div>
 </div>
 
 
