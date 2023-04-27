@@ -20,8 +20,6 @@ Merlin Models provides implementation of popular architectures, such as MLP, NCF
 
 **Resources**:
 
-
-
 * `Exploring Different Models <https://github.com/NVIDIA-Merlin/models/blob/main/examples/03-Exploring-different-models.ipynb>`_ demonstrates how to build and train the popular deep learning architectures with **Merlin Models in TensorFlow** on an example dataset.
 * `Getting Started Guide - Ranking Models <https://github.com/NVIDIA-Merlin/Merlin/tree/main/examples/quick_start>`_ provides a detailed view on applying the ranking models to a dataset and how to use it for a new dataset.
 * `Serving Ranking Models <https://github.com/NVIDIA-Merlin/systems/blob/main/examples/Serving-Ranking-Models-With-Merlin-Systems.ipynb>`_ is a simple example how to deploy a ranking model with Merlin Systems and Triton in TensorFlow.
@@ -53,22 +51,26 @@ Merlin Models provides implementations for Matrix Factorization (MF) and Two-Tow
 Sequential and Session-Based Models
 ----------------------------------
 
-Users often interact with items in a sequential order (order of views, purchases, etc.) (see Figure above). One way to use the sequential nature in ranking or retrieval models is to sort the input data and train the models without shuffling the data. In that way the model was updated with the latest information per user. However, there will be a delay between retraining a model and receiving new information from a user.
+.. image:: ./imgs/model_sequentialinteactions.png
+
+Users often interact with items in a sequential order (see Figure 3). One way to use the sequential nature in ranking or retrieval models is to sort the training data and train the models without shuffling the data. In that way the model was updated with the latest information per user. However, there will be a delay between retraining a model and receiving new information from a user.
 
 .. image:: ./imgs/models_sessionbased.png
 
-Another approach is to define a neural network architecture, which leverages the sequential information as an input for Sequential and session-based models. Session-based models are the special type of sequential models, where we use the sequence of each user session (in an online system) as input data and try to predict the next item/content the user will interact with.
+Another approach is to define a neural network architecture, which leverages the sequential information as an input for sequential and session-based models. Session-based models are the special type of sequential models, where we use the sequence of each user session (in an online system) as input data and try to predict the next item/content the user will interact with.
 
 The advantage is that the model can recommend items based on the most recent user information. The latest user interactions should provide information about his/her current intent. Anonymous and new users can be personalized given his/her user history of the current session without retraining the model.
 
-The dataset for sequential and session-based models contains a grouping column (e.g. `session_id`), order column (e.g. `timestamp`) and interaction column (e.g. `viewed_item_id`) as visualized above left. The dataset will be transformed by sorting the dataset by the `timestamp` and group it by `session_id`. As a result, the dataset contains per `session_id` the sorted interactions (`viewed_item_id`) as a list. The goal is to predict the next item given an input sequence.
+The dataset for sequential and session-based models contains a grouping column (e.g. `session_id`), order column (e.g. `timestamp`) and interaction column (e.g. `viewed_item_id`) as visualized in Figure 4a left. The dataset will be transformed by sorting the dataset by the `timestamp` and group it by `session_id`. As a result, the dataset contains per `session_id` the sorted interactions (`viewed_item_id`) as a list. The goal is to predict the next item given an input sequence.
 
-There are multiple options to process sequence inputs. The domain has similarities with natural language processing (NLP) and many techniques can be used for training a sequential recommender model. Popular choices are RNN-based (GRU or LSTM) or transformer-based architectures. The right figure above visualized a transformer-based session-based model. If the dataset contains othersequential input features (side information) in addition to the  item-ids, they can be processed by a MLP Block before applying a Transformer Block. Models can be trained with casual language modeling (CLM) or masked language modeling (MLM). Session-based models can be used for retrieval or ranking problems.
+There are multiple options to process sequence inputs. The domain has similarities with natural language processing (NLP) and many techniques can be used for training a sequential recommender model. Popular choices are RNN-based (GRU or LSTM) or transformer-based architectures. The Figure 4b above visualized a transformer-based session-based model. If the dataset contains othersequential input features (side information) in addition to the item-ids, they can be processed by a MLP Block before applying a Transformer Block. Models can be trained with casual language modeling (CLM) or masked language modeling (MLM). Session-based models can be used for retrieval or ranking problems.
 
-Merlin Models provides high-quality implementation for RNN-based and Transformer-based architectures (backed by HuggingFace) with different sampling strategies in TensorFlow. Transformers4Rec provides similar functionality for PyTorch. GRU4Rec, LSTM4Rec, GPT, BERT, Transformer-XL, XLNet or ELECTRA based sequence blocks can be used with Merlin.
+**Merlin Models** provides high-quality implementation for RNN-based and Transformer-based architectures (backed by HuggingFace) with different sampling strategies in **TensorFlow**. **Transformers4Rec** provides similar functionality for **PyTorch**. GRU4Rec, LSTM4Rec, GPT, BERT, Transformer-XL, XLNet or ELECTRA based sequence blocks can be used with Merlin.
 
-Resources:
-[Transformer-based architecture for next-item prediction task]() provides an introduction to train transformer-based architecture and deploy them with Merlin Models in TensorFlow
-[Session-Based Next Item Prediction for Fashion E-Commerce] is a detailed session-based example from MLP and Bi-LSTM to transformer-based architectures with Merlin Models in TensorFlow
-[Getting Started: Session-based Recommendation with Synthetic Data] provides an introduction into session-based transformer architectures with Transformers4Rec in PyTorch
-[] is a blog post summarizing our research experiments with Transformers4Rec
+**Resources:**
+
+* `Transformer-based architecture for next-item prediction task <https://github.com/NVIDIA-Merlin/models/blob/main/examples/usecases/transformers-next-item-prediction.ipynb>`_ provides an introduction to train transformer-based architecture and deploy them with **Merlin Models in TensorFlow**.
+* `Session-Based Next Item Prediction for Fashion E-Commerce <https://github.com/NVIDIA-Merlin/models/blob/main/examples/usecases/ecommerce-session-based-next-item-prediction-for-fashion.ipynb>`_ is a detailed session-based example from MLP and Bi-LSTM to transformer-based architectures with **Merlin Models in TensorFlow**.
+* `Getting Started: Session-based Recommendation with Synthetic Data <https://github.com/NVIDIA-Merlin/Transformers4Rec/tree/main/examples/getting-started-session-based>`_ is a getting example for session-based, transformer-based models with **Transformers4Rec in PyTorch**.
+* `End-to-end session-based recommendation <https://github.com/NVIDIA-Merlin/Transformers4Rec/tree/main/examples/end-to-end-session-based>`_ is an example using a public available dataset for session-based, transformer-based models with **Transformers4Rec in PyTorch**.
+* `Transformers4Rec: A flexible library for Sequential and Session-based recommendation <https://medium.com/nvidia-merlin/transformers4rec-4523cc7d8fa8?source=friends_link&sk=390245e60c10211c381f7a26ce12cfc6>`_ is a blog post summarizing our research paper with **Transformers4Rec**.
