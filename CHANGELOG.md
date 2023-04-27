@@ -12,6 +12,7 @@ The major focus of this release was broader support for training and serving ses
 
 * Ability to use Workflows to locally transform single Pandas/cuDF dataframes without using Dask ([#1777](https://github.com/NVIDIA-Merlin/NVTabular/pull/1777))
 * The `Categorify` operator now supports int16 dtypes when serving Workflows ([#1798](https://github.com/NVIDIA-Merlin/NVTabular/pull/1798))
+* NVTabular can now be used in our containers without a GPU present.
 
 #### Major Changes
 
