@@ -1,4 +1,4 @@
-Recommender Models Guide
+Recommender Models
 =====================
 
 This guide explains the different type of recommender models with a focus on deep-learning based ones.
