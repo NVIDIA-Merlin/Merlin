@@ -14,13 +14,15 @@ Ranking Models
 
 Ranking models are probably the most common use-case in recommender systems. When the community talks about recommender models, they probably mean ranking models. 
 
-The ranking model predicts a specific target. For example, it could be the review a customer would give an item (regression, explicit feedback) or it could be the likelihood a user will click on an item (binary, implicit feedback). Click-through-rate prediction use-case is a typical example for that. The Figure 1a above provides a simple example of a dataset for the binary classification case. The dataset has different input features (`user_id`, `user_age`, etc.) and the target (`click`). The dataset contains both the positive (`click=1`) and negative (`click=0`) interaction data. If negative examples are not available, then negative sampling strategies are required. An example architecture is visualized by Figure 1b. The inputs are concatenated and fed through an Multi-Layer Perceptron (MLP) Block (multiple fully connected layers).
+The ranking model predicts a specific target. For example, it could be the review a customer would give an item or it could be the likelihood a user will click on an item. Click-through-rate prediction use-case is a typical example for that. The Figure 1a above provides a simple example of a dataset. The dataset has different input features (`user_id`, `user_age`, etc.) and the target (`click`). The dataset contains both the positive (`click=1`) and negative (`click=0`) interaction data. If negative examples are not available, then negative sampling strategies are required. An example architecture is visualized by Figure 1b. The inputs are concatenated and fed through an Multi-Layer Perceptron (MLP) Block (multiple fully connected layers).
 
 Merlin Models provides implementation of popular architectures, such as MLP, NCF, Facebook’s DLRM, Google’s DCN and Google’s Wide&Deep networks with TensorFlow backend. Classical machine learning models, such as implicit or XGBoost can be used in Merlin Models, as well.
 
 **Resources**:
 
-* `Exploring Different Models <https://github.com/NVIDIA-Merlin/models/blob/main/examples/03-Exploring-different-models.ipynb>`
+`CNN <http://cnn.com>`_
+
+* `Exploring Different Models <https://github.com/NVIDIA-Merlin/models/blob/main/examples/03-Exploring-different-models.ipynb>`_
 * <a href="http://geoiptool.com" target="_blank">check your location here</a>
 * [Exploring Different Models](https://github.com/NVIDIA-Merlin/models/blob/main/examples/03-Exploring-different-models.ipynb) demonstrates how to build and train the popular deep learning architectures with **Merlin Models in TensorFlow** on an example dataset.
 * [Getting Started Guide - Ranking Models](https://github.com/NVIDIA-Merlin/Merlin/tree/main/examples/quick_start) provides a detailed view on applying the ranking models to a dataset and how to use it for a new dataset.
