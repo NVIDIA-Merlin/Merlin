@@ -54,7 +54,7 @@ Merlin Models provides implementations for Matrix Factorization (MF) and Two-Tow
 Sequential and Session-Based Models
 -------------
 
-.. image:: ./imgs/model_sequentialinteactions.png
+.. image:: ./imgs/models_sequentialinteactions.png
 
 Users often interact with items in a sequential order (see Figure 3). One way to use the sequential nature in ranking or retrieval models is to sort the training data and train the models without shuffling the data. In that way the model was updated with the latest information per user. However, there will be a delay between retraining a model and receiving new information from a user.
 
