@@ -8,7 +8,7 @@ This guide explains the different type of recommender models with a focus on dee
 A ``recommender model`` is a single model, e.g. rule-based or trained one, which outputs a score or set of candidates. Generating final recommendations often requires multiple steps, called ``recommender systems``. There is more information on recommender systems in the next guide (will follow soon). 
 
 Ranking Models
-===================
+-------------
 
 .. image:: ./imgs/models_ranking.png
 
@@ -28,7 +28,7 @@ Merlin Models provides implementation of popular architectures, such as MLP, NCF
 * `Scaling Criteo <https://github.com/NVIDIA-Merlin/Merlin/tree/main/examples/scaling-criteo>`_ is similar to the MovieLens example, but on a large scale of ~4 billion rows. It provides some guidance on multi-GPU scaling.
 
 Retrieval Models
-===================
+-------------
 
 .. image:: ./imgs/models_retrieval.png
 
@@ -49,7 +49,7 @@ Merlin Models provides implementations for Matrix Factorization (MF) and Two-Tow
 * `Solving the Cold-Start Problem using Two-Tower Neural Networks for NVIDIA’s E-Mail Recommender Systems <https://medium.com/nvidia-merlin/solving-the-cold-start-problem-using-two-tower-neural-networks-for-nvidias-e-mail-recommender-2d5b30a071a4?source=friends_link&sk=b06b93495fa017162875a8917e3aa975>`_ is our blog post sharing our experience in applying Two-Tower models to our e-mail use case.
 
 Sequential and Session-Based Models
-===================
+-------------
 
 .. image:: ./imgs/model_sequentialinteactions.png
 
@@ -61,7 +61,7 @@ Another approach is to define a neural network architecture, which leverages the
 
 The advantage is that the model can recommend items based on the most recent user information. The latest user interactions should provide information about his/her current intent. Anonymous and new users can be personalized given his/her user history of the current session without retraining the model.
 
-The dataset for sequential and session-based models contains a grouping column (e.g. `session_id`), order column (e.g. `timestamp`) and interaction column (e.g. `viewed_item_id`) as visualized in Figure 4a left. The dataset will be transformed by sorting the dataset by the `timestamp` and group it by `session_id`. As a result, the dataset contains per `session_id` the sorted interactions (`viewed_item_id`) as a list. The goal is to predict the next item given an input sequence.
+The dataset for sequential and session-based models contains a grouping column (e.g. ``session_id``), order column (e.g. ``timestamp``) and interaction column (e.g. ``viewed_item_id``) as visualized in Figure 4a left. The dataset will be transformed by sorting the dataset by the `timestamp` and group it by ``session_id``. As a result, the dataset contains per ``session_id`` the sorted interactions (``viewed_item_id``) as a list. The goal is to predict the next item given an input sequence.
 
 There are multiple options to process sequence inputs. The domain has similarities with natural language processing (NLP) and many techniques can be used for training a sequential recommender model. Popular choices are RNN-based (GRU or LSTM) or transformer-based architectures. The Figure 4b above visualized a transformer-based session-based model. If the dataset contains othersequential input features (side information) in addition to the item-ids, they can be processed by a MLP Block before applying a Transformer Block. Models can be trained with casual language modeling (CLM) or masked language modeling (MLM). Session-based models can be used for retrieval or ranking problems.
 
