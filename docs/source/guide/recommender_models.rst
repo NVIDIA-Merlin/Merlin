@@ -5,16 +5,16 @@ This guide explains the different type of recommender models with a focus on dee
 
 .. section-numbering::
 
-A `recommender model` is a single model, e.g. rule-based or trained one, which outputs a score or set of candidates. Generating final recommendations often requires multiple steps, called `recommender systems`. There is more information on recommender systems in the next guide (will follow soon). 
+A ``recommender model`` is a single model, e.g. rule-based or trained one, which outputs a score or set of candidates. Generating final recommendations often requires multiple steps, called ``recommender systems``. There is more information on recommender systems in the next guide (will follow soon). 
 
 Ranking Models
 ===================
 
 .. image:: ./imgs/models_ranking.png
 
-Ranking models are probably the most common use-case in recommender systems. When the community talks about recommender models, they probably mean ranking models. 
+**Ranking models** are probably the most common use-case in recommender systems. When the community talks about recommender models, they probably mean ranking models. 
 
-The ranking model predicts a specific target. For example, it could be the review a customer would give an item or it could be the likelihood a user will click on an item. Click-through-rate prediction is a typical use-case for that. The Figure 1a above provides a simple example of a dataset. The dataset has different input features (`user_id`, `user_age`, etc.) and the target (`click`). The dataset contains both the positive (`click=1`) and negative (`click=0`) interaction data. If negative examples are not available, then negative sampling strategies are required. An example architecture is visualized by Figure 1b. The inputs are concatenated and fed through an Multi-Layer Perceptron (MLP) Block (multiple fully connected layers).
+The ranking model predicts a specific target. For example, it could be the review a customer would give an item or it could be the likelihood a user will click on an item. Click-through-rate prediction is a typical use-case for that. The Figure 1a above provides a simple example of a dataset. The dataset has different input features (``user_id``, ``user_age``, etc.) and the target (``click``). The dataset contains both the positive (``click=1``) and negative (``click=0``) interaction data. If negative examples are not available, then negative sampling strategies are required. An example architecture is visualized by Figure 1b. The inputs are concatenated and fed through an Multi-Layer Perceptron (MLP) Block (multiple fully connected layers).
 
 Merlin Models provides implementation of popular architectures, such as MLP, NCF, Facebook’s DLRM, Google’s DCN and Google’s Wide&Deep networks with TensorFlow backend. Classical machine learning models, such as implicit or XGBoost can be used in Merlin Models, as well.
 
@@ -32,7 +32,7 @@ Retrieval Models
 
 .. image:: ./imgs/models_retrieval.png
 
-The goal of retrieval models are to retrieve hundreds of candidates from large item catalogs. In order to be scalable, they have a special neural network architecture: It usually processes the input data into two fully separated towers as visualized above Figure 2b. 
+The goal of **retrieval models** are to retrieve hundreds of candidates from large item catalogs. In order to be scalable, they have a special neural network architecture: It usually processes the input data into two fully separated towers as visualized above Figure 2b. 
 
 One tower is the user tower (query tower, yellow) and one tower is the item tower (candidate tower, blue). The input features for each tower are only relevant to their context. The user tower has access only to the user features and the item tower has access only to the item features. The output of the towers are the user embedding (user representation) and item embedding (item representation). At the last step, we calculate the final score by applying the dot-product (cosine similarity) of the two embedding vectors.
 
@@ -57,7 +57,7 @@ Users often interact with items in a sequential order (see Figure 3). One way to
 
 .. image:: ./imgs/models_sessionbased.png
 
-Another approach is to define a neural network architecture, which leverages the sequential information as an input for sequential and session-based models. Session-based models are the special type of sequential models, where we use the sequence of each user session (in an online system) as input data and try to predict the next item/content the user will interact with.
+Another approach is to define a neural network architecture, which leverages the sequential information as an input for sequential and session-based models. **Session-based models** are the special type of sequential models, where we use the sequence of each user session (in an online system) as input data and try to predict the next item/content the user will interact with.
 
 The advantage is that the model can recommend items based on the most recent user information. The latest user interactions should provide information about his/her current intent. Anonymous and new users can be personalized given his/her user history of the current session without retraining the model.
 
