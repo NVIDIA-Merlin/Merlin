@@ -4,7 +4,6 @@ Recommender Models Guide
 This guide explains the different type of recommender models with a focus on deep-learning based ones.
 
 .. contents:: Table of Contents
-   :depth: 1
    :local:
    :backlinks: none
 
