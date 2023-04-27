@@ -8,7 +8,7 @@ This guide explains the different type of recommender models with a focus on dee
 A `recommender model` is a single model, e.g. rule-based or trained one, which outputs a score or set of candidates. Generating final recommendations often requires multiple steps, called `recommender systems`. There is more information on recommender systems in the next guide (will follow soon). 
 
 Ranking Models
-----------------------------------
+===================
 
 .. image:: ./imgs/models_ranking.png
 
@@ -28,7 +28,7 @@ Merlin Models provides implementation of popular architectures, such as MLP, NCF
 * `Scaling Criteo <https://github.com/NVIDIA-Merlin/Merlin/tree/main/examples/scaling-criteo>`_ is similar to the MovieLens example, but on a large scale of ~4 billion rows. It provides some guidance on multi-GPU scaling.
 
 Retrieval Models
-----------------------------------
+===================
 
 .. image:: ./imgs/models_retrieval.png
 
@@ -49,7 +49,7 @@ Merlin Models provides implementations for Matrix Factorization (MF) and Two-Tow
 * `Solving the Cold-Start Problem using Two-Tower Neural Networks for NVIDIA’s E-Mail Recommender Systems <https://medium.com/nvidia-merlin/solving-the-cold-start-problem-using-two-tower-neural-networks-for-nvidias-e-mail-recommender-2d5b30a071a4?source=friends_link&sk=b06b93495fa017162875a8917e3aa975>`_ is our blog post sharing our experience in applying Two-Tower models to our e-mail use case.
 
 Sequential and Session-Based Models
-----------------------------------
+===================
 
 .. image:: ./imgs/model_sequentialinteactions.png
 
