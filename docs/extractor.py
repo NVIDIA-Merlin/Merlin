@@ -384,7 +384,7 @@ def main(args):
     xtr.get_from_env("NVIDIA_PYTORCH_VERSION", "nvidia_pytorch")
     xtr.get_from_env("OPENMPI_VERSION", "openmpi")
     xtr.get_from_env("TRT_VERSION", "tensorrt")
-    xtr.get_from_env("TRTOSS_VERSION", "base_container")
+    xtr.get_from_env("NVIDIA_TRITON_SERVER_BASE_VERSION", "base_container")
     # xtr.get_from_cmd("cuobjdump /usr/local/hugectr/lib/libhuge_ctr_shared.so
     # | grep arch | sed -e \'s/.*sm_//\' | sed -e \'H;${x;s/\\n/, /g;s/^, //;p};d\'", "sm")
     # flake8: noqa
