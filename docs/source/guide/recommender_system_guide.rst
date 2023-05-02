@@ -5,6 +5,7 @@ The recommender system domain is complex and there are a diverse set of problems
 
 .. toctree::
    :depth: 2
+   
    recommender_models
 
 This guide is in development and more content will be added, soon.
