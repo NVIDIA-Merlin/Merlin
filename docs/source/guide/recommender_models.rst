@@ -5,7 +5,7 @@ This guide explains the different type of recommender models with a focus on dee
 
 .. contents::
    :local:
-   :depth: 2
+   :depth: 1
    :backlinks: none
 
 
