@@ -7,7 +7,6 @@ def build_arg_parser():
     )
 
     # Inputs / Outputs
-    parser.add_argument("--data_path", default="", help="Path to the data")
     parser.add_argument(
         "--nvt_workflow_path",
         default="./results/",
@@ -20,16 +19,10 @@ def build_arg_parser():
         "instead of initializing the parameters randomly",
     )
     parser.add_argument(
-        "--binary_classif_targets",
-        default="",
-        help="Columns (comma-sep) that should be tagged in the schema as binary target. "
-        "Merlin Models will create a binary classification head for each of these targets.",
-    )
-    parser.add_argument(
-        "--regression_targets",
-        default="",
-        help="Columns (comma-sep) that should be tagged in the schema as binary target. "
-        "Merlin Models will create a regression head for each of these targets.",
+        "--ensemble_export_path",
+        default="./models",
+        help="Path for exporting the model artifacts to "
+        "load them on Triton IS afterwards.",
     )
 
     # parser.add_argument("--groupby_feature", default="", help="")
