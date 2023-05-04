@@ -5,11 +5,10 @@ from functools import reduce
 from typing import Optional
 
 import nvtabular as nvt
+from args_parsing import parse_arguments
 from merlin.core.dispatch import HAS_GPU
 from merlin.schema import Tags
 from nvtabular import ops as nvt_ops
-
-from args_parsing import parse_arguments
 
 
 def filter_by_freq(df_to_filter, df_for_stats, column, min_freq, max_freq=None):
@@ -382,7 +381,8 @@ class PreprocessingRunner:
         output_train_dataset_path = os.path.join(output_dataset_path, "train")
         logging.info(f"Fitting and transforming train set: {output_train_dataset_path}")
         train_dataset_preproc.to_parquet(
-            output_train_dataset_path, output_files=args.output_num_partitions,
+            output_train_dataset_path,
+            output_files=args.output_num_partitions,
         )
 
         if args.eval_data_path or args.dataset_split_strategy:
@@ -404,7 +404,8 @@ class PreprocessingRunner:
             logging.info(f"Transforming eval set: {output_eval_dataset_path}")
 
             eval_dataset_preproc.to_parquet(
-                output_eval_dataset_path, output_files=args.output_num_partitions,
+                output_eval_dataset_path,
+                output_files=args.output_num_partitions,
             )
 
         if args.predict_data_path:
@@ -415,8 +416,11 @@ class PreprocessingRunner:
             logging.info(f"Transforming predict set: {output_predict_dataset_path}")
 
             new_predict_dataset.to_parquet(
-                output_predict_dataset_path, output_files=args.output_num_partitions,
+                output_predict_dataset_path,
+                output_files=args.output_num_partitions,
             )
+
+        nvt_workflow_features.save(os.path.join(output_dataset_path, "workflow"))
 
 
 def main():
