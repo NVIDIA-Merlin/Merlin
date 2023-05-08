@@ -1,11 +1,10 @@
 from functools import partial
 
-from tensorflow.keras import regularizers
-
 import merlin.models.tf as mm
 from merlin.models.tf import Model
 from merlin.models.utils.schema_utils import infer_embedding_dim
 from merlin.schema.tags import Tags
+from tensorflow.keras import regularizers
 
 
 def get_model(schema, prediction_tasks, args):
@@ -44,8 +43,7 @@ def get_mlp_model(schema, args, prediction_tasks):
             cat_schema,
             embeddings_regularizer=regularizers.l2(args.embeddings_l2_reg),
             infer_dim_fn=partial(
-                infer_embedding_dim,
-                multiplier=args.embedding_sizes_multiplier,
+                infer_embedding_dim, multiplier=args.embedding_sizes_multiplier,
             ),
         ),
         aggregation="concat",
@@ -76,8 +74,7 @@ def get_dcn_model(schema, args, prediction_tasks):
             schema.select_by_tag(Tags.CATEGORICAL),
             embeddings_regularizer=regularizers.l2(args.embeddings_l2_reg),
             infer_dim_fn=partial(
-                infer_embedding_dim,
-                multiplier=args.embedding_sizes_multiplier,
+                infer_embedding_dim, multiplier=args.embedding_sizes_multiplier,
             ),
         ),
         aggregation="concat",
@@ -136,7 +133,9 @@ def get_dlrm_model(schema, args, prediction_tasks):
 
 def get_deepfm_model(schema, args, prediction_tasks):
     cat_schema = schema.select_by_tag(Tags.CATEGORICAL)
-    cat_schema_onehot = cat_schema.remove_by_tag(Tags.SEQUENCE).remove_by_tag(Tags.USER_ID)
+    cat_schema_onehot = cat_schema.remove_by_tag(Tags.SEQUENCE).remove_by_tag(
+        Tags.USER_ID
+    )
     cat_schema_multihot = cat_schema.select_by_tag(Tags.SEQUENCE)
 
     input_block = mm.InputBlockV2(
@@ -160,7 +159,9 @@ def get_deepfm_model(schema, args, prediction_tasks):
         wide_inputs_block["categorical_mhe"] = mm.SequentialBlock(
             mm.Filter(cat_schema_multihot),
             mm.ListToDense(max_seq_length=args.multihot_max_seq_length),
-            mm.CategoryEncoding(cat_schema_multihot, sparse=True, output_mode="multi_hot"),
+            mm.CategoryEncoding(
+                cat_schema_multihot, sparse=True, output_mode="multi_hot"
+            ),
         )
 
     model = mm.DeepFMModel(
@@ -183,15 +184,18 @@ def get_deepfm_model(schema, args, prediction_tasks):
 
 def get_wide_and_deep_model(schema, args, prediction_tasks):
     cat_schema = schema.select_by_tag(Tags.CATEGORICAL)
-    cat_schema_multihot = cat_schema.select_by_tag(Tags.SEQUENCE).remove_by_tag(Tags.USER_ID)
-    cat_schema_onehot = cat_schema.remove_by_tag(Tags.SEQUENCE).remove_by_tag(Tags.USER_ID)
+    cat_schema_multihot = cat_schema.select_by_tag(Tags.SEQUENCE).remove_by_tag(
+        Tags.USER_ID
+    )
+    cat_schema_onehot = cat_schema.remove_by_tag(Tags.SEQUENCE).remove_by_tag(
+        Tags.USER_ID
+    )
 
     deep_embedding = mm.Embeddings(
         cat_schema,
         embeddings_regularizer=regularizers.l2(args.embeddings_l2_reg),
         infer_dim_fn=partial(
-            infer_embedding_dim,
-            multiplier=args.embedding_sizes_multiplier,
+            infer_embedding_dim, multiplier=args.embedding_sizes_multiplier,
         ),
     )
 
@@ -224,7 +228,9 @@ def get_wide_and_deep_model(schema, args, prediction_tasks):
             mm.SequentialBlock(
                 mm.Filter(cat_schema_multihot),
                 mm.ListToDense(max_seq_length=args.multihot_max_seq_length),
-                mm.CategoryEncoding(cat_schema_multihot, sparse=True, output_mode="multi_hot"),
+                mm.CategoryEncoding(
+                    cat_schema_multihot, sparse=True, output_mode="multi_hot"
+                ),
             )
         )
 
@@ -242,10 +248,7 @@ def get_wide_and_deep_model(schema, args, prediction_tasks):
         wide_regularizer=regularizers.l2(args.wnd_wide_l2_reg),
         wide_dropout=args.dropout,
         deep_dropout=args.dropout,
-        wide_preprocess=mm.ParallelBlock(
-            wide_preprocess,
-            aggregation="concat",
-        ),
+        wide_preprocess=mm.ParallelBlock(wide_preprocess, aggregation="concat",),
         prediction_tasks=prediction_tasks,
     )
 
@@ -270,8 +273,7 @@ def get_mmoe_model(schema, args, prediction_tasks):
             schema.select_by_tag(Tags.CATEGORICAL),
             embeddings_regularizer=regularizers.l2(args.embeddings_l2_reg),
             infer_dim_fn=partial(
-                infer_embedding_dim,
-                multiplier=args.embedding_sizes_multiplier,
+                infer_embedding_dim, multiplier=args.embedding_sizes_multiplier,
             ),
         ),
         aggregation="concat",
@@ -308,8 +310,7 @@ def get_cgc_model(schema, args, prediction_tasks):
             schema.select_by_tag(Tags.CATEGORICAL),
             embeddings_regularizer=regularizers.l2(args.embeddings_l2_reg),
             infer_dim_fn=partial(
-                infer_embedding_dim,
-                multiplier=args.embedding_sizes_multiplier,
+                infer_embedding_dim, multiplier=args.embedding_sizes_multiplier,
             ),
         ),
         aggregation="concat",
@@ -347,8 +348,7 @@ def get_ple_model(schema, args, prediction_tasks):
             schema.select_by_tag(Tags.CATEGORICAL),
             embeddings_regularizer=regularizers.l2(args.embeddings_l2_reg),
             infer_dim_fn=partial(
-                infer_embedding_dim,
-                multiplier=args.embedding_sizes_multiplier,
+                infer_embedding_dim, multiplier=args.embedding_sizes_multiplier,
             ),
         ),
         aggregation="concat",
