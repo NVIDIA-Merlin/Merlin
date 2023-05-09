@@ -24,7 +24,7 @@
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Getting Started MovieLens: Training with HugeCTR" href="03-Training-with-HugeCTR.html" />
+    <link rel="next" title="Getting Started MovieLens: Training with TensorFlow" href="03-Training-with-TF.html" />
     <link rel="prev" title="Getting Started MovieLens: Download and Convert" href="01-Download-Convert.html" /> 
 </head>
 
@@ -62,12 +62,10 @@
 <li class="toctree-l2 current"><a class="reference internal" href="index.html">Getting Started using the MovieLens Dataset</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="01-Download-Convert.html">MovieLens Download and Convert</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">Feature Engineering with NVTabular</a></li>
-<li class="toctree-l3"><a class="reference internal" href="03-Training-with-HugeCTR.html">Training with HugeCTR</a></li>
 <li class="toctree-l3"><a class="reference internal" href="03-Training-with-TF.html">Getting Started MovieLens: Training with TensorFlow</a></li>
 <li class="toctree-l3"><a class="reference internal" href="03-Training-with-TF.html#data-preparation">Data Preparation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="03-Training-with-TF.html#training-our-model">Training our model</a></li>
 <li class="toctree-l3"><a class="reference internal" href="03-Training-with-PyTorch.html">Training with PyTorch</a></li>
-<li class="toctree-l3"><a class="reference internal" href="04-Triton-Inference-with-HugeCTR.html">Serving the HugeCTR Model with Triton</a></li>
 <li class="toctree-l3"><a class="reference internal" href="04-Triton-Inference-with-TF.html">Serve Recommendations from the TensorFlow Model</a></li>
 <li class="toctree-l3"><a class="reference internal" href="04-Triton-Inference-with-TF.html#predicting">Predicting</a></li>
 </ul>
@@ -132,7 +130,7 @@
 <img alt="https://developer.download.nvidia.com/notebooks/dlsw-notebooks/merlin_merlin_getting-started-movielens-02-etl-with-nvtabular/nvidia_logo.png" src="https://developer.download.nvidia.com/notebooks/dlsw-notebooks/merlin_merlin_getting-started-movielens-02-etl-with-nvtabular/nvidia_logo.png" />
 <div class="section" id="getting-started-movielens-etl-with-nvtabular">
 <h1>Getting Started MovieLens: ETL with NVTabular<a class="headerlink" href="#getting-started-movielens-etl-with-nvtabular" title="Permalink to this headline"></a></h1>
-<p>This notebook is created using the latest stable <a class="reference external" href="https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-hugectr/tags">merlin-hugectr</a>, <a class="reference external" href="https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-tensorflow/tags">merlin-tensorflow</a>, or <a class="reference external" href="https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-pytorch/tags">merlin-pytorch</a> container.</p>
+<p>This notebook is created using the latest stable <a class="reference external" href="https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-tensorflow/tags">merlin-tensorflow</a> or <a class="reference external" href="https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-pytorch/tags">merlin-pytorch</a> container.</p>
 <div class="section" id="overview">
 <h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline"></a></h2>
 <p>NVTabular is a feature engineering and preprocessing library for tabular data designed to quickly and easily manipulate terabyte scale datasets used to train deep learning based recommender systems.  It provides a high level abstraction to simplify code and accelerates computation on the GPU using the RAPIDS cuDF library.<br><br></p>
@@ -180,10 +178,10 @@
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/usr/local/lib/python3.8/dist-packages/merlin/dtypes/mappings/tf.py:52: UserWarning: Tensorflow dtype mappings did not load successfully due to an error: No module named &#39;tensorflow&#39;
-  warn(f&quot;Tensorflow dtype mappings did not load successfully due to an error: {exc.msg}&quot;)
-/usr/local/lib/python3.8/dist-packages/tqdm/auto.py:22: TqdmWarning: IProgress not found. Please update jupyter and ipywidgets. See https://ipywidgets.readthedocs.io/en/stable/user_install.html
-  from .autonotebook import tqdm as notebook_tqdm
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2023-05-09 22:44:30.289311: I tensorflow/core/platform/cpu_feature_guard.cc:194] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  SSE3 SSE4.1 SSE4.2 AVX
+To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
+/usr/local/lib/python3.8/dist-packages/merlin/dtypes/mappings/torch.py:43: UserWarning: PyTorch dtype mappings did not load successfully due to an error: No module named &#39;torch&#39;
+  warn(f&quot;PyTorch dtype mappings did not load successfully due to an error: {exc.msg}&quot;)
 </pre></div>
 </div>
 </div>
@@ -271,14 +269,6 @@ NVTabular has already implemented multiple calculations, called <code class="doc
 <p>As we process the data, we are also adding tags. They will be helpful to our model during training and inference. Once specified here, we will not have to provide this information down the road.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">CATEGORICAL_COLUMNS</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;userId&quot;</span><span class="p">,</span> <span class="s2">&quot;movieId&quot;</span><span class="p">]</span>
-<span class="n">LABEL_COLUMNS</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;rating&quot;</span><span class="p">]</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">userId</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;userId&quot;</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">TagAsUserID</span><span class="p">()</span>
 <span class="n">movieId</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;movieId&quot;</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">TagAsItemID</span><span class="p">()</span>
 
@@ -295,7 +285,7 @@ NVTabular has already implemented multiple calculations, called <code class="doc
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/79cf38d47df43a05455be030898708ab047017ab2abc5685f9f6a5af9165cd7e.svg" src="../../_images/79cf38d47df43a05455be030898708ab047017ab2abc5685f9f6a5af9165cd7e.svg" /></div>
+<img alt="../../_images/9a52888be8e6cf50e5027f05ccaa2028ecbfb849d91fe40e5754e7503f3b6238.svg" src="../../_images/9a52888be8e6cf50e5027f05ccaa2028ecbfb849d91fe40e5754e7503f3b6238.svg" /></div>
 </div>
 <p>Embedding Layers of neural networks require that categorical features are contiguous, incremental Integers: 0, 1, 2, … , |C|-1. We need to ensure that our categorical features fulfill the requirement.<br></p>
 <p>Currently, our genres are a list of Strings. In addition, we should transform the single-hot categorical features userId and movieId, as well.<br>
@@ -324,7 +314,7 @@ NVTabular provides the operator <code class="docutils literal notranslate"><span
 </div>
 </div>
 <div class="cell_output docutils container">
-<img alt="../../_images/169cf01515772f6d7f755dd1f095ac11146169526db919c068cd660a2f12de7c.svg" src="../../_images/169cf01515772f6d7f755dd1f095ac11146169526db919c068cd660a2f12de7c.svg" /></div>
+<img alt="../../_images/53d4d70865072f5f928cd6a3b2cd554fa9789ad57b7f7da4c748e7e61e1d20f1.svg" src="../../_images/53d4d70865072f5f928cd6a3b2cd554fa9789ad57b7f7da4c748e7e61e1d20f1.svg" /></div>
 </div>
 <p>We initialize our NVTabular <code class="docutils literal notranslate"><span class="pre">workflow</span></code>.</p>
 <div class="cell docutils container">
@@ -339,20 +329,6 @@ NVTabular provides the operator <code class="docutils literal notranslate"><span
 <h3>Running the pipeline<a class="headerlink" href="#running-the-pipeline" title="Permalink to this headline"></a></h3>
 <p>In general, the <code class="docutils literal notranslate"><span class="pre">Op</span></code>s in our <code class="docutils literal notranslate"><span class="pre">Workflow</span></code> will require measurements of statistical properties of our data in order to be leveraged. For example, the <code class="docutils literal notranslate"><span class="pre">Normalize</span></code> op requires measurements of the dataset mean and standard deviation, and the <code class="docutils literal notranslate"><span class="pre">Categorify</span></code> op requires an accounting of all the categories a particular feature can manifest. However, we frequently need to measure these properties across datasets which are too large to fit into GPU memory (or CPU memory for that matter) at once.</p>
 <p>NVTabular solves this by providing the <code class="docutils literal notranslate"><span class="pre">Dataset</span></code> class, which breaks a set of parquet or csv files into into a collection of <code class="docutils literal notranslate"><span class="pre">cudf.DataFrame</span></code> chunks that can fit in device memory. The main purpose of this class is to abstract away the raw format of the data, and to allow other NVTabular classes to reliably materialize a <code class="docutils literal notranslate"><span class="pre">dask_cudf.DataFrame</span></code> collection (and/or collection-based iterator) on demand. Under the hood, the data decomposition corresponds to the construction of a <a class="reference external" href="https://docs.rapids.ai/api/cudf/stable/">dask_cudf.DataFrame</a> object.  By representing our dataset as a lazily-evaluated <a class="reference external" href="https://www.dask.org/">Dask</a> collection, we can handle the calculation of complex global statistics (and later, can also iterate over the partitions while feeding data into a neural network). <code class="docutils literal notranslate"><span class="pre">part_size</span></code> defines the size read into GPU-memory at once.</p>
-<p>Now instantiate dataset iterators to loop through our dataset (which we couldn’t fit into GPU memory). HugeCTR expect the categorical input columns as <code class="docutils literal notranslate"><span class="pre">int64</span></code> and continuous/label columns as <code class="docutils literal notranslate"><span class="pre">float32</span></code> We need to enforce the required HugeCTR data types, so we set them in a dictionary and give as an argument when creating our dataset.</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">dict_dtypes</span> <span class="o">=</span> <span class="p">{}</span>
-
-<span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">CATEGORICAL_COLUMNS</span><span class="p">:</span>
-    <span class="n">dict_dtypes</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">int64</span>
-
-<span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">LABEL_COLUMNS</span><span class="p">:</span>
-    <span class="n">dict_dtypes</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span>
-</pre></div>
-</div>
-</div>
-</div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">train_dataset</span> <span class="o">=</span> <span class="n">nvt</span><span class="o">.</span><span class="n">Dataset</span><span class="p">([</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">INPUT_DATA_DIR</span><span class="p">,</span> <span class="s2">&quot;train.parquet&quot;</span><span class="p">)])</span>
@@ -370,17 +346,39 @@ NVTabular provides the operator <code class="docutils literal notranslate"><span
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/usr/local/lib/python3.8/dist-packages/merlin/schema/tags.py:148: UserWarning: Compound tags like Tags.USER_ID have been deprecated and will be removed in a future version. Please use the atomic versions of these tags, like [&lt;Tags.USER: &#39;user&#39;&gt;, &lt;Tags.ID: &#39;id&#39;&gt;].
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/usr/local/lib/python3.8/dist-packages/merlin/schema/tags.py:149: UserWarning: Compound tags like Tags.USER_ID have been deprecated and will be removed in a future version. Please use the atomic versions of these tags, like [&lt;Tags.USER: &#39;user&#39;&gt;, &lt;Tags.ID: &#39;id&#39;&gt;].
   warnings.warn(
-/usr/local/lib/python3.8/dist-packages/merlin/schema/tags.py:148: UserWarning: Compound tags like Tags.ITEM_ID have been deprecated and will be removed in a future version. Please use the atomic versions of these tags, like [&lt;Tags.ITEM: &#39;item&#39;&gt;, &lt;Tags.ID: &#39;id&#39;&gt;].
+/usr/local/lib/python3.8/dist-packages/merlin/schema/tags.py:149: UserWarning: Compound tags like Tags.ITEM_ID have been deprecated and will be removed in a future version. Please use the atomic versions of these tags, like [&lt;Tags.ITEM: &#39;item&#39;&gt;, &lt;Tags.ID: &#39;id&#39;&gt;].
+  warnings.warn(
+/usr/local/lib/python3.8/dist-packages/merlin/schema/tags.py:149: UserWarning: Compound tags like Tags.USER_ID have been deprecated and will be removed in a future version. Please use the atomic versions of these tags, like [&lt;Tags.USER: &#39;user&#39;&gt;, &lt;Tags.ID: &#39;id&#39;&gt;].
+  warnings.warn(
+/usr/local/lib/python3.8/dist-packages/merlin/schema/tags.py:149: UserWarning: Compound tags like Tags.ITEM_ID have been deprecated and will be removed in a future version. Please use the atomic versions of these tags, like [&lt;Tags.ITEM: &#39;item&#39;&gt;, &lt;Tags.ID: &#39;id&#39;&gt;].
+  warnings.warn(
+/usr/local/lib/python3.8/dist-packages/merlin/schema/tags.py:149: UserWarning: Compound tags like Tags.USER_ID have been deprecated and will be removed in a future version. Please use the atomic versions of these tags, like [&lt;Tags.USER: &#39;user&#39;&gt;, &lt;Tags.ID: &#39;id&#39;&gt;].
+  warnings.warn(
+/usr/local/lib/python3.8/dist-packages/merlin/schema/tags.py:149: UserWarning: Compound tags like Tags.ITEM_ID have been deprecated and will be removed in a future version. Please use the atomic versions of these tags, like [&lt;Tags.ITEM: &#39;item&#39;&gt;, &lt;Tags.ID: &#39;id&#39;&gt;].
+  warnings.warn(
+/usr/local/lib/python3.8/dist-packages/merlin/schema/tags.py:149: UserWarning: Compound tags like Tags.USER_ID have been deprecated and will be removed in a future version. Please use the atomic versions of these tags, like [&lt;Tags.USER: &#39;user&#39;&gt;, &lt;Tags.ID: &#39;id&#39;&gt;].
+  warnings.warn(
+/usr/local/lib/python3.8/dist-packages/merlin/schema/tags.py:149: UserWarning: Compound tags like Tags.ITEM_ID have been deprecated and will be removed in a future version. Please use the atomic versions of these tags, like [&lt;Tags.ITEM: &#39;item&#39;&gt;, &lt;Tags.ID: &#39;id&#39;&gt;].
+  warnings.warn(
+/usr/local/lib/python3.8/dist-packages/merlin/schema/tags.py:149: UserWarning: Compound tags like Tags.USER_ID have been deprecated and will be removed in a future version. Please use the atomic versions of these tags, like [&lt;Tags.USER: &#39;user&#39;&gt;, &lt;Tags.ID: &#39;id&#39;&gt;].
+  warnings.warn(
+/usr/local/lib/python3.8/dist-packages/merlin/schema/tags.py:149: UserWarning: Compound tags like Tags.ITEM_ID have been deprecated and will be removed in a future version. Please use the atomic versions of these tags, like [&lt;Tags.ITEM: &#39;item&#39;&gt;, &lt;Tags.ID: &#39;id&#39;&gt;].
   warnings.warn(
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>CPU times: user 692 ms, sys: 354 ms, total: 1.05 s
-Wall time: 1.06 s
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>CPU times: user 1.16 s, sys: 303 ms, total: 1.46 s
+Wall time: 1.46 s
 </pre></div>
 </div>
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;nvtabular.workflow.workflow.Workflow at 0x7fb2d7fc42b0&gt;
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/usr/local/lib/python3.8/dist-packages/merlin/schema/tags.py:149: UserWarning: Compound tags like Tags.USER_ID have been deprecated and will be removed in a future version. Please use the atomic versions of these tags, like [&lt;Tags.USER: &#39;user&#39;&gt;, &lt;Tags.ID: &#39;id&#39;&gt;].
+  warnings.warn(
+/usr/local/lib/python3.8/dist-packages/merlin/schema/tags.py:149: UserWarning: Compound tags like Tags.ITEM_ID have been deprecated and will be removed in a future version. Please use the atomic versions of these tags, like [&lt;Tags.ITEM: &#39;item&#39;&gt;, &lt;Tags.ID: &#39;id&#39;&gt;].
+  warnings.warn(
+</pre></div>
+</div>
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;nvtabular.workflow.workflow.Workflow at 0x7f0e680cc280&gt;
 </pre></div>
 </div>
 </div>
@@ -397,24 +395,19 @@ Wall time: 1.06 s
 </div>
 </div>
 </div>
-<p>We transform our workflow with <code class="docutils literal notranslate"><span class="pre">.transform</span></code>. We are going to add <code class="docutils literal notranslate"><span class="pre">'userId',</span> <span class="pre">'movieId',</span> <span class="pre">'genres'</span></code> columns to <code class="docutils literal notranslate"><span class="pre">_metadata.json</span></code>, because this json file will be needed for HugeCTR training to obtain the required information from all the rows in each parquet file.</p>
+<p>We run the workflow and transform our datasets with <code class="docutils literal notranslate"><span class="pre">.transform</span></code>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">time</span>
 <span class="n">workflow</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">train_dataset</span><span class="p">)</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span>
     <span class="n">output_path</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">INPUT_DATA_DIR</span><span class="p">,</span> <span class="s2">&quot;train&quot;</span><span class="p">),</span>
-    <span class="n">shuffle</span><span class="o">=</span><span class="n">nvt</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">Shuffle</span><span class="o">.</span><span class="n">PER_PARTITION</span><span class="p">,</span>
-    <span class="n">cats</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;userId&quot;</span><span class="p">,</span> <span class="s2">&quot;movieId&quot;</span><span class="p">,</span> <span class="s2">&quot;genres&quot;</span><span class="p">],</span>
-    <span class="n">labels</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;rating&quot;</span><span class="p">],</span>
-    <span class="n">dtypes</span><span class="o">=</span><span class="n">dict_dtypes</span><span class="p">,</span>
-    <span class="n">write_hugectr_keyset</span><span class="o">=</span><span class="kc">True</span>  <span class="c1"># only needed if using this ETL Notebook for training with HugeCTR</span>
-                               <span class="c1"># should be removed otherwise to speed up computation</span>
+    <span class="n">shuffle</span><span class="o">=</span><span class="n">nvt</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">Shuffle</span><span class="o">.</span><span class="n">PER_PARTITION</span>
 <span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>CPU times: user 0 ns, sys: 1e+03 ns, total: 1e+03 ns
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>CPU times: user 1 µs, sys: 0 ns, total: 1 µs
 Wall time: 2.86 µs
 </pre></div>
 </div>
@@ -425,19 +418,14 @@ Wall time: 2.86 µs
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">time</span>
 <span class="n">workflow</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">valid_dataset</span><span class="p">)</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span>
     <span class="n">output_path</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">INPUT_DATA_DIR</span><span class="p">,</span> <span class="s2">&quot;valid&quot;</span><span class="p">),</span>
-    <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-    <span class="n">cats</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;userId&quot;</span><span class="p">,</span> <span class="s2">&quot;movieId&quot;</span><span class="p">,</span> <span class="s2">&quot;genres&quot;</span><span class="p">],</span>
-    <span class="n">labels</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;rating&quot;</span><span class="p">],</span>
-    <span class="n">dtypes</span><span class="o">=</span><span class="n">dict_dtypes</span><span class="p">,</span>
-    <span class="n">write_hugectr_keyset</span><span class="o">=</span><span class="kc">True</span>  <span class="c1"># only needed if using this ETL Notebook for training with HugeCTR</span>
-                               <span class="c1"># should be removed otherwise to speed up computation</span>
+    <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span>
 <span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>CPU times: user 1 µs, sys: 0 ns, total: 1 µs
-Wall time: 2.62 µs
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>CPU times: user 1e+03 ns, sys: 0 ns, total: 1e+03 ns
+Wall time: 2.86 µs
 </pre></div>
 </div>
 </div>
@@ -484,6 +472,8 @@ Wall time: 2.62 µs
       <th>properties.domain.name</th>
       <th>properties.embedding_sizes.cardinality</th>
       <th>properties.embedding_sizes.dimension</th>
+      <th>properties.value_count.min</th>
+      <th>properties.value_count.max</th>
     </tr>
   </thead>
   <tbody>
@@ -504,6 +494,8 @@ Wall time: 2.62 µs
       <td>userId</td>
       <td>162542.0</td>
       <td>512.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
     </tr>
     <tr>
       <th>1</th>
@@ -518,10 +510,12 @@ Wall time: 2.62 µs
       <td>0.0</td>
       <td>.//categories/unique.movieId.parquet</td>
       <td>0.0</td>
-      <td>56658.0</td>
+      <td>56622.0</td>
       <td>movieId</td>
-      <td>56659.0</td>
+      <td>56623.0</td>
       <td>512.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
     </tr>
     <tr>
       <th>2</th>
@@ -540,6 +534,8 @@ Wall time: 2.62 µs
       <td>genres</td>
       <td>21.0</td>
       <td>16.0</td>
+      <td>0.0</td>
+      <td>NaN</td>
     </tr>
     <tr>
       <th>3</th>
@@ -548,6 +544,8 @@ Wall time: 2.62 µs
       <td>DType(name='int8', element_type=&lt;ElementType.I...</td>
       <td>False</td>
       <td>False</td>
+      <td>NaN</td>
+      <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
       <td>NaN</td>
@@ -620,38 +618,38 @@ Wall time: 2.62 µs
   <tbody>
     <tr>
       <th>0</th>
-      <td>1691</td>
-      <td>332</td>
-      <td>[1]</td>
-      <td>1.0</td>
+      <td>47641</td>
+      <td>288</td>
+      <td>[1, 11, 6, 4]</td>
+      <td>1</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>1001</td>
-      <td>154</td>
-      <td>[2, 6]</td>
-      <td>1.0</td>
+      <td>8745</td>
+      <td>562</td>
+      <td>[3, 13, 2]</td>
+      <td>1</td>
     </tr>
     <tr>
       <th>2</th>
-      <td>967</td>
-      <td>245</td>
-      <td>[3, 2]</td>
-      <td>0.0</td>
+      <td>29817</td>
+      <td>1118</td>
+      <td>[5, 13, 10, 2, 16]</td>
+      <td>1</td>
     </tr>
     <tr>
       <th>3</th>
-      <td>150851</td>
-      <td>622</td>
-      <td>[3, 5, 7, 15]</td>
-      <td>1.0</td>
+      <td>15207</td>
+      <td>120</td>
+      <td>[3, 1, 14]</td>
+      <td>1</td>
     </tr>
     <tr>
       <th>4</th>
-      <td>39553</td>
-      <td>1146</td>
-      <td>[3, 1]</td>
-      <td>1.0</td>
+      <td>16</td>
+      <td>843</td>
+      <td>[1]</td>
+      <td>0</td>
     </tr>
   </tbody>
 </table>
@@ -670,7 +668,7 @@ Wall time: 2.62 µs
 <li><p><a class="reference external" href="https://nvidia-merlin.github.io/core/main/api/merlin.io.html#merlin.io.Dataset">Dataset</a></p></li>
 </ul>
 <p>The next step for learning to use Merlin for creating a recommender system is to train a model.
-Refer to <a class="reference internal" href="03-Training-with-TF.html"><span class="doc std std-doc">Training with TensorFlow</span></a>,  <a class="reference internal" href="03-Training-with-HugeCTR.html"><span class="doc std std-doc">Training with HugeCTR</span></a>, or <a class="reference internal" href="03-Training-with-PyTorch.html"><span class="doc std std-doc">Training with PyTorch</span></a>.</p>
+Refer to <a class="reference internal" href="03-Training-with-TF.html"><span class="doc std std-doc">Training with TensorFlow</span></a> or <a class="reference internal" href="03-Training-with-PyTorch.html"><span class="doc std std-doc">Training with PyTorch</span></a>.</p>
 </div>
 </div>
 
@@ -679,7 +677,7 @@ Refer to <a class="reference internal" href="03-Training-with-TF.html"><span cla
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="01-Download-Convert.html" class="btn btn-neutral float-left" title="Getting Started MovieLens: Download and Convert" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="03-Training-with-HugeCTR.html" class="btn btn-neutral float-right" title="Getting Started MovieLens: Training with HugeCTR" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="03-Training-with-TF.html" class="btn btn-neutral float-right" title="Getting Started MovieLens: Training with TensorFlow" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
