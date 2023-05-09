@@ -1,8 +1,8 @@
 # Merlin Changelog
 
-## [22.04]
+## [23.04]
 
-Changes since the 22.02 release.
+Changes since the 23.02 release.
 
 The major focus of this release was broader support for training and serving session-based models across all Merlin libraries.
 
@@ -48,7 +48,7 @@ The major focus of this release was broader support for training and serving ses
 
 #### Major Changes
 
-* Publishing to Anaconda beginning with 22.04 https://anaconda.org/nvidia/merlin-models.
+* Publishing to Anaconda beginning with 23.04 https://anaconda.org/nvidia/merlin-models.
 * We have introduced a new design of the transformer API that simplifies the high-level transformer API and also fixes issues related to Causal LM (#1022).
 
 #### Bug Fixes
@@ -68,7 +68,7 @@ The major focus of this release was broader support for training and serving ses
 
 #### Major Changes
 
-* Now has a hard dependency on Merlin Models verison 22.04 or greater.
+* Now has a hard dependency on Merlin Models verison 23.04 or greater.
 
 #### Deprecated / Removed
 
@@ -107,4 +107,4 @@ The major focus of this release was broader support for training and serving ses
 ### Other / Misc
 
 #### Deprecated / Removed
-* Removed `distributed-embeddings` from the 22.04 release. This will be added back in future releases. It is still possible to build the container by setting the `INSTALL_DISTRIBUTED_EMBEDDINGS` argument to `true`. ([Merlin/#908](https://github.com/NVIDIA-Merlin/Merlin/pull/908))
+* Removed `distributed-embeddings` from the 23.04 release. This will be added back in future releases. It is still possible to build the container by setting the `INSTALL_DISTRIBUTED_EMBEDDINGS` argument to `true`. ([Merlin/#908](https://github.com/NVIDIA-Merlin/Merlin/pull/908))
