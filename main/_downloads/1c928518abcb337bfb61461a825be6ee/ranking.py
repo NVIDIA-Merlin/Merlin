@@ -1,21 +1,19 @@
 import json
 import logging
 import os
-from typing import Optional
+from datetime import datetime
 
 import merlin.models.tf as mm
 import numpy as np
 import tensorflow as tf
 from merlin.io.dataset import Dataset
+from merlin.models.tf.logging.callbacks import ExamplesPerSecondCallback, WandbLogger
 from merlin.models.tf.transforms.negative_sampling import InBatchNegatives
 from merlin.schema.tags import Tags
-from tensorflow.keras.losses import binary_crossentropy
-from tensorflow.keras.metrics import Mean
 
 from args_parsing import Task, parse_arguments
 from mtl import get_mtl_loss_weights, get_mtl_prediction_tasks
 from ranking_models import get_model
-from run_logging import WandbLogger, get_callbacks
 
 
 def get_datasets(args):
@@ -167,7 +165,7 @@ class RankingTrainEvalRunner:
                         tf.keras.metrics.AUC(
                             name="prauc", curve="PR", num_thresholds=int(1e5)
                         ),
-                        LogLossMetric(name="logloss"),
+                        mm.LogLossMetric(name="logloss"),
                     ]
                     for target in self.targets[Task.BINARY_CLASSIFICATION.value]
                 }
@@ -226,7 +224,7 @@ class RankingTrainEvalRunner:
             self.get_optimizer(), run_eagerly=False, metrics=metrics,
         )
 
-        callbacks = get_callbacks(self.args)
+        callbacks = self.get_callbacks(self.args)
         class_weights = {0: 1.0, 1: self.args.stl_positive_class_weight}
 
         if self.train_loader:
@@ -285,7 +283,7 @@ class RankingTrainEvalRunner:
             metrics=metrics,
             loss_weights=loss_weights,
         )
-        callbacks = get_callbacks(self.args)
+        callbacks = self.get_callbacks(self.args)
 
         if self.train_loader:
             logging.info("Starting to train the model (fit())")
@@ -393,7 +391,7 @@ class RankingTrainEvalRunner:
 
     def run(self):
         if self.logger:
-            self.logger.setup()
+            self.logger.init()
 
         tf.keras.utils.set_random_seed(self.args.random_seed)
 
@@ -413,7 +411,7 @@ class RankingTrainEvalRunner:
 
                 logging.info(f"MODEL: {model}")
                 # Single target = Single-Task Learning
-                model = self.train_eval_stl(model)
+                self.train_eval_stl(model)
             else:
                 if not model:
                     model = self.build_mtl_model()
@@ -455,6 +453,42 @@ class RankingTrainEvalRunner:
 
         return model
 
+    def get_callbacks(self, args):
+        callbacks = []
+
+        if args.log_to_tensorboard:
+            logdir = os.path.join(
+                args.output_path, "tb_logs/", datetime.now().strftime("%Y%m%d-%H%M%S")
+            )
+            tensorboard_callback = tf.keras.callbacks.TensorBoard(
+                log_dir=logdir,
+                update_freq=args.metrics_log_frequency,
+                write_steps_per_second=True,
+            )
+            callbacks.append(tensorboard_callback)
+
+        wandb_callback = None
+        if args.log_to_wandb:
+            wandb_callback = self.logger.get_callback(
+                metrics_log_frequency=args.metrics_log_frequency,
+                save_model=False,
+                save_graph=False,
+            )
+            callbacks.append(wandb_callback)
+
+        callbacks.append(
+            [
+                ExamplesPerSecondCallback(
+                    args.train_batch_size,
+                    every_n_steps=args.metrics_log_frequency,
+                    logger=self.logger,
+                    log_to_console=True,
+                )
+            ]
+        )
+
+        return callbacks
+
 
 def main():
     logging.basicConfig(level=logging.DEBUG)
@@ -466,55 +500,17 @@ def main():
     logger = None
     if args.log_to_wandb:
         logger = WandbLogger(
-            project=args.wandb_project,
-            entity=args.wandb_entity,
+            wandb_project=args.wandb_project,
+            wandb_entity=args.wandb_entity,
             config=args,
             logging_path=args.output_path,
         )
+        logger.init()
 
     train_ds, eval_ds, predict_ds = get_datasets(args)
 
     runner = RankingTrainEvalRunner(logger, train_ds, eval_ds, predict_ds, args)
     runner.run()
-
-
-@tf.keras.utils.register_keras_serializable(package="merlin.models")
-class LogLossMetric(Mean):
-    """Log loss metric.
-    Keras offers the log loss (a.k.a. binary cross entropy), but it
-    may be affected by sample weights, which you might not
-    want for the metric calculation).
-    This is the corresponding metric, that is useful to evaluate
-    the performance of binary classification tasks.
-
-    Parameters
-    ----------
-    name : str, optional
-        Name of the metric, by default "logloss"
-    from_logits : bool, optional
-        Whether the metric should expect the likelihood (e.g. sigmoid function in output)
-        or logits (False). By default False
-    dtype
-        Dtype of metric output, by default None
-    """
-
-    def __init__(self, name="logloss", from_logits=False, dtype=None):
-        self.from_logits = from_logits
-        super().__init__(name=name, dtype=dtype)
-
-    def update_state(
-        self,
-        y_true: tf.Tensor,
-        y_pred: tf.Tensor,
-        sample_weight: Optional[tf.Tensor] = None,
-    ):
-        result = binary_crossentropy(y_true, y_pred, from_logits=self.from_logits)
-        return super().update_state(result, sample_weight=sample_weight)
-
-    def get_config(self):
-        config = super().get_config()
-        config["from_logits"] = self.from_logits
-        return config
 
 
 if __name__ == "__main__":
