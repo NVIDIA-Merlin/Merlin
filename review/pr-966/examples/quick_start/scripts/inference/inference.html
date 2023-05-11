@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Serving Ranking Models With Merlin Systems &mdash; Merlin  documentation</title><link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <title>Deploying Ranking Models with Merlin Systems &mdash; Merlin  documentation</title><link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../../_static/mystnb.css" type="text/css" />
       <link rel="stylesheet" href="../../../../_static/togglebutton.css" type="text/css" />
@@ -75,7 +75,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">Serving Ranking Models With Merlin Systems</li>
+      <li class="breadcrumb-item active">Deploying Ranking Models with Merlin Systems</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -107,69 +107,56 @@
 </div>
 </div>
 </div>
-<div class="section" id="serving-ranking-models-with-merlin-systems">
-<h1>Serving Ranking Models With Merlin Systems<a class="headerlink" href="#serving-ranking-models-with-merlin-systems" title="Permalink to this headline"></a></h1>
-<p>This notebook is created using the latest stable merlin-tensorflow container. This Jupyter notebook example demonstrates how to deploy a ranking model to Triton Inference Server (TIS) and generate prediction results for a given query. As a prerequisite, the ranking model must be trained and saved with Merlin Models. Please read the README for the instructions.</p>
-</div>
-<div class="section" id="overview">
-<h1>Overview<a class="headerlink" href="#overview" title="Permalink to this headline"></a></h1>
+<div class="section" id="deploying-ranking-models-with-merlin-systems">
+<h1>Deploying Ranking Models with Merlin Systems<a class="headerlink" href="#deploying-ranking-models-with-merlin-systems" title="Permalink to this headline"></a></h1>
 <p>NVIDIA Merlin is an open source framework that accelerates and scales end-to-end recommender system pipelines. The Merlin framework is broken up into several sub components, these include: Merlin-Core, Merlin-Models, NVTabular and Merlin-Systems. Merlin Systems will be the focus of this example.</p>
-<p>The purpose of the Merlin Systems library is to make it easy for Merlin users to quickly deploy their recommender systems from development to Triton Inference Server. We extended the same user-friendly API users are accustomed to in NVTabular and leveraged it to accommodate deploying recommender system components to TIS.</p>
-<p>There are some points we need ensure before we continue with this Notebook. Please ensure you have a working NVTabular workflow and model stored in an accessible location. Merlin Systems take the data preprocessing workflow defined in NVTabular and load that into Triton Inference Server as a model. Subsequently it does the same for the trained model. Lets take a closer look at how Merlin Systems makes deploying to TIS simple and effortless, in the rest of this notebook.</p>
+<p>The purpose of the Merlin Systems library is to make it easy for Merlin users to quickly deploy their recommender systems from development to Triton Inference Server. We extended the same user-friendly API users are accustomed to in NVTabular and leveraged it to accommodate deploying recommender system components to Triton.</p>
+<p>There are some points we need ensure before we continue with this Notebook. Please ensure you have a working NVTabular workflow and model stored in an accessible location. Merlin Systems take the data preprocessing workflow defined in NVTabular and load that into Triton Inference Server as a model. Subsequently it does the same for the trained model. Lets take a closer look at how Merlin Systems makes deploying to Triton simple and effortless, in the rest of this notebook.</p>
+<div class="section" id="learning-objectives">
+<h2>Learning Objectives<a class="headerlink" href="#learning-objectives" title="Permalink to this headline"></a></h2>
+<p>This Jupyter notebook example demonstrates</p>
+<ul class="simple">
+<li><p>how to deploy an NVTabular model and a ranking model to Triton Inference Server as an ensemble</p></li>
+<li><p>send a request to Triton</p></li>
+<li><p>generate prediction results for a given query (a batch)</p></li>
+</ul>
+</div>
 <div class="section" id="starting-triton-inference-server">
 <h2>Starting Triton Inference Server<a class="headerlink" href="#starting-triton-inference-server" title="Permalink to this headline"></a></h2>
 <p>After we export the ensemble, we are ready to start the Triton Inference Server. The server is installed in all the Merlin inference containers. If you are not using one of our containers, then ensure it is installed in your environment. For more information, see the Triton Inference Server documentation.</p>
 <p>You can start the server by running the following command:</p>
-<p>tritonserver –model-repository=/workspace/data/ensemble –backend-config=tensorflow,version=2
-For the –model-repository argument, specify the same value as the export_path that you specified previously in the ensemble.export method.</p>
+<p><code class="docutils literal notranslate"><span class="pre">tritonserver</span> <span class="pre">--model-repository</span> <span class="pre">=</span> <span class="pre">&lt;path</span> <span class="pre">to</span> <span class="pre">the</span> <span class="pre">saved</span> <span class="pre">ensemble</span> <span class="pre">folder&gt;</span></code></p>
+<p>For the <code class="docutils literal notranslate"><span class="pre">--model-repository</span></code> argument, specify the same value as the <code class="docutils literal notranslate"><span class="pre">ensemble_export_path</span></code> that you specified previously when executing the <code class="docutils literal notranslate"><span class="pre">inference.py</span></code> script.</p>
 <p>After you run the tritonserver command, wait until your terminal shows messages like the following example:</p>
-<p>I0414 18:29:50.741833 4067 grpc_server.cc:4421] Started GRPCInferenceService at 0.0.0.0:8001
-I0414 18:29:50.742197 4067 http_server.cc:3113] Started HTTPService at 0.0.0.0:8000
-I0414 18:29:50.783470 4067 http_server.cc:178] Started Metrics Service at 0.0.0.0:8002</p>
+<p>I0414 18:29:50.741833 4067 grpc_server.cc:4421] Started GRPCInferenceService at 0.0.0.0:8001 <br>
+I0414 18:29:50.742197 4067 http_server.cc:3113] Started HTTPService at 0.0.0.0:8000 <br>
+I0414 18:29:50.783470 4067 http_server.cc:178] Started Metrics Service at 0.0.0.0:8002 ,br&gt;</p>
+<p>Import libraries.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
 <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;TF_GPU_ALLOCATOR&quot;</span><span class="p">]</span><span class="o">=</span><span class="s2">&quot;cuda_malloc_async&quot;</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">from</span> <span class="nn">nvtabular.workflow</span> <span class="kn">import</span> <span class="n">Workflow</span>
-<span class="kn">import</span> <span class="nn">merlin.models.tf</span> <span class="k">as</span> <span class="nn">mm</span>
-<span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
+<span class="kn">import</span> <span class="nn">tritonclient.grpc</span> <span class="k">as</span> <span class="nn">grpcclient</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2023-05-09 21:02:53.368848: I tensorflow/core/platform/cpu_feature_guard.cc:194] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  SSE3 SSE4.1 SSE4.2 AVX
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2023-05-11 22:43:16.509753: I tensorflow/core/platform/cpu_feature_guard.cc:194] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  SSE3 SSE4.1 SSE4.2 AVX
 To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
 /usr/local/lib/python3.8/dist-packages/merlin/dtypes/mappings/torch.py:43: UserWarning: PyTorch dtype mappings did not load successfully due to an error: No module named &#39;torch&#39;
   warn(f&quot;PyTorch dtype mappings did not load successfully due to an error: {exc.msg}&quot;)
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>WARNING:tensorflow:Please fix your imports. Module tensorflow.python.training.tracking.data_structures has been moved to tensorflow.python.trackable.data_structures. The old module will be deleted in version 2.11.
-[INFO]: sparse_operation_kit is imported
-WARNING:tensorflow:Please fix your imports. Module tensorflow.python.training.tracking.base has been moved to tensorflow.python.trackable.base. The old module will be deleted in version 2.11.
-[SOK INFO] Import /usr/local/lib/python3.8/dist-packages/merlin_sok-1.1.4-py3.8-linux-x86_64.egg/sparse_operation_kit/lib/libsok_experiment.so
-[SOK INFO] Import /usr/local/lib/python3.8/dist-packages/merlin_sok-1.1.4-py3.8-linux-x86_64.egg/sparse_operation_kit/lib/libsok_experiment.so
-</pre></div>
-</div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2023-05-09 21:03:01.087078: I tensorflow/core/platform/cpu_feature_guard.cc:194] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  SSE3 SSE4.1 SSE4.2 AVX
-To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
-2023-05-09 21:03:01.282550: W tensorflow/core/common_runtime/gpu/gpu_bfc_allocator.cc:42] Overriding orig_value setting because the TF_FORCE_GPU_ALLOW_GROWTH environment variable is set. Original config value was 0.
-2023-05-09 21:03:01.282603: I tensorflow/core/common_runtime/gpu/gpu_process_state.cc:222] Using CUDA malloc Async allocator for GPU: 0
-2023-05-09 21:03:01.282795: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1621] Created device /job:localhost/replica:0/task:0/device:GPU:0 with 8192 MB memory:  -&gt; device: 0, name: Tesla V100-SXM2-16GB-N, pci bus id: 0000:07:00.0, compute capability: 7.0
-/usr/local/lib/python3.8/dist-packages/tqdm/auto.py:21: TqdmWarning: IProgress not found. Please update jupyter and ipywidgets. See https://ipywidgets.readthedocs.io/en/stable/user_install.html
-  from .autonotebook import tqdm as notebook_tqdm
-</pre></div>
-</div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[SOK INFO] Initialize finished, communication tool: horovod
-</pre></div>
 </div>
 </div>
-</div>
+<p>Load the saved NVTabular workflow. We will use workflow’s input schema as an input below when sending request to Triton.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">input_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;INPUT_FOLDER&quot;</span><span class="p">,</span> <span class="s2">&quot;/workspace/data/Tenrec/outputs/dataset/&quot;</span><span class="p">)</span>
-
-<span class="n">workflow_stored_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">input_path</span><span class="p">,</span> <span class="s2">&quot;workflow&quot;</span><span class="p">)</span>
-
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">input_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;INPUT_FOLDER&quot;</span><span class="p">,</span> <span class="s2">&quot;/workspace/Tenrec/dataset/workflow/&quot;</span><span class="p">)</span>
+<span class="n">workflow_stored_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">input_path</span><span class="p">)</span>
 <span class="n">workflow</span> <span class="o">=</span> <span class="n">Workflow</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">workflow_stored_path</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -252,9 +239,34 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 </table>
 </div></div></div>
 </div>
+<p>Load the saved output names as a list.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">workflow</span><span class="o">.</span><span class="n">output_schema</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">outputs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="s1">&#39;outputs.npy&#39;</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">),</span> <span class="n">allow_pickle</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">outputs</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[&#39;click/binary_output&#39;, &#39;follow/binary_output&#39;]
+</pre></div>
+</div>
+</div>
+</div>
+<p>We prepare a batch request to send to Triton and then Triton is going to send us a response, basically probability values for each target column. Since we are serving NVTabular model and our ranking model as a pipeline together, we can send a raw data as a request and served NVTabular model should be able to transform it in the same way it transformed the training set during preprocessing step.</p>
+<p>One thing to note that in this example, we are not creating the raw data from raw <code class="docutils literal notranslate"><span class="pre">.csv</span></code> file since, we did some data preparations and removed some user and items from the dataset based on the min frequencies we set during preprocessing file. So we use the raw validation data that were generated after train and eval set split step.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">original_data_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;INPUT_FOLDER&quot;</span><span class="p">,</span> <span class="s2">&quot;/workspace/Tenrec/dataset/_cache/02/&quot;</span><span class="p">)</span>
+<span class="n">batch</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">original_data_path</span><span class="p">,</span> <span class="s2">&quot;eval/&quot;</span><span class="p">,</span> <span class="s2">&quot;part.0.parquet&quot;</span><span class="p">),</span> <span class="n">columns</span><span class="o">=</span><span class="n">workflow</span><span class="o">.</span><span class="n">input_schema</span><span class="o">.</span><span class="n">column_names</span><span class="p">)</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">batch</span> <span class="o">=</span> <span class="n">batch</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:</span><span class="mi">10</span><span class="p">,</span> <span class="p">:]</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">batch</span>
 </pre></div>
 </div>
 </div>
@@ -277,154 +289,183 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>name</th>
-      <th>tags</th>
-      <th>dtype</th>
-      <th>is_list</th>
-      <th>is_ragged</th>
-      <th>properties.num_buckets</th>
-      <th>properties.freq_threshold</th>
-      <th>properties.max_size</th>
-      <th>properties.start_index</th>
-      <th>properties.cat_path</th>
-      <th>properties.domain.min</th>
-      <th>properties.domain.max</th>
-      <th>properties.domain.name</th>
-      <th>properties.embedding_sizes.cardinality</th>
-      <th>properties.embedding_sizes.dimension</th>
+      <th>user_id</th>
+      <th>item_id</th>
+      <th>video_category</th>
+      <th>gender</th>
+      <th>age</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <th>0</th>
-      <td>user_id</td>
-      <td>(Tags.USER, Tags.CATEGORICAL, Tags.ID, Tags.US...</td>
-      <td>DType(name='int64', element_type=&lt;ElementType....</td>
-      <td>False</td>
-      <td>False</td>
-      <td>None</td>
+      <td>14402</td>
+      <td>412</td>
       <td>0</td>
       <td>0</td>
       <td>0</td>
-      <td>.//categories/unique.user_id.parquet</td>
-      <td>0</td>
-      <td>16844</td>
-      <td>user_id</td>
-      <td>16845</td>
-      <td>372</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>item_id</td>
-      <td>(Tags.ITEM_ID, Tags.CATEGORICAL, Tags.ITEM, Ta...</td>
-      <td>DType(name='int64', element_type=&lt;ElementType....</td>
-      <td>False</td>
-      <td>False</td>
-      <td>None</td>
+      <td>276438</td>
+      <td>8176</td>
+      <td>1</td>
       <td>0</td>
       <td>0</td>
-      <td>0</td>
-      <td>.//categories/unique.item_id.parquet</td>
-      <td>0</td>
-      <td>7539</td>
-      <td>item_id</td>
-      <td>7540</td>
-      <td>237</td>
     </tr>
     <tr>
       <th>2</th>
-      <td>video_category</td>
-      <td>(Tags.CATEGORICAL)</td>
-      <td>DType(name='int64', element_type=&lt;ElementType....</td>
-      <td>False</td>
-      <td>False</td>
-      <td>None</td>
+      <td>215817</td>
+      <td>62881</td>
       <td>0</td>
       <td>0</td>
       <td>0</td>
-      <td>.//categories/unique.video_category.parquet</td>
-      <td>0</td>
-      <td>3</td>
-      <td>video_category</td>
-      <td>4</td>
-      <td>16</td>
     </tr>
     <tr>
       <th>3</th>
-      <td>gender</td>
-      <td>(Tags.CATEGORICAL)</td>
-      <td>DType(name='int64', element_type=&lt;ElementType....</td>
-      <td>False</td>
-      <td>False</td>
-      <td>None</td>
+      <td>117574</td>
+      <td>74582</td>
+      <td>1</td>
       <td>0</td>
       <td>0</td>
-      <td>0</td>
-      <td>.//categories/unique.gender.parquet</td>
-      <td>0</td>
-      <td>7</td>
-      <td>gender</td>
-      <td>8</td>
-      <td>16</td>
     </tr>
     <tr>
       <th>4</th>
-      <td>age</td>
-      <td>(Tags.CATEGORICAL)</td>
-      <td>DType(name='int64', element_type=&lt;ElementType....</td>
-      <td>False</td>
-      <td>False</td>
-      <td>None</td>
+      <td>195714</td>
+      <td>34982</td>
       <td>0</td>
       <td>0</td>
       <td>0</td>
-      <td>.//categories/unique.age.parquet</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>117050</td>
+      <td>9769</td>
       <td>0</td>
-      <td>2</td>
-      <td>age</td>
-      <td>3</td>
-      <td>16</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>219293</td>
+      <td>7750</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>252272</td>
+      <td>59629</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>232320</td>
+      <td>12737</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>168813</td>
+      <td>148443</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
     </tr>
   </tbody>
 </table>
 </div></div></div>
 </div>
+</div>
+<div class="section" id="deploy-models-on-triton-inference-server">
+<h2>Deploy models on Triton Inference Server<a class="headerlink" href="#deploy-models-on-triton-inference-server" title="Permalink to this headline"></a></h2>
+<p>First we need to ensure that we have a client connected to the server that we started. To do this, we use the Triton HTTP client library.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">merlin.schema.tags</span> <span class="kn">import</span> <span class="n">Tags</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">tritonclient.http</span> <span class="k">as</span> <span class="nn">client</span>
 
-<span class="n">label_columns</span> <span class="o">=</span> <span class="n">workflow</span><span class="o">.</span><span class="n">output_schema</span><span class="o">.</span><span class="n">select_by_tag</span><span class="p">(</span><span class="n">Tags</span><span class="o">.</span><span class="n">TARGET</span><span class="p">)</span><span class="o">.</span><span class="n">column_names</span>
-<span class="n">workflow</span><span class="o">.</span><span class="n">remove_inputs</span><span class="p">(</span><span class="n">label_columns</span><span class="p">)</span>
+<span class="c1"># Create a triton client</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">triton_client</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">InferenceServerClient</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="s2">&quot;localhost:8000&quot;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;client created.&quot;</span><span class="p">)</span>
+<span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;channel creation failed: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;nvtabular.workflow.workflow.Workflow at 0x7f693b07ee80&gt;
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>client created.
 </pre></div>
 </div>
 </div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">label_columns</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># ensure triton is in a good state</span>
+<span class="n">triton_client</span><span class="o">.</span><span class="n">is_server_live</span><span class="p">()</span>
+<span class="n">triton_client</span><span class="o">.</span><span class="n">get_model_repository_index</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[]
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>GET /v2/health/live, headers None
+&lt;HTTPSocketPoolResponse status=200 headers={&#39;content-length&#39;: &#39;0&#39;, &#39;content-type&#39;: &#39;text/plain&#39;}&gt;
+POST /v2/repository/index, headers None
+
+&lt;HTTPSocketPoolResponse status=200 headers={&#39;content-type&#39;: &#39;application/json&#39;, &#39;content-length&#39;: &#39;191&#39;}&gt;
+bytearray(b&#39;[{&quot;name&quot;:&quot;0_transformworkflowtriton&quot;,&quot;version&quot;:&quot;1&quot;,&quot;state&quot;:&quot;READY&quot;},{&quot;name&quot;:&quot;1_predicttensorflowtriton&quot;,&quot;version&quot;:&quot;1&quot;,&quot;state&quot;:&quot;READY&quot;},{&quot;name&quot;:&quot;executor_model&quot;,&quot;version&quot;:&quot;1&quot;,&quot;state&quot;:&quot;READY&quot;}]&#39;)
+</pre></div>
+</div>
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[{&#39;name&#39;: &#39;0_transformworkflowtriton&#39;, &#39;version&#39;: &#39;1&#39;, &#39;state&#39;: &#39;READY&#39;},
+ {&#39;name&#39;: &#39;1_predicttensorflowtriton&#39;, &#39;version&#39;: &#39;1&#39;, &#39;state&#39;: &#39;READY&#39;},
+ {&#39;name&#39;: &#39;executor_model&#39;, &#39;version&#39;: &#39;1&#39;, &#39;state&#39;: &#39;READY&#39;}]
 </pre></div>
 </div>
 </div>
 </div>
+<p>Now that our server is running, we can send requests to it. In the code below we create a request to send to triton and send it.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">tf_model_path</span> <span class="o">=</span> <span class="s1">&#39;/workspace/data/Tenrec/saved_model/&#39;</span>
-
-<span class="n">model</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="n">tf_model_path</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">merlin.systems.triton.utils</span> <span class="kn">import</span> <span class="n">send_triton_request</span>
+<span class="n">response</span> <span class="o">=</span> <span class="n">send_triton_request</span><span class="p">(</span><span class="n">workflow</span><span class="o">.</span><span class="n">input_schema</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">outputs</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>{&#39;click/binary_output&#39;: array([[0.5073921 ],
+       [0.50442815],
+       [0.5070812 ],
+       [0.5021189 ],
+       [0.5028127 ],
+       [0.5052893 ],
+       [0.5060355 ],
+       [0.51079565],
+       [0.50457317],
+       [0.50388616]], dtype=float32), &#39;follow/binary_output&#39;: array([[0.49480468],
+       [0.49666217],
+       [0.49884534],
+       [0.4969691 ],
+       [0.4962534 ],
+       [0.49507955],
+       [0.49622113],
+       [0.49824178],
+       [0.49707925],
+       [0.49556646]], dtype=float32)}
 </pre></div>
 </div>
 </div>
 </div>
+</div>
+<div class="section" id="summary">
+<h2>Summary<a class="headerlink" href="#summary" title="Permalink to this headline"></a></h2>
+<p>Congratulations on completing this quick start guide example series!</p>
+<p>In this quick start example series, you have preprocessed and transformed the data with NVTabular, trained a single-task or multi-task model with Merlin Models, and then finally deployed these models on Triton Inference Server.</p>
 </div>
 </div>
 
