@@ -16,7 +16,7 @@ RUN pip install fastai fastcore fastprogress fastdownload --no-deps
 
 # install dependencies for systems testing 
 RUN pip install pytest-cov pytest-xdist sphinx-multiversion; pip install -r /nvtabular/requirements/dev.txt
-RUN pip install astroid==2.5.6 'feast<0.20' scikit-learn
+RUN pip install astroid==2.5.6 'feast==0.31' scikit-learn
 RUN echo 'import sphinx.domains' >> /usr/local/lib/python3.8/dist-packages/sphinx/__init__.py
 RUN HOROVOD_GPU_OPERATIONS=NCCL python -m pip install --no-cache-dir horovod && horovodrun --check-build
 
