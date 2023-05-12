@@ -54,8 +54,6 @@ def main(args):
     with open(output_targets_path, "w") as outfile:
         outfile.write(json_object)
 
-    # np.array(outputs).dump(open('outputs.npy', 'wb'))
-
     logging.info("Finished exporting models and config files")
 
 
