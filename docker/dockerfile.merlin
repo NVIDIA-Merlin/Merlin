@@ -239,7 +239,7 @@ COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/fil backends/fil
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/tensorrt backends/tensorrt/
 COPY --chown=1000:1000 --from=triton /usr/bin/serve /usr/bin/.
 COPY --chown=1000:1000 --from=triton /usr/lib/x86_64-linux-gnu/libdcgm.so.2 /usr/lib/x86_64-linux-gnu/libdcgm.so.2
-COPY --chown=1000:1000 --from=triton /usr/local/cuda-12.0/targets/x86_64-linux/lib/libcupti.so.12 /usr/local/cuda-12.0/targets/x86_64-linux/lib/libcupti.so.12
+COPY --chown=1000:1000 --from=triton /usr/local/cuda-12.1/targets/x86_64-linux/lib/libcupti.so.12 /usr/local/cuda-12.1/targets/x86_64-linux/lib/libcupti.so.12
 
 
 ENV PATH=/opt/tritonserver/bin:${PATH}:
@@ -254,7 +254,8 @@ ENV PYTHONPATH=$PYTHONPATH:/usr/local/lib/python3.8/dist-packages/
 COPY --chown=1000:1000 --from=dlfw /usr/lib/libcudf* /usr/lib/
 COPY --chown=1000:1000 --from=dlfw /usr/lib/libarrow* /usr/lib/
 COPY --chown=1000:1000 --from=dlfw /usr/lib/libparquet* /usr/lib/
-COPY --chown=1000:1000 --from=dlfw /usr/lib/cmake/arrow /usr/lib/cmake/arrow/
+COPY --chown=1000:1000 --from=dlfw /usr/lib/cmake/Arrow /usr/lib/cmake/Arrow/
+COPY --chown=1000:1000 --from=dlfw /usr/lib/cmake/Parquet /usr/lib/cmake/Parquet/
 COPY --chown=1000:1000 --from=dlfw /usr/lib/libnvcomp* /usr/lib/
 COPY --chown=1000:1000 --from=dlfw /usr/include/parquet /usr/include/parquet/
 COPY --chown=1000:1000 --from=dlfw /usr/include/arrow /usr/include/arrow/
