@@ -1,14 +1,14 @@
-import os
+import json
 import logging
+import os
 import shutil
-import numpy as np
 
 import tensorflow as tf
+import merlin.models.tf as mm
 from merlin.systems.dag.ensemble import Ensemble
 from merlin.systems.dag.ops.tensorflow import PredictTensorflow
 from merlin.systems.dag.ops.workflow import TransformWorkflow
 from nvtabular.workflow import Workflow
-import merlin.models.tf as mm
 
 from args_parsing import parse_arguments
 
@@ -46,11 +46,15 @@ def main(args):
 
     logging.info(f"Exporting model artifacts to: {ens_model_path}")
     ens_conf, node_confs = ensemble.export(ens_model_path)
-    
-    logging.info("Saving model output names to disk")
     outputs = ensemble.graph.output_schema.column_names
 
-    np.array(outputs).dump(open('outputs.npy', 'wb'))
+    logging.info("Saving model output names to disk as a json file")
+    output_targets_path = os.path.join("./", "outputs.json")
+    json_object = json.dumps(outputs, indent=4)
+    with open(output_targets_path, "w") as outfile:
+        outfile.write(json_object)
+
+    # np.array(outputs).dump(open('outputs.npy', 'wb'))
 
     logging.info("Finished exporting models and config files")
 

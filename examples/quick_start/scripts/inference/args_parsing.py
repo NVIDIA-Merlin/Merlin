@@ -10,12 +10,12 @@ def build_arg_parser():
     parser.add_argument(
         "--nvt_workflow_path",
         default="./results/",
-        help="Path to saved nvtabular workflow. ",
+        help="Loads the nvtabular workflow saved in the preprocessing step. ",
     )
     parser.add_argument(
         "--load_model_path",
         default=None,
-        help="Loads a model from its saved path. ",
+        help="Loads a model saved by --save_model_path in the ranking step. ",
     )
     parser.add_argument(
         "--ensemble_export_path",

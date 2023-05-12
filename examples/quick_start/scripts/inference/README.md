@@ -1,123 +1,73 @@
 # Deploying a Ranking model on Triton Inference Server
-The last step of ML pipeline is to deploy the trained model on [Triton Inference Server](https://github.com/triton-inference-server/server). NVIDIA Triton™, an open-source inference serving software, standardizes AI model deployment and execution and delivers fast and scalable AI in production. Merlin Systems library is designed for building pipelines to generate recommendations. Deploying pipelines on Triton is one part of the library's functionality and it provides easy to use API to be able to geneate 
+The last step of ML pipeline is to deploy the trained model into production. For this purpose, in this quick start guide exampl series, we use NVIDIA Triton Inference Server](https://github.com/triton-inference-server/server), which is an open-source inference serving software, standardizes AI model deployment and execution and delivers fast and scalable AI in production. 
 
-The `ranking.py` is a template script that leverages the Merlin [models](https://github.com/NVIDIA-Merlin/models/) library (Tensorflow API) to build, train, evaluate ranking models. In the end you can either save the model for interence or persist model predictions to file.
+Merlin Systems library is designed for building pipelines to generate recommendations. Deploying pipelines on Triton is one part of the library's functionality and Merlin Systems provides easy to use APIs to be able to export ensemble graph and model artifacts so that they can be loaded on Triton with less effort.
 
-Merlin models library provides building blocks on top of Tensorflow (Keras) that make it easy to build and train advanced neural ranking models. There are blocks for representing input, configuring model outputs/heads, perform feature interactions, losses, metrics, negative sampling, among others.
+Inference stage consists of the following step:
 
-
+- Creating the ensemble graph
+- Launching the Triton Inference Server
+- Sending request to Server and receiving the response
 
 ## Creating the Ensemble Graph
 
+In order to do model deployment stage, you are required to complete `preprocessing` and `ranking` steps already.  At the inference step, we do have a collection of multiple (individual) models to be deployed on Triton. We deploy NVTabular model as well to be able to transform raw data as we do in the preprocessing phase. In this context, deploying multiple models is called an ensemble model since it represents a pipeline of one or more models and the connection of input and output tensors between those models. Ensemble models are intended to be used to encapsulate a procedure that involves multiple models, such as "data preprocessing -> inference -> data postprocessing". 
+
+The Triton Inference Server serves models from one or more model repositories that are specified when the server is started. Each model in a model repository must include a model configuration that provides required and optional information about the model. Merlin Systems simplified that step, so that we can easily export ensemble graph config files and artifacts. We use [Ensemble](https://github.com/NVIDIA-Merlin/systems/blob/main/merlin/systems/dag/ensemble.py#L29) class for that. The class is responsible for interpreting the graph and exporting the correct files for the Triton server.
+
+Exporting an ensemble graph consists of the following steps:
+
+- load saved workflow
+- load saved ranking model
+- generate ensemble graph
+- export the ensemble graph models and artifacts
+
+These steps are taken care of by `inference.py` script when executed (please see the `Command line arguments` section for the instructions).
+
+
 ## Launching Triton Inference Server
-It is common to find scenarios where you need to score the likelihood of different user-item events, e.g., clicking, liking, sharing, commenting, following the author, etc. Multi-Task Learning (MTL) techniques have been popular in deep learning to train a single model that is able to predict multiple targets at the same time.
 
-By using MTL, it is typically possible to improve the tasks accuracy for somewhat correlated tasks, in particular for sparser targets, for which less training data is available. And instead of spending computational resources to train and deploy different models for each task, you can train and deploy a single MTL model that is able to predict multiple targets.
+Once the models ensemble graph is exported to the path that you define, now you can load these models on Triton Inference Servers. Loading models on Triton is only one single line of code. 
 
-You can find more details in this [post](https://medium.com/nvidia-merlin/building-ranking-models-powered-by-multi-task-learning-with-merlin-and-tensorflow-4b4f993f7cc3) on the multi-task learning building blocks provided by [models](https://github.com/NVIDIA-Merlin/models/)  library.
+You can start the server by running the following command:
 
-The `ranking.py` script makes it easy to use multi-task learning backed by models library. It is automatically enabled when you provide more than one target column to `--tasks` argument.
+```bash
+tritonserver --model-repository = <path to the saved ensemble folder>
+```
+For the --model-repository argument, provide the same path of as the `ensemble_export_path` argumenet that you inputted previously when executing the `inference.py` script.
+
+After you run the tritonserver command, wait until your terminal shows messages like the following example:
+
+I0414 18:29:50.741833 4067 grpc_server.cc:4421] Started GRPCInferenceService at 0.0.0.0:8001
+I0414 18:29:50.742197 4067 http_server.cc:3113] Started HTTPService at 0.0.0.0:8000
+I0414 18:29:50.783470 4067 http_server.cc:178] Started Metrics Service at 0.0.0.0:8002 ,br>
 
 
-<center>
-<img src="https://miro.medium.com/v2/resize:fit:720/0*Fo6rIr10IJQCB6sb" alt="Multi-task learning architectures" >
-</center>
+## Sending request to Triton
 
+This step is explained and demonstrated in the [inference.ipynb](https://github.com/NVIDIA-Merlin/Merlin/blob/quick_start_inf_triton/examples/quick_start/scripts/inference/inference.ipynb) example notebook. Please follow the instructions there and execute the cells to send a request and receive response from Triton.
 
 ## Command line arguments
-
 In this section we describe the command line arguments of the `inference.py` script.
 
-> You can check how to [setup the Docker image](../../ranking.md) to run `ranking.py` script with Docker.
-
-This is an example command line for running the training for the TenRec dataset in our Docker image, which is explained [here](../../ranking.md).
- The parameters and their values can be separated by either space or by `=`.
-
+This is an example command line for running the `inference.py`script after your finished model `preprocessing` and `ranking` steps.
 
 ```bash
 cd /Merlin/examples/quick_start/scripts/inference/
-OUT_DATASET_PATH=/outputs/dataset
-CUDA_VISIBLE_DEVICES=0 TF_GPU_ALLOCATOR=cuda_malloc_async python  inference.py -- ....
+TF_GPU_ALLOCATOR=cuda_malloc_async python inference.py --nvt_workflow_path <path to saved workflow> --load_model_path <path to saved model> --ensemble_export_path <path to export ensemble models>
 ```
+
+Note that preprocessing step saves the NVTabular workflow automatically to `output_path` that is set when executing preprocessing script. For the `load_model_path` argument, be sure that you provide the exact same path f that you provided for saving the trained model during ranking step.
 
 ### Inputs
 
 ```
-  --train_data_path
-                        Path of the train set. It expects a folder with parquet files.
-                        If not provided, the model will not be trained (in case you want to use
-                        --load_model_path to load a pre-trained model)
-  --eval_data_path
-                        Path of the eval set. It expects a folder with parquet files.
-                        If not provided, the model will not be evaluated
-  --predict_data_path
-                        Path of a dataset for prediction. It expects a folder with parquet files
-                        If provided, it will compute the predictions for this dataset and
-                        save those predictions to --predict_output_path
+  --nvt_workflow_path   
+                        Loads the nvtabular workflow saved in the preprocessing step.
   --load_model_path     
-                        If provided, loads a model saved by --save_model_path
-                        instead of initializing the parameters randomly
+                        Loads a model saved by --save_model_path in the ranking step.
+   --ensemble_export_path
+                        Path for exporting the config files and model artifacts
+                        to load them on Triton inference server.
 ```
-
-
-### Model
-```
-  --model {mmoe,cgc,ple,dcn,dlrm,mlp,wide_n_deep,deepfm}
-                        Types of ranking model architectures that are
-                        supported. Any of these models can be used with
-                        multi-task learning (MTL). But these three are
-                        specific to MTL: 'mmoe', 'cgc' and 'ple'. By default
-                        'mlp'
-  --activation 
-                        Activation function supported by Keras, like:
-                        'relu', 'selu', 'elu', 'tanh', 'sigmoid'. By
-                        default 'relu'
-  --mlp_init            Keras initializer for MLP layers. 
-                        By default 'glorot_uniform'.
-  --l2_reg              L2 regularization factor. By default 1e-5.
-  --embeddings_l2_reg 
-                        L2 regularization factor for embedding tables.
-                        It operates only on the embeddings in the
-                        current batch, not on the whole embedding table.
-                        By default 0.0
-  --embedding_sizes_multiplier 
-                        When --embedding_dim is not provided it infers
-                        automatically the embedding dimensions from the
-                        categorical features cardinality. This factor
-                        allows to increase/decrease the embedding dim
-                        based on the cardinality. Typical values range
-                        between 2 and 10. By default 2.0
-  --dropout             Dropout rate. By default 0.0
-  --mlp_layers 
-                        Comma-separated dims of MLP layers. 
-                        It is used by MLP model and also for dense blocks
-                        of DLRM, DeepFM, DCN and Wide&Deep.
-                        By default '128,64,32'
-  --stl_positive_class_weight 
-                        Positive class weight for single-task  models. By
-                        default 1.0. The negative class weight is fixed
-                        to 1.0
-```
-
-
-### Outputs
-```
-  --output_path
-                        Folder to save training and logging assets.
-  --save_model_path 
-                        If provided, model is saved to this path after
-                        training. It can be loaded later with --load_model_path 
-  --predict_output_path 
-                        If provided the prediction scores will be saved
-                        to this path, according to --predict_output_format
-                        and --predict_output_keep_cols 
-  --predict_output_keep_cols 
-                        Comma-separated list of columns to keep in the
-                        output prediction file. If no columns is
-                        provided, all columns are kept together with the
-                        prediction scores.  
-  --predict_output_format {parquet,csv,tsv}
-                        Format of the output prediction files. By
-                        default 'parquet', which is the most performant
-                        format.
-```                        
+             
