@@ -12,7 +12,7 @@ FROM ${FULL_IMAGE} as triton
 FROM ${BASE_IMAGE} as base
 
 # Triton TF backends
-COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/tensorflow2 backends/tensorflow2/
+COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/tensorflow backends/tensorflow/
 
 # Tensorflow dependencies (only)
 # Pinning to pass hugectr sok tests
