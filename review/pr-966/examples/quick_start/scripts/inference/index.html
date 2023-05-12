@@ -86,114 +86,62 @@
              
   <div class="section" id="deploying-a-ranking-model-on-triton-inference-server">
 <h1>Deploying a Ranking model on Triton Inference Server<a class="headerlink" href="#deploying-a-ranking-model-on-triton-inference-server" title="Permalink to this headline"></a></h1>
-<p>The last step of ML pipeline is to deploy the trained model on <a class="reference external" href="https://github.com/triton-inference-server/server">Triton Inference Server</a>. NVIDIA Triton™, an open-source inference serving software, standardizes AI model deployment and execution and delivers fast and scalable AI in production. Merlin Systems library is designed for building pipelines to generate recommendations. Deploying pipelines on Triton is one part of the library’s functionality and it provides easy to use API to be able to geneate</p>
-<p>The <code class="docutils literal notranslate"><span class="pre">ranking.py</span></code> is a template script that leverages the Merlin <a class="reference external" href="https://github.com/NVIDIA-Merlin/models/">models</a> library (Tensorflow API) to build, train, evaluate ranking models. In the end you can either save the model for interence or persist model predictions to file.</p>
-<p>Merlin models library provides building blocks on top of Tensorflow (Keras) that make it easy to build and train advanced neural ranking models. There are blocks for representing input, configuring model outputs/heads, perform feature interactions, losses, metrics, negative sampling, among others.</p>
+<p>The last step of ML pipeline is to deploy the trained model into production. For this purpose, in this quick start guide exampl series, we use NVIDIA Triton Inference Server](<a class="reference external" href="https://github.com/triton-inference-server/server">https://github.com/triton-inference-server/server</a>), which is an open-source inference serving software, standardizes AI model deployment and execution and delivers fast and scalable AI in production.</p>
+<p>Merlin Systems library is designed for building pipelines to generate recommendations. Deploying pipelines on Triton is one part of the library’s functionality and Merlin Systems provides easy to use APIs to be able to export ensemble graph and model artifacts so that they can be loaded on Triton with less effort.</p>
+<p>Inference stage consists of the following step:</p>
+<ul class="simple">
+<li><p>Creating the ensemble graph</p></li>
+<li><p>Launching the Triton Inference Server</p></li>
+<li><p>Sending request to Server and receiving the response</p></li>
+</ul>
 <div class="section" id="creating-the-ensemble-graph">
 <h2>Creating the Ensemble Graph<a class="headerlink" href="#creating-the-ensemble-graph" title="Permalink to this headline"></a></h2>
+<p>In order to do model deployment stage, you are required to complete <code class="docutils literal notranslate"><span class="pre">preprocessing</span></code> and <code class="docutils literal notranslate"><span class="pre">ranking</span></code> steps already.  At the inference step, we do have a collection of multiple (individual) models to be deployed on Triton. We deploy NVTabular model as well to be able to transform raw data as we do in the preprocessing phase. In this context, deploying multiple models is called an ensemble model since it represents a pipeline of one or more models and the connection of input and output tensors between those models. Ensemble models are intended to be used to encapsulate a procedure that involves multiple models, such as “data preprocessing -&gt; inference -&gt; data postprocessing”.</p>
+<p>The Triton Inference Server serves models from one or more model repositories that are specified when the server is started. Each model in a model repository must include a model configuration that provides required and optional information about the model. Merlin Systems simplified that step, so that we can easily export ensemble graph config files and artifacts. We use <a class="reference external" href="https://github.com/NVIDIA-Merlin/systems/blob/main/merlin/systems/dag/ensemble.py#L29">Ensemble</a> class for that. The class is responsible for interpreting the graph and exporting the correct files for the Triton server.</p>
+<p>Exporting an ensemble graph consists of the following steps:</p>
+<ul class="simple">
+<li><p>load saved workflow</p></li>
+<li><p>load saved ranking model</p></li>
+<li><p>generate ensemble graph</p></li>
+<li><p>export the ensemble graph models and artifacts</p></li>
+</ul>
+<p>These steps are taken care of by <code class="docutils literal notranslate"><span class="pre">inference.py</span></code> script when executed (please see the <code class="docutils literal notranslate"><span class="pre">Command</span> <span class="pre">line</span> <span class="pre">arguments</span></code> section for the instructions).</p>
 </div>
 <div class="section" id="launching-triton-inference-server">
 <h2>Launching Triton Inference Server<a class="headerlink" href="#launching-triton-inference-server" title="Permalink to this headline"></a></h2>
-<p>It is common to find scenarios where you need to score the likelihood of different user-item events, e.g., clicking, liking, sharing, commenting, following the author, etc. Multi-Task Learning (MTL) techniques have been popular in deep learning to train a single model that is able to predict multiple targets at the same time.</p>
-<p>By using MTL, it is typically possible to improve the tasks accuracy for somewhat correlated tasks, in particular for sparser targets, for which less training data is available. And instead of spending computational resources to train and deploy different models for each task, you can train and deploy a single MTL model that is able to predict multiple targets.</p>
-<p>You can find more details in this <a class="reference external" href="https://medium.com/nvidia-merlin/building-ranking-models-powered-by-multi-task-learning-with-merlin-and-tensorflow-4b4f993f7cc3">post</a> on the multi-task learning building blocks provided by <a class="reference external" href="https://github.com/NVIDIA-Merlin/models/">models</a>  library.</p>
-<p>The <code class="docutils literal notranslate"><span class="pre">ranking.py</span></code> script makes it easy to use multi-task learning backed by models library. It is automatically enabled when you provide more than one target column to <code class="docutils literal notranslate"><span class="pre">--tasks</span></code> argument.</p>
-<center>
-<img src="https://miro.medium.com/v2/resize:fit:720/0*Fo6rIr10IJQCB6sb" alt="Multi-task learning architectures" >
-</center>
+<p>Once the models ensemble graph is exported to the path that you define, now you can load these models on Triton Inference Servers. Loading models on Triton is only one single line of code.</p>
+<p>You can start the server by running the following command:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>tritonserver<span class="w"> </span>--model-repository<span class="w"> </span><span class="o">=</span><span class="w"> </span>&lt;path<span class="w"> </span>to<span class="w"> </span>the<span class="w"> </span>saved<span class="w"> </span>ensemble<span class="w"> </span>folder&gt;
+</pre></div>
+</div>
+<p>For the –model-repository argument, provide the same path of as the <code class="docutils literal notranslate"><span class="pre">ensemble_export_path</span></code> argumenet that you inputted previously when executing the <code class="docutils literal notranslate"><span class="pre">inference.py</span></code> script.</p>
+<p>After you run the tritonserver command, wait until your terminal shows messages like the following example:</p>
+<p>I0414 18:29:50.741833 4067 grpc_server.cc:4421] Started GRPCInferenceService at 0.0.0.0:8001
+I0414 18:29:50.742197 4067 http_server.cc:3113] Started HTTPService at 0.0.0.0:8000
+I0414 18:29:50.783470 4067 http_server.cc:178] Started Metrics Service at 0.0.0.0:8002 ,br&gt;</p>
+</div>
+<div class="section" id="sending-request-to-triton">
+<h2>Sending request to Triton<a class="headerlink" href="#sending-request-to-triton" title="Permalink to this headline"></a></h2>
+<p>This step is explained and demonstrated in the <a class="reference external" href="https://github.com/NVIDIA-Merlin/Merlin/blob/quick_start_inf_triton/examples/quick_start/scripts/inference/inference.ipynb">inference.ipynb</a> example notebook. Please follow the instructions there and execute the cells to send a request and receive response from Triton.</p>
 </div>
 <div class="section" id="command-line-arguments">
 <h2>Command line arguments<a class="headerlink" href="#command-line-arguments" title="Permalink to this headline"></a></h2>
 <p>In this section we describe the command line arguments of the <code class="docutils literal notranslate"><span class="pre">inference.py</span></code> script.</p>
-<blockquote>
-<div><p>You can check how to <a class="reference internal" href="../../ranking.html"><span class="doc std std-doc">setup the Docker image</span></a> to run <code class="docutils literal notranslate"><span class="pre">ranking.py</span></code> script with Docker.</p>
-</div></blockquote>
-<p>This is an example command line for running the training for the TenRec dataset in our Docker image, which is explained <a class="reference internal" href="../../ranking.html"><span class="doc std std-doc">here</span></a>.
-The parameters and their values can be separated by either space or by <code class="docutils literal notranslate"><span class="pre">=</span></code>.</p>
+<p>This is an example command line for running the <code class="docutils literal notranslate"><span class="pre">inference.py</span></code>script after your finished model <code class="docutils literal notranslate"><span class="pre">preprocessing</span></code> and <code class="docutils literal notranslate"><span class="pre">ranking</span></code> steps.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>/Merlin/examples/quick_start/scripts/inference/
-<span class="nv">OUT_DATASET_PATH</span><span class="o">=</span>/outputs/dataset
-<span class="nv">CUDA_VISIBLE_DEVICES</span><span class="o">=</span><span class="m">0</span><span class="w"> </span><span class="nv">TF_GPU_ALLOCATOR</span><span class="o">=</span>cuda_malloc_async<span class="w"> </span>python<span class="w">  </span>inference.py<span class="w"> </span>--<span class="w"> </span>....
+<span class="nv">TF_GPU_ALLOCATOR</span><span class="o">=</span>cuda_malloc_async<span class="w"> </span>python<span class="w"> </span>inference.py<span class="w"> </span>--nvt_workflow_path<span class="w"> </span>&lt;path<span class="w"> </span>to<span class="w"> </span>saved<span class="w"> </span>workflow&gt;<span class="w"> </span>--load_model_path<span class="w"> </span>&lt;path<span class="w"> </span>to<span class="w"> </span>saved<span class="w"> </span>model&gt;<span class="w"> </span>--ensemble_export_path<span class="w"> </span>&lt;path<span class="w"> </span>to<span class="w"> </span><span class="nb">export</span><span class="w"> </span>ensemble<span class="w"> </span>models&gt;
 </pre></div>
 </div>
+<p>Note that preprocessing step saves the NVTabular workflow automatically to <code class="docutils literal notranslate"><span class="pre">output_path</span></code> that is set when executing preprocessing script. For the <code class="docutils literal notranslate"><span class="pre">load_model_path</span></code> argument, be sure that you provide the exact same path f that you provided for saving the trained model during ranking step.</p>
 <div class="section" id="inputs">
 <h3>Inputs<a class="headerlink" href="#inputs" title="Permalink to this headline"></a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>  <span class="o">--</span><span class="n">train_data_path</span>
-                        <span class="n">Path</span> <span class="n">of</span> <span class="n">the</span> <span class="n">train</span> <span class="nb">set</span><span class="o">.</span> <span class="n">It</span> <span class="n">expects</span> <span class="n">a</span> <span class="n">folder</span> <span class="k">with</span> <span class="n">parquet</span> <span class="n">files</span><span class="o">.</span>
-                        <span class="n">If</span> <span class="ow">not</span> <span class="n">provided</span><span class="p">,</span> <span class="n">the</span> <span class="n">model</span> <span class="n">will</span> <span class="ow">not</span> <span class="n">be</span> <span class="n">trained</span> <span class="p">(</span><span class="ow">in</span> <span class="n">case</span> <span class="n">you</span> <span class="n">want</span> <span class="n">to</span> <span class="n">use</span>
-                        <span class="o">--</span><span class="n">load_model_path</span> <span class="n">to</span> <span class="n">load</span> <span class="n">a</span> <span class="n">pre</span><span class="o">-</span><span class="n">trained</span> <span class="n">model</span><span class="p">)</span>
-  <span class="o">--</span><span class="n">eval_data_path</span>
-                        <span class="n">Path</span> <span class="n">of</span> <span class="n">the</span> <span class="nb">eval</span> <span class="nb">set</span><span class="o">.</span> <span class="n">It</span> <span class="n">expects</span> <span class="n">a</span> <span class="n">folder</span> <span class="k">with</span> <span class="n">parquet</span> <span class="n">files</span><span class="o">.</span>
-                        <span class="n">If</span> <span class="ow">not</span> <span class="n">provided</span><span class="p">,</span> <span class="n">the</span> <span class="n">model</span> <span class="n">will</span> <span class="ow">not</span> <span class="n">be</span> <span class="n">evaluated</span>
-  <span class="o">--</span><span class="n">predict_data_path</span>
-                        <span class="n">Path</span> <span class="n">of</span> <span class="n">a</span> <span class="n">dataset</span> <span class="k">for</span> <span class="n">prediction</span><span class="o">.</span> <span class="n">It</span> <span class="n">expects</span> <span class="n">a</span> <span class="n">folder</span> <span class="k">with</span> <span class="n">parquet</span> <span class="n">files</span>
-                        <span class="n">If</span> <span class="n">provided</span><span class="p">,</span> <span class="n">it</span> <span class="n">will</span> <span class="n">compute</span> <span class="n">the</span> <span class="n">predictions</span> <span class="k">for</span> <span class="n">this</span> <span class="n">dataset</span> <span class="ow">and</span>
-                        <span class="n">save</span> <span class="n">those</span> <span class="n">predictions</span> <span class="n">to</span> <span class="o">--</span><span class="n">predict_output_path</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>  <span class="o">--</span><span class="n">nvt_workflow_path</span>   
+                        <span class="n">Loads</span> <span class="n">the</span> <span class="n">nvtabular</span> <span class="n">workflow</span> <span class="n">saved</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">preprocessing</span> <span class="n">step</span><span class="o">.</span>
   <span class="o">--</span><span class="n">load_model_path</span>     
-                        <span class="n">If</span> <span class="n">provided</span><span class="p">,</span> <span class="n">loads</span> <span class="n">a</span> <span class="n">model</span> <span class="n">saved</span> <span class="n">by</span> <span class="o">--</span><span class="n">save_model_path</span>
-                        <span class="n">instead</span> <span class="n">of</span> <span class="n">initializing</span> <span class="n">the</span> <span class="n">parameters</span> <span class="n">randomly</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="model">
-<h3>Model<a class="headerlink" href="#model" title="Permalink to this headline"></a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>  <span class="o">--</span><span class="n">model</span> <span class="p">{</span><span class="n">mmoe</span><span class="p">,</span><span class="n">cgc</span><span class="p">,</span><span class="n">ple</span><span class="p">,</span><span class="n">dcn</span><span class="p">,</span><span class="n">dlrm</span><span class="p">,</span><span class="n">mlp</span><span class="p">,</span><span class="n">wide_n_deep</span><span class="p">,</span><span class="n">deepfm</span><span class="p">}</span>
-                        <span class="n">Types</span> <span class="n">of</span> <span class="n">ranking</span> <span class="n">model</span> <span class="n">architectures</span> <span class="n">that</span> <span class="n">are</span>
-                        <span class="n">supported</span><span class="o">.</span> <span class="n">Any</span> <span class="n">of</span> <span class="n">these</span> <span class="n">models</span> <span class="n">can</span> <span class="n">be</span> <span class="n">used</span> <span class="k">with</span>
-                        <span class="n">multi</span><span class="o">-</span><span class="n">task</span> <span class="n">learning</span> <span class="p">(</span><span class="n">MTL</span><span class="p">)</span><span class="o">.</span> <span class="n">But</span> <span class="n">these</span> <span class="n">three</span> <span class="n">are</span>
-                        <span class="n">specific</span> <span class="n">to</span> <span class="n">MTL</span><span class="p">:</span> <span class="s1">&#39;mmoe&#39;</span><span class="p">,</span> <span class="s1">&#39;cgc&#39;</span> <span class="ow">and</span> <span class="s1">&#39;ple&#39;</span><span class="o">.</span> <span class="n">By</span> <span class="n">default</span>
-                        <span class="s1">&#39;mlp&#39;</span>
-  <span class="o">--</span><span class="n">activation</span> 
-                        <span class="n">Activation</span> <span class="n">function</span> <span class="n">supported</span> <span class="n">by</span> <span class="n">Keras</span><span class="p">,</span> <span class="n">like</span><span class="p">:</span>
-                        <span class="s1">&#39;relu&#39;</span><span class="p">,</span> <span class="s1">&#39;selu&#39;</span><span class="p">,</span> <span class="s1">&#39;elu&#39;</span><span class="p">,</span> <span class="s1">&#39;tanh&#39;</span><span class="p">,</span> <span class="s1">&#39;sigmoid&#39;</span><span class="o">.</span> <span class="n">By</span>
-                        <span class="n">default</span> <span class="s1">&#39;relu&#39;</span>
-  <span class="o">--</span><span class="n">mlp_init</span>            <span class="n">Keras</span> <span class="n">initializer</span> <span class="k">for</span> <span class="n">MLP</span> <span class="n">layers</span><span class="o">.</span> 
-                        <span class="n">By</span> <span class="n">default</span> <span class="s1">&#39;glorot_uniform&#39;</span><span class="o">.</span>
-  <span class="o">--</span><span class="n">l2_reg</span>              <span class="n">L2</span> <span class="n">regularization</span> <span class="n">factor</span><span class="o">.</span> <span class="n">By</span> <span class="n">default</span> <span class="mf">1e-5</span><span class="o">.</span>
-  <span class="o">--</span><span class="n">embeddings_l2_reg</span> 
-                        <span class="n">L2</span> <span class="n">regularization</span> <span class="n">factor</span> <span class="k">for</span> <span class="n">embedding</span> <span class="n">tables</span><span class="o">.</span>
-                        <span class="n">It</span> <span class="n">operates</span> <span class="n">only</span> <span class="n">on</span> <span class="n">the</span> <span class="n">embeddings</span> <span class="ow">in</span> <span class="n">the</span>
-                        <span class="n">current</span> <span class="n">batch</span><span class="p">,</span> <span class="ow">not</span> <span class="n">on</span> <span class="n">the</span> <span class="n">whole</span> <span class="n">embedding</span> <span class="n">table</span><span class="o">.</span>
-                        <span class="n">By</span> <span class="n">default</span> <span class="mf">0.0</span>
-  <span class="o">--</span><span class="n">embedding_sizes_multiplier</span> 
-                        <span class="n">When</span> <span class="o">--</span><span class="n">embedding_dim</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">provided</span> <span class="n">it</span> <span class="n">infers</span>
-                        <span class="n">automatically</span> <span class="n">the</span> <span class="n">embedding</span> <span class="n">dimensions</span> <span class="kn">from</span> <span class="nn">the</span>
-                        <span class="n">categorical</span> <span class="n">features</span> <span class="n">cardinality</span><span class="o">.</span> <span class="n">This</span> <span class="n">factor</span>
-                        <span class="n">allows</span> <span class="n">to</span> <span class="n">increase</span><span class="o">/</span><span class="n">decrease</span> <span class="n">the</span> <span class="n">embedding</span> <span class="n">dim</span>
-                        <span class="n">based</span> <span class="n">on</span> <span class="n">the</span> <span class="n">cardinality</span><span class="o">.</span> <span class="n">Typical</span> <span class="n">values</span> <span class="nb">range</span>
-                        <span class="n">between</span> <span class="mi">2</span> <span class="ow">and</span> <span class="mf">10.</span> <span class="n">By</span> <span class="n">default</span> <span class="mf">2.0</span>
-  <span class="o">--</span><span class="n">dropout</span>             <span class="n">Dropout</span> <span class="n">rate</span><span class="o">.</span> <span class="n">By</span> <span class="n">default</span> <span class="mf">0.0</span>
-  <span class="o">--</span><span class="n">mlp_layers</span> 
-                        <span class="n">Comma</span><span class="o">-</span><span class="n">separated</span> <span class="n">dims</span> <span class="n">of</span> <span class="n">MLP</span> <span class="n">layers</span><span class="o">.</span> 
-                        <span class="n">It</span> <span class="ow">is</span> <span class="n">used</span> <span class="n">by</span> <span class="n">MLP</span> <span class="n">model</span> <span class="ow">and</span> <span class="n">also</span> <span class="k">for</span> <span class="n">dense</span> <span class="n">blocks</span>
-                        <span class="n">of</span> <span class="n">DLRM</span><span class="p">,</span> <span class="n">DeepFM</span><span class="p">,</span> <span class="n">DCN</span> <span class="ow">and</span> <span class="n">Wide</span><span class="o">&amp;</span><span class="n">Deep</span><span class="o">.</span>
-                        <span class="n">By</span> <span class="n">default</span> <span class="s1">&#39;128,64,32&#39;</span>
-  <span class="o">--</span><span class="n">stl_positive_class_weight</span> 
-                        <span class="n">Positive</span> <span class="k">class</span> <span class="nc">weight</span> <span class="k">for</span> <span class="n">single</span><span class="o">-</span><span class="n">task</span>  <span class="n">models</span><span class="o">.</span> <span class="n">By</span>
-                        <span class="n">default</span> <span class="mf">1.0</span><span class="o">.</span> <span class="n">The</span> <span class="n">negative</span> <span class="k">class</span> <span class="nc">weight</span> <span class="ow">is</span> <span class="n">fixed</span>
-                        <span class="n">to</span> <span class="mf">1.0</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="outputs">
-<h3>Outputs<a class="headerlink" href="#outputs" title="Permalink to this headline"></a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>  <span class="o">--</span><span class="n">output_path</span>
-                        <span class="n">Folder</span> <span class="n">to</span> <span class="n">save</span> <span class="n">training</span> <span class="ow">and</span> <span class="n">logging</span> <span class="n">assets</span><span class="o">.</span>
-  <span class="o">--</span><span class="n">save_model_path</span> 
-                        <span class="n">If</span> <span class="n">provided</span><span class="p">,</span> <span class="n">model</span> <span class="ow">is</span> <span class="n">saved</span> <span class="n">to</span> <span class="n">this</span> <span class="n">path</span> <span class="n">after</span>
-                        <span class="n">training</span><span class="o">.</span> <span class="n">It</span> <span class="n">can</span> <span class="n">be</span> <span class="n">loaded</span> <span class="n">later</span> <span class="k">with</span> <span class="o">--</span><span class="n">load_model_path</span> 
-  <span class="o">--</span><span class="n">predict_output_path</span> 
-                        <span class="n">If</span> <span class="n">provided</span> <span class="n">the</span> <span class="n">prediction</span> <span class="n">scores</span> <span class="n">will</span> <span class="n">be</span> <span class="n">saved</span>
-                        <span class="n">to</span> <span class="n">this</span> <span class="n">path</span><span class="p">,</span> <span class="n">according</span> <span class="n">to</span> <span class="o">--</span><span class="n">predict_output_format</span>
-                        <span class="ow">and</span> <span class="o">--</span><span class="n">predict_output_keep_cols</span> 
-  <span class="o">--</span><span class="n">predict_output_keep_cols</span> 
-                        <span class="n">Comma</span><span class="o">-</span><span class="n">separated</span> <span class="nb">list</span> <span class="n">of</span> <span class="n">columns</span> <span class="n">to</span> <span class="n">keep</span> <span class="ow">in</span> <span class="n">the</span>
-                        <span class="n">output</span> <span class="n">prediction</span> <span class="n">file</span><span class="o">.</span> <span class="n">If</span> <span class="n">no</span> <span class="n">columns</span> <span class="ow">is</span>
-                        <span class="n">provided</span><span class="p">,</span> <span class="nb">all</span> <span class="n">columns</span> <span class="n">are</span> <span class="n">kept</span> <span class="n">together</span> <span class="k">with</span> <span class="n">the</span>
-                        <span class="n">prediction</span> <span class="n">scores</span><span class="o">.</span>  
-  <span class="o">--</span><span class="n">predict_output_format</span> <span class="p">{</span><span class="n">parquet</span><span class="p">,</span><span class="n">csv</span><span class="p">,</span><span class="n">tsv</span><span class="p">}</span>
-                        <span class="n">Format</span> <span class="n">of</span> <span class="n">the</span> <span class="n">output</span> <span class="n">prediction</span> <span class="n">files</span><span class="o">.</span> <span class="n">By</span>
-                        <span class="n">default</span> <span class="s1">&#39;parquet&#39;</span><span class="p">,</span> <span class="n">which</span> <span class="ow">is</span> <span class="n">the</span> <span class="n">most</span> <span class="n">performant</span>
-                        <span class="nb">format</span><span class="o">.</span>
+                        <span class="n">Loads</span> <span class="n">a</span> <span class="n">model</span> <span class="n">saved</span> <span class="n">by</span> <span class="o">--</span><span class="n">save_model_path</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">ranking</span> <span class="n">step</span><span class="o">.</span>
+   <span class="o">--</span><span class="n">ensemble_export_path</span>
+                        <span class="n">Path</span> <span class="k">for</span> <span class="n">exporting</span> <span class="n">the</span> <span class="n">config</span> <span class="n">files</span> <span class="ow">and</span> <span class="n">model</span> <span class="n">artifacts</span>
+                        <span class="n">to</span> <span class="n">load</span> <span class="n">them</span> <span class="n">on</span> <span class="n">Triton</span> <span class="n">inference</span> <span class="n">server</span><span class="o">.</span>
 </pre></div>
 </div>
 </div>

@@ -5,10 +5,11 @@ from functools import reduce
 from typing import Optional
 
 import nvtabular as nvt
-from args_parsing import parse_arguments
 from merlin.core.dispatch import HAS_GPU
 from merlin.schema import Tags
 from nvtabular import ops as nvt_ops
+
+from args_parsing import parse_arguments
 
 
 def filter_by_freq(df_to_filter, df_for_stats, column, min_freq, max_freq=None):
@@ -419,8 +420,9 @@ class PreprocessingRunner:
                 output_predict_dataset_path,
                 output_files=args.output_num_partitions,
             )
-
-        nvt_workflow_features.save(os.path.join(output_dataset_path, "workflow"))
+        nvt_save_path = os.path.join(output_dataset_path, "workflow")
+        logging.info(f"Saving nvtabular workflow to: {nvt_save_path}")
+        nvt_workflow_features.save(nvt_save_path)
 
 
 def main():
