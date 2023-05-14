@@ -3,7 +3,7 @@ The last step of ML pipeline is to deploy the trained model into production. For
 
 Merlin Systems library is designed for building pipelines to generate recommendations. Deploying pipelines on Triton is one part of the library's functionality and Merlin Systems provides easy to use APIs to be able to export ensemble graph and model artifacts so that they can be loaded on Triton with less effort.
 
-Inference stage consists of the following step:
+In this example we demonstrate the necessary steps to deploy a model to Triton and test it:
 
 - Creating the ensemble graph
 - Launching the Triton Inference Server
