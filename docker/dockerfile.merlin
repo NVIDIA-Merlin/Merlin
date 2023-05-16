@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.2
-ARG TRITON_VERSION=23.02
-ARG DLFW_VERSION=23.02
+ARG TRITON_VERSION=23.03
+ARG DLFW_VERSION=23.03
 
 ARG FULL_IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-py3
 ARG BASE_IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-py3-min
@@ -11,7 +11,7 @@ FROM ${DLFW_IMAGE} as dlfw
 FROM ${BASE_IMAGE} as build
 
 # Args
-ARG DASK_VER=2022.11.1
+ARG DASK_VER=2023.1.1
 ARG MERLIN_VER=main
 ARG CORE_VER=main
 ARG MODELS_VER=main
@@ -239,7 +239,7 @@ COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/fil backends/fil
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/tensorrt backends/tensorrt/
 COPY --chown=1000:1000 --from=triton /usr/bin/serve /usr/bin/.
 COPY --chown=1000:1000 --from=triton /usr/lib/x86_64-linux-gnu/libdcgm.so.2 /usr/lib/x86_64-linux-gnu/libdcgm.so.2
-COPY --chown=1000:1000 --from=triton /usr/local/cuda-12/targets/x86_64-linux/lib/libcupti.so.12 /usr/local/cuda-12/targets/x86_64-linux/lib/libcupti.so.12
+COPY --chown=1000:1000 --from=triton /usr/local/cuda-12.1/targets/x86_64-linux/lib/libcupti.so.12 /usr/local/cuda-12.1/targets/x86_64-linux/lib/libcupti.so.12
 
 
 ENV PATH=/opt/tritonserver/bin:${PATH}:
@@ -261,6 +261,11 @@ COPY --chown=1000:1000 --from=dlfw /usr/include/parquet /usr/include/parquet/
 COPY --chown=1000:1000 --from=dlfw /usr/include/arrow /usr/include/arrow/
 COPY --chown=1000:1000 --from=dlfw /usr/include/cudf /usr/include/cudf/
 COPY --chown=1000:1000 --from=dlfw /usr/include/rmm /usr/include/rmm/
+# ptx compiler required by cubinlinker
+COPY --chown=1000:1000 --from=dlfw /usr/local/cuda-12.1/targets/x86_64-linux/lib/libnvptxcompiler_static.a /usr/local/cuda-12.1/targets/x86_64-linux/lib/libnvptxcompiler_static.a
+COPY --chown=1000:1000 --from=dlfw /usr/local/cuda-12.1/targets/x86_64-linux/include/nvPTXCompiler.h /usr/local/cuda-12.1/targets/x86_64-linux/include/nvPTXCompiler.h
+RUN git clone https://github.com/rapidsai/ptxcompiler.git /ptx && cd /ptx/ && python setup.py develop;
+
 ARG PYTHON_VERSION=3.8
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/rmm /usr/local/lib/python${PYTHON_VERSION}/dist-packages/rmm
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cuda /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cuda
@@ -272,16 +277,17 @@ COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-p
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cupyx /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cupyx
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cupy_backends /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cupy_backends
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/numba /usr/local/lib/python${PYTHON_VERSION}/dist-packages/numba
+COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cubinlinker /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cubinlinker
 
 
-COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python3.8/dist-packages/cudf-*.dist-info /usr/local/lib/python3.8/dist-packages/cudf.dist-info/
-COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python3.8/dist-packages/dask_cudf-*.dist-info /usr/local/lib/python3.8/dist-packages/dask_cudf.dist-info/
-COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python3.8/dist-packages/dask_cuda-*.dist-info /usr/local/lib/python3.8/dist-packages/dask_cuda.dist-info/
-COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python3.8/dist-packages/pyarrow-*.dist-info /usr/local/lib/python3.8/dist-packages/pyarrow.dist-info/
-COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python3.8/dist-packages/rmm-*.dist-info /usr/local/lib/python3.8/dist-packages/rmm.dist-info/
-COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python3.8/dist-packages/cupy_*.dist-info /usr/local/lib/python3.8/dist-packages/cupy.dist-info/
-COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python3.8/dist-packages/numba-*.dist-info /usr/local/lib/python3.8/dist-packages/numba.dist-info/
-
+COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cudf-*.dist-info /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cudf.dist-info/
+COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/dask_cudf-*.dist-info /usr/local/lib/python${PYTHON_VERSION}/dist-packages/dask_cudf.dist-info/
+COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/dask_cuda-*.dist-info /usr/local/lib/python${PYTHON_VERSION}/dist-packages/dask_cuda.dist-info/
+COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/pyarrow-*.dist-info /usr/local/lib/python${PYTHON_VERSION}/dist-packages/pyarrow.dist-info/
+COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/rmm-*.dist-info /usr/local/lib/python${PYTHON_VERSION}/dist-packages/rmm.dist-info/
+COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cupy_*.dist-info /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cupy.dist-info/
+COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/numba-*.dist-info /usr/local/lib/python${PYTHON_VERSION}/dist-packages/numba.dist-info/
+COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cubinlinker-*.dist-info /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cubinlinker.dist-info/
 
 RUN pip install --no-cache-dir jupyterlab pydot testbook numpy==1.22.4
 
