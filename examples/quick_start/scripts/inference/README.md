@@ -6,7 +6,7 @@ Merlin Systems library is designed for building pipelines to generate recommenda
 In this example we demonstrate the necessary steps to deploy a model to Triton and test it:
 
 1. Creating the ensemble graph
-- Launching the Triton Inference Server
+2. Launching the Triton Inference Server
 - Sending request to Server and receiving the response
 
 ## Creating the Ensemble Graph
