@@ -9,7 +9,7 @@ def build_arg_parser():
     # Inputs / Outputs
     parser.add_argument(
         "--nvt_workflow_path",
-        default="./results/",
+        default=None,
         help="Loads the nvtabular workflow saved in the preprocessing step. ",
     )
     parser.add_argument(
