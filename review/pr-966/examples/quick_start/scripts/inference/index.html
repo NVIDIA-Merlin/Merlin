@@ -86,7 +86,7 @@
              
   <div class="section" id="deploying-a-ranking-model-on-triton-inference-server">
 <h1>Deploying a Ranking model on Triton Inference Server<a class="headerlink" href="#deploying-a-ranking-model-on-triton-inference-server" title="Permalink to this headline"></a></h1>
-<p>The last step of ML pipeline is to deploy the trained model into production. For this purpose we use NVIDIA Triton Inference Server](<a class="reference external" href="https://github.com/triton-inference-server/server">https://github.com/triton-inference-server/server</a>), which is an open-source inference serving software, standardizes AI model deployment and execution and delivers fast and scalable AI in production.</p>
+<p>The last step of ML pipeline is to deploy the trained model into production. For this purpose we use <a class="reference external" href="https://github.com/triton-inference-server/server">NVIDIA Triton Inference Server</a>, which is an open-source inference serving software, standardizes AI model deployment and execution and delivers fast and scalable AI in production.</p>
 <p><a class="reference external" href="https://github.com/NVIDIA-Merlin/systems/tree/main">Merlin Systems</a> library is designed for building pipelines to generate recommendations. Deploying pipelines on Triton is one part of the library’s functionality and Merlin Systems provides easy to use APIs to be able to export ensemble graph and model artifacts so that they can be loaded on Triton with less effort.</p>
 <p>In this example we demonstrate the necessary steps to deploy a model to Triton and test it:</p>
 <ol class="arabic simple">
@@ -96,7 +96,8 @@
 </ol>
 <div class="section" id="creating-the-ensemble-graph">
 <h2>Creating the Ensemble Graph<a class="headerlink" href="#creating-the-ensemble-graph" title="Permalink to this headline"></a></h2>
-<p>In order to do model deployment stage, you are required to complete <code class="docutils literal notranslate"><span class="pre">preprocessing</span></code> and <code class="docutils literal notranslate"><span class="pre">ranking</span></code> steps already.  At the inference step, we do have a collection of multiple (individual) models to be deployed on Triton. We deploy NVTabular model as well to be able to transform raw data as we do in the preprocessing phase. In this context, deploying multiple models is called an ensemble model since it represents a pipeline of one or more models and the connection of input and output tensors between those models. Ensemble models are intended to be used to encapsulate a procedure that involves multiple models, such as “data preprocessing -&gt; inference -&gt; data postprocessing”.</p>
+<p>In order to do model deployment stage, you are required to complete <code class="docutils literal notranslate"><span class="pre">preprocessing</span></code> and <code class="docutils literal notranslate"><span class="pre">ranking</span></code> steps already from the <span class="xref myst">Quick-start for Ranking</span>.  At the inference step, we might have a collection of multiple (individual) models to be deployed on Triton. In this example, we deploy our NVTabular workflow model to be able to transform raw data the same way as in the dataset preprocessing phase, in order to avoid the training-serving skew.</p>
+<p>In this context, deploying multiple models is called an ensemble model since it represents a pipeline of one or more models that are sequentially connected, i.e., output of a model is the input of next model. Ensemble models are intended to be used to encapsulate a procedure that involves multiple models, such as “data preprocessing -&gt; inference -&gt; data postprocessing”.</p>
 <p>The Triton Inference Server serves models from one or more model repositories that are specified when the server is started. Each model must include a configuration that provides required and optional information about the model. Merlin Systems simplified that step, so that we can easily export ensemble graph config files and artifacts. We use <a class="reference external" href="https://github.com/NVIDIA-Merlin/systems/blob/main/merlin/systems/dag/ensemble.py#L29">Ensemble</a> class for that, which is responsible for interpreting the graph and exporting the correct files for the Triton server.</p>
 <p>Exporting an ensemble graph consists of the following steps:</p>
 <ul class="simple">
@@ -129,19 +130,22 @@ I0414 18:29:50.783470 4067 http_server.cc:178] Started Metrics Service at 0.0.0.
 <p>In this section we describe the command line arguments of the <code class="docutils literal notranslate"><span class="pre">inference.py</span></code> script.</p>
 <p>This is an example command line for running the <code class="docutils literal notranslate"><span class="pre">inference.py</span></code>script after your finished model <code class="docutils literal notranslate"><span class="pre">preprocessing</span></code> and <code class="docutils literal notranslate"><span class="pre">ranking</span></code> steps.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>/Merlin/examples/quick_start/scripts/inference/
-<span class="nv">TF_GPU_ALLOCATOR</span><span class="o">=</span>cuda_malloc_async<span class="w"> </span>python<span class="w"> </span>inference.py<span class="w"> </span>--nvt_workflow_path<span class="w"> </span>&lt;path<span class="w"> </span>to<span class="w"> </span>saved<span class="w"> </span>workflow&gt;<span class="w"> </span>--load_model_path<span class="w"> </span>&lt;path<span class="w"> </span>to<span class="w"> </span>saved<span class="w"> </span>model&gt;<span class="w"> </span>--ensemble_export_path<span class="w"> </span>&lt;path<span class="w"> </span>to<span class="w"> </span><span class="nb">export</span><span class="w"> </span>ensemble<span class="w"> </span>models&gt;
+<span class="nv">NVT_WORKFLOW_PATH</span><span class="o">=</span>&lt;input<span class="w"> </span>path<span class="w"> </span>with<span class="w"> </span>saved<span class="w"> </span>workflow&gt;
+<span class="nv">TF_SAVED_MODEL_PATH</span><span class="o">=</span>&lt;input<span class="w"> </span>path<span class="w"> </span>with<span class="w"> </span>saved<span class="w"> </span>model&gt;
+<span class="nv">OUTPUT_ENSEMBLE_PATH</span><span class="o">=</span>&lt;output<span class="w"> </span>path<span class="w"> </span>to<span class="w"> </span><span class="nb">export</span><span class="w"> </span>the<span class="w"> </span>Triton<span class="w"> </span>ensemble<span class="w"> </span>model&gt;
+<span class="nv">TF_GPU_ALLOCATOR</span><span class="o">=</span>cuda_malloc_async<span class="w"> </span>python<span class="w"> </span>inference.py<span class="w"> </span>--nvt_workflow_path<span class="w"> </span><span class="nv">$NVT_WORKFLOW_PATH</span>--load_model_path<span class="w"> </span><span class="nv">$TF_SAVED_MODEL_PATH</span><span class="w"> </span>--ensemble_export_path<span class="w"> </span><span class="nv">$OUTPUT_ENSEMBLE_PATH</span>
 </pre></div>
 </div>
 <p>Note that preprocessing step saves the NVTabular workflow automatically to <code class="docutils literal notranslate"><span class="pre">output_path</span></code> that is set when executing preprocessing script. For the <code class="docutils literal notranslate"><span class="pre">load_model_path</span></code> argument, be sure that you provide the exact same path f that you provided for saving the trained model during ranking step.</p>
 <div class="section" id="inputs">
 <h3>Inputs<a class="headerlink" href="#inputs" title="Permalink to this headline"></a></h3>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>  <span class="o">--</span><span class="n">nvt_workflow_path</span>   
-                        <span class="n">Loads</span> <span class="n">the</span> <span class="n">nvtabular</span> <span class="n">workflow</span> <span class="n">saved</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">preprocessing</span> <span class="n">step</span><span class="o">.</span>
-  <span class="o">--</span><span class="n">load_model_path</span>     
-                        <span class="n">Loads</span> <span class="n">a</span> <span class="n">model</span> <span class="n">saved</span> <span class="n">by</span> <span class="o">--</span><span class="n">save_model_path</span> <span class="ow">in</span> <span class="n">the</span> <span class="n">ranking</span> <span class="n">step</span><span class="o">.</span>
-   <span class="o">--</span><span class="n">ensemble_export_path</span>
-                        <span class="n">Path</span> <span class="k">for</span> <span class="n">exporting</span> <span class="n">the</span> <span class="n">config</span> <span class="n">files</span> <span class="ow">and</span> <span class="n">model</span> <span class="n">artifacts</span>
-                        <span class="n">to</span> <span class="n">load</span> <span class="n">them</span> <span class="n">on</span> <span class="n">Triton</span> <span class="n">inference</span> <span class="n">server</span><span class="o">.</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>  --nvt_workflow_path   
+                        Loads the nvtabular workflow saved in the preprocessing step (`--output_path`).
+  --load_model_path     
+                        Loads a model saved by --save_model_path in the ranking step.
+   --ensemble_export_path
+                        Path for exporting the config files and model artifacts
+                        to load them on Triton inference server.
 </pre></div>
 </div>
 </div>
