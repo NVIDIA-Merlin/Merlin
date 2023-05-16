@@ -68,7 +68,7 @@ Note that preprocessing step saves the NVTabular workflow automatically to `outp
 
 ```
   --nvt_workflow_path   
-                        Loads the nvtabular workflow saved in the preprocessing step.
+                        Loads the nvtabular workflow saved in the preprocessing step (`--output_path`).
   --load_model_path     
                         Loads a model saved by --save_model_path in the ranking step.
    --ensemble_export_path
