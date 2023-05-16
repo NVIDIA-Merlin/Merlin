@@ -16,7 +16,8 @@ COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/tensorflow backe
 
 # Tensorflow dependencies (only)
 # Pinning to pass hugectr sok tests
-RUN pip install --no-cache-dir tensorflow-gpu==2.9.2 protobuf==3.20.3 \
+# wrapt 1.5.0 introduce hugectr test failures, so downgrade to 1.14.0
+RUN pip install --no-cache-dir tensorflow-gpu==2.9.2 protobuf==3.20.3 wrapt==1.14.0 \
     && pip uninstall tensorflow-gpu keras -y
 
 # DLFW Tensorflow packages
