@@ -111,7 +111,7 @@
 <h1>Deploying Ranking Models with Merlin Systems<a class="headerlink" href="#deploying-ranking-models-with-merlin-systems" title="Permalink to this headline"></a></h1>
 <p>NVIDIA <a class="reference external" href="https://github.com/NVIDIA-Merlin">Merlin</a> is an open source framework that accelerates and scales end-to-end recommender system pipelines. The Merlin framework is broken up into several sub components, these include: Merlin-Core, Merlin-Models, NVTabular and Merlin-Systems. Merlin Systems is the focus of this example.</p>
 <p>The purpose of the <a class="reference external" href="https://github.com/NVIDIA-Merlin/systems">Merlin Systems</a> library is to make it easy for Merlin users to quickly deploy their recommender systems from development to <a class="reference external" href="https://github.com/triton-inference-server/server">Triton Inference Server</a>, which is an open-source inference serving software, standardizes AI model deployment and execution and delivers fast and scalable AI in production.</p>
-<p>Please ensure you have followed the Quick-start for ranking and ran the <code class="docutils literal notranslate"><span class="pre">preprocesssing.py</span></code> and <code class="docutils literal notranslate"><span class="pre">ranking.py</span></code> scripts and saved the NVTabular preproc workflow and the trained ranking model in an accessible location. You also need to follow the instructions at inference <a class="reference external" href="https://github.com/NVIDIA-Merlin/Merlin/blob/main/examples/quick_start/scripts/inference/README.md">README</a>.</p>
+<p>Please ensure you have followed the <a class="reference external" href="https://github.com/NVIDIA-Merlin/Merlin/blob/main/examples/quick_start/ranking.md">Quick-start for ranking</a>, and ran the <code class="docutils literal notranslate"><span class="pre">preprocesssing.py</span></code> and <code class="docutils literal notranslate"><span class="pre">ranking.py</span></code> scripts and saved the NVTabular preproc workflow and the trained ranking model in an accessible location. You also need to follow the instructions at inference <a class="reference external" href="https://github.com/NVIDIA-Merlin/Merlin/blob/main/examples/quick_start/scripts/inference/README.md">README</a>.</p>
 <p>Merlin Systems takes the data preprocessing workflow defined in NVTabular and loads that into Triton Inference Server as a model. Subsequently it does the same for the trained model.</p>
 <div class="section" id="learning-objectives">
 <h2>Learning Objectives<a class="headerlink" href="#learning-objectives" title="Permalink to this headline"></a></h2>
@@ -126,8 +126,8 @@
 <h2>Starting Triton Inference Server<a class="headerlink" href="#starting-triton-inference-server" title="Permalink to this headline"></a></h2>
 <p>After we export the ensemble, we are ready to start the <a class="reference external" href="https://github.com/triton-inference-server/server">Triton Inference Server</a>. The server is installed in all the Merlin inference containers. If you are not using one of our containers, then ensure it is installed in your environment. For more information, see the Triton Inference Server documentation.</p>
 <p>You can start the server by running the following command:</p>
-<p><code class="docutils literal notranslate"><span class="pre">tritonserver</span> <span class="pre">--model-repository</span> <span class="pre">=</span> <span class="pre">&lt;path</span> <span class="pre">to</span> <span class="pre">the</span> <span class="pre">saved</span> <span class="pre">ensemble</span> <span class="pre">folder&gt;</span></code></p>
-<p>For the <code class="docutils literal notranslate"><span class="pre">--model-repository</span></code> argument, specify the same value as the <code class="docutils literal notranslate"><span class="pre">ensemble_export_path</span></code> that you specified previously when executing the <code class="docutils literal notranslate"><span class="pre">inference.py</span></code> script.</p>
+<p><code class="docutils literal notranslate"><span class="pre">tritonserver</span> <span class="pre">--model-repository=&lt;path</span> <span class="pre">to</span> <span class="pre">the</span> <span class="pre">saved</span> <span class="pre">ensemble</span> <span class="pre">folder&gt;</span></code></p>
+<p>For the <code class="docutils literal notranslate"><span class="pre">--model-repository</span></code> argument, specify the same path of the <code class="docutils literal notranslate"><span class="pre">ensemble_export_path</span></code> that you specified previously when executing the <code class="docutils literal notranslate"><span class="pre">inference.py</span></code> script.</p>
 <p>After you run the tritonserver command, wait until your terminal shows messages like the following example:</p>
 <p>I0414 18:29:50.741833 4067 grpc_server.cc:4421] Started GRPCInferenceService at 0.0.0.0:8001 <br>
 I0414 18:29:50.742197 4067 http_server.cc:3113] Started HTTPService at 0.0.0.0:8000 <br>
@@ -148,7 +148,7 @@ I0414 18:29:50.783470 4067 http_server.cc:178] Started Metrics Service at 0.0.0.
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2023-05-12 15:35:55.568968: I tensorflow/core/platform/cpu_feature_guard.cc:194] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  SSE3 SSE4.1 SSE4.2 AVX
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2023-05-16 23:44:57.737454: I tensorflow/core/platform/cpu_feature_guard.cc:194] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  SSE3 SSE4.1 SSE4.2 AVX
 To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
 /usr/local/lib/python3.8/dist-packages/merlin/dtypes/mappings/torch.py:43: UserWarning: PyTorch dtype mappings did not load successfully due to an error: No module named &#39;torch&#39;
   warn(f&quot;PyTorch dtype mappings did not load successfully due to an error: {exc.msg}&quot;)
@@ -159,8 +159,8 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 <p>Load the saved NVTabular workflow. We will use workflow’s input schema as an input below when sending request to Triton.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">input_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;INPUT_FOLDER&quot;</span><span class="p">,</span> <span class="s2">&quot;/workspace/Tenrec/dataset/workflow/&quot;</span><span class="p">)</span>
-<span class="n">workflow_stored_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">input_path</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">input_data_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;INPUT_FOLDER&quot;</span><span class="p">,</span> <span class="s2">&quot;/outputs/dataset/&quot;</span><span class="p">)</span>
+<span class="n">workflow_stored_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">input_data_path</span><span class="p">,</span> <span class="s2">&quot;workflow&quot;</span><span class="p">)</span>
 <span class="n">workflow</span> <span class="o">=</span> <span class="n">Workflow</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">workflow_stored_path</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -255,7 +255,7 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[&#39;click/binary_output&#39;, &#39;follow/binary_output&#39;]
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[&#39;click/binary_output&#39;, &#39;like/binary_output&#39;]
 </pre></div>
 </div>
 </div>
@@ -264,8 +264,7 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 <p>One thing to note that in this example, we are not creating the raw data from raw <code class="docutils literal notranslate"><span class="pre">.csv</span></code> file since, we did some data preparations and removed some user and items from the dataset based on the min frequencies we set during preprocessing file. So we use the raw validation data that were generated after train and eval set split step to send a request.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">original_data_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;INPUT_FOLDER&quot;</span><span class="p">,</span> <span class="s2">&quot;/workspace/Tenrec/dataset/_cache/02/&quot;</span><span class="p">)</span>
-<span class="n">batch</span> <span class="o">=</span> <span class="n">cudf</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">original_data_path</span><span class="p">,</span> <span class="s2">&quot;eval/&quot;</span><span class="p">,</span> <span class="s2">&quot;part.0.parquet&quot;</span><span class="p">),</span> <span class="n">columns</span><span class="o">=</span><span class="n">workflow</span><span class="o">.</span><span class="n">input_schema</span><span class="o">.</span><span class="n">column_names</span><span class="p">)</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">batch</span> <span class="o">=</span> <span class="n">cudf</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">input_data_path</span><span class="p">,</span> <span class="s2">&quot;_cache/02/eval/&quot;</span><span class="p">,</span> <span class="s2">&quot;part.0.parquet&quot;</span><span class="p">),</span> <span class="n">columns</span><span class="o">=</span><span class="n">workflow</span><span class="o">.</span><span class="n">input_schema</span><span class="o">.</span><span class="n">column_names</span><span class="p">)</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">batch</span> <span class="o">=</span> <span class="n">batch</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:</span><span class="mi">10</span><span class="p">,</span> <span class="p">:]</span>
 </pre></div>
 </div>
@@ -279,16 +278,16 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>   user_id  item_id  video_category  gender  age
-0    14402      412               0       0    0
-1   276438     8176               1       0    0
-2   215817    62881               0       0    0
-3   117574    74582               1       0    0
-4   195714    34982               0       0    0
-5   117050     9769               0       0    0
-6   219293     7750               0       0    0
-7   252272    59629               0       0    0
-8   232320    12737               0       0    0
-9   168813   148443               0       0    0
+0    16794   221049               0       2    2
+1    23542    61962               0       0    0
+2    85886   281786               0       0    0
+3     6016    26929               0       4    1
+4    66043    30710               0       0    0
+5    39752   222908               0       2    1
+6     8365   273888               0       0    0
+7    73739   280425               0       0    0
+8    27552    28110               0       2    1
+9    17866    69910               0       2    2
 </pre></div>
 </div>
 </div>
@@ -357,30 +356,30 @@ bytearray(b&#39;[{&quot;name&quot;:&quot;0_transformworkflowtriton&quot;,&quot;v
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>{&#39;click/binary_output&#39;: array([[0.5073921 ],
-       [0.50442815],
-       [0.5070812 ],
-       [0.5021189 ],
-       [0.5028127 ],
-       [0.5052893 ],
-       [0.5060355 ],
-       [0.51079565],
-       [0.50457317],
-       [0.50388616]], dtype=float32), &#39;follow/binary_output&#39;: array([[0.49480468],
-       [0.49666217],
-       [0.49884534],
-       [0.4969691 ],
-       [0.4962534 ],
-       [0.49507955],
-       [0.49622113],
-       [0.49824178],
-       [0.49707925],
-       [0.49556646]], dtype=float32)}
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>{&#39;click/binary_output&#39;: array([[0.50231797],
+       [0.50405663],
+       [0.50262684],
+       [0.5003805 ],
+       [0.50613105],
+       [0.4995402 ],
+       [0.5027875 ],
+       [0.5036676 ],
+       [0.4998571 ],
+       [0.5052081 ]], dtype=float32), &#39;like/binary_output&#39;: array([[0.49693626],
+       [0.49303743],
+       [0.49347958],
+       [0.49609515],
+       [0.4981295 ],
+       [0.49890146],
+       [0.49202597],
+       [0.49149314],
+       [0.5004128 ],
+       [0.49684843]], dtype=float32)}
 </pre></div>
 </div>
 </div>
 </div>
-<p>The response consists of probability values for each row in the batch request for each target, i.e., click and follow.</p>
+<p>The response consists of probability values for each row in the batch request for each target, i.e., click and like.</p>
 </div>
 <div class="section" id="summary">
 <h2>Summary<a class="headerlink" href="#summary" title="Permalink to this headline"></a></h2>

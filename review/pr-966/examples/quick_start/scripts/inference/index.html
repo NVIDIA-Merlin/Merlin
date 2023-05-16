@@ -112,10 +112,10 @@
 <h2>Launching Triton Inference Server<a class="headerlink" href="#launching-triton-inference-server" title="Permalink to this headline"></a></h2>
 <p>Once the models ensemble graph is exported to the path that you define, now you can load these models on Triton Inference Server, which is actually only one single line of code.</p>
 <p>You can start the server by running the following command:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>tritonserver<span class="w"> </span>--model-repository<span class="w"> </span><span class="o">=</span><span class="w"> </span>&lt;path<span class="w"> </span>to<span class="w"> </span>the<span class="w"> </span>saved<span class="w"> </span>ensemble<span class="w"> </span>folder&gt;
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>tritonserver<span class="w"> </span>--model-repository<span class="o">=</span>&lt;path<span class="w"> </span>to<span class="w"> </span>the<span class="w"> </span>saved<span class="w"> </span>ensemble<span class="w"> </span>folder&gt;
 </pre></div>
 </div>
-<p>For the –model-repository argument, provide the same path of as the <code class="docutils literal notranslate"><span class="pre">ensemble_export_path</span></code> argumenet that you inputted previously when executing the <code class="docutils literal notranslate"><span class="pre">inference.py</span></code> script.</p>
+<p>For the <code class="docutils literal notranslate"><span class="pre">--model-repository</span></code> argument, provide the same path of <code class="docutils literal notranslate"><span class="pre">ensemble_export_path</span></code> argument that you inputted previously when executing the <code class="docutils literal notranslate"><span class="pre">inference.py</span></code> script.</p>
 <p>After you run the tritonserver command, wait until your terminal shows messages like the following example:</p>
 <p>I0414 18:29:50.741833 4067 grpc_server.cc:4421] Started GRPCInferenceService at 0.0.0.0:8001
 I0414 18:29:50.742197 4067 http_server.cc:3113] Started HTTPService at 0.0.0.0:8000
@@ -133,7 +133,7 @@ I0414 18:29:50.783470 4067 http_server.cc:178] Started Metrics Service at 0.0.0.
 <span class="nv">NVT_WORKFLOW_PATH</span><span class="o">=</span>&lt;input<span class="w"> </span>path<span class="w"> </span>with<span class="w"> </span>saved<span class="w"> </span>workflow&gt;
 <span class="nv">TF_SAVED_MODEL_PATH</span><span class="o">=</span>&lt;input<span class="w"> </span>path<span class="w"> </span>with<span class="w"> </span>saved<span class="w"> </span>model&gt;
 <span class="nv">OUTPUT_ENSEMBLE_PATH</span><span class="o">=</span>&lt;output<span class="w"> </span>path<span class="w"> </span>to<span class="w"> </span><span class="nb">export</span><span class="w"> </span>the<span class="w"> </span>Triton<span class="w"> </span>ensemble<span class="w"> </span>model&gt;
-<span class="nv">TF_GPU_ALLOCATOR</span><span class="o">=</span>cuda_malloc_async<span class="w"> </span>python<span class="w"> </span>inference.py<span class="w"> </span>--nvt_workflow_path<span class="w"> </span><span class="nv">$NVT_WORKFLOW_PATH</span>--load_model_path<span class="w"> </span><span class="nv">$TF_SAVED_MODEL_PATH</span><span class="w"> </span>--ensemble_export_path<span class="w"> </span><span class="nv">$OUTPUT_ENSEMBLE_PATH</span>
+<span class="nv">TF_GPU_ALLOCATOR</span><span class="o">=</span>cuda_malloc_async<span class="w"> </span>python<span class="w"> </span>inference.py<span class="w"> </span>--nvt_workflow_path<span class="w"> </span><span class="nv">$NVT_WORKFLOW_PATH</span><span class="w"> </span>--load_model_path<span class="w"> </span><span class="nv">$TF_SAVED_MODEL_PATH</span><span class="w"> </span>--ensemble_export_path<span class="w"> </span><span class="nv">$OUTPUT_ENSEMBLE_PATH</span>
 </pre></div>
 </div>
 <p>Note that preprocessing step saves the NVTabular workflow automatically to <code class="docutils literal notranslate"><span class="pre">output_path</span></code> that is set when executing preprocessing script. For the <code class="docutils literal notranslate"><span class="pre">load_model_path</span></code> argument, be sure that you provide the exact same path f that you provided for saving the trained model during ranking step.</p>
