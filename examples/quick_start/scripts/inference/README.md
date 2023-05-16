@@ -34,9 +34,9 @@ Once the models ensemble graph is exported to the path that you define, now you 
 You can start the server by running the following command:
 
 ```bash
-tritonserver --model-repository = <path to the saved ensemble folder>
+tritonserver --model-repository=<path to the saved ensemble folder>
 ```
-For the --model-repository argument, provide the same path of as the `ensemble_export_path` argumenet that you inputted previously when executing the `inference.py` script.
+For the `--model-repository` argument, provide the same path of `ensemble_export_path` argument that you inputted previously when executing the `inference.py` script.
 
 After you run the tritonserver command, wait until your terminal shows messages like the following example:
 
@@ -59,7 +59,7 @@ cd /Merlin/examples/quick_start/scripts/inference/
 NVT_WORKFLOW_PATH=<input path with saved workflow>
 TF_SAVED_MODEL_PATH=<input path with saved model>
 OUTPUT_ENSEMBLE_PATH=<output path to export the Triton ensemble model>
-TF_GPU_ALLOCATOR=cuda_malloc_async python inference.py --nvt_workflow_path $NVT_WORKFLOW_PATH--load_model_path $TF_SAVED_MODEL_PATH --ensemble_export_path $OUTPUT_ENSEMBLE_PATH
+TF_GPU_ALLOCATOR=cuda_malloc_async python inference.py --nvt_workflow_path $NVT_WORKFLOW_PATH --load_model_path $TF_SAVED_MODEL_PATH --ensemble_export_path $OUTPUT_ENSEMBLE_PATH
 ```
 
 Note that preprocessing step saves the NVTabular workflow automatically to `output_path` that is set when executing preprocessing script. For the `load_model_path` argument, be sure that you provide the exact same path f that you provided for saving the trained model during ranking step.
