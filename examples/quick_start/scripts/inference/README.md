@@ -7,7 +7,7 @@ In this example we demonstrate the necessary steps to deploy a model to Triton a
 
 1. Creating the ensemble graph
 2. Launching the Triton Inference Server
-- Sending request to Server and receiving the response
+3. Sending request to Server and receiving the response
 
 ## Creating the Ensemble Graph
 
