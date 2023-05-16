@@ -202,7 +202,7 @@ class RankingTrainEvalRunner:
                 learning_rate=lerning_rate,
             )
         elif self.args.optimizer == "adagrad":
-            opt = tf.keras.optimizers.Adagrad(
+            opt = tf.keras.optimizers.legacy.Adagrad(
                 learning_rate=lerning_rate,
             )
         else:
