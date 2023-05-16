@@ -56,7 +56,10 @@ This is an example command line for running the `inference.py`script after your 
 
 ```bash
 cd /Merlin/examples/quick_start/scripts/inference/
-TF_GPU_ALLOCATOR=cuda_malloc_async python inference.py --nvt_workflow_path <path to saved workflow> --load_model_path <path to saved model> --ensemble_export_path <path to export ensemble models>
+NVT_WORKFLOW_PATH=<input path with saved workflow>
+TF_SAVED_MODEL_PATH=<input path with saved model>
+OUTPUT_ENSEMBLE_PATH=<output path to export the Triton ensemble model>
+TF_GPU_ALLOCATOR=cuda_malloc_async python inference.py --nvt_workflow_path $NVT_WORKFLOW_PATH--load_model_path $TF_SAVED_MODEL_PATH --ensemble_export_path $OUTPUT_ENSEMBLE_PATH
 ```
 
 Note that preprocessing step saves the NVTabular workflow automatically to `output_path` that is set when executing preprocessing script. For the `load_model_path` argument, be sure that you provide the exact same path f that you provided for saving the trained model during ranking step.
