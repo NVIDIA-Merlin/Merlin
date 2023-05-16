@@ -22,7 +22,7 @@ Exporting an ensemble graph consists of the following steps:
 - generating ensemble graph
 - exporting the ensemble graph models and artifacts
 
-These steps are taken care of by `inference.py` script when executed (please see the `Command line arguments` section for the instructions).
+These steps are taken care of by `inference.py` script when executed (please see the `Command line arguments` section below for the instructions).
 
 
 ## Launching Triton Inference Server
