@@ -1,5 +1,5 @@
 # Deploying a Ranking model on Triton Inference Server
-The last step of ML pipeline is to deploy the trained model into production. For this purpose we use NVIDIA Triton Inference Server](https://github.com/triton-inference-server/server), which is an open-source inference serving software, standardizes AI model deployment and execution and delivers fast and scalable AI in production. 
+The last step of ML pipeline is to deploy the trained model into production. For this purpose we use [NVIDIA Triton Inference Server](https://github.com/triton-inference-server/server), which is an open-source inference serving software, standardizes AI model deployment and execution and delivers fast and scalable AI in production. 
 
 [Merlin Systems](https://github.com/NVIDIA-Merlin/systems/tree/main) library is designed for building pipelines to generate recommendations. Deploying pipelines on Triton is one part of the library's functionality and Merlin Systems provides easy to use APIs to be able to export ensemble graph and model artifacts so that they can be loaded on Triton with less effort.
 
