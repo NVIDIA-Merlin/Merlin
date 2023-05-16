@@ -27,7 +27,7 @@ These steps are taken care of by `inference.py` script when executed (please see
 
 ## Launching Triton Inference Server
 
-Once the models ensemble graph is exported to the path that you define, now you can load these models on Triton Inference Servers. Loading models on Triton is only one single line of code. 
+Once the models ensemble graph is exported to the path that you define, now you can load these models on Triton Inference Server, which is actually only one single line of code. 
 
 You can start the server by running the following command:
 
