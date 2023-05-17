@@ -132,3 +132,6 @@ You can find more quick-start information on multi-task learning and MMOE archit
 We provide a [tutorial](scripts/ranking/hypertuning/tutorial_with_wb_sweeps.md) on how to do **hyperparameter tuning with Merlin models and Weights&Biases Sweeps**.
 
 We also make it available a [benchmark](scripts/ranking/hypertuning/README.md) resulted from our own hyperparameter tuning of TenRec dataset. It compares the different single-task and multi-task learning models. It provides also empirical information on what were the improvements obtained with hyperparameter tuning, the curated hypertuning search space for modeling hyperparameters of `ranking.py` and the most important hyperparameters.
+
+## Model Deployment on Triton Inference Server
+In the model deployment step, we deploy NVTabular workflow, and the trained and saved ranking model(s) on [Triton Inference Server](https://github.com/triton-inference-server/server). The [inference.py](scripts/inference/inference.py) script makes it easy to export model configuration files and the required artifacts to deploy the models on Triton. Moreover, we provide an example [notebook](scripts/inference/inference.ipynb) to demonstrate how to prepare a batch raw request to sent Triton and receive a response from it. You can find more information about inference step and the scripts [here](scripts/inference/README.md).

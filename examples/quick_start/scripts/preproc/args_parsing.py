@@ -45,7 +45,7 @@ def build_arg_parser():
         "--output_path",
         default="./results/",
         help="Output path where the preprocessed files "
-        "will be saved"
+        "and nvtabular workflow will be saved"
         "Default is ./results/",
     )
     parser.add_argument(
