@@ -68,6 +68,8 @@ RUN rm -rf /usr/lib/x86_64-linux-gnu/libibverbs.so && \
 # Install HugeCTR
 ARG HUGECTR_HOME=/usr/local/hugectr
 RUN if [[ "${HUGECTR_DEV_MODE}" == "false" ]]; then \
+        rm -rf /usr/local/hugectr/lib/libgmock* /usr/local/hugectr/lib/pkgconfig/gmock* /usr/local/hugectr/include/gmock && \
+        rm -rf /usr/local/hugectr/lib/libgtest* /usr/local/hugectr/lib/pkgconfig/gtest* /usr/local/hugectr/include/gtest && \
         git clone --branch ${HUGECTR_VER} --depth 1 https://${_CI_JOB_TOKEN}${_HUGECTR_REPO} /hugectr && \
         cd /hugectr && \
         git submodule update --init --recursive && \
