@@ -382,7 +382,8 @@ class PreprocessingRunner:
         output_train_dataset_path = os.path.join(output_dataset_path, "train")
         logging.info(f"Fitting and transforming train set: {output_train_dataset_path}")
         train_dataset_preproc.to_parquet(
-            output_train_dataset_path, output_files=args.output_num_partitions,
+            output_train_dataset_path,
+            output_files=args.output_num_partitions,
         )
 
         if args.eval_data_path or args.dataset_split_strategy:
@@ -404,7 +405,8 @@ class PreprocessingRunner:
             logging.info(f"Transforming eval set: {output_eval_dataset_path}")
 
             eval_dataset_preproc.to_parquet(
-                output_eval_dataset_path, output_files=args.output_num_partitions,
+                output_eval_dataset_path,
+                output_files=args.output_num_partitions,
             )
 
         if args.predict_data_path:
@@ -415,8 +417,12 @@ class PreprocessingRunner:
             logging.info(f"Transforming predict set: {output_predict_dataset_path}")
 
             new_predict_dataset.to_parquet(
-                output_predict_dataset_path, output_files=args.output_num_partitions,
+                output_predict_dataset_path,
+                output_files=args.output_num_partitions,
             )
+        nvt_save_path = os.path.join(output_dataset_path, "workflow")
+        logging.info(f"Saving nvtabular workflow to: {nvt_save_path}")
+        nvt_workflow_features.save(nvt_save_path)
 
 
 def main():
