@@ -12,12 +12,13 @@ FROM ${FULL_IMAGE} as triton
 FROM ${BASE_IMAGE} as base
 
 # Triton TF backends
-COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/tensorflow2 backends/tensorflow2/
+COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/tensorflow backends/tensorflow/
 
 # Tensorflow dependencies (only)
 # Pinning to pass hugectr sok tests
-RUN pip install --no-cache-dir tensorflow-gpu==2.9.2 protobuf==3.20.3 \
-    && pip uninstall tensorflow-gpu keras -y
+# wrapt 1.5.0 introduce hugectr test failures, so downgrade to 1.14.0
+RUN pip install --no-cache-dir tensorflow protobuf==3.20.3 wrapt==1.14.0 \
+    && pip uninstall tensorflow keras -y
 
 # DLFW Tensorflow packages
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python3.8/dist-packages/tensorflow /usr/local/lib/python3.8/dist-packages/tensorflow/
