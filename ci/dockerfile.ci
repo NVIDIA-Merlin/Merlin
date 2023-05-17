@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.2
-ARG TRITON_VERSION=22.11
+ARG TRITON_VERSION=23.02
 ARG BASE_IMAGE=nvcr.io/nvstaging/merlin/merlin-hugectr:nightly
 ARG FULL_IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-py3
 ARG TF_DLFW=nvcr.io/nvidia/tensorflow:${TRITON_VERSION}-tf2-py3
@@ -11,8 +11,7 @@ FROM ${TF_DLFW} as tf_dflw
 FROM ${TORCH_DLFW} as th_dlfw
 FROM ${BASE_IMAGE}
 
-RUN pip install --no-cache-dir tensorflow protobuf==3.20.3 \
-    && pip uninstall tensorflow keras -y
+RUN pip install --no-cache-dir tensorflow && pip uninstall tensorflow keras -y
 
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/tensorflow2 backends/tensorflow2/
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/pytorch backends/pytorch/
@@ -43,14 +42,9 @@ COPY --chown=1000:1000 --from=th_dlfw /usr/local/lib/libmkl* /usr/local/lib/
 
 
 # install dependencies for systems testing 
-RUN pip install transformers==4.26.1 matplotlib pytest-cov pytest-xdist tox sphinx-multiversion astroid==2.5.6 'feast==0.31' scikit-learn; pip install -r /nvtabular/requirements/dev.txt
+RUN pip install transformers==4.26.1 matplotlib pytest-cov pytest-xdist tox sphinx-multiversion astroid==2.5.6 'feast==0.31' scikit-learn; pip install -r /nvtabular/requirements/dev.txt; pip install protobuf==3.20.3
 RUN echo 'import sphinx.domains' >> /usr/local/lib/python3.8/dist-packages/sphinx/__init__.py
 RUN HOROVOD_GPU_OPERATIONS=NCCL python -m pip install --no-cache-dir horovod && horovodrun --check-build
-
-# Update the Merlin repos (to avoid needed to rebuild underlying images to get updates)
-RUN cd /Merlin && git pull origin main; cd /core/ && git pull origin main && pip install . --no-deps; cd /dataloader/ && git pull origin main && pip install . --no-deps
-RUN cd /nvtabular/ && git pull origin main && pip install . --no-deps; cd /systems/ && git pull origin main && pip install . --no-deps; cd /models/ && git pull origin main && pip install . --no-deps; cd /transformers4rec/ && git pull origin main && pip install . --no-deps
-
 
 HEALTHCHECK NONE
 CMD ["/bin/bash"]
