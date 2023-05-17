@@ -6,6 +6,7 @@ from datetime import datetime
 import merlin.models.tf as mm
 import numpy as np
 import tensorflow as tf
+from args_parsing import Task, parse_arguments
 from merlin.io.dataset import Dataset
 from merlin.models.tf.logging.callbacks import ExamplesPerSecondCallback, WandbLogger
 from merlin.models.tf.transforms.negative_sampling import InBatchNegatives
@@ -14,6 +15,7 @@ from merlin.schema.tags import Tags
 from args_parsing import Task, parse_arguments
 from mtl import get_mtl_loss_weights, get_mtl_prediction_tasks
 from ranking_models import get_model
+
 
 
 def get_datasets(args):
@@ -150,7 +152,8 @@ class RankingTrainEvalRunner:
         self.predict_loader = None
         if self.predict_ds:
             self.predict_loader = mm.Loader(
-                self.predict_ds, batch_size=args.eval_batch_size,
+                self.predict_ds,
+                batch_size=args.eval_batch_size,
             )
 
     def get_metrics(self):
@@ -195,9 +198,13 @@ class RankingTrainEvalRunner:
             )
 
         if self.args.optimizer == "adam":
-            opt = tf.keras.optimizers.Adam(learning_rate=lerning_rate,)
+            opt = tf.keras.optimizers.Adam(
+                learning_rate=lerning_rate,
+            )
         elif self.args.optimizer == "adagrad":
-            opt = tf.keras.optimizers.Adagrad(learning_rate=lerning_rate,)
+            opt = tf.keras.optimizers.legacy.Adagrad(
+                learning_rate=lerning_rate,
+            )
         else:
             raise ValueError("Invalid optimizer")
 
@@ -221,7 +228,9 @@ class RankingTrainEvalRunner:
     def train_eval_stl(self, model):
         metrics = self.get_metrics()
         model.compile(
-            self.get_optimizer(), run_eagerly=False, metrics=metrics,
+            self.get_optimizer(),
+            run_eagerly=False,
+            metrics=metrics,
         )
 
         callbacks = self.get_callbacks(self.args)
@@ -347,7 +356,8 @@ class RankingTrainEvalRunner:
         logging.info("Starting the batch predict of the evaluation set")
 
         predictions_ds = model.batch_predict(
-            dataset, batch_size=self.args.eval_batch_size,
+            dataset,
+            batch_size=self.args.eval_batch_size,
         )
         predictions_ddf = predictions_ds.to_ddf()
 

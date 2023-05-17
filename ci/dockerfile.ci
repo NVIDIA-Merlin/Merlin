@@ -2,38 +2,54 @@
 ARG TRITON_VERSION=22.11
 ARG BASE_IMAGE=nvcr.io/nvstaging/merlin/merlin-hugectr:nightly
 ARG FULL_IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-py3
+ARG TF_DLFW=nvcr.io/nvidia/tensorflow:${TRITON_VERSION}-tf2-py3
+ARG TORCH_DLFW=nvcr.io/nvidia/pytorch:${TRITON_VERSION}-py3
+
 
 FROM ${FULL_IMAGE} as triton
+FROM ${TF_DLFW} as tf_dflw
+FROM ${TORCH_DLFW} as th_dlfw
 FROM ${BASE_IMAGE}
+
+RUN pip install --no-cache-dir tensorflow protobuf==3.20.3 \
+    && pip uninstall tensorflow keras -y
 
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/tensorflow2 backends/tensorflow2/
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/pytorch backends/pytorch/
+COPY --chown=1000:1000 --from=tf_dflw /usr/local/lib/python3.8/dist-packages/tensorflow /usr/local/lib/python3.8/dist-packages/tensorflow/
+COPY --chown=1000:1000 --from=tf_dflw /usr/local/lib/python3.8/dist-packages/tensorflow-*.dist-info /usr/local/lib/python3.8/dist-packages/tensorflow.dist-info/
+COPY --chown=1000:1000 --from=tf_dflw /usr/local/lib/python3.8/dist-packages/keras /usr/local/lib/python3.8/dist-packages/keras/
+COPY --chown=1000:1000 --from=tf_dflw /usr/local/lib/python3.8/dist-packages/keras-*.dist-info /usr/local/lib/python3.8/dist-packages/keras.dist-info/
+COPY --chown=1000:1000 --from=tf_dflw /usr/local/bin/saved_model_cli /usr/local/bin/saved_model_cli
+COPY --chown=1000:1000 --from=tf_dflw /usr/local/lib/tensorflow/ /usr/local/lib/tensorflow/
+COPY --chown=1000:1000 --from=tf_dflw /usr/local/lib/python3.8/dist-packages/horovod /usr/local/lib/python3.8/dist-packages/horovod/
+COPY --chown=1000:1000 --from=tf_dflw /usr/local/lib/python3.8/dist-packages/horovod-*.dist-info /usr/local/lib/python3.8/dist-packages/horovod.dist-info/
+COPY --chown=1000:1000 --from=tf_dflw /usr/local/bin/horovodrun /usr/local/bin/horovodrun 
 
-RUN pip install tensorflow-gpu==2.10.1 transformers==4.26.1
-RUN pip install torch --extra-index-url https://download.pytorch.org/whl/cu117
-RUN pip install torchmetrics==0.10.0 matplotlib
-RUN pip install fastai fastcore fastprogress fastdownload --no-deps
+RUN pip install --no-cache-dir --no-deps torch torchmetrics \
+        && pip install --no-cache-dir --upgrade pip \
+        && pip install sympy \
+        && rm -rf /usr/local/lib/python3.8/dist-packages/torch \
+        && rm -rf /usr/local/lib/python3.8/dist-packages/caffe2
+
+COPY --chown=1000:1000 --from=th_dlfw /usr/local/lib/python3.8/dist-packages/numba /usr/local/lib/python3.8/dist-packages/numba
+COPY --chown=1000:1000 --from=th_dlfw /usr/local/lib/python3.8/dist-packages/numpy /usr/local/lib/python3.8/dist-packages/numpy
+COPY --chown=1000:1000 --from=th_dlfw /usr/local/lib/python3.8/dist-packages/torch /usr/local/lib/python3.8/dist-packages/torch
+
+COPY --chown=1000:1000 --from=th_dlfw /usr/local/lib/python3.8/dist-packages/numba-*.dist-info /usr/local/lib/python3.8/dist-packages/numba.dist-info/
+COPY --chown=1000:1000 --from=th_dlfw /usr/local/lib/python3.8/dist-packages/numpy-*.dist-info /usr/local/lib/python3.8/dist-packages/numpy.dist-info/
+COPY --chown=1000:1000 --from=th_dlfw /usr/local/lib/python3.8/dist-packages/torch-*.egg-info /usr/local/lib/python3.8/dist-packages/torch.egg-info/
+COPY --chown=1000:1000 --from=th_dlfw /usr/local/lib/libmkl* /usr/local/lib/
+
 
 # install dependencies for systems testing 
-RUN pip install pytest-cov pytest-xdist sphinx-multiversion; pip install -r /nvtabular/requirements/dev.txt
-RUN pip install astroid==2.5.6 'feast==0.31' scikit-learn
+RUN pip install transformers==4.26.1 matplotlib pytest-cov pytest-xdist tox sphinx-multiversion astroid==2.5.6 'feast==0.31' scikit-learn; pip install -r /nvtabular/requirements/dev.txt
 RUN echo 'import sphinx.domains' >> /usr/local/lib/python3.8/dist-packages/sphinx/__init__.py
 RUN HOROVOD_GPU_OPERATIONS=NCCL python -m pip install --no-cache-dir horovod && horovodrun --check-build
 
-# Pin dask/distributed package versions after other installs
-# to make sure we have the right ones
-RUN pip install dask==2022.7.1 distributed==2022.7.1
-
-RUN pip install tox
-
 # Update the Merlin repos (to avoid needed to rebuild underlying images to get updates)
-RUN cd /Merlin && git pull origin main
-RUN cd /core/ && git pull origin main && pip install . --no-deps
-RUN cd /dataloader/ && git pull origin main && pip install . --no-deps
-RUN cd /nvtabular/ && git pull origin main && pip install . --no-deps
-RUN cd /systems/ && git pull origin main && pip install . --no-deps
-RUN cd /models/ && git pull origin main && pip install . --no-deps
-RUN cd /transformers4rec/ && git pull origin main && pip install . --no-deps
+RUN cd /Merlin && git pull origin main; cd /core/ && git pull origin main && pip install . --no-deps; cd /dataloader/ && git pull origin main && pip install . --no-deps
+RUN cd /nvtabular/ && git pull origin main && pip install . --no-deps; cd /systems/ && git pull origin main && pip install . --no-deps; cd /models/ && git pull origin main && pip install . --no-deps; cd /transformers4rec/ && git pull origin main && pip install . --no-deps
 
 
 HEALTHCHECK NONE
