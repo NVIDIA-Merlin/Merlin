@@ -435,7 +435,7 @@ def build_arg_parser():
 
     parser.add_argument(
         "--train_metrics_steps",
-        default=10,
+        default=1,
         type=int,
         help="How often should train metrics be computed during training. "
         "You might increase this number to reduce the frequency and increase a bit the "
@@ -467,7 +467,7 @@ def build_arg_parser():
         type=str2bool,
         nargs="?",
         const=True,
-        default=False,
+        default=True,
         help="Shuffles data during training.",
     )
 
