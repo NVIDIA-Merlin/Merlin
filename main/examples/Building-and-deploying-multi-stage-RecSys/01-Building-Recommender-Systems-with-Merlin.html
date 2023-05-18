@@ -500,8 +500,8 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 <p>We will create the feature repo in the current working directory, which is <code class="docutils literal notranslate"><span class="pre">BASE_DIR</span></code> for us.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>rm<span class="w"> </span>-rf<span class="w"> </span><span class="nv">$BASE_DIR</span>/feature_repo
-<span class="o">!</span><span class="nb">cd</span><span class="w"> </span><span class="nv">$BASE_DIR</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>feast<span class="w"> </span>init<span class="w"> </span>feature_repo
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>rm<span class="w"> </span>-rf<span class="w"> </span><span class="nv">$BASE_DIR</span>/feast
+<span class="o">!</span><span class="nb">cd</span><span class="w"> </span><span class="nv">$BASE_DIR</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>feast<span class="w"> </span>init<span class="w"> </span>feast
 </pre></div>
 </div>
 </div>
@@ -514,9 +514,9 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 <p>You should be seeing a message like <i>Creating a new Feast repository in … </i> printed out above. Now, navigate to the <code class="docutils literal notranslate"><span class="pre">feature_repo</span></code> folder and remove the demo parquet file created by default, and <code class="docutils literal notranslate"><span class="pre">examples.py</span></code> file.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">feature_repo_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s2">&quot;feature_repo&quot;</span><span class="p">)</span>
-<span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">feature_repo_path</span><span class="si">}</span><span class="s2">/example.py&quot;</span><span class="p">):</span>
-    <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">feature_repo_path</span><span class="si">}</span><span class="s2">/example.py&quot;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">feature_repo_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s2">&quot;feast/feature_repo&quot;</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">feature_repo_path</span><span class="si">}</span><span class="s2">/example_repo.py&quot;</span><span class="p">):</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">feature_repo_path</span><span class="si">}</span><span class="s2">/example_repo.py&quot;</span><span class="p">)</span>
 <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">feature_repo_path</span><span class="si">}</span><span class="s2">/data/driver_stats.parquet&quot;</span><span class="p">):</span>
     <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">feature_repo_path</span><span class="si">}</span><span class="s2">/data/driver_stats.parquet&quot;</span><span class="p">)</span>
 </pre></div>
@@ -817,7 +817,7 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">user_features</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span>
-    <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s2">&quot;feature_repo/data&quot;</span><span class="p">,</span> <span class="s2">&quot;user_features.parquet&quot;</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">feature_repo_path</span><span class="p">,</span> <span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="s2">&quot;user_features.parquet&quot;</span><span class="p">)</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -937,7 +937,7 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># save to disk</span>
 <span class="n">item_features</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span>
-    <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s2">&quot;feature_repo/data&quot;</span><span class="p">,</span> <span class="s2">&quot;item_features.parquet&quot;</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">feature_repo_path</span><span class="p">,</span> <span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="s2">&quot;item_features.parquet&quot;</span><span class="p">)</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -1160,46 +1160,46 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 <p>Now we will create our user and item features definitions in the user_features.py and item_features.py files and save these files in the feature_repo.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s2">&quot;feature_repo/&quot;</span><span class="p">,</span> <span class="s2">&quot;user_features.py&quot;</span><span class="p">),</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">feature_repo_path</span><span class="p">,</span> <span class="s2">&quot;user_features.py&quot;</span><span class="p">),</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span>
 <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">from google.protobuf.duration_pb2 import Duration</span>
-<span class="sd">import datetime</span>
-<span class="sd">from feast import Entity, Feature, FeatureView, ValueType</span>
+<span class="sd">from datetime import timedelta</span>
+<span class="sd">from feast import Entity, Field, FeatureView, ValueType</span>
+<span class="sd">from feast.types import Int32</span>
 <span class="sd">from feast.infra.offline_stores.file_source import FileSource</span>
 
 <span class="sd">user_features = FileSource(</span>
 <span class="sd">    path=&quot;{}&quot;,</span>
-<span class="sd">    event_timestamp_column=&quot;datetime&quot;,</span>
+<span class="sd">    timestamp_field=&quot;datetime&quot;,</span>
 <span class="sd">    created_timestamp_column=&quot;created&quot;,</span>
 <span class="sd">)</span>
 
-<span class="sd">user_raw = Entity(name=&quot;user_id_raw&quot;, value_type=ValueType.INT32, description=&quot;user id raw&quot;,)</span>
+<span class="sd">user_raw = Entity(name=&quot;user_id_raw&quot;, value_type=ValueType.INT32, join_keys=[&quot;user_id_raw&quot;],)</span>
 
 <span class="sd">user_features_view = FeatureView(</span>
 <span class="sd">    name=&quot;user_features&quot;,</span>
-<span class="sd">    entities=[&quot;user_id_raw&quot;],</span>
-<span class="sd">    ttl=Duration(seconds=86400 * 7),</span>
-<span class="sd">    features=[</span>
-<span class="sd">        Feature(name=&quot;user_shops&quot;, dtype=ValueType.INT32),</span>
-<span class="sd">        Feature(name=&quot;user_profile&quot;, dtype=ValueType.INT32),</span>
-<span class="sd">        Feature(name=&quot;user_group&quot;, dtype=ValueType.INT32),</span>
-<span class="sd">        Feature(name=&quot;user_gender&quot;, dtype=ValueType.INT32),</span>
-<span class="sd">        Feature(name=&quot;user_age&quot;, dtype=ValueType.INT32),</span>
-<span class="sd">        Feature(name=&quot;user_consumption_2&quot;, dtype=ValueType.INT32),</span>
-<span class="sd">        Feature(name=&quot;user_is_occupied&quot;, dtype=ValueType.INT32),</span>
-<span class="sd">        Feature(name=&quot;user_geography&quot;, dtype=ValueType.INT32),</span>
-<span class="sd">        Feature(name=&quot;user_intentions&quot;, dtype=ValueType.INT32),</span>
-<span class="sd">        Feature(name=&quot;user_brands&quot;, dtype=ValueType.INT32),</span>
-<span class="sd">        Feature(name=&quot;user_categories&quot;, dtype=ValueType.INT32),</span>
-<span class="sd">        Feature(name=&quot;user_id&quot;, dtype=ValueType.INT32),</span>
+<span class="sd">    entities=[user_raw],</span>
+<span class="sd">    ttl=timedelta(0),</span>
+<span class="sd">    schema=[</span>
+<span class="sd">        Field(name=&quot;user_shops&quot;, dtype=Int32),</span>
+<span class="sd">        Field(name=&quot;user_profile&quot;, dtype=Int32),</span>
+<span class="sd">        Field(name=&quot;user_group&quot;, dtype=Int32),</span>
+<span class="sd">        Field(name=&quot;user_gender&quot;, dtype=Int32),</span>
+<span class="sd">        Field(name=&quot;user_age&quot;, dtype=Int32),</span>
+<span class="sd">        Field(name=&quot;user_consumption_2&quot;, dtype=Int32),</span>
+<span class="sd">        Field(name=&quot;user_is_occupied&quot;, dtype=Int32),</span>
+<span class="sd">        Field(name=&quot;user_geography&quot;, dtype=Int32),</span>
+<span class="sd">        Field(name=&quot;user_intentions&quot;, dtype=Int32),</span>
+<span class="sd">        Field(name=&quot;user_brands&quot;, dtype=Int32),</span>
+<span class="sd">        Field(name=&quot;user_categories&quot;, dtype=Int32),</span>
+<span class="sd">        Field(name=&quot;user_id&quot;, dtype=Int32),</span>
 <span class="sd">    ],</span>
 <span class="sd">    online=True,</span>
-<span class="sd">    input=user_features,</span>
+<span class="sd">    source=user_features,</span>
 <span class="sd">    tags=dict(),</span>
 <span class="sd">)</span>
 <span class="sd">&quot;&quot;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-        <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s2">&quot;feature_repo/data/&quot;</span><span class="p">,</span> <span class="s2">&quot;user_features.parquet&quot;</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">feature_repo_path</span><span class="p">,</span> <span class="s2">&quot;data/&quot;</span><span class="p">,</span> <span class="s2">&quot;user_features.parquet&quot;</span><span class="p">)</span>
     <span class="p">)</span>
 <span class="p">)</span>
 <span class="n">file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
@@ -1209,38 +1209,38 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s2">&quot;feature_repo/&quot;</span><span class="p">,</span> <span class="s2">&quot;item_features.py&quot;</span><span class="p">),</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">feature_repo_path</span><span class="p">,</span> <span class="s2">&quot;item_features.py&quot;</span><span class="p">),</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
     <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">from google.protobuf.duration_pb2 import Duration</span>
-<span class="sd">import datetime</span>
-<span class="sd">from feast import Entity, Feature, FeatureView, ValueType</span>
+<span class="sd">from datetime import timedelta</span>
+<span class="sd">from feast import Entity, Field, FeatureView, ValueType</span>
+<span class="sd">from feast.types import Int32</span>
 <span class="sd">from feast.infra.offline_stores.file_source import FileSource</span>
 
 <span class="sd">item_features = FileSource(</span>
 <span class="sd">    path=&quot;{}&quot;,</span>
-<span class="sd">    event_timestamp_column=&quot;datetime&quot;,</span>
+<span class="sd">    timestamp_field=&quot;datetime&quot;,</span>
 <span class="sd">    created_timestamp_column=&quot;created&quot;,</span>
 <span class="sd">)</span>
 
-<span class="sd">item = Entity(name=&quot;item_id&quot;, value_type=ValueType.INT32, description=&quot;item id&quot;,)</span>
+<span class="sd">item = Entity(name=&quot;item_id&quot;, value_type=ValueType.INT32, join_keys=[&quot;item_id&quot;],)</span>
 
 <span class="sd">item_features_view = FeatureView(</span>
 <span class="sd">    name=&quot;item_features&quot;,</span>
-<span class="sd">    entities=[&quot;item_id&quot;],</span>
-<span class="sd">    ttl=Duration(seconds=86400 * 7),</span>
-<span class="sd">    features=[</span>
-<span class="sd">        Feature(name=&quot;item_category&quot;, dtype=ValueType.INT32),</span>
-<span class="sd">        Feature(name=&quot;item_shop&quot;, dtype=ValueType.INT32),</span>
-<span class="sd">        Feature(name=&quot;item_brand&quot;, dtype=ValueType.INT32),</span>
-<span class="sd">        Feature(name=&quot;item_id_raw&quot;, dtype=ValueType.INT32),</span>
+<span class="sd">    entities=[item],</span>
+<span class="sd">    ttl=timedelta(0),</span>
+<span class="sd">    schema=[</span>
+<span class="sd">        Field(name=&quot;item_category&quot;, dtype=Int32),</span>
+<span class="sd">        Field(name=&quot;item_shop&quot;, dtype=Int32),</span>
+<span class="sd">        Field(name=&quot;item_brand&quot;, dtype=Int32),</span>
+<span class="sd">        Field(name=&quot;item_id_raw&quot;, dtype=Int32),</span>
 <span class="sd">    ],</span>
 <span class="sd">    online=True,</span>
-<span class="sd">    input=item_features,</span>
+<span class="sd">    source=item_features,</span>
 <span class="sd">    tags=dict(),</span>
 <span class="sd">)</span>
 <span class="sd">&quot;&quot;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s2">&quot;feature_repo/data/&quot;</span><span class="p">,</span> <span class="s2">&quot;item_features.parquet&quot;</span><span class="p">)</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">feature_repo_path</span><span class="p">,</span> <span class="s2">&quot;data/&quot;</span><span class="p">,</span> <span class="s2">&quot;item_features.parquet&quot;</span><span class="p">)</span>
         <span class="p">)</span>
     <span class="p">)</span>
 <span class="n">file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
@@ -1268,7 +1268,7 @@ Requirement already satisfied: emoji in /usr/local/lib/python3.8/dist-packages (
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">seedir</span> <span class="k">as</span> <span class="nn">sd</span>
 
-<span class="n">feature_repo_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s2">&quot;feature_repo&quot;</span><span class="p">)</span>
+<span class="n">feature_repo_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s2">&quot;feast&quot;</span><span class="p">)</span>
 <span class="n">sd</span><span class="o">.</span><span class="n">seedir</span><span class="p">(</span>
     <span class="n">feature_repo_path</span><span class="p">,</span>
     <span class="n">style</span><span class="o">=</span><span class="s2">&quot;lines&quot;</span><span class="p">,</span>
