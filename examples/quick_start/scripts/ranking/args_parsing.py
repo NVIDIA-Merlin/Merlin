@@ -462,6 +462,15 @@ def build_arg_parser():
         help="Number of train steps per epoch. Set this for quick debugging.",
     )
 
+    parser.add_argument(
+        "--shuffled_train",
+        type=str2bool,
+        nargs="?",
+        const=True,
+        default=False,
+        help="Shuffles data during training.",
+    )
+
     # In-batch negatives
     parser.add_argument(
         "--in_batch_negatives_train",

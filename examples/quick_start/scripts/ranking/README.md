@@ -330,6 +330,8 @@ CUDA_VISIBLE_DEVICES=0 TF_GPU_ALLOCATOR=cuda_malloc_async python  ranking.py --t
   --train_steps_per_epoch 
                         Number of train steps per epoch. Set this for
                         quick debugging.
+  --shuffled_train
+                        Shuffles data during training.
 ```
 
 ### Logging
