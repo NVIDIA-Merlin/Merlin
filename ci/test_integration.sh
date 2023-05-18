@@ -24,7 +24,7 @@ devices=$2
 
 # Run only for Merlin Tensorflow Container
 if [ "$container" == "merlin-tensorflow" ]; then
-    pip install 'feast<0.20'
+    pip install feast==0.31
     pip install dask==2023.1.1 distributed==2023.1.1 protobuf==3.20.3
     CUDA_VISIBLE_DEVICES="$devices"  pytest -rxs tests/integration
 fi
