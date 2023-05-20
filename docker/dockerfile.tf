@@ -22,6 +22,7 @@ RUN pip install --no-cache-dir tensorflow protobuf==3.20.3 wrapt==1.14.0 \
 
 # DLFW Tensorflow packages
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python3.8/dist-packages/tensorflow /usr/local/lib/python3.8/dist-packages/tensorflow/
+COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python3.8/dist-packages/tensorflow_estimator /usr/local/lib/python3.8/dist-packages/tensorflow_estimator/
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python3.8/dist-packages/tensorflow-*.dist-info /usr/local/lib/python3.8/dist-packages/tensorflow.dist-info/
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python3.8/dist-packages/keras /usr/local/lib/python3.8/dist-packages/keras/
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python3.8/dist-packages/keras-*.dist-info /usr/local/lib/python3.8/dist-packages/keras.dist-info/
