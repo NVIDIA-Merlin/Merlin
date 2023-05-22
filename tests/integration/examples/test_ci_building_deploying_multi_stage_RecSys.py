@@ -26,7 +26,6 @@ def test_func(tmpdir):
             os.system("mkdir -p {tmpdir / 'data/'}")
             os.system("mkdir -p {tmpdir / 'feast/feature_repo/data/'}")
             os.environ["DATA_FOLDER"] = "{tmpdir / 'data/'}"
-            os.environ["NUM_ROWS"] = "100000"
             os.environ["BASE_DIR"] = "{tmpdir / 'examples/'}"
             """
         )
