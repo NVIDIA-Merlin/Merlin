@@ -1,5 +1,11 @@
 # Merlin Changelog
 
+## [23.05]
+
+### NVTabular
+
+This is the last NVTabular release that will contain the `nvtabular.inference` package, which has been deprecated for quite some time and replaced by the Merlin Systems library. Starting in the 23.06 release, we recommend using Merlin Systems to serve models and NVT workflows.
+
 ## [23.04]
 
 Changes since the 23.02 release.
