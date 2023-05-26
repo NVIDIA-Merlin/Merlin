@@ -1,5 +1,5 @@
 # Preprocessing script
-The `preprocessing.py` is a template script that provides basic preprocessing and feature engineering operations for tabular data, so that they are better represented for neural models. It uses the [NVTabular](https://github.com/NVIDIA-Merlin/NVTabular) and [dask-cudf](https://github.com/rapidsai/cudf/tree/stable/python/dask_cudf) libraries for GPU accelerated preprocessing.
+The `preprocessing.py` is a template script that provides basic preprocessing and feature engineering operations for tabular data, so that they are better represented for neural models. It uses the [NVTabular](https://github.com/NVIDIA-Merlin/NVTabular) and [dask-cudf](https://github.com/rapidsai/cudf/tree/main/python/dask_cudf) libraries for GPU accelerated preprocessing.
 
 In this document we describe the provided preprocessing and feature engineering options and the corresponding command line arguments.
 
