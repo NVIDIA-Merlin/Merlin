@@ -42,7 +42,7 @@ The major focus of this release was broader support for training and serving ses
 
 #### Added
 
-* [Quick-start for Ranking](https://github.com/NVIDIA-Merlin/Merlin/blob/main/examples/quick_start/ranking.md) - A new guide on how to preprocess data and, build, train, evaluate and hypertune Ranking models with Merlin, including best practices to improve models accuracy ([#915](https://github.com/NVIDIA-Merlin/Merlin/pull/915))
+* [Quick-start for Ranking](https://github.com/NVIDIA-Merlin/Merlin/blob/stable/examples/quick_start/ranking.md) - A new guide on how to preprocess data and, build, train, evaluate and hypertune Ranking models with Merlin, including best practices to improve models accuracy ([#915](https://github.com/NVIDIA-Merlin/Merlin/pull/915))
 * We have added support for Tensorflow 2.11 and 2.12 ([#1016](https://github.com/NVIDIA-Merlin/models/pull/1016), [#1040](https://github.com/NVIDIA-Merlin/models/pull/1040))
 * We have introduced `SOKEmbedding` class that leverages HugeCTR Sparse Operations Kit for model parallelism ([#863](https://github.com/NVIDIA-Merlin/models/pull/863)).
 

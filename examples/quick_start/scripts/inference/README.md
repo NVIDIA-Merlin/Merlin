@@ -15,7 +15,7 @@ In order to do model deployment stage, you are required to complete `preprocessi
 
 In this context, deploying multiple models is called an ensemble model since it represents a pipeline of one or more models that are sequentially connected, i.e., output of a model is the input of next model. Ensemble models are intended to be used to encapsulate a procedure that involves multiple models, such as "data preprocessing -> inference -> data postprocessing". 
 
-The Triton Inference Server serves models from one or more model repositories that are specified when the server is started. Each model must include a configuration that provides required and optional information about the model. Merlin Systems simplified that step, so that we can easily export ensemble graph config files and artifacts. We use [Ensemble](https://github.com/NVIDIA-Merlin/systems/blob/main/merlin/systems/dag/ensemble.py#L29) class for that, which is responsible for interpreting the graph and exporting the correct files for the Triton server.
+The Triton Inference Server serves models from one or more model repositories that are specified when the server is started. Each model must include a configuration that provides required and optional information about the model. Merlin Systems simplified that step, so that we can easily export ensemble graph config files and artifacts. We use [Ensemble](https://github.com/NVIDIA-Merlin/systems/blob/stable/merlin/systems/dag/ensemble.py#L29) class for that, which is responsible for interpreting the graph and exporting the correct files for the Triton server.
 
 Exporting an ensemble graph consists of the following steps:
 

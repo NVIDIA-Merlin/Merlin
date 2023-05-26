@@ -55,7 +55,7 @@ Table 1: Merlin Containers
 
 ## Examples and Tutorials
 
-We provide a collection of examples, use cases, and tutorials for [NVTabular](https://github.com/NVIDIA/NVTabular/tree/main/examples) and [HugeCTR](https://github.com/NVIDIA/HugeCTR/tree/main/notebooks) as Jupyter notebooks in our repository. These Jupyter notebooks are based on the following datasets:
+We provide a collection of examples, use cases, and tutorials for [NVTabular](https://github.com/NVIDIA/NVTabular/tree/stable/examples) and [HugeCTR](https://github.com/NVIDIA/HugeCTR/tree/stable/notebooks) as Jupyter notebooks in our repository. These Jupyter notebooks are based on the following datasets:
 - MovieLens
 - Outbrain Click Prediction
 - Criteo Click Ads Prediction
@@ -69,12 +69,12 @@ We provide a collection of examples, use cases, and tutorials for [NVTabular](ht
 - Integrating NVTabular with HugeCTR
 - Deploying to inference with Triton
 
-For more sample models and their end-to-end instructions for HugeCTR visit the link: https://github.com/NVIDIA/HugeCTR/tree/main/samples
+For more sample models and their end-to-end instructions for HugeCTR visit the link: https://github.com/NVIDIA/HugeCTR/tree/stable/samples
 
 ## Learn More
 
 * [HugeCTR Documentation](https://nvidia-merlin.github.io/HugeCTR/master/hugectr_user_guide.html)
-* [NVTabular Documentation](https://nvidia-merlin.github.io/NVTabular/main/Introduction.html)
+* [NVTabular Documentation](https://nvidia-merlin.github.io/NVTabular/stable/Introduction.html)
 * [HugeCTR](https://github.com/nvidia-merlin/hugectr)
 * [NVTabular](https://github.com/nvidia-merlin/nvtabular)
 * [Triton Inference Server](https://github.com/triton-inference-server/server)
