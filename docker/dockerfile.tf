@@ -12,7 +12,7 @@ FROM ${FULL_IMAGE} as triton
 FROM ${BASE_IMAGE} as base
 
 # Triton TF backends
-COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/tensorflow backends/tensorflow/
+COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/tensorflow2 backends/tensorflow2/
 
 # Tensorflow dependencies (only)
 # Pinning to pass hugectr sok tests
@@ -55,24 +55,24 @@ RUN ln -s /usr/lib/x86_64-linux-gnu/libibverbs.so.1 /usr/lib/x86_64-linux-gnu/li
 ARG INSTALL_DISTRIBUTED_EMBEDDINGS=false
 ARG TFDE_VER=v0.3
 RUN if [ "$HUGECTR_DEV_MODE" == "false" ]; then \
-        git clone --branch ${HUGECTR_VER} --depth 1 --recurse-submodules --shallow-submodules https://${_CI_JOB_TOKEN}${_HUGECTR_REPO} /hugectr && \
-        pushd /hugectr && \
-        rm -rf .git/modules && \
-        pip --no-cache-dir install ninja tf2onnx && \
-        # Install SOK
-        cd sparse_operation_kit && \
-        python setup.py install && \
-        # Install HPS TF plugin
-        cd ../hps_tf && \
-        python setup.py install && \
-        popd &&\
-	mv /hugectr/ci ~/hugectr-ci && mv /hugectr/sparse_operation_kit ~/hugectr-sparse_operation_kit && \
-    	rm -rf /hugectr && mkdir -p /hugectr && \
-        mv ~/hugectr-ci /hugectr/ci && mv ~/hugectr-sparse_operation_kit /hugectr/sparse_operation_kit; \
+    git clone --branch ${HUGECTR_VER} --depth 1 --recurse-submodules --shallow-submodules https://${_CI_JOB_TOKEN}${_HUGECTR_REPO} /hugectr && \
+    pushd /hugectr && \
+    rm -rf .git/modules && \
+    pip --no-cache-dir install ninja tf2onnx && \
+    # Install SOK
+    cd sparse_operation_kit && \
+    python setup.py install && \
+    # Install HPS TF plugin
+    cd ../hps_tf && \
+    python setup.py install && \
+    popd &&\
+    mv /hugectr/ci ~/hugectr-ci && mv /hugectr/sparse_operation_kit ~/hugectr-sparse_operation_kit && \
+    rm -rf /hugectr && mkdir -p /hugectr && \
+    mv ~/hugectr-ci /hugectr/ci && mv ~/hugectr-sparse_operation_kit /hugectr/sparse_operation_kit; \
     fi; \
     if [ "$INSTALL_DISTRIBUTED_EMBEDDINGS" == "true" ]; then \
-        git clone --branch ${TFDE_VER} --depth 1 https://github.com/NVIDIA-Merlin/distributed-embeddings.git /distributed_embeddings/ && \
-        cd /distributed_embeddings && git submodule update --init --recursive && \
-        make pip_pkg && pip install --no-cache-dir artifacts/*.whl && make clean; \
+    git clone --branch ${TFDE_VER} --depth 1 https://github.com/NVIDIA-Merlin/distributed-embeddings.git /distributed_embeddings/ && \
+    cd /distributed_embeddings && git submodule update --init --recursive && \
+    make pip_pkg && pip install --no-cache-dir artifacts/*.whl && make clean; \
     fi; 
 

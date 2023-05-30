@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.2
-ARG TRITON_VERSION=23.03
-ARG DLFW_VERSION=23.03
+ARG TRITON_VERSION=23.02
+ARG DLFW_VERSION=23.02
 
 ARG FULL_IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-py3
 ARG BASE_IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-py3-min
@@ -45,36 +45,36 @@ RUN apt clean && apt update -y --fix-missing && \
     apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/3bf863cc.pub && \
     add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/ /" && \
     apt install -y --no-install-recommends \
-        autoconf \
-        automake \
-        build-essential \
-        ca-certificates \
-        clang-format \
-        curl \
-        datacenter-gpu-manager \
-        git \
-        libarchive-dev \
-        libb64-dev \
-        libboost-serialization-dev \
-        libcurl4-openssl-dev \
-        libexpat1-dev \
-        libopenblas-dev \
-        libre2-dev \
-        libsasl2-2 \
-        libssl-dev \
-        libtbb-dev \
-        openssl \
-        pkg-config \
-        policykit-1 \
-        protobuf-compiler \
-        python3 \
-        python3-pip \
-        python3-dev \
-        swig \
-        rapidjson-dev \
-        nlohmann-json3-dev \
-        wget \
-        zlib1g-dev && \
+    autoconf \
+    automake \
+    build-essential \
+    ca-certificates \
+    clang-format \
+    curl \
+    datacenter-gpu-manager \
+    git \
+    libarchive-dev \
+    libb64-dev \
+    libboost-serialization-dev \
+    libcurl4-openssl-dev \
+    libexpat1-dev \
+    libopenblas-dev \
+    libre2-dev \
+    libsasl2-2 \
+    libssl-dev \
+    libtbb-dev \
+    openssl \
+    pkg-config \
+    policykit-1 \
+    protobuf-compiler \
+    python3 \
+    python3-pip \
+    python3-dev \
+    swig \
+    rapidjson-dev \
+    nlohmann-json3-dev \
+    wget \
+    zlib1g-dev && \
     apt autoremove -y && \
     apt clean && \
     rm -rf /var/lib/apt/lists/*
@@ -92,15 +92,15 @@ RUN ln -s /usr/bin/python3 /usr/bin/python
 #cupy-cuda12x 
 
 RUN pip install --no-cache-dir --upgrade pip; pip install --no-cache-dir "cmake<3.25.0" ninja scikit-build pandas==1.5.2 \
-                fastrlock nvidia-pyindex pybind11 pytest \ 
-                transformers==4.12 tensorflow-metadata betterproto \
-                cachetools graphviz nvtx scipy "scikit-learn<1.2" \
-                tritonclient[all]==2.29.0 grpcio-channelz fiddle wandb npy-append-array \
-                git+https://github.com/rapidsai/asvdb.git@main \
-                xgboost==1.6.2 lightgbm treelite==2.4.0 treelite_runtime==2.4.0 \
-                lightfm implicit \
-                numba "cuda-python>=11.5,<12.0" fsspec==2022.5.0 llvmlite \
-                pynvml==11.4.1
+    fastrlock nvidia-pyindex pybind11 pytest \ 
+    transformers==4.12 tensorflow-metadata betterproto \
+    cachetools graphviz nvtx scipy "scikit-learn<1.2" \
+    tritonclient[all]==2.29.0 grpcio-channelz fiddle wandb npy-append-array \
+    git+https://github.com/rapidsai/asvdb.git@main \
+    xgboost==1.6.2 lightgbm treelite==2.4.0 treelite_runtime==2.4.0 \
+    lightfm implicit \
+    numba "cuda-python>=11.5,<12.0" fsspec==2022.5.0 llvmlite \
+    pynvml==11.4.1
 RUN pip install --no-cache-dir numpy==1.22.4 protobuf==3.20.3 onnx onnxruntime==1.11.1 pycuda
 RUN pip install --no-cache-dir dask==${DASK_VER} distributed==${DASK_VER} dask[dataframe]==${DASK_VER} 
 RUN pip install --no-cache-dir onnx_graphsurgeon --index-url https://pypi.ngc.nvidia.com
@@ -164,50 +164,50 @@ RUN apt update -y --fix-missing && \
     apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/3bf863cc.pub && \
     add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/ /" && \
     apt install -y --no-install-recommends \
-        ca-certificates \
-        clang-format \
-        curl \
-        libcurl4-openssl-dev \
-        git \
-        graphviz \
-        libarchive-dev \
-        libb64-dev \
-        libboost-serialization-dev \
-        libexpat1-dev \
-        libopenblas-dev \
-        libre2-dev \
-        libsasl2-2 \
-        libssl-dev \
-        libtbb-dev \
-        openssl \
-        policykit-1 \
-        protobuf-compiler \
-        python3 \
-        python3-pip \
-        python3-dev \
-        rapidjson-dev \
-        tree \
-        wget \
-        zlib1g-dev \
-        # Required to build RocksDB and RdKafka..
-        libgflags-dev \
-        libbz2-dev \
-        libsnappy-dev \
-        liblz4-dev \
-        libzstd-dev \
-        libsasl2-dev \
-        #   Required to build Protocol Buffers.
-        autoconf automake libtool \
-        #   Required to build Hadoop.
-        pkg-config \
-        libpmem-dev \
-        libsnappy-dev \
-        #   Required to run Hadoop.
-        openssh-server \
-        # [ HugeCTR ]
-        libaio-dev \
-        # TensorRT dependencies
-        python3-libnvinfer && \
+    ca-certificates \
+    clang-format \
+    curl \
+    libcurl4-openssl-dev \
+    git \
+    graphviz \
+    libarchive-dev \
+    libb64-dev \
+    libboost-serialization-dev \
+    libexpat1-dev \
+    libopenblas-dev \
+    libre2-dev \
+    libsasl2-2 \
+    libssl-dev \
+    libtbb-dev \
+    openssl \
+    policykit-1 \
+    protobuf-compiler \
+    python3 \
+    python3-pip \
+    python3-dev \
+    rapidjson-dev \
+    tree \
+    wget \
+    zlib1g-dev \
+    # Required to build RocksDB and RdKafka..
+    libgflags-dev \
+    libbz2-dev \
+    libsnappy-dev \
+    liblz4-dev \
+    libzstd-dev \
+    libsasl2-dev \
+    #   Required to build Protocol Buffers.
+    autoconf automake libtool \
+    #   Required to build Hadoop.
+    pkg-config \
+    libpmem-dev \
+    libsnappy-dev \
+    #   Required to run Hadoop.
+    openssh-server \
+    # [ HugeCTR ]
+    libaio-dev \
+    # TensorRT dependencies
+    python3-libnvinfer && \
     apt autoremove -y && \
     apt clean && \
     rm -rf /var/lib/apt/lists/*
@@ -239,7 +239,7 @@ COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/fil backends/fil
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/tensorrt backends/tensorrt/
 COPY --chown=1000:1000 --from=triton /usr/bin/serve /usr/bin/.
 COPY --chown=1000:1000 --from=triton /usr/lib/x86_64-linux-gnu/libdcgm.so.2 /usr/lib/x86_64-linux-gnu/libdcgm.so.2
-COPY --chown=1000:1000 --from=triton /usr/local/cuda-12.1/targets/x86_64-linux/lib/libcupti.so.12 /usr/local/cuda-12.1/targets/x86_64-linux/lib/libcupti.so.12
+COPY --chown=1000:1000 --from=triton /usr/local/cuda-12.0/targets/x86_64-linux/lib/libcupti.so.12 /usr/local/cuda-12.0/targets/x86_64-linux/lib/libcupti.so.12
 
 
 ENV PATH=/opt/tritonserver/bin:${PATH}:
@@ -254,17 +254,16 @@ ENV PYTHONPATH=$PYTHONPATH:/usr/local/lib/python3.8/dist-packages/
 COPY --chown=1000:1000 --from=dlfw /usr/lib/libcudf* /usr/lib/
 COPY --chown=1000:1000 --from=dlfw /usr/lib/libarrow* /usr/lib/
 COPY --chown=1000:1000 --from=dlfw /usr/lib/libparquet* /usr/lib/
-COPY --chown=1000:1000 --from=dlfw /usr/lib/cmake/Arrow /usr/lib/cmake/Arrow/
-COPY --chown=1000:1000 --from=dlfw /usr/lib/cmake/Parquet /usr/lib/cmake/Parquet/
+COPY --chown=1000:1000 --from=dlfw /usr/lib/cmake/arrow /usr/lib/cmake/arrow/
 COPY --chown=1000:1000 --from=dlfw /usr/lib/libnvcomp* /usr/lib/
 COPY --chown=1000:1000 --from=dlfw /usr/include/parquet /usr/include/parquet/
 COPY --chown=1000:1000 --from=dlfw /usr/include/arrow /usr/include/arrow/
 COPY --chown=1000:1000 --from=dlfw /usr/include/cudf /usr/include/cudf/
 COPY --chown=1000:1000 --from=dlfw /usr/include/rmm /usr/include/rmm/
 # ptx compiler required by cubinlinker
-COPY --chown=1000:1000 --from=dlfw /usr/local/cuda-12.1/targets/x86_64-linux/lib/libnvptxcompiler_static.a /usr/local/cuda-12.1/targets/x86_64-linux/lib/libnvptxcompiler_static.a
-COPY --chown=1000:1000 --from=dlfw /usr/local/cuda-12.1/targets/x86_64-linux/include/nvPTXCompiler.h /usr/local/cuda-12.1/targets/x86_64-linux/include/nvPTXCompiler.h
-RUN git clone https://github.com/rapidsai/ptxcompiler.git /ptx && cd /ptx/ && python setup.py develop;
+# COPY --chown=1000:1000 --from=dlfw /usr/local/cuda-12.1/targets/x86_64-linux/lib/libnvptxcompiler_static.a /usr/local/cuda-12.1/targets/x86_64-linux/lib/libnvptxcompiler_static.a
+# COPY --chown=1000:1000 --from=dlfw /usr/local/cuda-12.1/targets/x86_64-linux/include/nvPTXCompiler.h /usr/local/cuda-12.1/targets/x86_64-linux/include/nvPTXCompiler.h
+# RUN git clone https://github.com/rapidsai/ptxcompiler.git /ptx && cd /ptx/ && python setup.py develop;
 
 ARG PYTHON_VERSION=3.8
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/rmm /usr/local/lib/python${PYTHON_VERSION}/dist-packages/rmm
@@ -277,7 +276,7 @@ COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-p
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cupyx /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cupyx
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cupy_backends /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cupy_backends
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/numba /usr/local/lib/python${PYTHON_VERSION}/dist-packages/numba
-COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cubinlinker /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cubinlinker
+# COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cubinlinker /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cubinlinker
 
 
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cudf-*.dist-info /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cudf.dist-info/
@@ -287,7 +286,7 @@ COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-p
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/rmm-*.dist-info /usr/local/lib/python${PYTHON_VERSION}/dist-packages/rmm.dist-info/
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cupy_*.dist-info /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cupy.dist-info/
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/numba-*.dist-info /usr/local/lib/python${PYTHON_VERSION}/dist-packages/numba.dist-info/
-COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cubinlinker-*.dist-info /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cubinlinker.dist-info/
+# COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cubinlinker-*.dist-info /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cubinlinker.dist-info/
 
 RUN pip install --no-cache-dir jupyterlab pydot testbook numpy==1.22.4
 
@@ -355,14 +354,14 @@ ENV PATH=${PATH}:${HADOOP_HOME}/bin:${HADOOP_HOME}/sbin \
     # Tackles with JVM setting error signals that UCX library will check (GitLab issue #425).
     UCX_ERROR_SIGNALS='' \
     CLASSPATH=${CLASSPATH}:\
-${HADOOP_HOME}/etc/hadoop/*:\
-${HADOOP_HOME}/share/hadoop/common/*:\
-${HADOOP_HOME}/share/hadoop/common/lib/*:\
-${HADOOP_HOME}/share/hadoop/hdfs/*:\
-${HADOOP_HOME}/share/hadoop/hdfs/lib/*:\
-${HADOOP_HOME}/share/hadoop/mapreduce/*:\
-${HADOOP_HOME}/share/hadoop/yarn/*:\
-${HADOOP_HOME}/share/hadoop/yarn/lib/*
+    ${HADOOP_HOME}/etc/hadoop/*:\
+    ${HADOOP_HOME}/share/hadoop/common/*:\
+    ${HADOOP_HOME}/share/hadoop/common/lib/*:\
+    ${HADOOP_HOME}/share/hadoop/hdfs/*:\
+    ${HADOOP_HOME}/share/hadoop/hdfs/lib/*:\
+    ${HADOOP_HOME}/share/hadoop/mapreduce/*:\
+    ${HADOOP_HOME}/share/hadoop/yarn/*:\
+    ${HADOOP_HOME}/share/hadoop/yarn/lib/*
 
 # Install Inference and HPS Backend
 ARG HUGECTR_DEV_MODE=false
@@ -379,41 +378,41 @@ ENV PATH=$PATH:${HUGECTR_HOME}/bin \
     LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${HUGECTR_HOME}/lib
 
 RUN if [ "${HUGECTR_DEV_MODE}" == "false" ]; then \
-        # Install HugeCTR inference which is dependency for hps_backenc
-        git clone --branch ${HUGECTR_VER} --depth 1 https://${_CI_JOB_TOKEN}${_HUGECTR_REPO} /hugectr && \
-        cd /hugectr && \
-        git submodule update --init --recursive && \
-        mkdir build && \
-        cd build && \
-        if [[ "${INSTALL_HDFS}" == "false" ]]; then \
-            cmake -DCMAKE_BUILD_TYPE=Release -DSM="70;75;80;90" -DENABLE_INFERENCE=ON .. \
-        ; else \
-            cmake -DCMAKE_BUILD_TYPE=Release -DSM="70;75;80;90" -DENABLE_INFERENCE=ON -DENABLE_HDFS=ON .. \
-        ; fi && \
-        make -j$(nproc) && \
-        make install && \
-        # Install HPS trt pugin
-        cd ../hps_trt && \
-        mkdir build && \
-        cd build && \
-        cmake -DSM="70;75;80;90" .. && \
-        make -j$(nproc) && \
-        make install && \
-        cd / && rm -rf /hugectr && \
-        # Install hps_backend
-        git clone --branch ${HUGECTR_BACKEND_VER} --depth 1 https://${_CI_JOB_TOKEN}${_HUGECTR_BACKEND_REPO} /repos/hugectr_triton_backend && \
-        mkdir /repos/hugectr_triton_backend/hps_backend/build && \
-        cd /repos/hugectr_triton_backend/hps_backend/build && \
-        cmake \
-            -DCMAKE_INSTALL_PREFIX:PATH=${HUGECTR_HOME} \
-            -DTRITON_COMMON_REPO_TAG="r${TRITON_VERSION}" \
-            -DTRITON_CORE_REPO_TAG="r${TRITON_VERSION}" \
-            -DTRITON_BACKEND_REPO_TAG="r${TRITON_VERSION}" .. && \
-        make -j$(nproc) && \
-        make install && \
-        cd ../../.. && \
-        rm -rf hugectr_triton_backend && \
-        chmod +x ${HUGECTR_HOME}/lib/*.so ${HUGECTR_HOME}/backends/hps/*.so \
+    # Install HugeCTR inference which is dependency for hps_backenc
+    git clone --branch ${HUGECTR_VER} --depth 1 https://${_CI_JOB_TOKEN}${_HUGECTR_REPO} /hugectr && \
+    cd /hugectr && \
+    git submodule update --init --recursive && \
+    mkdir build && \
+    cd build && \
+    if [[ "${INSTALL_HDFS}" == "false" ]]; then \
+    cmake -DCMAKE_BUILD_TYPE=Release -DSM="70;75;80;90" -DENABLE_INFERENCE=ON .. \
+    ; else \
+    cmake -DCMAKE_BUILD_TYPE=Release -DSM="70;75;80;90" -DENABLE_INFERENCE=ON -DENABLE_HDFS=ON .. \
+    ; fi && \
+    make -j$(nproc) && \
+    make install && \
+    # Install HPS trt pugin
+    cd ../hps_trt && \
+    mkdir build && \
+    cd build && \
+    cmake -DSM="70;75;80;90" .. && \
+    make -j$(nproc) && \
+    make install && \
+    cd / && rm -rf /hugectr && \
+    # Install hps_backend
+    git clone --branch ${HUGECTR_BACKEND_VER} --depth 1 https://${_CI_JOB_TOKEN}${_HUGECTR_BACKEND_REPO} /repos/hugectr_triton_backend && \
+    mkdir /repos/hugectr_triton_backend/hps_backend/build && \
+    cd /repos/hugectr_triton_backend/hps_backend/build && \
+    cmake \
+    -DCMAKE_INSTALL_PREFIX:PATH=${HUGECTR_HOME} \
+    -DTRITON_COMMON_REPO_TAG="r${TRITON_VERSION}" \
+    -DTRITON_CORE_REPO_TAG="r${TRITON_VERSION}" \
+    -DTRITON_BACKEND_REPO_TAG="r${TRITON_VERSION}" .. && \
+    make -j$(nproc) && \
+    make install && \
+    cd ../../.. && \
+    rm -rf hugectr_triton_backend && \
+    chmod +x ${HUGECTR_HOME}/lib/*.so ${HUGECTR_HOME}/backends/hps/*.so \
     ; fi
 RUN ln -s ${HUGECTR_HOME}/backends/hps /opt/tritonserver/backends/hps
 
