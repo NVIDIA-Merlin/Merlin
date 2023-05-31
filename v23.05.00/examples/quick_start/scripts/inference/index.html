@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Deploying a Ranking model on Triton Inference Server &mdash; Merlin  documentation</title><link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/mystnb.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/togglebutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/custom.css" type="text/css" />
+    <link rel="canonical" href="https://nvidia-merlin.github.io/Merlin/main/examples/quick_start/scripts/inference/index.html" />
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+        <script >let toggleHintShow = 'Click to show';</script>
+        <script >let toggleHintHide = 'Click to hide';</script>
+        <script >let toggleOpenOnPrint = 'true';</script>
+        <script src="../../../../_static/togglebutton.js"></script>
+        <script >var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="banner">
+    <p class="banner">
+      Beginning in January 2023, versions for all NVIDIA Merlin projects
+      will change from semantic versioning like <code>4.0</code>
+      to calendar versioning like <code>23.01</code>.</p>
+  </div>
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            Merlin
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../README.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guide/recommender_system_guide.html">Recommender System Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../index.html">Example Notebooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../containers.html">Merlin Containers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../support_matrix/index.html">Merlin Support Matrix</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">Merlin</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Deploying a Ranking model on Triton Inference Server</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="deploying-a-ranking-model-on-triton-inference-server">
+<h1>Deploying a Ranking model on Triton Inference Server<a class="headerlink" href="#deploying-a-ranking-model-on-triton-inference-server" title="Permalink to this headline"></a></h1>
+<p>The last step of ML pipeline is to deploy the trained model into production. For this purpose we use <a class="reference external" href="https://github.com/triton-inference-server/server">NVIDIA Triton Inference Server</a>, which is an open-source inference serving software, standardizes AI model deployment and execution and delivers fast and scalable AI in production.</p>
+<p><a class="reference external" href="https://github.com/NVIDIA-Merlin/systems/tree/main">Merlin Systems</a> library is designed for building pipelines to generate recommendations. Deploying pipelines on Triton is one part of the library’s functionality and Merlin Systems provides easy to use APIs to be able to export ensemble graph and model artifacts so that they can be loaded on Triton with less effort.</p>
+<p>In this example we demonstrate the necessary steps to deploy a model to Triton and test it:</p>
+<ol class="arabic simple">
+<li><p>Creating the ensemble graph</p></li>
+<li><p>Launching the Triton Inference Server</p></li>
+<li><p>Sending request to Server and receiving the response</p></li>
+</ol>
+<div class="section" id="creating-the-ensemble-graph">
+<h2>Creating the Ensemble Graph<a class="headerlink" href="#creating-the-ensemble-graph" title="Permalink to this headline"></a></h2>
+<p>In order to do model deployment stage, you are required to complete <code class="docutils literal notranslate"><span class="pre">preprocessing</span></code> and <code class="docutils literal notranslate"><span class="pre">ranking</span></code> steps already from the <span class="xref myst">Quick-start for Ranking</span>.  At the inference step, we might have a collection of multiple (individual) models to be deployed on Triton. In this example, we deploy our NVTabular workflow model to be able to transform raw data the same way as in the dataset preprocessing phase, in order to avoid the training-serving skew.</p>
+<p>In this context, deploying multiple models is called an ensemble model since it represents a pipeline of one or more models that are sequentially connected, i.e., output of a model is the input of next model. Ensemble models are intended to be used to encapsulate a procedure that involves multiple models, such as “data preprocessing -&gt; inference -&gt; data postprocessing”.</p>
+<p>The Triton Inference Server serves models from one or more model repositories that are specified when the server is started. Each model must include a configuration that provides required and optional information about the model. Merlin Systems simplified that step, so that we can easily export ensemble graph config files and artifacts. We use <a class="reference external" href="https://github.com/NVIDIA-Merlin/systems/blob/main/merlin/systems/dag/ensemble.py#L29">Ensemble</a> class for that, which is responsible for interpreting the graph and exporting the correct files for the Triton server.</p>
+<p>Exporting an ensemble graph consists of the following steps:</p>
+<ul class="simple">
+<li><p>loading saved workflow</p></li>
+<li><p>loading saved ranking model</p></li>
+<li><p>generating ensemble graph</p></li>
+<li><p>exporting the ensemble graph models and artifacts</p></li>
+</ul>
+<p>These steps are taken care of by <code class="docutils literal notranslate"><span class="pre">inference.py</span></code> script when executed (please see the <code class="docutils literal notranslate"><span class="pre">Command</span> <span class="pre">line</span> <span class="pre">arguments</span></code> section below for the instructions).</p>
+</div>
+<div class="section" id="launching-triton-inference-server">
+<h2>Launching Triton Inference Server<a class="headerlink" href="#launching-triton-inference-server" title="Permalink to this headline"></a></h2>
+<p>Once the models ensemble graph is exported to the path that you define, now you can load these models on Triton Inference Server, which is actually only one single line of code.</p>
+<p>You can start the server by running the following command:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>tritonserver<span class="w"> </span>--model-repository<span class="o">=</span>&lt;path<span class="w"> </span>to<span class="w"> </span>the<span class="w"> </span>saved<span class="w"> </span>ensemble<span class="w"> </span>folder&gt;
+</pre></div>
+</div>
+<p>For the <code class="docutils literal notranslate"><span class="pre">--model-repository</span></code> argument, provide the same path of <code class="docutils literal notranslate"><span class="pre">ensemble_export_path</span></code> argument that you inputted previously when executing the <code class="docutils literal notranslate"><span class="pre">inference.py</span></code> script.</p>
+<p>After you run the tritonserver command, wait until your terminal shows messages like the following example:</p>
+<p>I0414 18:29:50.741833 4067 grpc_server.cc:4421] Started GRPCInferenceService at 0.0.0.0:8001
+I0414 18:29:50.742197 4067 http_server.cc:3113] Started HTTPService at 0.0.0.0:8000
+I0414 18:29:50.783470 4067 http_server.cc:178] Started Metrics Service at 0.0.0.0:8002 ,br&gt;</p>
+</div>
+<div class="section" id="sending-request-to-triton">
+<h2>Sending request to Triton<a class="headerlink" href="#sending-request-to-triton" title="Permalink to this headline"></a></h2>
+<p>This step is explained and demonstrated in the <a class="reference external" href="https://github.com/NVIDIA-Merlin/Merlin/blob/quick_start_inf_triton/examples/quick_start/scripts/inference/inference.ipynb">inference.ipynb</a> example notebook. Please follow the instructions there and execute the cells to send a request and receive response from Triton.</p>
+</div>
+<div class="section" id="command-line-arguments">
+<h2>Command line arguments<a class="headerlink" href="#command-line-arguments" title="Permalink to this headline"></a></h2>
+<p>In this section we describe the command line arguments of the <code class="docutils literal notranslate"><span class="pre">inference.py</span></code> script.</p>
+<p>This is an example command line for running the <code class="docutils literal notranslate"><span class="pre">inference.py</span></code>script after your finished model <code class="docutils literal notranslate"><span class="pre">preprocessing</span></code> and <code class="docutils literal notranslate"><span class="pre">ranking</span></code> steps.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>/Merlin/examples/quick_start/scripts/inference/
+<span class="nv">NVT_WORKFLOW_PATH</span><span class="o">=</span>&lt;input<span class="w"> </span>path<span class="w"> </span>with<span class="w"> </span>saved<span class="w"> </span>workflow&gt;
+<span class="nv">TF_SAVED_MODEL_PATH</span><span class="o">=</span>&lt;input<span class="w"> </span>path<span class="w"> </span>with<span class="w"> </span>saved<span class="w"> </span>model&gt;
+<span class="nv">OUTPUT_ENSEMBLE_PATH</span><span class="o">=</span>&lt;output<span class="w"> </span>path<span class="w"> </span>to<span class="w"> </span><span class="nb">export</span><span class="w"> </span>the<span class="w"> </span>Triton<span class="w"> </span>ensemble<span class="w"> </span>model&gt;
+<span class="nv">TF_GPU_ALLOCATOR</span><span class="o">=</span>cuda_malloc_async<span class="w"> </span>python<span class="w"> </span>inference.py<span class="w"> </span>--nvt_workflow_path<span class="w"> </span><span class="nv">$NVT_WORKFLOW_PATH</span><span class="w"> </span>--load_model_path<span class="w"> </span><span class="nv">$TF_SAVED_MODEL_PATH</span><span class="w"> </span>--ensemble_export_path<span class="w"> </span><span class="nv">$OUTPUT_ENSEMBLE_PATH</span>
+</pre></div>
+</div>
+<p>Note that preprocessing step saves the NVTabular workflow automatically to <code class="docutils literal notranslate"><span class="pre">output_path</span></code> that is set when executing preprocessing script. For the <code class="docutils literal notranslate"><span class="pre">load_model_path</span></code> argument, be sure that you provide the exact same path f that you provided for saving the trained model during ranking step.</p>
+<div class="section" id="inputs">
+<h3>Inputs<a class="headerlink" href="#inputs" title="Permalink to this headline"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>  --nvt_workflow_path   
+                        Loads the nvtabular workflow saved in the preprocessing step (`--output_path`).
+  --load_model_path     
+                        Loads a model saved by --save_model_path in the ranking step.
+   --ensemble_export_path
+                        Path for exporting the config files and model artifacts
+                        to load them on Triton inference server.
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, NVIDIA.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  
+<div class="rst-versions" data-toggle="rst-versions" role="note" aria-label="versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    <span class="fa fa-book"> Other Versions</span>
+    v: v23.05.00
+    <span class="fa fa-caret-down"></span>
+  </span>
+  <div class="rst-other-versions">
+    <dl>
+      <dt>Tags</dt>
+      <dd><a href="../../../../../v22.11.00/index.html">v22.11.00</a></dd>
+      <dd><a href="../../../../../v22.12.00/index.html">v22.12.00</a></dd>
+      <dd><a href="../../../../../v23.02.00/index.html">v23.02.00</a></dd>
+      <dd><a href="../../../../../v23.04.00/index.html">v23.04.00</a></dd>
+      <dd><a href="index.html">v23.05.00</a></dd>
+      <dd><a href="../../../../../v23.05.dev0/index.html">v23.05.dev0</a></dd>
+    </dl>
+  </div>
+</div><script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-NVJ1Y1YJHK"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-NVJ1Y1YJHK', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>
