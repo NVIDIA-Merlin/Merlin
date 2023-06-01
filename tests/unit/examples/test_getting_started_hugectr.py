@@ -13,7 +13,6 @@ pytest.importorskip("hugectr")
 # flake8: noqa
 
 
-@pytest.mark.multigpu
 def test_func():
     INPUT_DATA_DIR = "/tmp/input/getting_started/"
     MODEL_DIR = os.path.join(INPUT_DATA_DIR, "model/movielens_hugectr")

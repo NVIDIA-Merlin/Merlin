@@ -12,7 +12,6 @@ pytest.importorskip("torch")
 # flake8: noqa
 
 
-@pytest.mark.multigpu
 def test_func():
     INPUT_DATA_DIR = "/tmp/input/getting_started/"
     with testbook(
