@@ -2,11 +2,13 @@ import os
 
 import pytest
 from testbook import testbook
+
 from tests.conftest import REPO_ROOT
 
 pytest.importorskip("tensorflow")
 
 
+@pytest.mark.multigpu
 def test_func():
     with testbook(
         REPO_ROOT / "examples" / "scaling-criteo" / "02-ETL-with-NVTabular.ipynb",
