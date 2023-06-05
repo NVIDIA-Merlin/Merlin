@@ -1,12 +1,13 @@
 # import os
 
 import pytest
+
 # from testbook import testbook
 # from tests.conftest import REPO_ROOT
 
 pytest.importorskip("hugectr")
 
-
+# @pytest.mark.multigpu
 # def test_test_scaling_criteo_merlin_models_hugectr():
 #     with testbook(
 #         REPO_ROOT / "examples" / "scaling-criteo" / "02-ETL-with-NVTabular.ipynb",
@@ -20,7 +21,7 @@ pytest.importorskip("hugectr")
 #             os.environ["INPUT_DATA_DIR"] = "/tmp/test_merlin_criteo_hugectr/input/criteo/"
 #             os.environ["OUTPUT_DATA_DIR"] = "/tmp/test_merlin_criteo_hugectr/output/criteo/"
 #             os.environ["USE_HUGECTR"] = "True"
-            
+
 #             os.system("mkdir -p /tmp/test_merlin_criteo_hugectr/input/criteo")
 #             os.system("mkdir -p /tmp/test_merlin_criteo_hugectr/output/criteo/")
 
@@ -76,7 +77,7 @@ pytest.importorskip("hugectr")
 #             import shutil
 #             from merlin.systems.triton.utils import run_triton_server, send_triton_request
 #             outputs = ["OUTPUT0"]
-            
+
 #             with run_triton_server(
 #                         "/tmp/test_merlin_criteo_hugectr/output/criteo/model_inference/",
 #                         backend_config='hugectr,ps=/tmp/test_merlin_criteo_hugectr/output/criteo/model_inference/ps.json'
@@ -84,7 +85,7 @@ pytest.importorskip("hugectr")
 #                 response = send_triton_request(
 #                     input_schema, batch.fillna(0), outputs, client=client, triton_model="criteo_ens"
 #                 )
-            
+
 #             response = response["OUTPUT0"]
 #             """
 #         )

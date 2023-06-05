@@ -62,7 +62,7 @@ def test_func(tmpdir):
         timeout=2400,
     ) as tb2:
         tb2.inject(
-            """
+            f"""
             import os
             os.environ["DATA_FOLDER"] = "{tmpdir / "data"}"
             os.environ["BASE_DIR"] = "{tmpdir / "examples"}"

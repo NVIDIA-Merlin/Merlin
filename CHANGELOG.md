@@ -1,5 +1,82 @@
 # Merlin Changelog
 
+## [23.05]
+
+### NVTabular
+
+#### Added
+
+* Support for using the `int8` dtype with NVT's `Categorify` operator at inference time ([#1818](https://github.com/NVIDIA-Merlin/NVTabular/pull/1818))
+
+#### Deprecated/Removed
+
+* This is the last NVTabular release that will contain the `nvtabular.inference` package, which has been deprecated and slated for removal for quite some time. Starting in the 23.06 release, we recommend using Merlin Systems to serve models and NVT workflows.
+
+### Models
+
+#### Added
+
+* Added support in the Models library to use pre-trained embeddings provided by the `EmbeddingOperator` transform from Merlin dataloader. Those embeddings are non-trainable, and can be easily normalized, projected to another dim and combined with the other categorical and continuous features. ([#1083](https://github.com/NVIDIA-Merlin/models/pull/1083))
+* Added a `LogLossMetric`, a Keras callback to track throughput (`ExamplesPerSecondCallback`) and a class to manage metrics logging to Weights&Biases (`WandbLogger`) ([#1085](https://github.com/NVIDIA-Merlin/models/pull/1085))
+* Extended `ContrastiveOutput` to support sequential encoders ([#1086](https://github.com/NVIDIA-Merlin/models/pull/1086)) - adds support for negative sampling to the `ContrastiveOutput` class for session-based models where the query encoder returns a 3-D ragged tensor.
+
+#### Bugs
+
+* Change tf.keras.optimizers.Adagrad() to tf.keras.optimizers.legacy.Adagrad() ([#1098](https://github.com/NVIDIA-Merlin/models/pull/1098))
+
+### Transformers4Rec
+
+#### Added
+
+* Added topk arg to return topk items and scores at inference step - added functionality for returning topk most relevant (with the highest scores) item ids for NextItemPrediction task ([#678](https://github.com/NVIDIA-Merlin/Transformers4Rec/pull/678))
+* Added Transformers Torch Extras to install requirements ([#699](https://github.com/NVIDIA-Merlin/Transformers4Rec/pull/678))
+
+#### Bugs
+
+* Fixed the projection layer when using weight tying and dim from Transformer output and item embedding differs ([#689](https://github.com/NVIDIA-Merlin/Transformers4Rec/pull/689))
+
+#### Deprecated / Removed
+
+* The legacy inference api was removed from the example and was replaced by Merlin Systems api ([#680](https://github.com/NVIDIA-Merlin/Transformers4Rec/pull/680)).
+
+### Systems
+
+#### Added
+
+* More comprehensive error messages and tracebacks in the Triton responses when errors occur inside DAG operators ([#343](https://github.com/NVIDIA-Merlin/systems/pull/343))
+
+#### Major Changes
+
+* The integration for the Feast feature store has been updated to be compatible with Feast 0.31, the latest release ([#344](https://github.com/NVIDIA-Merlin/systems/pull/344))
+
+### Core
+
+#### Added
+
+* `Rename` operator, which was migrated from NVTabular and can now be used in all Merlin DAGs, like Systems ensembles and Dataloader transformations ([#312](https://github.com/NVIDIA-Merlin/core/pull/312))
+* An `as_tensor_type` method on `TensorColumn` for converting column data across frameworks like NumPy, CuPy, Tensorflow, and Torch ([#285](https://github.com/NVIDIA-Merlin/core/pull/285))
+* A `schema` parameter that allows converting a dataframe to a `TensorTable` in a way that produces fixed-length list columns with only values and not offsets ([#286](https://github.com/NVIDIA-Merlin/core/pull/285))
+
+#### Major Changes
+
+* The default DAG executors now automatically adjust the format of data passed between operators to ensure that it's in a format the receiving operator can process. This functionality was already present in parts of Merlin, but has been generalized to work in all Merlin DAGs. ([#280](https://github.com/NVIDIA-Merlin/core/pull/280))
+* The list of mutually exclusive column tags has been expanded to include `Tags.EMBEDDING`, so that columns can't be mistakenly labeled as any combination of `ID`, `CONTINUOUS`, and `EMBEDDING` at the same time ([#316](https://github.com/NVIDIA-Merlin/core/pull/316))
+
+#### Deprecated / Removed
+
+* Numpy aliases for built-in Python types were deprecated in NumPy 1.20, and have been removed from Merlin Core ([#308](https://github.com/NVIDIA-Merlin/core/pull/308))
+
+### Examples
+
+#### Added
+
+* Quick-start for Ranking - Added documentation, scripts and example notebook to export an inference pipeline for ranking models to Triton and send recommendation requests. The inference pipeline is a Triton ensemble which includes the NVTabular preprocessing workflow and the saved trained model ([#966](https://github.com/NVIDIA-Merlin/Merlin/pull/966))
+
+#### Bugs
+
+* Quick-start for Ranking  - Fixed error when saving model trained with single task.
+
+
 ## [23.04]
 
 Changes since the 23.02 release.
