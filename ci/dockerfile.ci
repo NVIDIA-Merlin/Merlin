@@ -5,9 +5,8 @@ ARG FULL_IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-py3
 ARG TF_DLFW=nvcr.io/nvidia/tensorflow:${TRITON_VERSION}-tf2-py3
 ARG TORCH_DLFW=nvcr.io/nvidia/pytorch:${TRITON_VERSION}-py3
 
-
 FROM ${FULL_IMAGE} as triton
-FROM ${TF_DLFW} as tf_dflw
+FROM ${TF_DLFW} as tf_dlfw
 FROM ${TORCH_DLFW} as th_dlfw
 FROM ${BASE_IMAGE}
 
@@ -15,15 +14,16 @@ RUN pip install --no-cache-dir tensorflow && pip uninstall tensorflow keras -y
 
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/tensorflow2 backends/tensorflow2/
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/pytorch backends/pytorch/
-COPY --chown=1000:1000 --from=tf_dflw /usr/local/lib/python3.8/dist-packages/tensorflow /usr/local/lib/python3.8/dist-packages/tensorflow/
-COPY --chown=1000:1000 --from=tf_dflw /usr/local/lib/python3.8/dist-packages/tensorflow-*.dist-info /usr/local/lib/python3.8/dist-packages/tensorflow.dist-info/
-COPY --chown=1000:1000 --from=tf_dflw /usr/local/lib/python3.8/dist-packages/keras /usr/local/lib/python3.8/dist-packages/keras/
-COPY --chown=1000:1000 --from=tf_dflw /usr/local/lib/python3.8/dist-packages/keras-*.dist-info /usr/local/lib/python3.8/dist-packages/keras.dist-info/
-COPY --chown=1000:1000 --from=tf_dflw /usr/local/bin/saved_model_cli /usr/local/bin/saved_model_cli
-COPY --chown=1000:1000 --from=tf_dflw /usr/local/lib/tensorflow/ /usr/local/lib/tensorflow/
-COPY --chown=1000:1000 --from=tf_dflw /usr/local/lib/python3.8/dist-packages/horovod /usr/local/lib/python3.8/dist-packages/horovod/
-COPY --chown=1000:1000 --from=tf_dflw /usr/local/lib/python3.8/dist-packages/horovod-*.dist-info /usr/local/lib/python3.8/dist-packages/horovod.dist-info/
-COPY --chown=1000:1000 --from=tf_dflw /usr/local/bin/horovodrun /usr/local/bin/horovodrun 
+COPY --chown=1000:1000 --from=tf_dlfw /usr/local/lib/python3.8/dist-packages/tensorflow /usr/local/lib/python3.8/dist-packages/tensorflow/
+COPY --chown=1000:1000 --from=tf_dlfw /usr/local/lib/python3.8/dist-packages/tensorflow_estimator /usr/local/lib/python3.8/dist-packages/tensorflow_estimator/
+COPY --chown=1000:1000 --from=tf_dlfw /usr/local/lib/python3.8/dist-packages/tensorflow-*.dist-info /usr/local/lib/python3.8/dist-packages/tensorflow.dist-info/
+COPY --chown=1000:1000 --from=tf_dlfw /usr/local/lib/python3.8/dist-packages/keras /usr/local/lib/python3.8/dist-packages/keras/
+COPY --chown=1000:1000 --from=tf_dlfw /usr/local/lib/python3.8/dist-packages/keras-*.dist-info /usr/local/lib/python3.8/dist-packages/keras.dist-info/
+COPY --chown=1000:1000 --from=tf_dlfw /usr/local/bin/saved_model_cli /usr/local/bin/saved_model_cli
+COPY --chown=1000:1000 --from=tf_dlfw /usr/local/lib/tensorflow/ /usr/local/lib/tensorflow/
+COPY --chown=1000:1000 --from=tf_dlfw /usr/local/lib/python3.8/dist-packages/horovod /usr/local/lib/python3.8/dist-packages/horovod/
+COPY --chown=1000:1000 --from=tf_dlfw /usr/local/lib/python3.8/dist-packages/horovod-*.dist-info /usr/local/lib/python3.8/dist-packages/horovod.dist-info/
+COPY --chown=1000:1000 --from=tf_dlfw /usr/local/bin/horovodrun /usr/local/bin/horovodrun
 
 RUN pip install --no-cache-dir --no-deps torch torchmetrics \
         && pip install --no-cache-dir --upgrade pip \
@@ -40,11 +40,9 @@ COPY --chown=1000:1000 --from=th_dlfw /usr/local/lib/python3.8/dist-packages/num
 COPY --chown=1000:1000 --from=th_dlfw /usr/local/lib/python3.8/dist-packages/torch-*.egg-info /usr/local/lib/python3.8/dist-packages/torch.egg-info/
 COPY --chown=1000:1000 --from=th_dlfw /usr/local/lib/libmkl* /usr/local/lib/
 
-
 # install dependencies for systems testing 
 RUN pip install transformers==4.26.1 matplotlib pytest-cov pytest-xdist tox sphinx-multiversion astroid==2.5.6 'feast==0.31' scikit-learn; pip install -r /nvtabular/requirements/dev.txt; pip install protobuf==3.20.3
 RUN echo 'import sphinx.domains' >> /usr/local/lib/python3.8/dist-packages/sphinx/__init__.py
-RUN HOROVOD_GPU_OPERATIONS=NCCL python -m pip install --no-cache-dir horovod && horovodrun --check-build
 
 HEALTHCHECK NONE
 CMD ["/bin/bash"]
