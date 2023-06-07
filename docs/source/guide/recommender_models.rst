@@ -25,12 +25,12 @@ Merlin Models provides implementation of popular architectures, such as MLP, NCF
 Resources for Ranking Models:
 ^^^^^^^^^
 
-* `Exploring Different Models <https://github.com/NVIDIA-Merlin/models/blob/main/examples/03-Exploring-different-models.ipynb>`_ demonstrates how to build and train the popular deep learning architectures with **Merlin Models in TensorFlow** on an example dataset.
-* `Getting Started Guide - Ranking Models <https://github.com/NVIDIA-Merlin/Merlin/tree/main/examples/quick_start>`_ provides a detailed view on applying the ranking models to a dataset and how to use it for a new dataset.
-* `Serving Ranking Models <https://github.com/NVIDIA-Merlin/systems/blob/main/examples/Serving-Ranking-Models-With-Merlin-Systems.ipynb>`_ is a simple example how to deploy a ranking model with Merlin Systems and Triton in TensorFlow.
-* `Getting Started Guide - Ranking Models <https://github.com/NVIDIA-Merlin/Merlin/tree/main/examples/quick_start>`_ provides a detailed view on applying the ranking models to a dataset and how to use it for a new dataset.
-* `Getting Started Movielens <https://github.com/NVIDIA-Merlin/Merlin/tree/main/examples/quick_start>`_ is one end-to-end example for feature engineering, training and deployment with different frameworks (TensorFlow, PyTorch and HugeCTR) on a small scale.
-* `Scaling Criteo <https://github.com/NVIDIA-Merlin/Merlin/tree/main/examples/scaling-criteo>`_ is similar to the MovieLens example, but on a large scale of ~4 billion rows. The example provides some guidance on multi-GPU scaling.
+* `Exploring Different Models <https://github.com/NVIDIA-Merlin/models/blob/stable/examples/03-Exploring-different-models.ipynb>`_ demonstrates how to build and train the popular deep learning architectures with **Merlin Models in TensorFlow** on an example dataset.
+* `Getting Started Guide - Ranking Models <https://github.com/NVIDIA-Merlin/Merlin/tree/stable/examples/quick_start>`_ provides a detailed view on applying the ranking models to a dataset and how to use it for a new dataset.
+* `Serving Ranking Models <https://github.com/NVIDIA-Merlin/systems/blob/stable/examples/Serving-Ranking-Models-With-Merlin-Systems.ipynb>`_ is a simple example how to deploy a ranking model with Merlin Systems and Triton in TensorFlow.
+* `Getting Started Guide - Ranking Models <https://github.com/NVIDIA-Merlin/Merlin/tree/stable/examples/quick_start>`_ provides a detailed view on applying the ranking models to a dataset and how to use it for a new dataset.
+* `Getting Started Movielens <https://github.com/NVIDIA-Merlin/Merlin/tree/stable/examples/quick_start>`_ is one end-to-end example for feature engineering, training and deployment with different frameworks (TensorFlow, PyTorch and HugeCTR) on a small scale.
+* `Scaling Criteo <https://github.com/NVIDIA-Merlin/Merlin/tree/stable/examples/scaling-criteo>`_ is similar to the MovieLens example, but on a large scale of ~4 billion rows. The example provides some guidance on multi-GPU scaling.
 
 Retrieval Models
 -------------
@@ -50,7 +50,7 @@ Merlin Models provides implementations for Matrix Factorization (MF) and Two-Tow
 Resources for Retrieval Models:
 ^^^^^^^^^
 
-* `Retrieval Models <https://github.com/NVIDIA-Merlin/models/blob/main/examples/05-Retrieval-Model.ipynb>`_ is an example to build matrix factorization and two-tower models using negative sampling with **Merlin Models in TensorFlow**.
+* `Retrieval Models <https://github.com/NVIDIA-Merlin/models/blob/stable/examples/05-Retrieval-Model.ipynb>`_ is an example to build matrix factorization and two-tower models using negative sampling with **Merlin Models in TensorFlow**.
 * `Scale faster with less code using Two Tower with Merlin <https://medium.com/nvidia-merlin/scale-faster-with-less-code-using-two-tower-with-merlin-c16f32aafa9f?source=friends_link&sk=be70da36948c883b4f15a745470146ee>`_ is our blog post providing more details on Two-Tower models.
 * `Solving the Cold-Start Problem using Two-Tower Neural Networks for NVIDIA’s E-Mail Recommender Systems <https://medium.com/nvidia-merlin/solving-the-cold-start-problem-using-two-tower-neural-networks-for-nvidias-e-mail-recommender-2d5b30a071a4?source=friends_link&sk=b06b93495fa017162875a8917e3aa975>`_ is our blog post sharing our experience in applying Two-Tower models to our e-mail use case.
 
@@ -76,8 +76,8 @@ There are multiple options to process sequence inputs. The domain has similariti
 Resources for Session-Based Models:
 ^^^^^^^^^
 
-* `Transformer-based architecture for next-item prediction task <https://github.com/NVIDIA-Merlin/models/blob/main/examples/usecases/transformers-next-item-prediction.ipynb>`_ provides an introduction to train transformer-based architecture and deploy them with **Merlin Models in TensorFlow**.
-* `Session-Based Next Item Prediction for Fashion E-Commerce <https://github.com/NVIDIA-Merlin/models/blob/main/examples/usecases/ecommerce-session-based-next-item-prediction-for-fashion.ipynb>`_ is a detailed session-based example from MLP and Bi-LSTM to transformer-based architectures with **Merlin Models in TensorFlow**.
-* `Getting Started: Session-based Recommendation with Synthetic Data <https://github.com/NVIDIA-Merlin/Transformers4Rec/tree/main/examples/getting-started-session-based>`_ is a getting example for session-based, transformer-based models with **Transformers4Rec in PyTorch**.
-* `End-to-end session-based recommendation <https://github.com/NVIDIA-Merlin/Transformers4Rec/tree/main/examples/end-to-end-session-based>`_ is an example using a public available dataset for session-based, transformer-based models with **Transformers4Rec in PyTorch**.
+* `Transformer-based architecture for next-item prediction task <https://github.com/NVIDIA-Merlin/models/blob/stable/examples/usecases/transformers-next-item-prediction.ipynb>`_ provides an introduction to train transformer-based architecture and deploy them with **Merlin Models in TensorFlow**.
+* `Session-Based Next Item Prediction for Fashion E-Commerce <https://github.com/NVIDIA-Merlin/models/blob/stable/examples/usecases/ecommerce-session-based-next-item-prediction-for-fashion.ipynb>`_ is a detailed session-based example from MLP and Bi-LSTM to transformer-based architectures with **Merlin Models in TensorFlow**.
+* `Getting Started: Session-based Recommendation with Synthetic Data <https://github.com/NVIDIA-Merlin/Transformers4Rec/tree/stable/examples/getting-started-session-based>`_ is a getting example for session-based, transformer-based models with **Transformers4Rec in PyTorch**.
+* `End-to-end session-based recommendation <https://github.com/NVIDIA-Merlin/Transformers4Rec/tree/stable/examples/end-to-end-session-based>`_ is an example using a public available dataset for session-based, transformer-based models with **Transformers4Rec in PyTorch**.
 * `Transformers4Rec: A flexible library for Sequential and Session-based recommendation <https://medium.com/nvidia-merlin/transformers4rec-4523cc7d8fa8?source=friends_link&sk=390245e60c10211c381f7a26ce12cfc6>`_ is a blog post summarizing our research paper with **Transformers4Rec**.

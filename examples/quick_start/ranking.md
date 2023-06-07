@@ -110,7 +110,7 @@ CUDA_VISIBLE_DEVICES=0 TF_GPU_ALLOCATOR=cuda_malloc_async python  ranking.py --t
 You can explore the [full documentation and best practices for ranking models](scripts/ranking/README.md), which contains details about the command line arguments.
 
 ## Training a ranking model with multi-task learning
-When multiple targets are available for the same features, models typically benefit from joint training a single model with multiple heads / losses. Merlin Models supports some architectures designed specifically for multi-task learning based on experts. You can find an example notebook with detailed explanations [here](https://github.com/NVIDIA-Merlin/models/blob/main/examples/usecases/ranking_with_multitask_learning.ipynb).
+When multiple targets are available for the same features, models typically benefit from joint training a single model with multiple heads / losses. Merlin Models supports some architectures designed specifically for multi-task learning based on experts. You can find an example notebook with detailed explanations [here](https://github.com/NVIDIA-Merlin/models/blob/stable/examples/usecases/ranking_with_multitask_learning.ipynb).
 
 
 The [ranking.py](scripts/ranking/ranking.py) script makes it easy to train ranking models with multi-task learning by setting more than one target, e.g. `--tasks="click,like,follow,share"`). 

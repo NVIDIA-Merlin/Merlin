@@ -1,5 +1,6 @@
 # Configuration file for the Sphinx documentation builder.
 import os
+import re
 import subprocess
 import sys
 
@@ -82,9 +83,8 @@ html_show_sourcelink = False
 # repo (a Git repo) vs SMV reading conf.py from an archive of the repo
 # at a commit (not a Git repo).
 if os.path.exists(gitdir):
-    tag_refs = (
-        subprocess.check_output(["git", "tag", "-l", "v*"]).decode("utf-8").split()
-    )
+    tag_refs = subprocess.check_output(["git", "tag", "-l", "v*"]).decode("utf-8").split()
+    tag_refs = [tag for tag in tag_refs if re.match(r"^v[0-9]+.[0-9]+.[0-9]+$", tag)]
     tag_refs = natsorted(tag_refs)[-6:]
     smv_tag_whitelist = r"^(" + r"|".join(tag_refs) + r")$"
 else:
@@ -92,13 +92,12 @@ else:
     # specific commit.
     smv_tag_whitelist = r"^v.*$"
 
-# Only include main branch for now
-smv_branch_whitelist = "^main$"
+smv_branch_whitelist = "^(main|stable)$"
 
 smv_refs_override_suffix = "-docs"
 
 html_sidebars = {"**": ["versions.html"]}
-html_baseurl = "https://nvidia-merlin.github.io/Merlin/main"
+html_baseurl = "https://nvidia-merlin.github.io/Merlin/stable/"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
