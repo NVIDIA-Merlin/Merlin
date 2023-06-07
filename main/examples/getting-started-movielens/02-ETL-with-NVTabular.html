@@ -8,7 +8,7 @@
       <link rel="stylesheet" href="../../_static/mystnb.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/togglebutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/custom.css" type="text/css" />
-    <link rel="canonical" href="https://nvidia-merlin.github.io/Merlin/main/examples/getting-started-movielens/02-ETL-with-NVTabular.html" />
+    <link rel="canonical" href="https://nvidia-merlin.github.io/Merlin/stable/examples/getting-started-movielens/02-ETL-with-NVTabular.html" />
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
@@ -155,7 +155,7 @@
 <li><p>Preprocess multi-hot categorical input features with NVTabular</p></li>
 <li><p>Use <code class="docutils literal notranslate"><span class="pre">LambdaOp</span></code> for custom row-wise dataframe manipulations with NVTabular</p></li>
 </ul>
-<p>For more information about NVTabular, refer to the <a class="reference external" href="https://nvidia-merlin.github.io/NVTabular/main/">documentation</a> or the GitHub <a class="reference external" href="https://github.com/NVIDIA-Merlin/NVTabular/">repository</a>.</p>
+<p>For more information about NVTabular, refer to the <a class="reference external" href="https://nvidia-merlin.github.io/NVTabular/stable/">documentation</a> or the GitHub <a class="reference external" href="https://github.com/NVIDIA-Merlin/NVTabular/">repository</a>.</p>
 </div>
 </div>
 <div class="section" id="etl-with-nvtabular">
@@ -308,7 +308,7 @@ NVTabular provides the operator <code class="docutils literal notranslate"><span
 </div>
 </div>
 </div>
-<p>The ratings are on a scale between 1-5. We want to predict a binary target with 1 for ratings <code class="docutils literal notranslate"><span class="pre">&gt;3</span></code> and 0 for  ratings <code class="docutils literal notranslate"><span class="pre">&lt;=3</span></code>. We use the <a class="reference external" href="https://nvidia-merlin.github.io/NVTabular/main/api/ops/lambdaop.html">LambdaOp</a> for it.</p>
+<p>The ratings are on a scale between 1-5. We want to predict a binary target with 1 for ratings <code class="docutils literal notranslate"><span class="pre">&gt;3</span></code> and 0 for  ratings <code class="docutils literal notranslate"><span class="pre">&lt;=3</span></code>. We use the <a class="reference external" href="https://nvidia-merlin.github.io/NVTabular/stable/api/ops/lambdaop.html">LambdaOp</a> for it.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ratings</span> <span class="o">=</span> <span class="n">nvt</span><span class="o">.</span><span class="n">ColumnGroup</span><span class="p">([</span><span class="s2">&quot;rating&quot;</span><span class="p">])</span> <span class="o">&gt;&gt;</span> <span class="n">LambdaOp</span><span class="p">(</span><span class="k">lambda</span> <span class="n">col</span><span class="p">:</span> <span class="p">(</span><span class="n">col</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;int8&quot;</span><span class="p">))</span> <span class="o">&gt;&gt;</span> <span class="n">AddTags</span><span class="p">(</span><span class="n">Tags</span><span class="o">.</span><span class="n">TARGET</span><span class="p">)</span>
@@ -663,11 +663,11 @@ Wall time: 2.62 µs
 <h2>Next Steps<a class="headerlink" href="#next-steps" title="Permalink to this headline"></a></h2>
 <p>You can read the API documentation for the Operators and classes used in this notebook:</p>
 <ul class="simple">
-<li><p><a class="reference external" href="https://nvidia-merlin.github.io/NVTabular/main/generated/nvtabular.ops.JoinExternal.html#nvtabular.ops.JoinExternal">JoinExternal</a></p></li>
-<li><p><a class="reference external" href="https://nvidia-merlin.github.io/NVTabular/main/generated/nvtabular.ops.Categorify.html#nvtabular.ops.Categorify">Categorify</a></p></li>
-<li><p><a class="reference external" href="https://nvidia-merlin.github.io/NVTabular/main/generated/nvtabular.ops.LambdaOp.html#nvtabular.ops.LambdaOp">LambdaOp</a></p></li>
-<li><p><a class="reference external" href="https://nvidia-merlin.github.io/NVTabular/main/generated/nvtabular.workflow.workflow.Workflow.html#nvtabular.workflow.workflow.Workflow">Workflow</a></p></li>
-<li><p><a class="reference external" href="https://nvidia-merlin.github.io/core/main/api/merlin.io.html#merlin.io.Dataset">Dataset</a></p></li>
+<li><p><a class="reference external" href="https://nvidia-merlin.github.io/NVTabular/stable/generated/nvtabular.ops.JoinExternal.html#nvtabular.ops.JoinExternal">JoinExternal</a></p></li>
+<li><p><a class="reference external" href="https://nvidia-merlin.github.io/NVTabular/stable/generated/nvtabular.ops.Categorify.html#nvtabular.ops.Categorify">Categorify</a></p></li>
+<li><p><a class="reference external" href="https://nvidia-merlin.github.io/NVTabular/stable/generated/nvtabular.ops.LambdaOp.html#nvtabular.ops.LambdaOp">LambdaOp</a></p></li>
+<li><p><a class="reference external" href="https://nvidia-merlin.github.io/NVTabular/stable/generated/nvtabular.workflow.workflow.Workflow.html#nvtabular.workflow.workflow.Workflow">Workflow</a></p></li>
+<li><p><a class="reference external" href="https://nvidia-merlin.github.io/core/stable/api/merlin.io.html#merlin.io.Dataset">Dataset</a></p></li>
 </ul>
 <p>The next step for learning to use Merlin for creating a recommender system is to train a model.
 Refer to <a class="reference internal" href="03-Training-with-TF.html"><span class="doc std std-doc">Training with TensorFlow</span></a>,  <a class="reference internal" href="03-Training-with-HugeCTR.html"><span class="doc std std-doc">Training with HugeCTR</span></a>, or <a class="reference internal" href="03-Training-with-PyTorch.html"><span class="doc std std-doc">Training with PyTorch</span></a>.</p>
@@ -708,16 +708,17 @@ Refer to <a class="reference internal" href="03-Training-with-TF.html"><span cla
   <div class="rst-other-versions">
     <dl>
       <dt>Tags</dt>
+      <dd><a href="../../../v22.10.00/index.html">v22.10.00</a></dd>
       <dd><a href="../../../v22.11.00/index.html">v22.11.00</a></dd>
       <dd><a href="../../../v22.12.00/index.html">v22.12.00</a></dd>
       <dd><a href="../../../v23.02.00/index.html">v23.02.00</a></dd>
       <dd><a href="../../../v23.04.00/index.html">v23.04.00</a></dd>
       <dd><a href="../../../v23.05.00/index.html">v23.05.00</a></dd>
-      <dd><a href="../../../v23.05.dev0/index.html">v23.05.dev0</a></dd>
     </dl>
     <dl>
       <dt>Branches</dt>
       <dd><a href="02-ETL-with-NVTabular.html">main</a></dd>
+      <dd><a href="../../../stable/index.html">stable</a></dd>
     </dl>
   </div>
 </div><script>
