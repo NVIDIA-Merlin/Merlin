@@ -340,50 +340,6 @@ ENV JUPYTER_CONFIG_DIR=/tmp/.jupyter
 ENV JUPYTER_DATA_DIR=/tmp/.jupyter
 ENV JUPYTER_RUNTIME_DIR=/tmp/.jupyter
 
-ARG MERLIN_VER=main
-ARG CORE_VER=main
-ARG MODELS_VER=main
-ARG NVTAB_VER=main
-ARG SYSTEMS_VER=main
-ARG TF4REC_VER=main
-ARG DL_VER=main
-
-ENV MERLIN_VER=${MERLIN_VER}
-ENV CORE_VER=${CORE_VER}
-ENV MODELS_VER=${MODELS_VER}
-ENV NVTAB_VER=${NVTAB_VER}
-ENV SYSTEMS_VER=${SYSTEMS_VER}
-ENV TF4REC_VER=${TF4REC_VER}
-ENV DL_VER=${DL_VER}
-
-# Add Merlin Repo
-RUN git clone --branch ${MERLIN_VER} --depth 1 https://github.com/NVIDIA-Merlin/Merlin/ /Merlin && \
-    cd /Merlin/ && pip install . --no-deps
-
-# Install Merlin Core
-RUN git clone --branch ${CORE_VER} --depth 1 https://github.com/NVIDIA-Merlin/core.git /core/ && \
-    cd /core/ && pip install . --no-deps
-
-# Install Merlin Dataloader
-RUN git clone --branch ${DL_VER} --depth 1 https://github.com/NVIDIA-Merlin/dataloader.git /dataloader/ && \
-    cd /dataloader/ && pip install . --no-deps
-
-# Install NVTabular
-ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION='python'
-RUN git clone --branch ${NVTAB_VER} --depth 1 https://github.com/NVIDIA-Merlin/NVTabular.git /nvtabular/ && \
-    cd /nvtabular/ && pip install . --no-deps
-
-# Install Merlin Systems
-RUN git clone --branch ${SYSTEMS_VER} --depth 1 https://github.com/NVIDIA-Merlin/systems.git /systems/ && \
-    cd /systems/ && pip install . --no-deps
-
-# Install Models
-RUN git clone --branch ${MODELS_VER} --depth 1 https://github.com/NVIDIA-Merlin/Models.git /models/ && \
-    cd /models/ && pip install . --no-deps
-
-# Install Transformers4Rec
-RUN git clone --branch ${TF4REC_VER} --depth 1 https://github.com/NVIDIA-Merlin/Transformers4Rec.git /transformers4rec && \
-    cd /transformers4rec/ && pip install . --no-deps
 
 # # Optional dependency: Build and install protocol buffers and Hadoop/HDFS.
 # ARG INSTALL_HDFS=false
