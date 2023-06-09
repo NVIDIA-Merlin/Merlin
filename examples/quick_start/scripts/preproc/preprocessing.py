@@ -11,6 +11,8 @@ from nvtabular import ops as nvt_ops
 
 from args_parsing import parse_arguments
 
+INDEX_TMP_COL = "__index"
+
 
 def filter_by_freq(df_to_filter, df_for_stats, column, min_freq, max_freq=None):
     # Frequencies of each value in the column.
@@ -57,6 +59,8 @@ class PreprocessingRunner:
 
         logging.info("First lines...")
         logging.info(ddf.head())
+
+        ddf = self.adding_temp_index(ddf)
 
         logging.info(f"Number of rows: {len(ddf)}")
         if args.filter_query:
@@ -124,6 +128,13 @@ class PreprocessingRunner:
                     print("After filtering items: ", items_count)
 
         return filtered_ddf
+
+    def adding_temp_index(self, ddf):
+        # Adds a temporary index to allow for merging features and targets later
+        ddf["dummy"] = 1
+        ddf[INDEX_TMP_COL] = ddf["dummy"].cumsum()
+        del ddf["dummy"]
+        return ddf
 
     def split_datasets(self, df):
         args = self.args
@@ -201,8 +212,11 @@ class PreprocessingRunner:
         args = self.args
         feats = dict()
 
+        feats[INDEX_TMP_COL] = [INDEX_TMP_COL]
+
         for col in args.control_features:
             feats[col] = [col]
+
         for col in args.categorical_features:
             feats[col] = [col] >> nvt_ops.Categorify(
                 freq_threshold=args.categ_min_freq_capping
@@ -217,6 +231,26 @@ class PreprocessingRunner:
                         args.continuous_features_fillna
                     )
                 feats[col] = feats[col] >> nvt_ops.Normalize()
+
+        if args.target_encoding_features or args.target_encoding_targets:
+            if not args.target_encoding_features:
+                args.target_encoding_features = args.categorical_features
+            if not args.target_encoding_targets:
+                args.target_encoding_targets = (
+                    args.binary_classif_targets + args.regression_targets
+                )
+
+            if args.target_encoding_targets and args.target_encoding_features:
+                for target_col in args.target_encoding_targets:
+                    feats[f"{target_col}_te_features"] = (
+                        args.target_encoding_features
+                        >> nvt.ops.TargetEncoding(
+                            [target_col],
+                            kfold=args.target_encoding_kfold,
+                            p_smooth=args.target_encoding_smoothing,
+                            out_dtype="float32",
+                        )
+                    )
 
         for col in args.user_features:
             feats[col] = feats[col] >> nvt_ops.TagAsUserFeatures()
@@ -254,6 +288,8 @@ class PreprocessingRunner:
         args = self.args
         feats = dict()
 
+        feats[INDEX_TMP_COL] = [INDEX_TMP_COL]
+
         for col in args.binary_classif_targets:
             feats[col] = [col] >> nvt_ops.AddTags(
                 [Tags.BINARY_CLASSIFICATION, Tags.TARGET]
@@ -268,6 +304,30 @@ class PreprocessingRunner:
 
         workflow = nvt.Workflow(outputs, client=self.dask_cluster_client)
         return workflow
+
+    def merge_dataset_features_values(
+        self, features_dataset, targets_dataset, dataset_type, args
+    ):
+        dataset_joint = (
+            features_dataset.to_ddf()
+            .merge(targets_dataset.to_ddf(), on=INDEX_TMP_COL)
+            .drop(INDEX_TMP_COL, axis=1)
+        )
+
+        if args.persist_intermediate_files:
+            dataset_joint = self.persist_intermediate(
+                dataset_joint, f"_cache/03/{dataset_type}/"
+            )
+
+        schema_joint = (
+            features_dataset.schema + targets_dataset.schema
+        ).excluding_by_name([INDEX_TMP_COL])
+
+        dataset_joint = nvt.Dataset(
+            dataset_joint, schema=schema_joint, cpu=not self.gpu,
+        )
+
+        return dataset_joint
 
     def persist_intermediate(self, ddf, folder):
         path = os.path.join(self.args.output_path, folder)
@@ -370,55 +430,57 @@ class PreprocessingRunner:
         # targets might not be available for test/predict_dataset
         train_dataset_features = nvt_workflow_features.fit_transform(train_dataset)
         train_dataset_targets = nvt_workflow_targets.fit_transform(train_dataset)
-        train_dataset_preproc = nvt.Dataset(
-            self.df_lib.concat(
-                [train_dataset_features.to_ddf(), train_dataset_targets.to_ddf()],
-                axis=1,
-            ),
-            schema=train_dataset_features.schema + train_dataset_targets.schema,
-            cpu=not self.gpu,
-        )
 
         output_train_dataset_path = os.path.join(output_dataset_path, "train")
-        logging.info(f"Fitting and transforming train set: {output_train_dataset_path}")
+        logging.info(f"Saving transformed train set: {output_train_dataset_path}")
+        train_dataset_preproc = self.merge_dataset_features_values(
+            train_dataset_features, train_dataset_targets, "train", args
+        )
         train_dataset_preproc.to_parquet(
-            output_train_dataset_path,
-            output_files=args.output_num_partitions,
+            output_train_dataset_path, output_files=args.output_num_partitions,
         )
 
         if args.eval_data_path or args.dataset_split_strategy:
+            logging.info("Transforming the eval set")
             eval_dataset = nvt.Dataset(eval_ddf, cpu=not self.gpu)
             # Processing features and targets in separate workflows, because
             # targets might not be available for test/predict_dataset
             eval_dataset_features = nvt_workflow_features.transform(eval_dataset)
             eval_dataset_targets = nvt_workflow_targets.transform(eval_dataset)
-            eval_dataset_preproc = nvt.Dataset(
-                self.df_lib.concat(
-                    [eval_dataset_features.to_ddf(), eval_dataset_targets.to_ddf()],
-                    axis=1,
-                ),
-                schema=eval_dataset_features.schema + eval_dataset_targets.schema,
-                cpu=not self.gpu,
-            )
 
             output_eval_dataset_path = os.path.join(output_dataset_path, "eval")
-            logging.info(f"Transforming eval set: {output_eval_dataset_path}")
-
+            logging.info(f"Saving transformed eval set: {output_eval_dataset_path}")
+            eval_dataset_preproc = self.merge_dataset_features_values(
+                eval_dataset_features, eval_dataset_targets, "eval", args
+            )
             eval_dataset_preproc.to_parquet(
-                output_eval_dataset_path,
-                output_files=args.output_num_partitions,
+                output_eval_dataset_path, output_files=args.output_num_partitions,
             )
 
         if args.predict_data_path:
+            # Adding to predict set dummy target columns that are
+            # used in target encoding feature, as a workaround
+            # while this issue is not fixed
+            # https://github.com/NVIDIA-Merlin/NVTabular/issues/1840
+            for col in args.target_encoding_targets:
+                if col not in test_ddf.columns:
+                    test_ddf[col] = 0
+
+            logging.info("Transforming the predict/test set")
+
             predict_dataset = nvt.Dataset(test_ddf, cpu=not self.gpu)
             new_predict_dataset = nvt_workflow_features.transform(predict_dataset)
+            new_predict_dataset = nvt.Dataset(
+                new_predict_dataset.to_ddf().drop(INDEX_TMP_COL, axis=1),
+                schema=new_predict_dataset.schema.excluding_by_name([INDEX_TMP_COL]),
+                cpu=not self.gpu,
+            )
 
             output_predict_dataset_path = os.path.join(output_dataset_path, "predict")
-            logging.info(f"Transforming predict set: {output_predict_dataset_path}")
+            logging.info(f"Saving predict/test set: {output_predict_dataset_path}")
 
             new_predict_dataset.to_parquet(
-                output_predict_dataset_path,
-                output_files=args.output_num_partitions,
+                output_predict_dataset_path, output_files=args.output_num_partitions,
             )
         nvt_save_path = os.path.join(output_dataset_path, "workflow")
         logging.info(f"Saving nvtabular workflow to: {nvt_save_path}")
