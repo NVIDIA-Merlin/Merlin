@@ -79,8 +79,10 @@ def test_func(tmpdir):
             from merlin.core.dispatch import make_df
             from merlin.dataloader.tf_utils import configure_tensorflow
             from merlin.systems.triton.utils import run_ensemble_on_tritonserver
+            import pandas as pd
             configure_tensorflow()
-            request = make_df({{"user_id_raw": [100]}})
+            user_features = pd.read_parquet("{tmpdir / 'examples/feast/feature_repo/data/user_features.parquet'}")
+            request = user_features[["user_id_raw"]].sample(1)
             request["user_id_raw"] = request["user_id_raw"].astype(np.int32)
             response = run_ensemble_on_tritonserver(
                 "{tmpdir / "examples"}/poc_ensemble", ensemble.graph.input_schema, request, outputs,  "executor_model"
