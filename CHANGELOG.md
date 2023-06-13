@@ -1,5 +1,132 @@
 # Merlin Changelog
 
+<!--  This is a template to copy/paste when starting the changelog for a new release:
+
+## [release]
+
+### NVTabular
+
+#### Major Changes
+
+#### Added
+
+#### Deprecated/Removed
+
+#### Fixed Bugs
+
+### Models
+
+#### Major Changes
+
+#### Added
+
+#### Deprecated/Removed
+
+#### Fixed Bugs
+
+### Transformers4Rec
+
+#### Major Changes
+
+#### Added
+
+#### Deprecated/Removed
+
+#### Fixed Bugs
+
+### Core
+
+#### Major Changes
+
+#### Added
+
+#### Deprecated/Removed
+
+#### Fixed Bugs
+
+### Systems
+
+#### Major Changes
+
+#### Added
+
+#### Deprecated/Removed
+
+#### Fixed Bugs
+
+### Dataloader
+
+#### Major Changes
+
+#### Added
+
+#### Deprecated/Removed
+
+#### Fixed Bugs
+-->
+
+## [23.06]
+
+### NVTabular
+
+#### Major Changes
+
+#### Added
+
+#### Deprecated/Removed
+
+#### Fixed Bugs
+
+### Models
+
+#### Major Changes
+
+#### Added
+
+#### Deprecated/Removed
+
+#### Fixed Bugs
+
+### Transformers4Rec
+
+#### Major Changes
+
+#### Added
+
+#### Deprecated/Removed
+
+#### Fixed Bugs
+
+### Core
+
+#### Major Changes
+
+#### Added
+
+#### Deprecated/Removed
+
+#### Fixed Bugs
+
+### Systems
+
+#### Major Changes
+
+#### Added
+
+#### Deprecated/Removed
+
+#### Fixed Bugs
+
+### Dataloader
+
+#### Major Changes
+
+#### Added
+
+#### Deprecated/Removed
+
+#### Fixed Bugs
+
 ## [23.05]
 
 ### NVTabular
