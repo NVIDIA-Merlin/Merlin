@@ -19,8 +19,8 @@ RUN apt update -y --fix-missing && \
     apt clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Torch Metrics (without torch)
-RUN pip install --no-cache-dir --no-deps torch torchmetrics \
+# Torch Metrics and Lightning (without torch)
+RUN pip install --no-cache-dir --no-deps torch torchmetrics pytorch-lightning lightning-utilities \
         && pip install --no-cache-dir --upgrade pip \
         && pip install sympy \
         && rm -rf /usr/local/lib/python3.8/dist-packages/torch \
