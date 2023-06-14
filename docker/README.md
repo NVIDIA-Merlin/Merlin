@@ -13,30 +13,32 @@ The following table provides a list of Dockerfiles that you can use to build the
 | `merlin-pytorch`     | `dockerfile.torch` | <https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-pytorch>    | NVTabular and PyTorch                                          |
 
 
-# Building the Merlin containers locally
+## Building the Merlin Containers Locally
 
 Building our containers is a two-step process. We first build the Merlin `BASE_IMAGE` using the `dockerfile.merlin` file. This container depends on two upstream containers: `nvcr.io/nvidia/tritonserver` and `nvcr.io/nvidia/tensorflow`, from which it pulls the necessary dependencies for Triton Inference Server and RAPIDS tools. It also builds and installs other Merlin requirements, such as scikit-learn, XGBoost, etc.
 
-At the time of this writing, the two-stage build process takes roughly 1 hour. Running all of the tests for all Merlin libraries can take a couple of additional hours, depending on which framework you're building.
+We then build framework-specific containers based off of the `BASE_IMAGE`. See the table above for which Dockerfile corresponds to which framework-specific container.
 
-## Building the `BASE_IMAGE`
+The base image is not made available publicly, but the framework-specific containers based on it are. The two-stage build process takes roughly 1 hour. Running all of the tests for all Merlin libraries can take a couple of additional hours, depending on which framework you're building.
+
+## Building The `BASE_IMAGE`
 
 We tag this image as `nvcr.io/nvstaging/merlin/merlin-base:${MERLIN_VERSION}` and it is used to create the framework-specific containers. There are `ARG`s in the Dockerfile to define which version of the containers to use. You can override the defaults when building the image like below.
 
 ```bash
-docker build . -f dockerfile.merlin -t nvcr.io/mycompany/merlin-base:${MERLIN_VERSION} --build-arg DLFW_IMAGE=22.12
+docker build -t nvcr.io/mycompany/merlin-base:${MERLIN_VERSION} --build-arg TRITON_VERSION=23.04 - < docker/dockerfile.merlin
 ```
 
-In this example we are tagging the base image as `nvcr.io/mycompany/merlin-base:${MERLIN_VERSION}`. The tag Merlin uses when building this image in our own build pipeline is `nvcr.io/nvstaging/merlin/merlin-base:${MERLIN_VERSION}`. _Note that this intermediate image is not made available publicly, but the framework-specific containers based on it are._
+In this example we are tagging the base image as `nvcr.io/mycompany/merlin-base:${MERLIN_VERSION}`. The tag Merlin uses when building this image in our own build pipeline is `nvcr.io/nvstaging/merlin/merlin-base:${MERLIN_VERSION}`. 
 
-## Building a framework-specific container
+## Building A Framework-Specific Container
 
 We also provide Dockerfiles for creating framework-specific containers: `dockerfile.tf`, `dockerfile.torch`, and `dockerfile.ctr`. These are all based on the `BASE_IMAGE` created in the previous step and install the associciated deep learning frameworks.
 
-To build the Pytorch container, we will specify the `BASE_IMAGE` build arg to use the base image we just created.
+To build the PyTorch container, we specify the `BASE_IMAGE` build arg to use the base image that we just created.
 
 ```bash
-docker build . -f dockerfile.torch -t ngcr.io/mycompany/merlin-torch:${MERLIN_VERSION} --build-arg BASE_IMAGE=nvcr.io/mycompany/merlin-base:${MERLIN_VERSION}
+docker build -t ngcr.io/mycompany/merlin-torch:${MERLIN_VERSION} --build-arg BASE_IMAGE=nvcr.io/mycompany/merlin-base:${MERLIN_VERSION} - < docker/dockerfile.torch
 ```
 
 ## Default Arguments
