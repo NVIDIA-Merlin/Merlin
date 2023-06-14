@@ -9,7 +9,7 @@ from merlin.core.dispatch import HAS_GPU
 from merlin.schema import Tags
 from nvtabular import ops as nvt_ops
 
-from args_parsing import parse_arguments
+from .args_parsing import parse_arguments
 
 INDEX_TMP_COL = "__index"
 
@@ -44,6 +44,10 @@ class PreprocessingRunner:
             self.df_lib = pandas
 
         self.dask_cluster_client = None
+
+    @staticmethod
+    def parse_cli_args(args=None):
+        return parse_arguments(args)
 
     def read_data(self, path):
         args = self.args
@@ -207,8 +211,8 @@ class PreprocessingRunner:
                 f"Invalid sampling strategy: {args.dataset_split_strategy}"
             )
 
-    def generate_nvt_workflow_features(self):
-        logging.info("Generating NVTabular workflow  for preprocessing features")
+    def generate_nvt_features(self):
+        logging.info("Generating NVTabular workflow for preprocessing features")
         args = self.args
         feats = dict()
 
@@ -242,14 +246,13 @@ class PreprocessingRunner:
 
             if args.target_encoding_targets and args.target_encoding_features:
                 for target_col in args.target_encoding_targets:
-                    feats[f"{target_col}_te_features"] = (
-                        args.target_encoding_features
-                        >> nvt.ops.TargetEncoding(
-                            [target_col],
-                            kfold=args.target_encoding_kfold,
-                            p_smooth=args.target_encoding_smoothing,
-                            out_dtype="float32",
-                        )
+                    feats[
+                        f"{target_col}_te_features"
+                    ] = args.target_encoding_features >> nvt.ops.TargetEncoding(
+                        [target_col],
+                        kfold=args.target_encoding_kfold,
+                        p_smooth=args.target_encoding_smoothing,
+                        out_dtype="float32",
                     )
 
         for col in args.user_features:
@@ -280,10 +283,9 @@ class PreprocessingRunner:
         # Combining all features
         outputs = reduce(lambda x, y: x + y, list(feats.values()))
 
-        workflow = nvt.Workflow(outputs, client=self.dask_cluster_client)
-        return workflow
+        return outputs
 
-    def generate_nvt_workflow_targets(self, client=None):
+    def generate_nvt_targets(self, client=None):
         logging.info("Generating NVTabular workflow for preprocessing targets")
         args = self.args
         feats = dict()
@@ -299,11 +301,10 @@ class PreprocessingRunner:
                 [Tags.REGRESSION, Tags.TARGET, Tags.BINARY]
             )
 
-        # Combining all features
+        # Combining all targets
         outputs = reduce(lambda x, y: x + y, list(feats.values()))
 
-        workflow = nvt.Workflow(outputs, client=self.dask_cluster_client)
-        return workflow
+        return outputs
 
     def merge_dataset_features_values(
         self, features_dataset, targets_dataset, dataset_type, args
@@ -324,7 +325,9 @@ class PreprocessingRunner:
         ).excluding_by_name([INDEX_TMP_COL])
 
         dataset_joint = nvt.Dataset(
-            dataset_joint, schema=schema_joint, cpu=not self.gpu,
+            dataset_joint,
+            schema=schema_joint,
+            cpu=not self.gpu,
         )
 
         return dataset_joint
@@ -418,8 +421,15 @@ class PreprocessingRunner:
                 ddf = self.persist_intermediate(ddf, "_cache/02/train/")
                 eval_ddf = self.persist_intermediate(eval_ddf, "_cache/02/eval/")
 
-        nvt_workflow_features = self.generate_nvt_workflow_features()
-        nvt_workflow_targets = self.generate_nvt_workflow_targets()
+        nvt_features = self.generate_nvt_features()
+        nvt_workflow_features = nvt.Workflow(
+            nvt_features, client=self.dask_cluster_client
+        )
+
+        nvt_targets = self.generate_nvt_targets()
+        nvt_workflow_targets = nvt.Workflow(
+            nvt_targets, client=self.dask_cluster_client
+        )
 
         logging.info("Fitting/transforming the preprocessing on train set")
 
@@ -437,7 +447,8 @@ class PreprocessingRunner:
             train_dataset_features, train_dataset_targets, "train", args
         )
         train_dataset_preproc.to_parquet(
-            output_train_dataset_path, output_files=args.output_num_partitions,
+            output_train_dataset_path,
+            output_files=args.output_num_partitions,
         )
 
         if args.eval_data_path or args.dataset_split_strategy:
@@ -454,7 +465,8 @@ class PreprocessingRunner:
                 eval_dataset_features, eval_dataset_targets, "eval", args
             )
             eval_dataset_preproc.to_parquet(
-                output_eval_dataset_path, output_files=args.output_num_partitions,
+                output_eval_dataset_path,
+                output_files=args.output_num_partitions,
             )
 
         if args.predict_data_path:
@@ -480,7 +492,8 @@ class PreprocessingRunner:
             logging.info(f"Saving predict/test set: {output_predict_dataset_path}")
 
             new_predict_dataset.to_parquet(
-                output_predict_dataset_path, output_files=args.output_num_partitions,
+                output_predict_dataset_path,
+                output_files=args.output_num_partitions,
             )
         nvt_save_path = os.path.join(output_dataset_path, "workflow")
         logging.info(f"Saving nvtabular workflow to: {nvt_save_path}")
@@ -490,8 +503,7 @@ class PreprocessingRunner:
 def main():
     logging.basicConfig(level=logging.INFO)
 
-    args = parse_arguments()
-
+    args = PreprocessingRunner.parse_cli_args()
     runner = PreprocessingRunner(args)
     runner.run()
 

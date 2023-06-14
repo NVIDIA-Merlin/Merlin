@@ -339,9 +339,9 @@ def parse_list_arg(v):
     return v.split(",")
 
 
-def parse_arguments():
+def parse_arguments(args=None):
     parser = build_arg_parser()
-    args = parser.parse_args()
+    args = parser.parse_args(args)
 
     # Parsing list args
     args.control_features = parse_list_arg(args.control_features)
