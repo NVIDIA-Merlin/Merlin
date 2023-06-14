@@ -8,7 +8,7 @@
       <link rel="stylesheet" href="../../_static/mystnb.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/togglebutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/custom.css" type="text/css" />
-    <link rel="canonical" href="https://nvidia-merlin.github.io/Merlin/main/examples/scaling-criteo/04-Triton-Inference-with-HugeCTR.html" />
+    <link rel="canonical" href="https://nvidia-merlin.github.io/Merlin/stable/examples/scaling-criteo/04-Triton-Inference-with-HugeCTR.html" />
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
@@ -40,11 +40,15 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../../index.html" class="icon icon-home"> Merlin
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Merlin
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -53,6 +57,7 @@
               <p class="caption"><span class="caption-text">Contents</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../../README.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../guide/recommender_system_guide.html">Recommender System Guide</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../index.html">Example Notebooks</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="../getting-started-movielens/index.html">Getting Started using the MovieLens Dataset</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../Building-and-deploying-multi-stage-RecSys/index.html">Deploying a Multi-Stage Recommender System</a></li>
@@ -85,7 +90,7 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../../index.html" class="icon icon-home"></a></li>
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="../index.html">NVIDIA Merlin Example Notebooks</a></li>
           <li class="breadcrumb-item"><a href="index.html">Scaling Large Datasets with Criteo</a></li>
       <li class="breadcrumb-item active">Scaling Criteo: Triton Inference with HugeCTR</li>
@@ -366,11 +371,11 @@ For <code class="docutils literal notranslate"><span class="pre">ps=</span></cod
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df_lib</span> <span class="o">=</span> <span class="n">get_lib</span><span class="p">()</span>
 <span class="n">input_cols</span> <span class="o">=</span> <span class="n">workflow</span><span class="o">.</span><span class="n">input_schema</span><span class="o">.</span><span class="n">column_names</span>
 <span class="c1"># read in data for request</span>
-<span class="n">batch</span> <span class="o">=</span> <span class="n">df_lib</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">df_lib</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span>
     <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">original_data_path</span> <span class="o">+</span> <span class="s2">&quot;/*.parquet&quot;</span><span class="p">))[</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span>
-    <span class="n">num_rows</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
     <span class="n">columns</span><span class="o">=</span><span class="n">input_cols</span>
 <span class="p">)</span>
+<span class="n">batch</span> <span class="o">=</span> <span class="n">data</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span>
 <span class="n">batch</span> <span class="o">=</span> <span class="n">batch</span><span class="p">[[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">batch</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">x</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;label&#39;</span><span class="p">]]]</span>
 <span class="n">batch</span>
 </pre></div>
@@ -546,7 +551,7 @@ For <code class="docutils literal notranslate"><span class="pre">ps=</span></cod
 </div>
 <div class="section" id="next-steps">
 <h2>Next steps<a class="headerlink" href="#next-steps" title="Permalink to this headline"></a></h2>
-<p>There is more detailed information in the <a class="reference external" href="https://nvidia-merlin.github.io/HugeCTR/main/hugectr_user_guide.html">API documentation</a> and <a class="reference external" href="https://nvidia-merlin.github.io/HugeCTR/main/notebooks/index.html">more examples</a> in the <a class="reference external" href="https://github.com/NVIDIA-Merlin/HugeCTR">HugeCTR repository</a>.</p>
+<p>There is more detailed information in the <a class="reference external" href="https://nvidia-merlin.github.io/HugeCTR/stable/hugectr_user_guide.html">API documentation</a> and <a class="reference external" href="https://nvidia-merlin.github.io/HugeCTR/stable/notebooks/index.html">more examples</a> in the <a class="reference external" href="https://github.com/NVIDIA-Merlin/HugeCTR">HugeCTR repository</a>.</p>
 </div>
 </div>
 

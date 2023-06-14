@@ -8,7 +8,7 @@
       <link rel="stylesheet" href="../../_static/mystnb.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/togglebutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/custom.css" type="text/css" />
-    <link rel="canonical" href="https://nvidia-merlin.github.io/Merlin/main/examples/scaling-criteo/02-ETL-with-NVTabular.html" />
+    <link rel="canonical" href="https://nvidia-merlin.github.io/Merlin/stable/examples/scaling-criteo/02-ETL-with-NVTabular.html" />
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
@@ -40,11 +40,15 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../../index.html" class="icon icon-home"> Merlin
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Merlin
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -53,6 +57,7 @@
               <p class="caption"><span class="caption-text">Contents</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../../README.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../guide/recommender_system_guide.html">Recommender System Guide</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../index.html">Example Notebooks</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="../getting-started-movielens/index.html">Getting Started using the MovieLens Dataset</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../Building-and-deploying-multi-stage-RecSys/index.html">Deploying a Multi-Stage Recommender System</a></li>
@@ -85,7 +90,7 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../../index.html" class="icon icon-home"></a></li>
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="../index.html">NVIDIA Merlin Example Notebooks</a></li>
           <li class="breadcrumb-item"><a href="index.html">Scaling Large Datasets with Criteo</a></li>
       <li class="breadcrumb-item active">Scaling Criteo: ETL with NVTabular</li>
@@ -127,7 +132,7 @@
 <div class="section" id="overview">
 <h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline"></a></h2>
 <p>NVTabular is a feature engineering and preprocessing library for tabular data designed to quickly and easily manipulate terabyte scale datasets used to train deep learning based recommender systems. It provides a high level abstraction to simplify code and accelerates computation on the GPU using the RAPIDS cuDF library.<br><br></p>
-<p><strong>In this notebook, we will use NVTabular with multiple GPUs. The notebook can run on single GPU, as well</strong>. Prerequisite is to be familiar with NVTabular and its API. You can read more NVTabular and its API in our <a class="reference external" href="https://nvidia-merlin.github.io/NVTabular/main/Introduction.html">Documentation</a> or check out our <a class="reference external" href="https://nvidia-merlin.github.io/NVTabular/main/examples/index.html">NVTabular Examples</a>.<br><br></p>
+<p><strong>In this notebook, we will use NVTabular with multiple GPUs. The notebook can run on single GPU, as well</strong>. Prerequisite is to be familiar with NVTabular and its API. You can read more NVTabular and its API in our <a class="reference external" href="https://nvidia-merlin.github.io/NVTabular/stable/Introduction.html">Documentation</a> or check out our <a class="reference external" href="https://nvidia-merlin.github.io/NVTabular/stable/examples/index.html">NVTabular Examples</a>.<br><br></p>
 <p>The full <a class="reference external" href="https://ailab.criteo.com/download-criteo-1tb-click-logs-dataset/">Criteo 1TB Click Logs dataset</a> contains ~1.3 TB of uncompressed click logs containing over four billion samples spanning 24 days. In our benchmarks, we are able to preprocess and engineer features in <strong>13.8min with 1x NVIDIA A100 GPU and 1.9min with 8x NVIDIA A100 GPUs</strong>. This is a <strong>speed-up of 100x-10000x</strong> in comparison to different CPU versions, You can read more in our <a class="reference external" href="https://developer.nvidia.com/blog/announcing-the-nvtabular-open-beta-with-multi-gpu-support-and-new-data-loaders/">blog</a>.</p>
 <p>Our pipeline will be representative with most common preprocessing transformation for deep learning recommender models.</p>
 <ul class="simple">
@@ -174,7 +179,7 @@
     <span class="n">Normalize</span><span class="p">,</span>
     <span class="n">AddMetadata</span>
 <span class="p">)</span>
-<span class="kn">from</span> <span class="nn">nvtabular.utils</span> <span class="kn">import</span> <span class="n">pynvml_mem_size</span><span class="p">,</span> <span class="n">device_mem_size</span>
+<span class="kn">from</span> <span class="nn">merlin.core.compat</span> <span class="kn">import</span> <span class="n">pynvml_mem_size</span><span class="p">,</span> <span class="n">device_mem_size</span>
 <span class="kn">from</span> <span class="nn">merlin.schema.tags</span> <span class="kn">import</span> <span class="n">Tags</span>
 </pre></div>
 </div>
@@ -526,7 +531,7 @@
 <div class="section" id="defining-our-preprocessing-pipeline">
 <h3>Defining our Preprocessing Pipeline<a class="headerlink" href="#defining-our-preprocessing-pipeline" title="Permalink to this headline"></a></h3>
 <p>At this point, our data still isn’t in a form that’s ideal for consumption by neural networks. The most pressing issues are missing values and the fact that our categorical variables are still represented by random, discrete identifiers, and need to be transformed into contiguous indices that can be leveraged by a learned embedding. Less pressing, but still important for learning dynamics, are the distributions of our continuous variables, which are distributed across multiple orders of magnitude and are uncentered (i.e. E[x] != 0).</p>
-<p>We can fix these issues in a concise and GPU-accelerated manner with an NVTabular <code class="docutils literal notranslate"><span class="pre">Workflow</span></code>. More information about NVTabular’s API can be found in its <a class="reference external" href="https://nvidia-merlin.github.io/NVTabular/main/Introduction.html">Documentation</a>.</p>
+<p>We can fix these issues in a concise and GPU-accelerated manner with an NVTabular <code class="docutils literal notranslate"><span class="pre">Workflow</span></code>. More information about NVTabular’s API can be found in its <a class="reference external" href="https://nvidia-merlin.github.io/NVTabular/stable/Introduction.html">Documentation</a>.</p>
 <div class="section" id="frequency-thresholding">
 <h4>Frequency Thresholding<a class="headerlink" href="#frequency-thresholding" title="Permalink to this headline"></a></h4>
 <p>One interesting thing worth pointing out is that we’re using <em>frequency thresholding</em> in our <code class="docutils literal notranslate"><span class="pre">Categorify</span></code> op. This handy functionality will map all categories which occur in the dataset with some threshold level of infrequency (which we’ve set here to be 15 occurrences throughout the dataset) to the <em>same</em> index, keeping the model from overfitting to sparse signals.</p>

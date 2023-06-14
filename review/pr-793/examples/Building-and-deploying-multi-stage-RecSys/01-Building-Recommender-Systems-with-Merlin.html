@@ -8,7 +8,7 @@
       <link rel="stylesheet" href="../../_static/mystnb.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/togglebutton.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/custom.css" type="text/css" />
-    <link rel="canonical" href="https://nvidia-merlin.github.io/Merlin/main/examples/Building-and-deploying-multi-stage-RecSys/01-Building-Recommender-Systems-with-Merlin.html" />
+    <link rel="canonical" href="https://nvidia-merlin.github.io/Merlin/stable/examples/Building-and-deploying-multi-stage-RecSys/01-Building-Recommender-Systems-with-Merlin.html" />
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
@@ -40,11 +40,15 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../../index.html" class="icon icon-home"> Merlin
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Merlin
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -53,6 +57,7 @@
               <p class="caption"><span class="caption-text">Contents</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../../README.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../guide/recommender_system_guide.html">Recommender System Guide</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../index.html">Example Notebooks</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="../getting-started-movielens/index.html">Getting Started using the MovieLens Dataset</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="index.html">Deploying a Multi-Stage Recommender System</a><ul class="current">
@@ -81,7 +86,7 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../../index.html" class="icon icon-home"></a></li>
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="../index.html">NVIDIA Merlin Example Notebooks</a></li>
           <li class="breadcrumb-item"><a href="index.html">Deploying a Multi-Stage Recommender System</a></li>
       <li class="breadcrumb-item active">Building Intelligent Recommender Systems with Merlin</li>
@@ -234,7 +239,7 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 </div>
 </div>
 </div>
-<p>If you would like to use the real ALI-CCP dataset, you can use <a class="reference external" href="https://github.com/NVIDIA-Merlin/models/blob/main/merlin/datasets/ecommerce/aliccp/dataset.py">get_aliccp()</a> function instead. This function takes the raw csv files, and generate parquet files that can be directly fed to NVTabular workflow above.</p>
+<p>If you would like to use the real ALI-CCP dataset, you can use <a class="reference external" href="https://github.com/NVIDIA-Merlin/models/blob/stable/merlin/datasets/ecommerce/aliccp/dataset.py">get_aliccp()</a> function instead. This function takes the raw csv files, and generate parquet files that can be directly fed to NVTabular workflow above.</p>
 </div>
 <div class="section" id="feature-engineering-with-nvtabular">
 <h2>Feature Engineering with NVTabular<a class="headerlink" href="#feature-engineering-with-nvtabular" title="Permalink to this headline"></a></h2>
@@ -303,10 +308,10 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 </div>
 <div class="section" id="training-a-retrieval-model-with-two-tower-model">
 <h2>Training a Retrieval Model with Two-Tower Model<a class="headerlink" href="#training-a-retrieval-model-with-two-tower-model" title="Permalink to this headline"></a></h2>
-<p>We start with the offline candidate retrieval stage. We are going to train a Two-Tower model for item retrieval. To learn more about the Two-tower model you can visit <a class="reference external" href="https://github.com/NVIDIA-Merlin/models/blob/main/examples/05-Retrieval-Model.ipynb">05-Retrieval-Model.ipynb</a>.</p>
+<p>We start with the offline candidate retrieval stage. We are going to train a Two-Tower model for item retrieval. To learn more about the Two-tower model you can visit <a class="reference external" href="https://github.com/NVIDIA-Merlin/models/blob/stable/examples/05-Retrieval-Model.ipynb">05-Retrieval-Model.ipynb</a>.</p>
 <div class="section" id="id1">
 <h3>Feature Engineering with NVTabular<a class="headerlink" href="#id1" title="Permalink to this headline"></a></h3>
-<p>We are going to process our raw categorical features by encoding them using <code class="docutils literal notranslate"><span class="pre">Categorify()</span></code> operator and tag the features with <code class="docutils literal notranslate"><span class="pre">user</span></code> or <code class="docutils literal notranslate"><span class="pre">item</span></code> tags in the schema file. To learn more about <a class="reference external" href="https://github.com/NVIDIA-Merlin/NVTabular">NVTabular</a> and the schema object visit this example <a class="reference external" href="https://github.com/NVIDIA-Merlin/models/blob/main/examples/02-Merlin-Models-and-NVTabular-integration.ipynb">notebook</a> in the Merlin Models repo.</p>
+<p>We are going to process our raw categorical features by encoding them using <code class="docutils literal notranslate"><span class="pre">Categorify()</span></code> operator and tag the features with <code class="docutils literal notranslate"><span class="pre">user</span></code> or <code class="docutils literal notranslate"><span class="pre">item</span></code> tags in the schema file. To learn more about <a class="reference external" href="https://github.com/NVIDIA-Merlin/NVTabular">NVTabular</a> and the schema object visit this example <a class="reference external" href="https://github.com/NVIDIA-Merlin/models/blob/stable/examples/02-Merlin-Models-and-NVTabular-integration.ipynb">notebook</a> in the Merlin Models repo.</p>
 <p>Define a new output path to store the filtered datasets and schema files.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -344,7 +349,7 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 </div>
 </div>
 </div>
-<p>NVTabular exported the schema file, <code class="docutils literal notranslate"><span class="pre">schema.pbtxt</span></code> a protobuf text file, of our processed dataset. To learn more about the schema object and schema file you can explore <a class="reference external" href="https://github.com/NVIDIA-Merlin/models/blob/main/examples/02-Merlin-Models-and-NVTabular-integration.ipynb">02-Merlin-Models-and-NVTabular-integration.ipynb</a> notebook.</p>
+<p>NVTabular exported the schema file, <code class="docutils literal notranslate"><span class="pre">schema.pbtxt</span></code> a protobuf text file, of our processed dataset. To learn more about the schema object and schema file you can explore <a class="reference external" href="https://github.com/NVIDIA-Merlin/models/blob/stable/examples/02-Merlin-Models-and-NVTabular-integration.ipynb">02-Merlin-Models-and-NVTabular-integration.ipynb</a> notebook.</p>
 <p><strong>Read filtered parquet files as Dataset objects.</strong></p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -449,7 +454,7 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 </div>
 </div>
 </div>
-<p>Deep Learning Recommendation Model <a class="reference external" href="https://arxiv.org/abs/1906.00091">(DLRM)</a> architecture is a popular neural network model originally proposed by Facebook in 2019. The model was introduced as a personalization deep learning model that uses embeddings to process sparse features that represent categorical data and a multilayer perceptron (MLP) to process dense features, then interacts these features explicitly using the statistical techniques proposed in <a class="reference external" href="https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&amp;arnumber=5694074">here</a>. To learn more about DLRM architetcture please visit <code class="docutils literal notranslate"><span class="pre">Exploring-different-models</span></code> <a class="reference external" href="https://github.com/NVIDIA-Merlin/models/blob/main/examples/04-Exporting-ranking-models.ipynb">notebook</a> in the Merlin Models GH repo.</p>
+<p>Deep Learning Recommendation Model <a class="reference external" href="https://arxiv.org/abs/1906.00091">(DLRM)</a> architecture is a popular neural network model originally proposed by Facebook in 2019. The model was introduced as a personalization deep learning model that uses embeddings to process sparse features that represent categorical data and a multilayer perceptron (MLP) to process dense features, then interacts these features explicitly using the statistical techniques proposed in <a class="reference external" href="https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&amp;arnumber=5694074">here</a>. To learn more about DLRM architetcture please visit <code class="docutils literal notranslate"><span class="pre">Exploring-different-models</span></code> <a class="reference external" href="https://github.com/NVIDIA-Merlin/models/blob/stable/examples/04-Exporting-ranking-models.ipynb">notebook</a> in the Merlin Models GH repo.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">mm</span><span class="o">.</span><span class="n">DLRMModel</span><span class="p">(</span>
@@ -487,7 +492,7 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 </div>
 </div>
 </div>
-<p>In the following cells we are going to export the required user and item features files, and save the query (user) tower model and item embeddings to disk. If you want to read more about exporting retrieval models, please visit <a class="reference external" href="https://github.com/NVIDIA-Merlin/models/blob/main/examples/05-Retrieval-Model.ipynb">05-Retrieval-Model.ipynb</a> notebook in Merlin Models library repo.</p>
+<p>In the following cells we are going to export the required user and item features files, and save the query (user) tower model and item embeddings to disk. If you want to read more about exporting retrieval models, please visit <a class="reference external" href="https://github.com/NVIDIA-Merlin/models/blob/stable/examples/05-Retrieval-Model.ipynb">05-Retrieval-Model.ipynb</a> notebook in Merlin Models library repo.</p>
 </div>
 <div class="section" id="set-up-a-feature-store-with-feast">
 <h2>Set up a feature store with Feast<a class="headerlink" href="#set-up-a-feature-store-with-feast" title="Permalink to this headline"></a></h2>
@@ -495,8 +500,8 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 <p>We will create the feature repo in the current working directory, which is <code class="docutils literal notranslate"><span class="pre">BASE_DIR</span></code> for us.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>rm<span class="w"> </span>-rf<span class="w"> </span><span class="nv">$BASE_DIR</span>/feature_repo
-<span class="o">!</span><span class="nb">cd</span><span class="w"> </span><span class="nv">$BASE_DIR</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>feast<span class="w"> </span>init<span class="w"> </span>feature_repo
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>rm<span class="w"> </span>-rf<span class="w"> </span><span class="nv">$BASE_DIR</span>/feast
+<span class="o">!</span><span class="nb">cd</span><span class="w"> </span><span class="nv">$BASE_DIR</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>feast<span class="w"> </span>init<span class="w"> </span>feast
 </pre></div>
 </div>
 </div>
@@ -509,9 +514,9 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 <p>You should be seeing a message like <i>Creating a new Feast repository in … </i> printed out above. Now, navigate to the <code class="docutils literal notranslate"><span class="pre">feature_repo</span></code> folder and remove the demo parquet file created by default, and <code class="docutils literal notranslate"><span class="pre">examples.py</span></code> file.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">feature_repo_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s2">&quot;feature_repo&quot;</span><span class="p">)</span>
-<span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">feature_repo_path</span><span class="si">}</span><span class="s2">/example.py&quot;</span><span class="p">):</span>
-    <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">feature_repo_path</span><span class="si">}</span><span class="s2">/example.py&quot;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">feature_repo_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s2">&quot;feast/feature_repo&quot;</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">feature_repo_path</span><span class="si">}</span><span class="s2">/example_repo.py&quot;</span><span class="p">):</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">feature_repo_path</span><span class="si">}</span><span class="s2">/example_repo.py&quot;</span><span class="p">)</span>
 <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">feature_repo_path</span><span class="si">}</span><span class="s2">/data/driver_stats.parquet&quot;</span><span class="p">):</span>
     <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">feature_repo_path</span><span class="si">}</span><span class="s2">/data/driver_stats.parquet&quot;</span><span class="p">)</span>
 </pre></div>
@@ -812,7 +817,7 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">user_features</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span>
-    <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s2">&quot;feature_repo/data&quot;</span><span class="p">,</span> <span class="s2">&quot;user_features.parquet&quot;</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">feature_repo_path</span><span class="p">,</span> <span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="s2">&quot;user_features.parquet&quot;</span><span class="p">)</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -932,7 +937,7 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># save to disk</span>
 <span class="n">item_features</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span>
-    <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s2">&quot;feature_repo/data&quot;</span><span class="p">,</span> <span class="s2">&quot;item_features.parquet&quot;</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">feature_repo_path</span><span class="p">,</span> <span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="s2">&quot;item_features.parquet&quot;</span><span class="p">)</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -1155,46 +1160,46 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 <p>Now we will create our user and item features definitions in the user_features.py and item_features.py files and save these files in the feature_repo.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s2">&quot;feature_repo/&quot;</span><span class="p">,</span> <span class="s2">&quot;user_features.py&quot;</span><span class="p">),</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">feature_repo_path</span><span class="p">,</span> <span class="s2">&quot;user_features.py&quot;</span><span class="p">),</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span>
 <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">from google.protobuf.duration_pb2 import Duration</span>
-<span class="sd">import datetime</span>
-<span class="sd">from feast import Entity, Feature, FeatureView, ValueType</span>
+<span class="sd">from datetime import timedelta</span>
+<span class="sd">from feast import Entity, Field, FeatureView, ValueType</span>
+<span class="sd">from feast.types import Int32</span>
 <span class="sd">from feast.infra.offline_stores.file_source import FileSource</span>
 
 <span class="sd">user_features = FileSource(</span>
 <span class="sd">    path=&quot;{}&quot;,</span>
-<span class="sd">    event_timestamp_column=&quot;datetime&quot;,</span>
+<span class="sd">    timestamp_field=&quot;datetime&quot;,</span>
 <span class="sd">    created_timestamp_column=&quot;created&quot;,</span>
 <span class="sd">)</span>
 
-<span class="sd">user_raw = Entity(name=&quot;user_id_raw&quot;, value_type=ValueType.INT32, description=&quot;user id raw&quot;,)</span>
+<span class="sd">user_raw = Entity(name=&quot;user_id_raw&quot;, value_type=ValueType.INT32, join_keys=[&quot;user_id_raw&quot;],)</span>
 
 <span class="sd">user_features_view = FeatureView(</span>
 <span class="sd">    name=&quot;user_features&quot;,</span>
-<span class="sd">    entities=[&quot;user_id_raw&quot;],</span>
-<span class="sd">    ttl=Duration(seconds=86400 * 7),</span>
-<span class="sd">    features=[</span>
-<span class="sd">        Feature(name=&quot;user_shops&quot;, dtype=ValueType.INT32),</span>
-<span class="sd">        Feature(name=&quot;user_profile&quot;, dtype=ValueType.INT32),</span>
-<span class="sd">        Feature(name=&quot;user_group&quot;, dtype=ValueType.INT32),</span>
-<span class="sd">        Feature(name=&quot;user_gender&quot;, dtype=ValueType.INT32),</span>
-<span class="sd">        Feature(name=&quot;user_age&quot;, dtype=ValueType.INT32),</span>
-<span class="sd">        Feature(name=&quot;user_consumption_2&quot;, dtype=ValueType.INT32),</span>
-<span class="sd">        Feature(name=&quot;user_is_occupied&quot;, dtype=ValueType.INT32),</span>
-<span class="sd">        Feature(name=&quot;user_geography&quot;, dtype=ValueType.INT32),</span>
-<span class="sd">        Feature(name=&quot;user_intentions&quot;, dtype=ValueType.INT32),</span>
-<span class="sd">        Feature(name=&quot;user_brands&quot;, dtype=ValueType.INT32),</span>
-<span class="sd">        Feature(name=&quot;user_categories&quot;, dtype=ValueType.INT32),</span>
-<span class="sd">        Feature(name=&quot;user_id&quot;, dtype=ValueType.INT32),</span>
+<span class="sd">    entities=[user_raw],</span>
+<span class="sd">    ttl=timedelta(0),</span>
+<span class="sd">    schema=[</span>
+<span class="sd">        Field(name=&quot;user_shops&quot;, dtype=Int32),</span>
+<span class="sd">        Field(name=&quot;user_profile&quot;, dtype=Int32),</span>
+<span class="sd">        Field(name=&quot;user_group&quot;, dtype=Int32),</span>
+<span class="sd">        Field(name=&quot;user_gender&quot;, dtype=Int32),</span>
+<span class="sd">        Field(name=&quot;user_age&quot;, dtype=Int32),</span>
+<span class="sd">        Field(name=&quot;user_consumption_2&quot;, dtype=Int32),</span>
+<span class="sd">        Field(name=&quot;user_is_occupied&quot;, dtype=Int32),</span>
+<span class="sd">        Field(name=&quot;user_geography&quot;, dtype=Int32),</span>
+<span class="sd">        Field(name=&quot;user_intentions&quot;, dtype=Int32),</span>
+<span class="sd">        Field(name=&quot;user_brands&quot;, dtype=Int32),</span>
+<span class="sd">        Field(name=&quot;user_categories&quot;, dtype=Int32),</span>
+<span class="sd">        Field(name=&quot;user_id&quot;, dtype=Int32),</span>
 <span class="sd">    ],</span>
 <span class="sd">    online=True,</span>
-<span class="sd">    input=user_features,</span>
+<span class="sd">    source=user_features,</span>
 <span class="sd">    tags=dict(),</span>
 <span class="sd">)</span>
 <span class="sd">&quot;&quot;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-        <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s2">&quot;feature_repo/data/&quot;</span><span class="p">,</span> <span class="s2">&quot;user_features.parquet&quot;</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">feature_repo_path</span><span class="p">,</span> <span class="s2">&quot;data/&quot;</span><span class="p">,</span> <span class="s2">&quot;user_features.parquet&quot;</span><span class="p">)</span>
     <span class="p">)</span>
 <span class="p">)</span>
 <span class="n">file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
@@ -1204,38 +1209,38 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s2">&quot;feature_repo/&quot;</span><span class="p">,</span> <span class="s2">&quot;item_features.py&quot;</span><span class="p">),</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">feature_repo_path</span><span class="p">,</span> <span class="s2">&quot;item_features.py&quot;</span><span class="p">),</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
     <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">from google.protobuf.duration_pb2 import Duration</span>
-<span class="sd">import datetime</span>
-<span class="sd">from feast import Entity, Feature, FeatureView, ValueType</span>
+<span class="sd">from datetime import timedelta</span>
+<span class="sd">from feast import Entity, Field, FeatureView, ValueType</span>
+<span class="sd">from feast.types import Int32</span>
 <span class="sd">from feast.infra.offline_stores.file_source import FileSource</span>
 
 <span class="sd">item_features = FileSource(</span>
 <span class="sd">    path=&quot;{}&quot;,</span>
-<span class="sd">    event_timestamp_column=&quot;datetime&quot;,</span>
+<span class="sd">    timestamp_field=&quot;datetime&quot;,</span>
 <span class="sd">    created_timestamp_column=&quot;created&quot;,</span>
 <span class="sd">)</span>
 
-<span class="sd">item = Entity(name=&quot;item_id&quot;, value_type=ValueType.INT32, description=&quot;item id&quot;,)</span>
+<span class="sd">item = Entity(name=&quot;item_id&quot;, value_type=ValueType.INT32, join_keys=[&quot;item_id&quot;],)</span>
 
 <span class="sd">item_features_view = FeatureView(</span>
 <span class="sd">    name=&quot;item_features&quot;,</span>
-<span class="sd">    entities=[&quot;item_id&quot;],</span>
-<span class="sd">    ttl=Duration(seconds=86400 * 7),</span>
-<span class="sd">    features=[</span>
-<span class="sd">        Feature(name=&quot;item_category&quot;, dtype=ValueType.INT32),</span>
-<span class="sd">        Feature(name=&quot;item_shop&quot;, dtype=ValueType.INT32),</span>
-<span class="sd">        Feature(name=&quot;item_brand&quot;, dtype=ValueType.INT32),</span>
-<span class="sd">        Feature(name=&quot;item_id_raw&quot;, dtype=ValueType.INT32),</span>
+<span class="sd">    entities=[item],</span>
+<span class="sd">    ttl=timedelta(0),</span>
+<span class="sd">    schema=[</span>
+<span class="sd">        Field(name=&quot;item_category&quot;, dtype=Int32),</span>
+<span class="sd">        Field(name=&quot;item_shop&quot;, dtype=Int32),</span>
+<span class="sd">        Field(name=&quot;item_brand&quot;, dtype=Int32),</span>
+<span class="sd">        Field(name=&quot;item_id_raw&quot;, dtype=Int32),</span>
 <span class="sd">    ],</span>
 <span class="sd">    online=True,</span>
-<span class="sd">    input=item_features,</span>
+<span class="sd">    source=item_features,</span>
 <span class="sd">    tags=dict(),</span>
 <span class="sd">)</span>
 <span class="sd">&quot;&quot;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s2">&quot;feature_repo/data/&quot;</span><span class="p">,</span> <span class="s2">&quot;item_features.parquet&quot;</span><span class="p">)</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">feature_repo_path</span><span class="p">,</span> <span class="s2">&quot;data/&quot;</span><span class="p">,</span> <span class="s2">&quot;item_features.parquet&quot;</span><span class="p">)</span>
         <span class="p">)</span>
     <span class="p">)</span>
 <span class="n">file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
@@ -1263,7 +1268,7 @@ Requirement already satisfied: emoji in /usr/local/lib/python3.8/dist-packages (
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">seedir</span> <span class="k">as</span> <span class="nn">sd</span>
 
-<span class="n">feature_repo_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s2">&quot;feature_repo&quot;</span><span class="p">)</span>
+<span class="n">feature_repo_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s2">&quot;feast&quot;</span><span class="p">)</span>
 <span class="n">sd</span><span class="o">.</span><span class="n">seedir</span><span class="p">(</span>
     <span class="n">feature_repo_path</span><span class="p">,</span>
     <span class="n">style</span><span class="o">=</span><span class="s2">&quot;lines&quot;</span><span class="p">,</span>
