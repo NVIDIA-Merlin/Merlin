@@ -17,7 +17,7 @@ NVIDIA Merlin, such as:
 To learn more about these concepts in NVIDIA Merlin, see for example
 [Deploying a Multi-Stage Recommender System](../Building-and-deploying-multi-stage-RecSys/README.md)
 in this repository or example notebooks in
-[Merlin Models](https://github.com/NVIDIA-Merlin/models/tree/main/examples).
+[Merlin Models](https://github.com/NVIDIA-Merlin/models/tree/stable/examples).
 
 
 ## Running the Example Notebook

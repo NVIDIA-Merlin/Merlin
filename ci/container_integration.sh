@@ -27,6 +27,10 @@ echo "Run integration tests for Merlin Models"
 echo "Run integration tests for Transformers4Rec"
 /transformers4rec/ci/test_integration.sh $container $devices || exit_code=1
 
+# Test Systems
+echo "Run integration tests for Merlin Systems"
+/systems/ci/test_integration.sh $container $devices || exit_code=1
+
 if [[ "$suppress_failures" -eq 0 ]]
 then
     exit 0

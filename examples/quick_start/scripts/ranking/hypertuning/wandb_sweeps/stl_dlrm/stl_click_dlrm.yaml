@@ -1,0 +1,79 @@
+program: ranking.py
+method: bayes
+metric:
+  name: auc-final
+  goal: maximize
+parameters:
+  tasks:
+    distribution: categorical
+    values:
+      - "click"
+  stl_positive_class_weight:
+    distribution: int_uniform
+    min: 1
+    max: 10
+  activation:
+    distribution: categorical
+    values:
+      - relu
+  dropout:
+    distribution: uniform
+    max: 0.2
+    min: 0
+  embeddings_l2_reg:
+    distribution: uniform
+    max: 1e-05
+    min: 1e-09
+  l2_reg:
+    distribution: uniform
+    max: 1e-04
+    min: 1e-08
+  lr:
+    distribution: uniform
+    max: 1e-01
+    min: 1e-03
+  lr_decay_rate:
+    distribution: uniform
+    max: 1
+    min: 0.98
+  lr_decay_steps:
+    distribution: int_uniform
+    max: 200
+    min: 100
+  mlp_layers:
+    distribution: categorical
+    values:
+      - "64"
+      - "128"
+      - "256"
+      - "64,32"
+      - "128,64"
+      - "256,128"
+      - "128,64,32"
+      - "256,128,64"
+  model:
+    distribution: categorical
+    values:
+      - dlrm
+
+  embeddings_dim:
+    distribution: categorical
+    values:
+      - "64"
+      - "128"
+      - "256"
+
+  train_batch_size:
+    distribution: categorical
+    values:
+      - 16384
+      - 32768
+      - 65536
+  eval_batch_size:
+    distribution: categorical
+    values:
+      - 65536
+  epochs:
+    distribution: categorical
+    values:
+      - 1

@@ -3,12 +3,11 @@
 container=$1
 devices=$2
 
+exit_code=0
 
 echo "##################"
 echo "# Software check #"
 echo "##################"
-
-exit_code=0
 
 regex="merlin-(.)*"
 if [[ ! "$container" =~ $regex ]]; then
@@ -36,14 +35,15 @@ if [ "$container" == "merlin-tensorflow" ]; then
     python -c "import tensorflow; print(tensorflow.__version__)" || exit_code=1
     echo "Check merlin-sok for tf-training container"
     python -c "import sparse_operation_kit; print(sparse_operation_kit.__version__)" || exit_code=1
-    echo "Check distributed-embeddings for tf-training container"
-    python -c "import distributed_embeddings as tfde; print(tfde.__doc__)" || exit_code=1
+    # 2023-04-14 Removed until distributed-embeddings are re-added.
+    # echo "Check distributed-embeddings for tf-training container"
+    # python -c "import distributed_embeddings as tfde; print(tfde.__doc__)" || exit_code=1
 
     # TODO: remove this block once
     # https://github.com/NVIDIA-Merlin/HugeCTR/pull/328
     # is in the hugectr release
-    pushd /hugectr/sparse_operation_kit/unit_test/test_scripts/tf2 && \
-    bash sok_test_unit.sh && \
+    pushd /hugectr/sparse_operation_kit/sparse_operation_kit/experiment/test/function_test && \
+    bash run_function_test.sh && \
     popd || exit_code=1
 fi
 

@@ -2,7 +2,7 @@
 
 ![GitHub tag (latest SemVer)](https://img.shields.io/github/v/tag/NVIDIA-Merlin/Merlin?sort=semver)
 ![GitHub License](https://img.shields.io/github/license/NVIDIA-Merlin/Merlin)
-[![Documentation](https://img.shields.io/badge/documentation-blue.svg)](https://nvidia-merlin.github.io/Merlin/main/README.html)
+[![Documentation](https://img.shields.io/badge/documentation-blue.svg)](https://nvidia-merlin.github.io/Merlin/stable/README.html)
 
 NVIDIA Merlin is an open source library that accelerates recommender systems on
 NVIDIA GPUs. The library enables data scientists, machine learning engineers,
@@ -32,7 +32,7 @@ NVIDIA Merlin consists of the following open source libraries:
 
 **[NVTabular](https://github.com/NVIDIA-Merlin/NVTabular)**
 [![PyPI version shields.io](https://img.shields.io/pypi/v/nvtabular.svg)](https://pypi.org/project/nvtabular/)
-[![ Documentation](https://img.shields.io/badge/documentation-blue.svg)](https://nvidia-merlin.github.io/NVTabular/main/Introduction.html)
+[![ Documentation](https://img.shields.io/badge/documentation-blue.svg)](https://nvidia-merlin.github.io/NVTabular/stable/Introduction.html)
 <br> NVTabular is a feature engineering and preprocessing library for tabular
 data. The library can quickly and easily manipulate terabyte-size datasets that
 are used to train deep learning based recommender systems. The library offers a
@@ -46,8 +46,9 @@ NVTabular, you can:
 - Focus on what to do with the data and not how to do it by using abstraction at
   the operation level.
 
-**[HugeCTR](https://github.com/NVIDIA-Merlin/HugeCTR)**<br> HugeCTR is a
-GPU-accelerated training framework that can scale large deep learning
+**[HugeCTR](https://github.com/NVIDIA-Merlin/HugeCTR)**
+[![ Documentation](https://img.shields.io/badge/documentation-blue.svg)](https://nvidia-merlin.github.io/HugeCTR/stable/hugectr_user_guide.html)<br>
+HugeCTR is a GPU-accelerated training framework that can scale large deep learning
 recommendation models by distributing training across multiple GPUs and nodes.
 HugeCTR contains optimized data loaders with GPU-acceleration and provides
 strategies for scaling large embedding tables beyond available memory. With
@@ -58,7 +59,8 @@ HugeCTR, you can:
   manner during the training stage.
 
 **[Merlin Models](https://github.com/NVIDIA-Merlin/models)**
-[![PyPI version shields.io](https://img.shields.io/pypi/v/merlin-models.svg)](https://pypi.org/project/merlin-models/)<br>
+[![PyPI version shields.io](https://img.shields.io/pypi/v/merlin-models.svg)](https://pypi.org/project/merlin-models/)
+[![ Documentation](https://img.shields.io/badge/documentation-blue.svg)](https://nvidia-merlin.github.io/models/stable/README.html)<br>
 The Merlin Models library provides standard models for recommender systems with
 an aim for high-quality implementations that range from classic machine learning
 models to highly-advanced deep learning models. With Merlin Models, you can:
@@ -72,7 +74,8 @@ models to highly-advanced deep learning models. With Merlin Models, you can:
   you can create of new models quickly and easily.
 
 **[Transformers4Rec](https://github.com/NVIDIA-Merlin/Transformers4Rec)**
-[![PyPI version shields.io](https://img.shields.io/pypi/v/Transformers4Rec.svg)](https://pypi.org/project/Transformers4Rec/)<br>
+[![PyPI version shields.io](https://img.shields.io/pypi/v/Transformers4Rec.svg)](https://pypi.org/project/Transformers4Rec/)
+[![ Documentation](https://img.shields.io/badge/documentation-blue.svg)](https://nvidia-merlin.github.io/Transformers4Rec/stable/README.html)<br>
 The Transformers4Rec library provides sequential and session-based recommendation.
 The library provides modular building blocks that are compatible with standard PyTorch modules.
 You can use the building blocks to design custom architectures such as multiple towers, multiple heads and tasks, and losses.
@@ -83,7 +86,8 @@ With Transformers4Rec, you can:
 - Perform next-item prediction as well as classic binary classification or regression tasks.
 
 **[Merlin Systems](https://github.com/NVIDIA-Merlin/systems)**
-[![PyPI version shields.io](https://img.shields.io/pypi/v/merlin-systems.svg)](https://pypi.org/project/merlin-systems/)<br>
+[![PyPI version shields.io](https://img.shields.io/pypi/v/merlin-systems.svg)](https://pypi.org/project/merlin-systems/)
+[![ Documentation](https://img.shields.io/badge/documentation-blue.svg)](https://nvidia-merlin.github.io/systems/stable/README.html)<br>
 Merlin Systems provides tools for combining recommendation models with other
 elements of production recommender systems like feature stores, nearest neighbor
 search, and exploration strategies into end-to-end recommendation pipelines that
@@ -97,7 +101,8 @@ can be served with Triton Inference Server. With Merlin Systems, you can:
   in recommender system pipelines.
 
 **[Merlin Core](https://github.com/NVIDIA-Merlin/core)**
-[![PyPI version shields.io](https://img.shields.io/pypi/v/merlin-core.svg)](https://pypi.org/project/merlin-core/)<br>
+[![PyPI version shields.io](https://img.shields.io/pypi/v/merlin-core.svg)](https://pypi.org/project/merlin-core/)
+[![ Documentation](https://img.shields.io/badge/documentation-blue.svg)](https://nvidia-merlin.github.io/core/stable/README.html)<br>
 Merlin Core provides functionality that is used throughout the Merlin ecosystem.
 With Merlin Core, you can:
 
@@ -110,18 +115,18 @@ With Merlin Core, you can:
 
 ## Installation
 
-The simplest way to use Merlin is to run a docker container. NVIDIA GPU Cloud (NGC) provides containers that include all the Merlin component libraries, dependencies, and receive unit and integration testing. For more information, see the [Containers](https://nvidia-merlin.github.io/Merlin/main/containers.html) page.
+The simplest way to use Merlin is to run a docker container. NVIDIA GPU Cloud (NGC) provides containers that include all the Merlin component libraries, dependencies, and receive unit and integration testing. For more information, see the [Containers](https://nvidia-merlin.github.io/Merlin/stable/containers.html) page.
 
 To develop and contribute to Merlin, review the installation documentation for each component library. The development environment for each Merlin component is easily set up with `conda` or `pip`:
 
 | Component        | Installation Steps                                                                 |
 | ---------------- | ---------------------------------------------------------------------------------- |
 | HugeCTR          | https://nvidia-merlin.github.io/HugeCTR/master/hugectr_contributor_guide.html      |
-| Merlin Core      | https://github.com/NVIDIA-Merlin/core/blob/main/README.md#installation             |
-| Merlin Models    | https://github.com/NVIDIA-Merlin/models/blob/main/README.md#installation           |
-| Merlin Systems   | https://github.com/NVIDIA-Merlin/systems/blob/main/README.md#installation          |
-| NVTabular        | https://github.com/NVIDIA-Merlin/NVTabular/blob/main/README.md#installation        |
-| Transformers4Rec | https://github.com/NVIDIA-Merlin/Transformers4Rec/blob/main/README.md#installation |
+| Merlin Core      | https://github.com/NVIDIA-Merlin/core/blob/stable/README.md#installation             |
+| Merlin Models    | https://github.com/NVIDIA-Merlin/models/blob/stable/README.md#installation           |
+| Merlin Systems   | https://github.com/NVIDIA-Merlin/systems/blob/stable/README.md#installation          |
+| NVTabular        | https://github.com/NVIDIA-Merlin/NVTabular/blob/stable/README.md#installation        |
+| Transformers4Rec | https://github.com/NVIDIA-Merlin/Transformers4Rec/blob/stable/README.md#installation |
 
 ## Example Notebooks and Tutorials
 
