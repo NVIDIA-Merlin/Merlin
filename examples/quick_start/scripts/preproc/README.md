@@ -48,7 +48,7 @@ Feature engineering allows designing new features from raw data that are can pro
 
 In this section we list common feature engineering techniques. Most of them are implemented as [ops](https://nvidia-merlin.github.io/NVTabular/v23.02.00/api.html#categorical-operators) in [NVTabular](https://github.com/NVIDIA-Merlin/NVTabular). User defined functions (UDF) can be implemented with [Lambda](https://nvidia-merlin.github.io/NVTabular/v23.02.00/generated/nvtabular.ops.LambdaOp.html#nvtabular.ops.LambdaOp) op, which are very useful for example for dealing with temporal and geographic feature engineering. 
 
-This preprocessing script provides just basic feature engineering. For more using those more advanced techniques you can copy the `preprocessing.py` script and add them to the NVTabular workflow within `generate_nvt_workflow_features()`.
+TIP: This preprocessing script provides just basic feature engineering. For more using those more advanced techniques you can either copy `preprocessing.py` and change it, or you can create a class inheriting from the `PreprocessingRunner` class (in `preprocessing.py`) and override the `generate_nvt_features()` method to customize the preprocessing workflow with different NVTabular ops.
 
 **Continuous features**  
 - Smoothing long-tailed distributions of continuous features with [Log](https://nvidia-merlin.github.io/NVTabular/v23.02.00/generated/nvtabular.ops.LogOp.html#nvtabular.ops.LogOp), so that the range of large numbers is compressed and the range of small numbers is expanded. 
@@ -57,7 +57,7 @@ This preprocessing script provides just basic feature engineering. For more usin
 **Categorical features**    
 - Besides contiguous ids, categorical features can be also represented by global statistics of their values, or by statistics conditioned in other columns. Some popular techniques are:
   - **Count encoding** - represents the count of a given categorical value across the whole dataset (e.g. count of user past interactions) 
-  - **Target encoding** - represents one statistic of a categorical column conditioned on a target column. One example would be computing the average of click binary target segmented by the item id categorical values, which represents its Click-Through Rate (CTR) or likelihood to be clicked by a random user. [*Target encoding*](https://nvidia-merlin.github.io/NVTabular/v23.02.00/generated/nvtabular.ops.TargetEncoding.html#nvtabular.ops.TargetEncoding) is a very powerful feature engineering technique, and has been a key for many of our [winning solutions](https://medium.com/rapids-ai/winning-solution-of-recsys2020-challenge-gpu-accelerated-feature-engineering-and-training-for-cd67c5a87b1f) for RecSys competitions.
+  - **Target encoding** - represents one statistic of a categorical column conditioned on a target column. One example would be computing the average of click binary target segmented by the item id categorical values, which represents its Click-Through Rate (CTR) or likelihood to be clicked by a random user. [*Target encoding*](https://nvidia-merlin.github.io/NVTabular/v23.02.00/generated/nvtabular.ops.TargetEncoding.html#nvtabular.ops.TargetEncoding) is a very powerful feature engineering technique, and has been a key for many of our [winning solutions](https://medium.com/rapids-ai/winning-solution-of-recsys2020-challenge-gpu-accelerated-feature-engineering-and-training-for-cd67c5a87b1f) for RecSys competitions. You can create target encoded features with this script, by setting the `--target_encoding_features` and `--target_encoding_targets` arguments to define which categorical columns and targets should be used for generating the target encoded features.
   
 
 **Temporal features**
@@ -87,9 +87,9 @@ Here is an example command line for running preprocessing for the TenRec dataset
  The parameters and their values can be separated by either space or by `=`.
 
 ```bash
-cd /Merlin/examples/quick_start/scripts/preproc/
+cd /Merlin/examples/
 OUT_DATASET_PATH=/outputs/dataset
-python preprocessing.py --input_data_format=csv --csv_na_values=\\N --data_path /data/QK-video.csv --filter_query="click==1 or (click==0 and follow==0 and like==0 and share==0)" --min_item_freq=30 --min_user_freq=30 --max_user_freq=150 --num_max_rounds_filtering=5 --enable_dask_cuda_cluster --persist_intermediate_files --output_path=$OUT_DATASET_PATH --categorical_features=user_id,item_id,video_category,gender,age --binary_classif_targets=click,follow,like,share --regression_targets=watching_times --to_int32=user_id,item_id --to_int16=watching_times --to_int8=gender,age,video_category,click,follow,like,share --user_id_feature=user_id --item_id_feature=item_id --dataset_split_strategy=random_by_user --random_split_eval_perc=0.2
+python -m quick_start.scripts.preproc.preprocessing --input_data_format=csv --csv_na_values=\\N --data_path /data/QK-video.csv --filter_query="click==1 or (click==0 and follow==0 and like==0 and share==0)" --min_item_freq=30 --min_user_freq=30 --max_user_freq=150 --num_max_rounds_filtering=5 --enable_dask_cuda_cluster --persist_intermediate_files --output_path=$OUT_DATASET_PATH --categorical_features=user_id,item_id,video_category,gender,age --binary_classif_targets=click,follow,like,share --regression_targets=watching_times --to_int32=user_id,item_id --to_int16=watching_times --to_int8=gender,age,video_category,click,follow,like,share --user_id_feature=user_id --item_id_feature=item_id --dataset_split_strategy=random_by_user --random_split_eval_perc=0.2
 ```
 
 
@@ -184,6 +184,43 @@ python preprocessing.py --input_data_format=csv --csv_na_values=\\N --data_path 
                         Columns (comma-sep) that should be tagged in the
                         schema as binary target. Merlin Models will create a
                         regression head for each of these targets.
+```
+
+### Target encoding features
+
+```
+  --target_encoding_features 
+                        Columns (comma-sep) with categorical/discrete
+                        features for which target encoding features will be
+                        generated, with the average of the target columns
+                        for each categorical value. The target columns are
+                        defined in --target_encoding_targets. If
+                        --target_encoding_features is not provided but
+                        --target_encoding_targets is, all categorical
+                        features will be used.
+  --target_encoding_targets 
+                        Columns (comma-sep) with target columns that will be
+                        used to compute target encoding features with the
+                        average of the target columns for categorical
+                        features value. The categorical features are defined
+                        in --target_encoding_features. If
+                        --target_encoding_targets is not provided but
+                        --target_encoding_features is, all target columns
+                        will be used.
+  --target_encoding_kfold 
+                        Number of folds for target encoding, in order to
+                        avoid that the current example is considered in the
+                        target encoding feature computation, which could
+                        cause overfitting for infrequent categorical values.
+                        Default is 5
+  --target_encoding_smoothing 
+                        Smoothing factor that is used in the target encoding
+                        computation, as statistics for infrequent
+                        categorical values might be noisy. It makes target
+                        encoding formula = `sum_target_per_categ_value +
+                        (global_target_avg * smooth) / categ_value_count +
+                        smooth`. Default is 10
+
 ```
 
 ### Data casting and filtering
