@@ -11,9 +11,9 @@ from merlin.models.tf.logging.callbacks import ExamplesPerSecondCallback, WandbL
 from merlin.models.tf.transforms.negative_sampling import InBatchNegatives
 from merlin.schema.tags import Tags
 
-from args_parsing import Task, parse_arguments
-from mtl import get_mtl_loss_weights, get_mtl_prediction_tasks
-from ranking_models import get_model
+from .args_parsing import Task, parse_arguments
+from .mtl import get_mtl_loss_weights, get_mtl_prediction_tasks
+from .ranking_models import get_model
 
 
 def get_datasets(args):
@@ -45,19 +45,23 @@ class RankingTrainEvalRunner:
     predict_loader = None
     args = None
 
-    def __init__(self, logger, train_ds, eval_ds, predict_ds, args):
+    def __init__(self, args, train_ds=None, eval_ds=None, predict_ds=None, logger=None):
         self.args = args
-        self.logger = logger
         self.train_ds = train_ds
         self.eval_ds = eval_ds
         self.predict_ds = predict_ds
+        self.logger = logger
 
         (
             self.schema,
             eval_schema,
             self.targets,
-        ) = self.filter_schema_with_selected_targets()
+        ) = self.filter_schemas()
         self.set_dataloaders(self.schema, eval_schema)
+
+    @staticmethod
+    def parse_cli_args(args=None):
+        return parse_arguments(args)
 
     def get_targets(self, schema):
         tasks = self.args.tasks
@@ -85,7 +89,16 @@ class RankingTrainEvalRunner:
 
         return targets
 
-    def filter_schema_with_selected_targets(self):
+    def filter_columns(self, schema):
+        if self.args.keep_columns and self.args.ignore_columns:
+            raise ValueError("You cannot use both --keep_columns and --ignore_columns")
+        if self.args.keep_columns:
+            schema = schema.select_by_name(self.args.keep_columns)
+        elif self.args.ignore_columns:
+            schema = schema.excluding_by_name(self.args.ignore_columns)
+        return schema
+
+    def filter_schemas(self):
         targets = None
         train_schema = None
         if self.train_ds:
@@ -99,7 +112,7 @@ class RankingTrainEvalRunner:
 
         if targets and "all" not in self.args.tasks:
             flattened_targets = [y for x in targets.values() for y in x]
-            # Removing targets not used from schema
+            # Removing from schema targets not used
             targets_to_remove = list(
                 set(
                     (train_schema or eval_schema)
@@ -107,12 +120,17 @@ class RankingTrainEvalRunner:
                     .column_names
                 ).difference(set(flattened_targets))
             )
+
             if train_schema:
+                train_schema = self.filter_columns(train_schema)
                 train_schema = train_schema.excluding_by_name(targets_to_remove)
             if eval_schema:
+                eval_schema = self.filter_columns(eval_schema)
                 eval_schema = eval_schema.excluding_by_name(targets_to_remove)
 
-        schema = train_schema or eval_schema or self.predict_ds.schema
+        schema = train_schema or eval_schema
+        if not schema and self.predict_ds:
+            schema = self.predict_ds.schema
         return schema, eval_schema, targets
 
     def set_dataloaders(self, train_schema, eval_schema):
@@ -152,7 +170,9 @@ class RankingTrainEvalRunner:
         self.predict_loader = None
         if self.predict_ds:
             self.predict_loader = mm.Loader(
-                self.predict_ds, batch_size=args.eval_batch_size, shuffle=False,
+                self.predict_ds,
+                batch_size=args.eval_batch_size,
+                shuffle=False,
             )
 
     def get_metrics(self):
@@ -197,9 +217,13 @@ class RankingTrainEvalRunner:
             )
 
         if self.args.optimizer == "adam":
-            opt = tf.keras.optimizers.Adam(learning_rate=lerning_rate,)
+            opt = tf.keras.optimizers.Adam(
+                learning_rate=lerning_rate,
+            )
         elif self.args.optimizer == "adagrad":
-            opt = tf.keras.optimizers.legacy.Adagrad(learning_rate=lerning_rate,)
+            opt = tf.keras.optimizers.legacy.Adagrad(
+                learning_rate=lerning_rate,
+            )
         else:
             raise ValueError("Invalid optimizer")
 
@@ -223,11 +247,15 @@ class RankingTrainEvalRunner:
     def train_eval_stl(self, model):
         metrics = self.get_metrics()
         model.compile(
-            self.get_optimizer(), run_eagerly=False, metrics=metrics,
+            self.get_optimizer(),
+            run_eagerly=False,
+            metrics=metrics,
         )
 
         callbacks = self.get_callbacks(self.args)
         class_weights = {0: 1.0, 1: self.args.stl_positive_class_weight}
+
+        eval_metrics = None
 
         if self.train_loader:
             logging.info("Starting to train the model")
@@ -267,6 +295,8 @@ class RankingTrainEvalRunner:
         if self.predict_loader:
             self.save_predictions(model, self.predict_loader.dataset)
 
+        return eval_metrics
+
     def build_mtl_model(self):
         prediction_tasks = get_mtl_prediction_tasks(self.targets, self.args)
         model = get_model(self.schema, prediction_tasks, self.args)
@@ -285,6 +315,8 @@ class RankingTrainEvalRunner:
             loss_weights=loss_weights,
         )
         callbacks = self.get_callbacks(self.args)
+
+        eval_metrics = None
 
         if self.train_loader:
             logging.info("Starting to train the model (fit())")
@@ -343,11 +375,14 @@ class RankingTrainEvalRunner:
             logging.info("Starting to save predictions")
             self.save_predictions(model, self.predict_loader.dataset)
 
+        return eval_metrics
+
     def save_predictions(self, model, dataset):
         logging.info("Starting the batch predict of the evaluation set")
 
         predictions_ds = model.batch_predict(
-            dataset, batch_size=self.args.eval_batch_size,
+            dataset,
+            batch_size=self.args.eval_batch_size,
         )
         predictions_ddf = predictions_ds.to_ddf()
 
@@ -402,6 +437,8 @@ class RankingTrainEvalRunner:
             if self.args.load_model_path:
                 model = self.load_model(self.args.load_model_path)
 
+            eval_metrics = None
+
             # If a single-task learning model (if only --predict_data_path is
             # provided, as self.targets will not be available, it checks the
             # --tasks arg to discover if its STL or MTL)
@@ -411,20 +448,22 @@ class RankingTrainEvalRunner:
 
                 logging.info(f"MODEL: {model}")
                 # Single target = Single-Task Learning
-                self.train_eval_stl(model)
+                eval_metrics = self.train_eval_stl(model)
             else:
                 if not model:
                     model = self.build_mtl_model()
 
                 logging.info(f"MODEL: {model}")
                 # Multiple targets = Multi-Task Learning
-                self.train_eval_mtl(model)
+                eval_metrics = self.train_eval_mtl(model)
 
             if self.args.save_model_path:
                 logging.info("Saving the model")
                 self.save_model(model, self.args.save_model_path)
 
             logging.info("Script finished successfully")
+
+            return eval_metrics
 
         finally:
             if self.logger:
@@ -493,7 +532,7 @@ class RankingTrainEvalRunner:
 def main():
     logging.basicConfig(level=logging.DEBUG)
 
-    args = parse_arguments()
+    args = RankingTrainEvalRunner.parse_cli_args()
 
     os.makedirs(args.output_path, exist_ok=True)
 
@@ -509,7 +548,7 @@ def main():
 
     train_ds, eval_ds, predict_ds = get_datasets(args)
 
-    runner = RankingTrainEvalRunner(logger, train_ds, eval_ds, predict_ds, args)
+    runner = RankingTrainEvalRunner(args, train_ds, eval_ds, predict_ds, logger)
     runner.run()
 
 
