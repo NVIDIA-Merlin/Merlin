@@ -14,15 +14,17 @@ from .args_parsing import parse_arguments
 INDEX_TMP_COL = "__index"
 
 
-def filter_by_freq(df_to_filter, df_for_stats, column, min_freq, max_freq=None):
+def filter_by_freq(df_to_filter, df_for_stats, column, min_freq=None, max_freq=None):
     # Frequencies of each value in the column.
     freq = df_for_stats[column].value_counts()
 
-    cond = freq == freq  # placeholder condition
     if min_freq is not None:
-        cond = cond & (freq >= min_freq)
-    if max_freq is not None:
-        cond = cond & (freq <= max_freq)
+        cond = freq >= min_freq
+    elif max_freq is not None:
+        cond = freq <= max_freq
+    elif min_freq is not None and max_freq is not None:
+        cond = min_freq >= freq <= max_freq
+
     # Select frequent values. Value is in the index.
     frequent_values = freq[cond].reset_index()["index"].to_frame(column)
     # Return only rows with value frequency above threshold.
@@ -79,21 +81,17 @@ class PreprocessingRunner:
         args = self.args
         columns = set(ddf.columns)
         if args.to_int32:
-            ddf[args.to_int32] = ddf[
-                list(set(args.to_int32).intersection(columns))
-            ].astype("int32")
+            to_int32_cols = list(set(args.to_int32).intersection(columns))
+            ddf[to_int32_cols] = ddf[to_int32_cols].astype("int32")
         if args.to_int16:
-            ddf[args.to_int16] = ddf[
-                list(set(args.to_int16).intersection(columns))
-            ].astype("int16")
+            to_int16_cols = list(set(args.to_int16).intersection(columns))
+            ddf[to_int16_cols] = ddf[to_int16_cols].astype("int16")
         if args.to_int8:
-            ddf[args.to_int8] = ddf[
-                list(set(args.to_int8).intersection(columns))
-            ].astype("int8")
+            to_int8_cols = list(set(args.to_int8).intersection(columns))
+            ddf[to_int8_cols] = ddf[to_int8_cols].astype("int8")
         if args.to_float32:
-            ddf[args.to_float32] = ddf[
-                list(set(args.to_float32).intersection(columns))
-            ].astype("float32")
+            to_float32_cols = list(set(args.to_float32).intersection(columns))
+            ddf[to_float32_cols] = ddf[to_float32_cols].astype("float32")
         return ddf
 
     def filter_by_user_item_freq(self, ddf):
