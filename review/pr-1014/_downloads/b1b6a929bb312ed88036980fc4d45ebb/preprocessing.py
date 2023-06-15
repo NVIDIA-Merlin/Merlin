@@ -244,13 +244,14 @@ class PreprocessingRunner:
 
             if args.target_encoding_targets and args.target_encoding_features:
                 for target_col in args.target_encoding_targets:
-                    feats[
-                        f"{target_col}_te_features"
-                    ] = args.target_encoding_features >> nvt.ops.TargetEncoding(
-                        [target_col],
-                        kfold=args.target_encoding_kfold,
-                        p_smooth=args.target_encoding_smoothing,
-                        out_dtype="float32",
+                    feats[f"{target_col}_te_features"] = (
+                        args.target_encoding_features
+                        >> nvt.ops.TargetEncoding(
+                            [target_col],
+                            kfold=args.target_encoding_kfold,
+                            p_smooth=args.target_encoding_smoothing,
+                            out_dtype="float32",
+                        )
                     )
 
         for col in args.user_features:
@@ -295,9 +296,7 @@ class PreprocessingRunner:
                 [Tags.BINARY_CLASSIFICATION, Tags.TARGET]
             )
         for col in args.regression_targets:
-            feats[col] = [col] >> nvt_ops.AddTags(
-                [Tags.REGRESSION, Tags.TARGET, Tags.BINARY]
-            )
+            feats[col] = [col] >> nvt_ops.AddTags([Tags.REGRESSION, Tags.TARGET])
 
         # Combining all targets
         outputs = reduce(lambda x, y: x + y, list(feats.values()))
@@ -323,9 +322,7 @@ class PreprocessingRunner:
         ).excluding_by_name([INDEX_TMP_COL])
 
         dataset_joint = nvt.Dataset(
-            dataset_joint,
-            schema=schema_joint,
-            cpu=not self.gpu,
+            dataset_joint, schema=schema_joint, cpu=not self.gpu,
         )
 
         return dataset_joint
@@ -445,8 +442,7 @@ class PreprocessingRunner:
             train_dataset_features, train_dataset_targets, "train", args
         )
         train_dataset_preproc.to_parquet(
-            output_train_dataset_path,
-            output_files=args.output_num_partitions,
+            output_train_dataset_path, output_files=args.output_num_partitions,
         )
 
         if args.eval_data_path or args.dataset_split_strategy:
@@ -463,14 +459,12 @@ class PreprocessingRunner:
                 eval_dataset_features, eval_dataset_targets, "eval", args
             )
             eval_dataset_preproc.to_parquet(
-                output_eval_dataset_path,
-                output_files=args.output_num_partitions,
+                output_eval_dataset_path, output_files=args.output_num_partitions,
             )
 
         if args.predict_data_path:
-            # Adding to predict set dummy target columns that are
-            # used in target encoding feature, as a workaround
-            # while this issue is not fixed
+            # Adding a dummy target column(s) to the test set to perform
+            # target encoding op while this issue is not fixed
             # https://github.com/NVIDIA-Merlin/NVTabular/issues/1840
             for col in args.target_encoding_targets:
                 if col not in test_ddf.columns:
@@ -490,8 +484,7 @@ class PreprocessingRunner:
             logging.info(f"Saving predict/test set: {output_predict_dataset_path}")
 
             new_predict_dataset.to_parquet(
-                output_predict_dataset_path,
-                output_files=args.output_num_partitions,
+                output_predict_dataset_path, output_files=args.output_num_partitions,
             )
         nvt_save_path = os.path.join(output_dataset_path, "workflow")
         logging.info(f"Saving nvtabular workflow to: {nvt_save_path}")
