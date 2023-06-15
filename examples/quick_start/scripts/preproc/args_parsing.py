@@ -121,6 +121,46 @@ def build_arg_parser():
         help="Columns (comma-sep) that should be tagged in the schema as binary target. "
         "Merlin Models will create a regression head for each of these targets.",
     )
+    parser.add_argument(
+        "--target_encoding_features",
+        default="",
+        help="Columns (comma-sep) with categorical/discrete features "
+        "for which target encoding features will be generated, with "
+        "the average of the target columns for each categorical value. "
+        "The target columns are defined in --target_encoding_targets. "
+        "If --target_encoding_features is not provided but --target_encoding_targets "
+        "is, all categorical features will be used.",
+    )
+    parser.add_argument(
+        "--target_encoding_targets",
+        default="",
+        help="Columns (comma-sep) with target columns "
+        "that will be used to compute target encoding features "
+        "with the average of the target columns for categorical features value. "
+        "The categorical features are defined in --target_encoding_features. "
+        "If --target_encoding_targets is not provided but --target_encoding_features is, "
+        "all target columns will be used.",
+    )
+
+    parser.add_argument(
+        "--target_encoding_kfold",
+        default=5,
+        type=int,
+        help="Number of folds for target encoding, in order to avoid that the current example "
+        "is considered in the target encoding feature computation, which could cause "
+        "overfitting for infrequent categorical values. Default is 5",
+    )
+
+    parser.add_argument(
+        "--target_encoding_smoothing",
+        default=10,
+        type=int,
+        help="Smoothing factor that is used in the target encoding computation, as statistics for "
+        "infrequent categorical values might be noisy. "
+        "It makes target encoding formula = "
+        "`sum_target_per_categ_value + (global_target_avg * smooth) / categ_value_count + smooth`. "
+        "Default is 10",
+    )
 
     parser.add_argument(
         "--user_id_feature",
@@ -299,9 +339,9 @@ def parse_list_arg(v):
     return v.split(",")
 
 
-def parse_arguments():
+def parse_arguments(args=None):
     parser = build_arg_parser()
-    args = parser.parse_args()
+    args = parser.parse_args(args)
 
     # Parsing list args
     args.control_features = parse_list_arg(args.control_features)
@@ -310,6 +350,9 @@ def parse_arguments():
 
     args.binary_classif_targets = parse_list_arg(args.binary_classif_targets)
     args.regression_targets = parse_list_arg(args.regression_targets)
+
+    args.target_encoding_features = parse_list_arg(args.target_encoding_features)
+    args.target_encoding_targets = parse_list_arg(args.target_encoding_targets)
 
     args.user_features = parse_list_arg(args.user_features)
     args.item_features = parse_list_arg(args.item_features)

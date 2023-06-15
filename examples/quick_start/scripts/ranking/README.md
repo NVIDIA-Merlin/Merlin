@@ -128,6 +128,13 @@ CUDA_VISIBLE_DEVICES=0 TF_GPU_ALLOCATOR=cuda_malloc_async python  ranking.py --t
   --load_model_path     
                         If provided, loads a model saved by --save_model_path
                         instead of initializing the parameters randomly
+  --keep_columns
+                        Comma-separated list of columns from the schema that
+                        should be kept by the dataloader.
+  --ignore_columns
+                        Comma-separated list of columns from the schema that
+                        should be ignored by the dataloader.
+
 ```
 
 ### Tasks
