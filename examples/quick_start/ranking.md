@@ -82,13 +82,14 @@ In this example, we set some options for preprocessing. Here is the explanation 
 
 For larger dataset (like the full TenRec dataset), in particular when using filtering options that require dask_cudf filtering (e.g. `--filter_query`, `--min_item_freq`) we recommend using the following options to avoid out-of-memory errors:
 - `--enable_dask_cuda_cluster` - Initializes a dask-cudf `LocalCUDACluster` for managed single or multi-GPU preprocessing
-- `--persist_intermediate_files` - Persists/caches to disk intermediate files during preprocessing (in paricular after filtering). 
+- `--persist_intermediate_files` - Persists/caches to disk intermediate files during preprocessing (in paricular after filtering).  
+*Note*: If you want to preprocess the full TenRec dataset, set `--data_path /data/QK-video.csv` in the following command.
 
 
 ```bash
-cd /Merlin/examples/quick_start/scripts/preproc/
+cd /Merlin/examples/
 OUT_DATASET_PATH=/outputs/dataset
-python preprocessing.py --input_data_format=csv --csv_na_values=\\N --data_path /data/QK-video.csv --filter_query="click==1 or (click==0 and follow==0 and like==0 and share==0)" --min_item_freq=30 --min_user_freq=30 --max_user_freq=150 --num_max_rounds_filtering=5 --enable_dask_cuda_cluster --persist_intermediate_files --output_path=$OUT_DATASET_PATH --categorical_features=user_id,item_id,video_category,gender,age --binary_classif_targets=click,follow,like,share --regression_targets=watching_times --to_int32=user_id,item_id --to_int16=watching_times --to_int8=gender,age,video_category,click,follow,like,share --user_id_feature=user_id --item_id_feature=item_id --dataset_split_strategy=random_by_user --random_split_eval_perc=0.2
+python -m quick_start.scripts.preproc.preprocessing --input_data_format=csv --csv_na_values=\\N --data_path /data/QK-video-10M.csv --filter_query="click==1 or (click==0 and follow==0 and like==0 and share==0)" --min_item_freq=30 --min_user_freq=30 --max_user_freq=150 --num_max_rounds_filtering=5 --enable_dask_cuda_cluster --persist_intermediate_files --output_path=$OUT_DATASET_PATH --categorical_features=user_id,item_id,video_category,gender,age --binary_classif_targets=click,follow,like,share --regression_targets=watching_times --to_int32=user_id,item_id --to_int16=watching_times --to_int8=gender,age,video_category,click,follow,like,share --user_id_feature=user_id --item_id_feature=item_id --dataset_split_strategy=random_by_user --random_split_eval_perc=0.2
 ```
 
 After you execute this script, a folder `dataset` will be created in `--output_path` with the preprocessed datasets , with `train` and `eval` folders. You will find a number of partitioned parquet files inside those dataset folders, as well as a `schema.pbtxt` file produced by `NVTabular` which is very important for automated model building in the next step.
@@ -98,14 +99,15 @@ Merlin Models is a Merlin library that makes it easy to build and train RecSys m
 
 A number of popular ranking models are available in Merlin Models API like **DLRM**, **DCN-v2**, **Wide&Deep**, **DeepFM**. This Quick-start provides a generic ranking script [ranking.py](scripts/ranking/ranking.py) for building and training those models using Models API.
 
- In the following command example, you can easily train the popular **DLRM** model which performs 2nd level feature interaction. It sets `--model dlrm` and `--embeddings_dim 64` because DLRM models require all categorical columns to be embedded with the same dimension for the feature interaction. You notice that we can set many of the common model (e.g. top `--mlp_layers`) and training hyperparameters like learning rate (`--lr`) and its decay (`--lr_decay_rate`, `--lr_decay_steps`), L2 regularization (`--l2_reg`, `embeddings_l2_reg`), `--dropout` among others.  We set `--epochs 1` and `--train_steps_per_epoch 10` to train for just 10 batches and make runtime faster. If you have a  GPU with more memory (e.g. V100 with 32 GB), you might increase `--train_batch_size` and `--eval_batch_size` to a much larger batch size, for example to `65536`.  
+ In the following command example, you can easily train the popular **DLRM** model which performs 2nd level feature interaction. It sets `--model dlrm` and `--embeddings_dim 64` because DLRM models require all categorical columns to be embedded with the same dimension for the feature interaction. You notice that we can set many of the common model (e.g. top `--mlp_layers`) and training hyperparameters like learning rate (`--lr`) and its decay (`--lr_decay_rate`, `--lr_decay_steps`), L2 regularization (`--l2_reg`, `embeddings_l2_reg`), `--dropout` among others.  We set `--train_batch_size` and `--eval_batch_size` to `65536` for faster training and set `--epochs 2`. If you have preprocessed the Full TenRec dataset, you can set `--train_steps_per_epoch 100` to limit the number of training steps.
 There are many target columns available in the dataset, and you can select one of them for training by setting `--tasks=click`. In this dataset, there are about 3.7 negative examples (`click=0`) for each positive example (`click=1`). That leads to some class unbalance. We can deal with that by setting `--stl_positive_class_weight` to give more weight to the loss for positive examples, which are rarer.
 
+Note:
 
 ```bash
-cd /Merlin/examples/quick_start/scripts/ranking/
 OUT_DATASET_PATH=/outputs/dataset
-CUDA_VISIBLE_DEVICES=0 TF_GPU_ALLOCATOR=cuda_malloc_async python  ranking.py --train_data_path $OUT_DATASET_PATH/train --eval_data_path $OUT_DATASET_PATH/eval --output_path ./outputs/ --tasks=click --stl_positive_class_weight 3 --model dlrm --embeddings_dim 64 --l2_reg 1e-4 --embeddings_l2_reg 1e-6 --dropout 0.05 --mlp_layers 64,32  --lr 1e-4 --lr_decay_rate 0.99 --lr_decay_steps 100 --train_batch_size 65536 --eval_batch_size 65536 --epochs 1 --train_steps_per_epoch 10 
+cd /Merlin/examples/
+CUDA_VISIBLE_DEVICES=0 TF_GPU_ALLOCATOR=cuda_malloc_async python -m quick_start.scripts.ranking.ranking --train_data_path $OUT_DATASET_PATH/train --eval_data_path $OUT_DATASET_PATH/eval --output_path ./outputs/ --tasks=click --stl_positive_class_weight 3 --model dlrm --embeddings_dim 64 --l2_reg 1e-4 --embeddings_l2_reg 1e-6 --dropout 0.05 --mlp_layers 64,32  --lr 1e-3 --lr_decay_rate 0.99 --lr_decay_steps 100 --train_batch_size 65536 --eval_batch_size 65536 --epochs 2 
 ```
 You can explore the [full documentation and best practices for ranking models](scripts/ranking/README.md), which contains details about the command line arguments.
 
@@ -121,9 +123,9 @@ In the following example, we use the popular **MMOE** (`--model mmoe`) architect
 You can also balance the loss weights by setting `--mtl_loss_weight_*` arguments and the tasks positive class weight by setting `--mtl_pos_class_weight_*`.
 
 ```bash
-cd /Merlin/examples/quick_start/scripts/ranking/
-
-CUDA_VISIBLE_DEVICES=0 TF_GPU_ALLOCATOR=cuda_malloc_async python ranking.py --train_data_path $OUT_DATASET_PATH/train --eval_data_path $OUT_DATASET_PATH/eval --output_path ./outputs/ --tasks=click,like,follow,share --model mmoe --mmoe_num_mlp_experts 3 --expert_mlp_layers 128 --gate_dim 32 --use_task_towers=True --tower_layers 64 --embedding_sizes_multiplier 4 --l2_reg 1e-5 --embeddings_l2_reg 1e-6 --dropout 0.05  --lr 1e-4 --lr_decay_rate 0.99 --lr_decay_steps 100 --train_batch_size 65536 --eval_batch_size 65536 --epochs 1 --mtl_pos_class_weight_click=1 --mtl_pos_class_weight_like=2 --mtl_pos_class_weight_share=3 --mtl_pos_class_weight_follow=4  --mtl_loss_weight_click=3 --mtl_loss_weight_like=3 --mtl_loss_weight_follow=1 --mtl_loss_weight_share=1 --train_steps_per_epoch 10 
+OUT_DATASET_PATH=/outputs/dataset
+cd /Merlin/examples/
+CUDA_VISIBLE_DEVICES=0 TF_GPU_ALLOCATOR=cuda_malloc_async python -m quick_start.scripts.ranking.ranking --train_data_path $OUT_DATASET_PATH/train --eval_data_path $OUT_DATASET_PATH/eval --output_path ./outputs/ --tasks=click,like,follow,share --model mmoe --mmoe_num_mlp_experts 3 --expert_mlp_layers 128 --gate_dim 32 --use_task_towers=True --tower_layers 64 --embedding_sizes_multiplier 4 --l2_reg 1e-5 --embeddings_l2_reg 1e-8 --dropout 0.05  --lr 1e-3 --lr_decay_rate 0.99 --lr_decay_steps 100 --train_batch_size 65536 --eval_batch_size 65536 --epochs 2 --mtl_pos_class_weight_click=1 --mtl_pos_class_weight_like=2 --mtl_pos_class_weight_share=3 --mtl_pos_class_weight_follow=4  --mtl_loss_weight_click=3 --mtl_loss_weight_like=3 --mtl_loss_weight_follow=1 --mtl_loss_weight_share=1 
 ```
 
 You can find more quick-start information on multi-task learning and MMOE architecture [here](scripts/ranking/README.md).
