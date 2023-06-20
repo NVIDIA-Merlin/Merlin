@@ -173,6 +173,9 @@
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="c1"># for running this example on CPU, comment out the line below</span>
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;TF_GPU_ALLOCATOR&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;cuda_malloc_async&quot;</span>
+
 <span class="kn">import</span> <span class="nn">nvtabular</span> <span class="k">as</span> <span class="nn">nvt</span>
 <span class="kn">from</span> <span class="nn">nvtabular.ops</span> <span class="kn">import</span> <span class="n">Rename</span><span class="p">,</span> <span class="n">Filter</span><span class="p">,</span> <span class="n">Dropna</span><span class="p">,</span> <span class="n">LambdaOp</span><span class="p">,</span> <span class="n">Categorify</span><span class="p">,</span> \
     <span class="n">TagAsUserFeatures</span><span class="p">,</span> <span class="n">TagAsUserID</span><span class="p">,</span> <span class="n">TagAsItemFeatures</span><span class="p">,</span> <span class="n">TagAsItemID</span><span class="p">,</span> <span class="n">AddMetadata</span>
@@ -184,8 +187,7 @@
 <span class="kn">from</span> <span class="nn">merlin.datasets.ecommerce</span> <span class="kn">import</span> <span class="n">transform_aliccp</span>
 <span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
 
-<span class="c1"># for running this example on CPU, comment out the line below</span>
-<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;TF_GPU_ALLOCATOR&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;cuda_malloc_async&quot;</span>
+<span class="kn">import</span> <span class="nn">logging</span>
 </pre></div>
 </div>
 </div>
@@ -219,8 +221,6 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># disable INFO and DEBUG logging everywhere</span>
-<span class="kn">import</span> <span class="nn">logging</span>
-
 <span class="n">logging</span><span class="o">.</span><span class="n">disable</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">WARNING</span><span class="p">)</span>
 </pre></div>
 </div>
