@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.2
-ARG MERLIN_VERSION=22.12
-ARG TRITON_VERSION=22.11
+ARG MERLIN_VERSION=23.05
+ARG TRITON_VERSION=23.05
 
 ARG BASE_IMAGE=nvcr.io/nvstaging/merlin/merlin-base:${MERLIN_VERSION}
 
@@ -8,16 +8,6 @@ FROM ${BASE_IMAGE} as base
 
 ARG HUGECTR_VER=main
 ARG HUGECTR_BACKEND_VER=main
-
-# Envs
-ENV CUDA_SHORT_VERSION=11.6
-ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64:/usr/local/lib:/repos/dist/lib
-ENV CUDA_HOME=/usr/local/cuda
-ENV CUDA_PATH=$CUDA_HOME
-ENV CUDA_CUDA_LIBRARY=${CUDA_HOME}/lib64/stubs
-ENV PATH=${CUDA_HOME}/lib64/:${PATH}:${CUDA_HOME}/bin
-ENV PATH=$PATH:/usr/lib/x86_64-linux-gnu/
-RUN ln -s /usr/local/cuda/lib64/stubs/libcuda.so /usr/local/cuda/lib64/stubs/libcuda.so.1
 
 RUN pip install --no-cache-dir --upgrade notebook ipython 
 RUN pip install --no-cache-dir mpi4py
@@ -29,10 +19,9 @@ RUN cd /opt/hpcx/ompi/include/openmpi/opal/mca/hwloc/hwloc201 && rm -rfv hwloc20
 RUN mkdir -p /var/tmp && wget -q -nc --no-check-certificate -P /var/tmp https://download.open-mpi.org/release/hwloc/v2.4/hwloc-${HWLOC_VER}.tar.gz && \
     mkdir -p /var/tmp && tar -x -f /var/tmp/hwloc-${HWLOC_VER}.tar.gz -C /var/tmp && \
     cd /var/tmp/hwloc-${HWLOC_VER} && \
-    ./configure CPPFLAGS="-I/usr/local/cuda/include/ -L/usr/local/cuda/lib64/" LDFLAGS="-L/usr/local/cuda/lib64" --enable-cuda && \
+    ./configure CPPFLAGS="-I${CUDA_HOME}/include/ -L${CUDA_HOME}/lib64/" LDFLAGS="-L${CUDA_HOME}/lib64" --enable-cuda && \
     make -j$(nproc) && make install && \
     rm -rf /var/tmp/hwloc-${HWLOC_VER} /var/tmp/hwloc-${HWLOC_VER}.tar.gz
-
 
 
 # -----------------------------------------------------------------------------
@@ -62,21 +51,18 @@ RUN ln -s /usr/lib/libcudf.so /usr/lib/libcudf_base.so
 RUN ln -s /usr/lib/libcudf.so /usr/lib/libcudf_io.so
 RUN ln -s /usr/lib/x86_64-linux-gnu/libibverbs.so.1 /usr/lib/x86_64-linux-gnu/libibverbs.so
 
-RUN rm -rf /usr/lib/x86_64-linux-gnu/libibverbs.so && \
-    ln -s /usr/lib/x86_64-linux-gnu/libibverbs.so.1.14.36.0 /usr/lib/x86_64-linux-gnu/libibverbs.so
-
 # Install HugeCTR
 ARG HUGECTR_HOME=/usr/local/hugectr
 RUN if [[ "${HUGECTR_DEV_MODE}" == "false" ]]; then \
-        rm -rf /usr/local/hugectr/lib/libgmock* /usr/local/hugectr/lib/pkgconfig/gmock* /usr/local/hugectr/include/gmock && \
-        rm -rf /usr/local/hugectr/lib/libgtest* /usr/local/hugectr/lib/pkgconfig/gtest* /usr/local/hugectr/include/gtest && \
+        rm -rf ${HUGECTR_HOME}/lib/libgmock* ${HUGECTR_HOME}/lib/pkgconfig/gmock* ${HUGECTR_HOME}/include/gmock && \
+        rm -rf ${HUGECTR_HOME}/lib/libgtest* ${HUGECTR_HOME}/lib/pkgconfig/gtest* ${HUGECTR_HOME}/include/gtest && \
         git clone --branch ${HUGECTR_VER} --depth 1 https://${_CI_JOB_TOKEN}${_HUGECTR_REPO} /hugectr && \
         cd /hugectr && \
         git submodule update --init --recursive && \
         mkdir build && \
         cd build && \
         LD_LIBRARY_PATH=/usr/local/cuda/lib64/stubs/:$LD_LIBRARY_PATH && \
-        export PATH=$PATH:/usr/local/cuda-${CUDA_SHORT_VERSION}/compat && \
+        export PATH=$PATH:/usr/local/cuda-$(echo $CUDA_VERSION | awk -F'.' '{print $1"."$2}')/compat && \
         if [[ "${INSTALL_HDFS}" == "false" ]]; then \
             cmake -DCMAKE_BUILD_TYPE=Release -DSM="60;61;70;75;80;90" -DENABLE_MULTINODES=ON .. \
         ; else \
@@ -118,9 +104,6 @@ RUN if [ "${HUGECTR_DEV_MODE}" == "false" ]; then \
         rm -rf /repos \
     ; fi
 RUN ln -s ${HUGECTR_HOME}/backends/hugectr /opt/tritonserver/backends/hugectr
-
-# Remove fake lib
-RUN rm /usr/local/cuda/lib64/stubs/libcuda.so.1
 
 # Clean up
 RUN rm -rf /usr/local/share/jupyter/lab/staging/node_modules/marked
