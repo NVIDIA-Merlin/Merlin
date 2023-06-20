@@ -18,6 +18,8 @@ STR_LIST_ARGS = [
     "tasks_sample_space",
     "predict_output_keep_cols",
     "wnd_ignore_combinations",
+    "keep_columns",
+    "ignore_columns",
 ]
 
 
@@ -75,9 +77,9 @@ def parse_list_arg(value, vtype=str):
     return alist
 
 
-def parse_arguments():
+def parse_arguments(args=None):
     parser = build_arg_parser()
-    args, dynamic_args = parser.parse_known_args()
+    args, dynamic_args = parser.parse_known_args(args)
 
     dynamic_args = parse_dynamic_args(dynamic_args)
 
@@ -131,6 +133,21 @@ def build_arg_parser():
         help="Path of a dataset for prediction. It expects a folder with parquet files. "
         "If provided, it will compute the predictions for this dataset and "
         "save those predictions to --predict_output_path",
+    )
+
+    # Features
+    parser.add_argument(
+        "--keep_columns",
+        default=None,
+        help="Comma-separated list of columns from the schema that should be kept "
+        "by the dataloader.",
+    )
+
+    parser.add_argument(
+        "--ignore_columns",
+        default=None,
+        help="Comma-separated list of columns from the schema that should be ignored "
+        "by the dataloader.",
     )
 
     # Outputs
