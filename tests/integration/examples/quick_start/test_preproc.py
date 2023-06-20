@@ -47,15 +47,27 @@ def check_schema(path, categ_cols_max_values=None):
             "like",
             "share",
             "watching_times",
+            "TE_user_id_follow",
+            "TE_item_id_follow",
+            "TE_user_id_click",
+            "TE_item_id_click",
         ]
     )
 
     assert set(schema.select_by_tag(Tags.USER_ID).column_names) == set(["user_id"])
     assert set(schema.select_by_tag(Tags.ITEM_ID).column_names) == set(["item_id"])
     assert set(schema.select_by_tag(Tags.CATEGORICAL).column_names) == set(
-        ["user_id", "item_id", "video_category", "gender", "age"]
+        ["user_id", "item_id", "video_category", "gender"]
     )
-    assert set(schema.select_by_tag(Tags.CONTINUOUS).column_names) == set([])
+    target_encoding_feats = [
+        "TE_user_id_click",
+        "TE_user_id_follow",
+        "TE_item_id_click",
+        "TE_item_id_follow",
+    ]
+    assert set(schema.select_by_tag(Tags.CONTINUOUS).column_names) == set(
+        ["age"] + target_encoding_feats
+    )
     assert set(schema.select_by_tag(Tags.BINARY_CLASSIFICATION).column_names) == set(
         ["click", "follow", "like", "share"]
     )
@@ -71,6 +83,8 @@ def check_schema(path, categ_cols_max_values=None):
         for col in categ_features:
             assert schema[col].int_domain.max == categ_cols_max_values[col]
 
+    return schema
+
 
 @pytest.mark.parametrize("use_dask_cluster", [True, False])
 def test_ranking_preprocessing(tenrec_data_path, use_dask_cluster):
@@ -84,13 +98,11 @@ def test_ranking_preprocessing(tenrec_data_path, use_dask_cluster):
             data_path=os.path.join(tenrec_data_path, "raw/QK-video-10M.csv"),
             input_data_format="csv",
             csv_na_values="\\N",
-            filter_query="click==1 or (click==0 and follow==0 and like==0 and share==0)",
-            min_item_freq=30,
-            min_user_freq=30,
-            max_user_freq=150,
-            num_max_rounds_filtering=5,
             output_path=tmp_output_folder,
-            categorical_features="user_id,item_id,video_category,gender,age",
+            categorical_features="user_id,item_id,video_category,gender",
+            continuous_features="age",
+            target_encoding_features="user_id,item_id",
+            target_encoding_targets="click,follow",
             binary_classif_targets="click,follow,like,share",
             regression_targets="watching_times",
             to_int32="user_id,item_id",
@@ -98,73 +110,88 @@ def test_ranking_preprocessing(tenrec_data_path, use_dask_cluster):
             to_int8="gender,age,video_category,click,follow,like,share",
             user_id_feature="user_id",
             item_id_feature="item_id",
-            dataset_split_strategy="random_by_user",
-            random_split_eval_perc=0.2,
             **additional_kwargs,
         )
         runner = PreprocessingRunner(args)
         runner.run()
 
         expected_max_values = {
-            "user_id": 69719,
-            "item_id": 19174,
+            "user_id": 296088,
+            "item_id": 617033,
             "video_category": 2,
             "gender": 3,
-            "age": 8,
             "click": 1,
             "follow": 1,
             "like": 1,
             "share": 1,
-            "watching_times": 121,
+            "watching_times": 528,
         }
 
-        check_schema(os.path.join(tmp_output_folder, "train/"), expected_max_values)
+        schema = check_schema(
+            os.path.join(tmp_output_folder, "train/"), expected_max_values
+        )
 
         expected_dtypes = {
             "user_id": np.dtype("int64"),
             "item_id": np.dtype("int64"),
             "video_category": np.dtype("int64"),
             "gender": np.dtype("int64"),
-            "age": np.dtype("int64"),
+            "age": np.dtype("float64"),
+            "TE_user_id_click": np.dtype("float32"),
+            "TE_item_id_click": np.dtype("float32"),
+            "TE_user_id_follow": np.dtype("float32"),
+            "TE_item_id_follow": np.dtype("float32"),
             "click": np.dtype("int8"),
             "follow": np.dtype("int8"),
             "like": np.dtype("int8"),
             "share": np.dtype("int8"),
+            "watching_times": np.dtype("int16"),
         }
 
         train_df = cudf.read_parquet(os.path.join(tmp_output_folder, "train/*.parquet"))
-        assert len(train_df) == 2440155  # row count
         assert not train_df.isna().max().max()  # Check if there are null values
-        assert train_df.max().to_dict() == expected_max_values
+        assert len(train_df) == 10000000  # row count
+
         assert train_df.dtypes.to_dict() == expected_dtypes
 
-        eval_df = cudf.read_parquet(os.path.join(tmp_output_folder, "eval/*.parquet"))
-        assert len(eval_df) == 577760
-        assert not eval_df.isna().max().max()
-        assert eval_df.max().to_dict() == expected_max_values
-        assert eval_df.dtypes.to_dict() == expected_dtypes
+        categ_features = schema.select_by_tag(Tags.CATEGORICAL).column_names
+        target_features = schema.select_by_tag(Tags.TARGET).column_names
+        assert (
+            train_df[categ_features + target_features].max().to_dict()
+            == expected_max_values
+        )
+
+        # Checking age standardization
+        assert 0.0 == pytest.approx(train_df["age"].mean(), abs=1e-3)
+        assert 1.0 == pytest.approx(train_df["age"].std(), abs=1e-3)
+
+        # Check target encoding features
+        te_features = [
+            "TE_user_id_follow",
+            "TE_item_id_follow",
+            "TE_user_id_click",
+            "TE_item_id_click",
+        ]
+        assert (
+            train_df[te_features].min().min() >= 0
+            and train_df[te_features].max().max() <= 1
+        )
 
 
-@pytest.mark.parametrize(
-    "split_strategy", [None, "random", "random_by_user", "temporal"]
-)
-def test_ranking_preprocessing(tenrec_data_path, split_strategy):
+@pytest.mark.parametrize("split_strategy", ["random", "random_by_user", "temporal"])
+def test_ranking_preprocessing_split_strategies(tenrec_data_path, split_strategy):
     with tempfile.TemporaryDirectory() as tmp_output_folder:
         additional_kwargs = {}
         if split_strategy in ["random", "random_by_user"]:
             additional_kwargs["random_split_eval_perc"] = 0.2
         elif split_strategy == "temporal":
-            additional_kwargs["item_id"] = 15000
+            additional_kwargs["timestamp_feature"] = "item_id"
+            additional_kwargs["dataset_split_temporal_timestamp"] = 15000
 
         args = kwargs_to_cli_ags(
             data_path=os.path.join(tenrec_data_path, "raw/QK-video-10M.csv"),
             input_data_format="csv",
             csv_na_values="\\N",
-            filter_query="click==1 or (click==0 and follow==0 and like==0 and share==0)",
-            min_item_freq=30,
-            min_user_freq=30,
-            max_user_freq=150,
-            num_max_rounds_filtering=5,
             output_path=tmp_output_folder,
             categorical_features="user_id,item_id,video_category,gender,age",
             binary_classif_targets="click,follow,like,share",
@@ -180,23 +207,86 @@ def test_ranking_preprocessing(tenrec_data_path, split_strategy):
         runner = PreprocessingRunner(args)
         runner.run()
 
-        total_rows = 3017915
+        total_rows = 10000000
 
         train_df = cudf.read_parquet(os.path.join(tmp_output_folder, "train/*.parquet"))
         rows_train = len(train_df)
-        if split_strategy is None:
-            assert len(train_df) == total_rows
-        else:
-            eval_df = cudf.read_parquet(
-                os.path.join(tmp_output_folder, "eval/*.parquet")
-            )
-            rows_eval = len(eval_df)
 
-            assert rows_train + rows_eval == total_rows
+        eval_df = cudf.read_parquet(os.path.join(tmp_output_folder, "eval/*.parquet"))
+        rows_eval = len(eval_df)
 
-            if split_strategy in ["random", "random_by_user"]:
-                assert rows_train == int(total_rows * 0.8)
-                assert rows_eval == int(total_rows * 0.2)
-            elif split_strategy == "temporal":
-                assert rows_train == 3017915
-                assert rows_eval == 3017915
+        assert rows_train + rows_eval == total_rows
+
+        if split_strategy in ["random", "random_by_user"]:
+            assert 0.20 == pytest.approx(rows_eval / float(total_rows), abs=0.01)
+
+            if split_strategy == "random_by_user":
+                assert train_df["user_id"].nunique() == pytest.approx(
+                    eval_df["user_id"].nunique(), rel=0.05
+                )
+
+        elif split_strategy == "temporal":
+            assert rows_train == 4636381
+            assert rows_eval == 5363619
+
+
+def test_ranking_preprocessing_filter_strategies(tenrec_data_path):
+    with tempfile.TemporaryDirectory() as tmp_output_folder:
+        args = kwargs_to_cli_ags(
+            data_path=os.path.join(tenrec_data_path, "raw/QK-video-10M.csv"),
+            input_data_format="csv",
+            csv_na_values="\\N",
+            output_path=tmp_output_folder,
+            categorical_features="user_id,item_id,video_category,gender,age",
+            binary_classif_targets="click,follow,like,share",
+            regression_targets="watching_times",
+            to_int32="user_id,item_id",
+            to_int16="watching_times",
+            to_int8="gender,age,video_category,click,follow,like,share",
+            user_id_feature="user_id",
+            item_id_feature="item_id",
+            filter_query="click==1 or (click==0 and follow==0 and like==0 and share==0)",
+            min_item_freq=5,
+            min_user_freq=5,
+            max_user_freq=200,
+            num_max_rounds_filtering=5,
+        )
+        runner = PreprocessingRunner(args)
+        runner.run()
+
+        total_rows = 9102904
+
+        train_df = cudf.read_parquet(os.path.join(tmp_output_folder, "train/*.parquet"))
+        assert len(train_df) == total_rows
+
+        assert train_df.groupby("item_id").size().min() >= 5
+        assert train_df.groupby("user_id").size().min() >= 5
+
+
+def test_ranking_preprocessing_freq_capping(tenrec_data_path):
+    with tempfile.TemporaryDirectory() as tmp_output_folder:
+        args = kwargs_to_cli_ags(
+            data_path=os.path.join(tenrec_data_path, "raw/QK-video-10M.csv"),
+            input_data_format="csv",
+            csv_na_values="\\N",
+            output_path=tmp_output_folder,
+            categorical_features="user_id,item_id,video_category,gender,age",
+            binary_classif_targets="click,follow,like,share",
+            regression_targets="watching_times",
+            to_int32="user_id,item_id",
+            to_int16="watching_times",
+            to_int8="gender,age,video_category,click,follow,like,share",
+            user_id_feature="user_id",
+            item_id_feature="item_id",
+            categ_min_freq_capping=30,
+        )
+        runner = PreprocessingRunner(args)
+        runner.run()
+
+        total_rows = 10000000
+
+        train_df = cudf.read_parquet(os.path.join(tmp_output_folder, "train/*.parquet"))
+        assert len(train_df) == total_rows
+
+        assert train_df.groupby("item_id").size().min() >= 30
+        assert train_df.groupby("user_id").size().min() >= 30
