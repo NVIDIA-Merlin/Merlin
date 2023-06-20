@@ -6,9 +6,7 @@ import pytest
 from examples.quick_start.scripts.ranking.ranking import RankingTrainEvalRunner
 from merlin.io.dataset import Dataset
 
-# STANDARD_CI_TENREC_DATA_PATH = "/raid/data/tenrec_ci/"
-
-STANDARD_CI_TENREC_DATA_PATH = "/data_ci/"
+STANDARD_CI_TENREC_DATA_PATH = "/raid/data/tenrec_ci/"
 
 
 @pytest.fixture
