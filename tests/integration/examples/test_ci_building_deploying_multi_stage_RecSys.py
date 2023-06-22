@@ -2,7 +2,6 @@ import os
 
 import pytest
 from testbook import testbook
-
 from tests.conftest import REPO_ROOT
 
 pytest.importorskip("tensorflow")
@@ -11,6 +10,7 @@ pytest.importorskip("faiss")
 # flake8: noqa
 
 
+@pytest.mark.skip(reason="Temporarily disabled test which is freezing CI")
 def test_func(tmpdir):
     with testbook(
         REPO_ROOT
