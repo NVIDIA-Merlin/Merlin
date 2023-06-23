@@ -66,13 +66,13 @@ class PreprocessingRunner:
         logging.info("First lines...")
         logging.info(ddf.head())
 
-        ddf = self.adding_temp_index(ddf)
-
         logging.info(f"Number of rows: {len(ddf)}")
         if args.filter_query:
             logging.info(f"Filtering rows using filter {args.filter_query}")
             ddf = ddf.query(args.filter_query)
             logging.info(f"Number of rows after filtering: {len(ddf)}")
+
+        ddf = self.adding_temp_index(ddf)
 
         return ddf
 
@@ -232,7 +232,7 @@ class PreprocessingRunner:
                     feats[col] = feats[col] >> nvt_ops.FillMissing(
                         args.continuous_features_fillna
                     )
-                feats[col] = feats[col] >> nvt_ops.Normalize()
+            feats[col] = feats[col] >> nvt_ops.Normalize()
 
         if args.target_encoding_features or args.target_encoding_targets:
             if not args.target_encoding_features:
