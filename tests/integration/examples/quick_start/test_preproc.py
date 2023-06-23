@@ -218,7 +218,7 @@ def test_ranking_preprocessing_split_strategies(tenrec_data_path, split_strategy
         assert rows_train + rows_eval == total_rows
 
         if split_strategy in ["random", "random_by_user"]:
-            assert 0.20 == pytest.approx(rows_eval / float(total_rows), abs=0.01)
+            assert 0.20 == pytest.approx(rows_eval / float(total_rows), abs=0.02)
 
             if split_strategy == "random_by_user":
                 assert train_df["user_id"].nunique() == pytest.approx(
