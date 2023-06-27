@@ -161,10 +161,10 @@
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># for running this example on GPU, install the following libraries</span>
-<span class="c1"># %pip install &quot;feast&lt;0.20&quot; faiss-gpu</span>
+<span class="c1"># %pip install &quot;feast==0.31&quot; faiss-gpu</span>
 
 <span class="c1"># for running this example on CPU, uncomment the following lines</span>
-<span class="c1"># %pip install tensorflow-cpu &quot;feast&lt;0.20&quot; faiss-cpu</span>
+<span class="c1"># %pip install tensorflow-cpu &quot;feast==0.31&quot; faiss-cpu</span>
 <span class="c1"># %pip uninstall cudf</span>
 </pre></div>
 </div>
@@ -687,7 +687,7 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">schema</span> <span class="o">=</span> <span class="n">train_tt</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">select_by_tag</span><span class="p">([</span><span class="n">Tags</span><span class="o">.</span><span class="n">ITEM_ID</span><span class="p">,</span> <span class="n">Tags</span><span class="o">.</span><span class="n">USER_ID</span><span class="p">,</span> <span class="n">Tags</span><span class="o">.</span><span class="n">ITEM</span><span class="p">,</span> <span class="n">Tags</span><span class="o">.</span><span class="n">USER</span><span class="p">])</span><span class="o">.</span><span class="n">without</span><span class="p">([</span><span class="s1">&#39;user_id_raw&#39;</span><span class="p">,</span> <span class="s1">&#39;item_id_raw&#39;</span><span class="p">,</span> <span class="s1">&#39;click&#39;</span><span class="p">])</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">schema</span> <span class="o">=</span> <span class="n">train_tt</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">select_by_tag</span><span class="p">([</span><span class="n">Tags</span><span class="o">.</span><span class="n">ITEM_ID</span><span class="p">,</span> <span class="n">Tags</span><span class="o">.</span><span class="n">USER_ID</span><span class="p">,</span> <span class="n">Tags</span><span class="o">.</span><span class="n">ITEM</span><span class="p">,</span> <span class="n">Tags</span><span class="o">.</span><span class="n">USER</span><span class="p">])</span><span class="o">.</span><span class="n">without</span><span class="p">([</span><span class="s1">&#39;click&#39;</span><span class="p">])</span>
 <span class="n">train_tt</span><span class="o">.</span><span class="n">schema</span> <span class="o">=</span> <span class="n">schema</span>
 <span class="n">valid_tt</span><span class="o">.</span><span class="n">schema</span> <span class="o">=</span> <span class="n">schema</span>
 </pre></div>
@@ -756,7 +756,7 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 <span class="n">valid</span> <span class="o">=</span> <span class="n">Dataset</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="s2">&quot;valid&quot;</span><span class="p">,</span> <span class="s2">&quot;*.parquet&quot;</span><span class="p">),</span> <span class="n">part_size</span><span class="o">=</span><span class="s2">&quot;500MB&quot;</span><span class="p">)</span>
 
 <span class="c1"># define schema object</span>
-<span class="n">schema</span> <span class="o">=</span> <span class="n">train</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">without</span><span class="p">([</span><span class="s1">&#39;user_id_raw&#39;</span><span class="p">,</span> <span class="s1">&#39;item_id_raw&#39;</span><span class="p">])</span>
+<span class="n">schema</span> <span class="o">=</span> <span class="n">train</span><span class="o">.</span><span class="n">schema</span>
 </pre></div>
 </div>
 </div>
