@@ -71,61 +71,68 @@
 
 #### Major Changes
 
+* Moved some functionality from NVTabular to `merlin-core`, but left alias implace for import backwards compatibility. Some examples are `LambdaOp`, `AddMetadataOp`, `StatOperator`, `WorkflowNode`, and others. [#1823](https://github.com/NVIDIA-Merlin/NVTabular/pull/1823), [#1825](https://github.com/NVIDIA-Merlin/NVTabular/pull/1825)
+* Updated `Categorify` to correctly handle nulls [#1836](https://github.com/NVIDIA-Merlin/NVTabular/pull/1836).
+
 #### Added
+
+* Added support for retrieving subworkflows using get_subworkflow API. Returns a subgraph wrapped in a new workflow object. [#1842](https://github.com/NVIDIA-Merlin/NVTabular/pull/1842)
 
 #### Deprecated/Removed
 
+* Removed the `nvtabular.inference` module. This functionality now exists in `merlin-systems` [#1822](https://github.com/NVIDIA-Merlin/NVTabular/pull/1822)
 #### Fixed Bugs
 
 ### Models
 
-#### Major Changes
+#### Added
+
+* Add support of transformer-based retrieval models [#1128](https://github.com/NVIDIA-Merlin/models/pull/1128)
+
+### Merlin
 
 #### Added
 
-#### Deprecated/Removed
+* Improvements in Quick-start for ranking example [#1014](https://github.com/NVIDIA-Merlin/Merlin/pull/1014)
+  * In `preprocessing.py`, added support to target encoding features, configurable through these new CLI arguments: `--target_encoding_features`, `--target_encoding_targets`, `--target_encoding_kfold`, `--target_encoding_smoothing`.
+  * In `ranking.py`: added support to select some columns to keep (`--keep_columns`) or remove (`--ignore_columns`) from at dataloading / training / evaluation.
 
 #### Fixed Bugs
+
+* Fixed in Quick-start for ranking example [#1017](https://github.com/NVIDIA-Merlin/Merlin/pull/1017):
+  * Fixed `preprocessing.py`, which was not standardizing and tagging continuous columns properly
+  * Fixed Wide&Deep and DeepFM models to use the updated API
 
 ### Transformers4Rec
 
-#### Major Changes
-
 #### Added
 
-#### Deprecated/Removed
+* Improved docstring coverage [#706](https://github.com/NVIDIA-Merlin/Transformers4Rec/pull/706)
 
 #### Fixed Bugs
+
+* Add support for providing a scalar cut-off in metrics, and Fix recall@1 that results higher than the upper cut-offs sometimes. [#720](https://github.com/NVIDIA-Merlin/Transformers4Rec/pull/720)
+* Fix the CLM performance mismatch between model evaluation and manual inference [#723](https://github.com/NVIDIA-Merlin/Transformers4Rec/pull/723)
+* Fixed OOM issues when evaluating/predicting [#721](https://github.com/NVIDIA-Merlin/Transformers4Rec/pull/721)
+  * API breaking notice: This fix changes the default output of `trainer.predict()` API, that returns a `PredictionOutput` object with a predictions property. Before this change, when the `predict_top_k` option was not set (default) the predictions property was as 2D tensor (batch size, item cardinality) with the scores for all the items. As now we set `T4RecTrainingArguments.predict_top_k` by default, the predictions property returns a tuple with `(top-100 predicted item ids, top-100 prediction scores)`.
 
 ### Core
 
 #### Major Changes
 
+* Merged NVTabular Operator base class with Base Operator in core. 
+
 #### Added
 
-#### Deprecated/Removed
-
-#### Fixed Bugs
+* Migrated some operators from NVTabular to core, allowing use in `merlin-systems`. (i.e. `LambdaOp` - changed to user defined function (UDF) and add metadata operator).
+* Created subgraph operator to allow for recall and use of parts of a graph
 
 ### Systems
 
-#### Major Changes
-
 #### Added
 
-#### Deprecated/Removed
-
-#### Fixed Bugs
-
-### Dataloader
-
-#### Major Changes
-
-#### Added
-
-#### Deprecated/Removed
-
-#### Fixed Bugs
+* Added Test cases to debut functional support for core operators in systems ensembles
+* Added API to retrieve sub ensembles. 
 
 ## [23.05]
 
