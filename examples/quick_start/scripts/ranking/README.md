@@ -106,9 +106,10 @@ This is an example command line for running the training for the TenRec dataset 
 
 
 ```bash
-cd /Merlin/examples/quick_start/scripts/ranking/
+cd /Merlin/examples/
 OUT_DATASET_PATH=/outputs/dataset
-CUDA_VISIBLE_DEVICES=0 TF_GPU_ALLOCATOR=cuda_malloc_async python  ranking.py --train_data_path $OUT_DATASET_PATH/train --eval_data_path $OUT_DATASET_PATH/eval --output_path ./outputs/ --tasks=click --stl_positive_class_weight 3 --model dlrm --embeddings_dim 64 --l2_reg 1e-4 --embeddings_l2_reg 1e-6 --dropout 0.05 --mlp_layers 64,32  --lr 1e-4 --lr_decay_rate 0.99 --lr_decay_steps 100 --train_batch_size 65536 --eval_batch_size 65536 --epochs 1 --save_model_path ./saved_model
+
+CUDA_VISIBLE_DEVICES=0 TF_GPU_ALLOCATOR=cuda_malloc_async python -m quick_start.scripts.ranking.ranking --train_data_path $OUT_DATASET_PATH/train --eval_data_path $OUT_DATASET_PATH/eval --output_path ./outputs/ --tasks=click --stl_positive_class_weight 3 --model dlrm --embeddings_dim 64 --l2_reg 1e-4 --embeddings_l2_reg 1e-6 --dropout 0.05 --mlp_layers 64,32  --lr 1e-4 --lr_decay_rate 0.99 --lr_decay_steps 100 --train_batch_size 65536 --eval_batch_size 65536 --epochs 1 --save_model_path ./saved_model
 ```
 
 ### Inputs
@@ -128,6 +129,13 @@ CUDA_VISIBLE_DEVICES=0 TF_GPU_ALLOCATOR=cuda_malloc_async python  ranking.py --t
   --load_model_path     
                         If provided, loads a model saved by --save_model_path
                         instead of initializing the parameters randomly
+  --keep_columns
+                        Comma-separated list of columns from the schema that
+                        should be kept by the dataloader.
+  --ignore_columns
+                        Comma-separated list of columns from the schema that
+                        should be ignored by the dataloader.
+
 ```
 
 ### Tasks
