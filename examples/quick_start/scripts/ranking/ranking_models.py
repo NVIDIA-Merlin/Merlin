@@ -43,7 +43,8 @@ def get_mlp_model(schema, args, prediction_tasks):
             cat_schema,
             embeddings_regularizer=regularizers.l2(args.embeddings_l2_reg),
             infer_dim_fn=partial(
-                infer_embedding_dim, multiplier=args.embedding_sizes_multiplier,
+                infer_embedding_dim,
+                multiplier=args.embedding_sizes_multiplier,
             ),
         ),
         aggregation="concat",
@@ -74,7 +75,8 @@ def get_dcn_model(schema, args, prediction_tasks):
             schema.select_by_tag(Tags.CATEGORICAL),
             embeddings_regularizer=regularizers.l2(args.embeddings_l2_reg),
             infer_dim_fn=partial(
-                infer_embedding_dim, multiplier=args.embedding_sizes_multiplier,
+                infer_embedding_dim,
+                multiplier=args.embedding_sizes_multiplier,
             ),
         ),
         aggregation="concat",
@@ -158,7 +160,7 @@ def get_deepfm_model(schema, args, prediction_tasks):
     if len(cat_schema_multihot) > 0:
         wide_inputs_block["categorical_mhe"] = mm.SequentialBlock(
             mm.Filter(cat_schema_multihot),
-            mm.ListToDense(max_seq_length=args.multihot_max_seq_length),
+            mm.ToDense(cat_schema_multihot),
             mm.CategoryEncoding(
                 cat_schema_multihot, sparse=True, output_mode="multi_hot"
             ),
@@ -195,7 +197,8 @@ def get_wide_and_deep_model(schema, args, prediction_tasks):
         cat_schema,
         embeddings_regularizer=regularizers.l2(args.embeddings_l2_reg),
         infer_dim_fn=partial(
-            infer_embedding_dim, multiplier=args.embedding_sizes_multiplier,
+            infer_embedding_dim,
+            multiplier=args.embedding_sizes_multiplier,
         ),
     )
 
@@ -212,7 +215,7 @@ def get_wide_and_deep_model(schema, args, prediction_tasks):
         # 2nd level feature interactions of multi-hot features
         mm.SequentialBlock(
             mm.Filter(cat_schema.remove_by_tag(Tags.USER_ID)),
-            mm.ListToDense(max_seq_length=args.multihot_max_seq_length),
+            mm.ToDense(cat_schema.remove_by_tag(Tags.USER_ID)),
             mm.HashedCrossAll(
                 cat_schema.remove_by_tag(Tags.USER_ID),
                 num_bins=args.wnd_hashed_cross_num_bins,
@@ -227,7 +230,7 @@ def get_wide_and_deep_model(schema, args, prediction_tasks):
         wide_preprocess.append(
             mm.SequentialBlock(
                 mm.Filter(cat_schema_multihot),
-                mm.ListToDense(max_seq_length=args.multihot_max_seq_length),
+                mm.ToDense(cat_schema_multihot),
                 mm.CategoryEncoding(
                     cat_schema_multihot, sparse=True, output_mode="multi_hot"
                 ),
@@ -248,7 +251,10 @@ def get_wide_and_deep_model(schema, args, prediction_tasks):
         wide_regularizer=regularizers.l2(args.wnd_wide_l2_reg),
         wide_dropout=args.dropout,
         deep_dropout=args.dropout,
-        wide_preprocess=mm.ParallelBlock(wide_preprocess, aggregation="concat",),
+        wide_preprocess=mm.ParallelBlock(
+            wide_preprocess,
+            aggregation="concat",
+        ),
         prediction_tasks=prediction_tasks,
     )
 
@@ -273,7 +279,8 @@ def get_mmoe_model(schema, args, prediction_tasks):
             schema.select_by_tag(Tags.CATEGORICAL),
             embeddings_regularizer=regularizers.l2(args.embeddings_l2_reg),
             infer_dim_fn=partial(
-                infer_embedding_dim, multiplier=args.embedding_sizes_multiplier,
+                infer_embedding_dim,
+                multiplier=args.embedding_sizes_multiplier,
             ),
         ),
         aggregation="concat",
@@ -310,7 +317,8 @@ def get_cgc_model(schema, args, prediction_tasks):
             schema.select_by_tag(Tags.CATEGORICAL),
             embeddings_regularizer=regularizers.l2(args.embeddings_l2_reg),
             infer_dim_fn=partial(
-                infer_embedding_dim, multiplier=args.embedding_sizes_multiplier,
+                infer_embedding_dim,
+                multiplier=args.embedding_sizes_multiplier,
             ),
         ),
         aggregation="concat",
@@ -348,7 +356,8 @@ def get_ple_model(schema, args, prediction_tasks):
             schema.select_by_tag(Tags.CATEGORICAL),
             embeddings_regularizer=regularizers.l2(args.embeddings_l2_reg),
             infer_dim_fn=partial(
-                infer_embedding_dim, multiplier=args.embedding_sizes_multiplier,
+                infer_embedding_dim,
+                multiplier=args.embedding_sizes_multiplier,
             ),
         ),
         aggregation="concat",

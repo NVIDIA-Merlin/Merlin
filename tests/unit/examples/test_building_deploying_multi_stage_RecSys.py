@@ -26,7 +26,7 @@ def test_func(tmpdir):
             import os
             os.system("mkdir -p {tmpdir / 'examples/'}")
             os.system("mkdir -p {tmpdir / 'data/'}")
-            os.system("mkdir -p {tmpdir / 'feast/feature_repo/data/'}")
+            os.system("mkdir -p {tmpdir / 'feast_repo/feature_repo/data/'}")
             os.environ["DATA_FOLDER"] = "{tmpdir / 'data/'}"
             os.environ["NUM_ROWS"] = "100000"
             os.environ["BASE_DIR"] = "{tmpdir / 'examples/'}"
@@ -34,14 +34,14 @@ def test_func(tmpdir):
         )
         tb1.execute()
         assert os.path.isdir(f"{tmpdir / 'examples/dlrm'}")
-        assert os.path.isdir(f"{tmpdir / 'examples/feast/feature_repo'}")
+        assert os.path.isdir(f"{tmpdir / 'examples/feast_repo/feature_repo'}")
         assert os.path.isdir(f"{tmpdir / 'examples/query_tower'}")
         assert os.path.isfile(f"{tmpdir / 'examples/item_embeddings.parquet'}")
         assert os.path.isfile(
-            f"{tmpdir / 'examples/feast/feature_repo/user_features.py'}"
+            f"{tmpdir / 'examples/feast_repo/feature_repo/user_features.py'}"
         )
         assert os.path.isfile(
-            f"{tmpdir / 'examples/feast/feature_repo/item_features.py'}"
+            f"{tmpdir / 'examples/feast_repo/feature_repo/item_features.py'}"
         )
 
     with testbook(
