@@ -8,7 +8,7 @@
       <link rel="stylesheet" href="../../../_static/mystnb.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/togglebutton.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/css/custom.css" type="text/css" />
-    <link rel="canonical" href="https://nvidia-merlin.github.io/Merlin/stable/examples/ranking/TF/Serving_ranking_models_with_Systems.html" />
+    <link rel="canonical" href="https://nvidia-merlin.github.io/Merlin/stable/examples/ranking/TF/Serving-Ranking-Models-with-Merlin-Systems.html" />
   <!--[if lt IE 9]>
     <script src="../../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
@@ -151,7 +151,7 @@
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2023-06-28 18:46:46.205321: I tensorflow/core/platform/cpu_feature_guard.cc:183] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2023-06-28 21:03:00.600621: I tensorflow/core/platform/cpu_feature_guard.cc:183] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
 To enable the following instructions: SSE3 SSE4.1 SSE4.2 AVX, in other operations, rebuild TensorFlow with the appropriate compiler flags.
 /usr/local/lib/python3.8/dist-packages/merlin/dtypes/mappings/torch.py:43: UserWarning: PyTorch dtype mappings did not load successfully due to an error: No module named &#39;torch&#39;
   warn(f&quot;PyTorch dtype mappings did not load successfully due to an error: {exc.msg}&quot;)
@@ -165,9 +165,9 @@ WARNING:tensorflow:Please fix your imports. Module tensorflow.python.training.tr
 [SOK INFO] Initialize finished, communication tool: horovod
 </pre></div>
 </div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2023-06-28 18:46:52.692114: W tensorflow/core/common_runtime/gpu/gpu_bfc_allocator.cc:47] Overriding orig_value setting because the TF_FORCE_GPU_ALLOW_GROWTH environment variable is set. Original config value was 0.
-2023-06-28 18:46:52.692152: I tensorflow/core/common_runtime/gpu/gpu_process_state.cc:226] Using CUDA malloc Async allocator for GPU: 0
-2023-06-28 18:46:52.692266: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1638] Created device /job:localhost/replica:0/task:0/device:GPU:0 with 16249 MB memory:  -&gt; device: 0, name: Quadro GV100, pci bus id: 0000:2d:00.0, compute capability: 7.0
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2023-06-28 21:03:07.070258: W tensorflow/core/common_runtime/gpu/gpu_bfc_allocator.cc:47] Overriding orig_value setting because the TF_FORCE_GPU_ALLOW_GROWTH environment variable is set. Original config value was 0.
+2023-06-28 21:03:07.070303: I tensorflow/core/common_runtime/gpu/gpu_process_state.cc:226] Using CUDA malloc Async allocator for GPU: 0
+2023-06-28 21:03:07.070448: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1638] Created device /job:localhost/replica:0/task:0/device:GPU:0 with 16249 MB memory:  -&gt; device: 0, name: Quadro GV100, pci bus id: 0000:2d:00.0, compute capability: 7.0
 /usr/local/lib/python3.8/dist-packages/tqdm/auto.py:21: TqdmWarning: IProgress not found. Please update jupyter and ipywidgets. See https://ipywidgets.readthedocs.io/en/stable/user_install.html
   from .autonotebook import tqdm as notebook_tqdm
 </pre></div>
@@ -187,9 +187,14 @@ WARNING:tensorflow:Please fix your imports. Module tensorflow.python.training.tr
 <span class="n">NUM_ROWS</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;NUM_ROWS&quot;</span><span class="p">,</span> <span class="mi">1000000</span><span class="p">)</span>
 <span class="n">SYNTHETIC_DATA</span> <span class="o">=</span> <span class="nb">eval</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;SYNTHETIC_DATA&quot;</span><span class="p">,</span> <span class="s2">&quot;True&quot;</span><span class="p">))</span>
 <span class="n">BATCH_SIZE</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;BATCH_SIZE&quot;</span><span class="p">,</span> <span class="mi">512</span><span class="p">))</span>
-
-<span class="k">if</span> <span class="n">SYNTHETIC_DATA</span><span class="p">:</span>
-    <span class="n">train</span><span class="p">,</span> <span class="n">valid</span> <span class="o">=</span> <span class="n">generate_data</span><span class="p">(</span><span class="s2">&quot;aliccp-raw&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">NUM_ROWS</span><span class="p">),</span> <span class="n">set_sizes</span><span class="o">=</span><span class="p">(</span><span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">SYNTHETIC_DATA</span><span class="p">:</span>
+    <span class="n">train</span><span class="p">,</span> <span class="n">valid</span> <span class="o">=</span> <span class="n">generate_data</span><span class="p">(</span><span class="s2">&quot;aliccp-raw&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">NUM_ROWS</span><span class="p">),</span> <span class="n">set_sizes</span><span class="o">=</span><span class="p">(</span><span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">))</span>
     <span class="c1"># save the datasets as parquet files</span>
     <span class="n">train</span><span class="o">.</span><span class="n">to_ddf</span><span class="p">()</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">DATA_FOLDER</span><span class="p">,</span> <span class="s2">&quot;train&quot;</span><span class="p">))</span>
     <span class="n">valid</span><span class="o">.</span><span class="n">to_ddf</span><span class="p">()</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">DATA_FOLDER</span><span class="p">,</span> <span class="s2">&quot;valid&quot;</span><span class="p">))</span>
@@ -250,8 +255,8 @@ WARNING:tensorflow:Please fix your imports. Module tensorflow.python.training.tr
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>CPU times: user 2.47 s, sys: 1.16 s, total: 3.63 s
-Wall time: 3.62 s
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>CPU times: user 2.61 s, sys: 1.09 s, total: 3.7 s
+Wall time: 3.68 s
 </pre></div>
 </div>
 </div>
@@ -307,6 +312,17 @@ Requirement already satisfied: natsort in /usr/local/lib/python3.8/dist-packages
 │   ├─meta.user_consumption_2.parquet
 │   ├─meta.user_gender.parquet
 │   └─meta.user_geography.parquet
+├─dlrm/
+│ ├─.merlin/
+│ │ ├─input_schema.json
+│ │ └─output_schema.json
+│ ├─assets/
+│ ├─fingerprint.pb
+│ ├─keras_metadata.pb
+│ ├─saved_model.pb
+│ └─variables/
+│   ├─variables.data-00000-of-00001
+│   └─variables.index
 ├─processed/
 │ ├─train/
 │ │ ├─.merlin/
@@ -397,23 +413,23 @@ Requirement already satisfied: natsort in /usr/local/lib/python3.8/dist-packages
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2023-06-28 18:47:22.389800: I tensorflow/core/common_runtime/executor.cc:1209] [/device:CPU:0] (DEBUG INFO) Executor start aborting (this does not indicate an error and you can ignore this message): INVALID_ARGUMENT: You must feed a value for placeholder tensor &#39;Placeholder/_0&#39; with dtype int32
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2023-06-28 21:03:36.828993: I tensorflow/core/common_runtime/executor.cc:1209] [/device:CPU:0] (DEBUG INFO) Executor start aborting (this does not indicate an error and you can ignore this message): INVALID_ARGUMENT: You must feed a value for placeholder tensor &#39;Placeholder/_0&#39; with dtype int32
 	 [[{{node Placeholder/_0}}]]
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>1368/1368 [==============================] - ETA: 0s - loss: 0.6932 - auc: 0.4991 - regularization_loss: 0.0000e+00 - loss_batch: 0.6932
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>1563/1563 [==============================] - ETA: 0s - loss: 0.6932 - auc: 0.4998 - regularization_loss: 0.0000e+00 - loss_batch: 0.6932
 </pre></div>
 </div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2023-06-28 18:48:19.963499: I tensorflow/core/common_runtime/executor.cc:1209] [/device:CPU:0] (DEBUG INFO) Executor start aborting (this does not indicate an error and you can ignore this message): INVALID_ARGUMENT: You must feed a value for placeholder tensor &#39;Placeholder/_0&#39; with dtype int32
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2023-06-28 21:04:40.190967: I tensorflow/core/common_runtime/executor.cc:1209] [/device:CPU:0] (DEBUG INFO) Executor start aborting (this does not indicate an error and you can ignore this message): INVALID_ARGUMENT: You must feed a value for placeholder tensor &#39;Placeholder/_0&#39; with dtype int32
 	 [[{{node Placeholder/_0}}]]
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>1368/1368 [==============================] - 65s 40ms/step - loss: 0.6932 - auc: 0.4991 - regularization_loss: 0.0000e+00 - loss_batch: 0.6932 - val_loss: 0.6931 - val_auc: 0.4999 - val_regularization_loss: 0.0000e+00 - val_loss_batch: 0.6931
-CPU times: user 1min 46s, sys: 13.3 s, total: 1min 59s
-Wall time: 1min 8s
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>1563/1563 [==============================] - 69s 38ms/step - loss: 0.6932 - auc: 0.4998 - regularization_loss: 0.0000e+00 - loss_batch: 0.6932 - val_loss: 0.6931 - val_auc: 0.5000 - val_regularization_loss: 0.0000e+00 - val_loss_batch: 0.6932
+CPU times: user 1min 51s, sys: 14.1 s, total: 2min 5s
+Wall time: 1min 11s
 </pre></div>
 </div>
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;keras.callbacks.History at 0x7f50f9494610&gt;
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;keras.callbacks.History at 0x7f74b2a4b1c0&gt;
 </pre></div>
 </div>
 </div>
@@ -466,7 +482,7 @@ Wall time: 1min 8s
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;nvtabular.workflow.workflow.Workflow at 0x7f509f5c8730&gt;
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;nvtabular.workflow.workflow.Workflow at 0x7f74b290f550&gt;
 </pre></div>
 </div>
 </div>
@@ -507,10 +523,10 @@ This operator will do something similar with the model, loaded before.</p></li>
 <div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>WARNING:absl:Found untraced functions such as model_context_2_layer_call_fn, model_context_2_layer_call_and_return_conditional_losses, prepare_list_features_2_layer_call_fn, prepare_list_features_2_layer_call_and_return_conditional_losses, dense_9_layer_call_fn while saving (showing 5 of 96). These functions will not be directly callable after loading.
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Assets written to: /tmp/tmp7ag2ir7q/assets
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Assets written to: /tmp/tmpomjyo5xq/assets
 </pre></div>
 </div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Assets written to: /tmp/tmp7ag2ir7q/assets
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Assets written to: /tmp/tmpomjyo5xq/assets
 </pre></div>
 </div>
 </div>
@@ -569,7 +585,7 @@ This operator will do something similar with the model, loaded before.</p></li>
     <tr>
       <th>0</th>
       <td>user_id</td>
-      <td>(Tags.ID, Tags.USER, Tags.CATEGORICAL)</td>
+      <td>(Tags.CATEGORICAL, Tags.ID, Tags.USER)</td>
       <td>DType(name='int64', element_type=&lt;ElementType....</td>
       <td>False</td>
       <td>False</td>
@@ -578,15 +594,15 @@ This operator will do something similar with the model, loaded before.</p></li>
       <td>0</td>
       <td>/workspace/data/categories/categories/unique.u...</td>
       <td>0</td>
-      <td>755</td>
+      <td>772</td>
       <td>user_id</td>
-      <td>756</td>
-      <td>65</td>
+      <td>773</td>
+      <td>66</td>
     </tr>
     <tr>
       <th>1</th>
       <td>item_id</td>
-      <td>(Tags.ID, Tags.CATEGORICAL, Tags.ITEM)</td>
+      <td>(Tags.CATEGORICAL, Tags.ITEM, Tags.ID)</td>
       <td>DType(name='int64', element_type=&lt;ElementType....</td>
       <td>False</td>
       <td>False</td>
@@ -595,10 +611,10 @@ This operator will do something similar with the model, loaded before.</p></li>
       <td>0</td>
       <td>/workspace/data/categories/categories/unique.i...</td>
       <td>0</td>
-      <td>775</td>
+      <td>789</td>
       <td>item_id</td>
-      <td>776</td>
-      <td>66</td>
+      <td>790</td>
+      <td>67</td>
     </tr>
     <tr>
       <th>2</th>
@@ -612,10 +628,10 @@ This operator will do something similar with the model, loaded before.</p></li>
       <td>0</td>
       <td>/workspace/data/categories/categories/unique.i...</td>
       <td>0</td>
-      <td>775</td>
+      <td>789</td>
       <td>item_category</td>
-      <td>776</td>
-      <td>66</td>
+      <td>790</td>
+      <td>67</td>
     </tr>
     <tr>
       <th>3</th>
@@ -629,10 +645,10 @@ This operator will do something similar with the model, loaded before.</p></li>
       <td>0</td>
       <td>/workspace/data/categories/categories/unique.i...</td>
       <td>0</td>
-      <td>775</td>
+      <td>789</td>
       <td>item_shop</td>
-      <td>776</td>
-      <td>66</td>
+      <td>790</td>
+      <td>67</td>
     </tr>
     <tr>
       <th>4</th>
@@ -646,15 +662,15 @@ This operator will do something similar with the model, loaded before.</p></li>
       <td>0</td>
       <td>/workspace/data/categories/categories/unique.i...</td>
       <td>0</td>
-      <td>775</td>
+      <td>789</td>
       <td>item_brand</td>
-      <td>776</td>
-      <td>66</td>
+      <td>790</td>
+      <td>67</td>
     </tr>
     <tr>
       <th>5</th>
       <td>user_shops</td>
-      <td>(Tags.USER, Tags.CATEGORICAL)</td>
+      <td>(Tags.CATEGORICAL, Tags.USER)</td>
       <td>DType(name='int64', element_type=&lt;ElementType....</td>
       <td>False</td>
       <td>False</td>
@@ -663,15 +679,15 @@ This operator will do something similar with the model, loaded before.</p></li>
       <td>0</td>
       <td>/workspace/data/categories/categories/unique.u...</td>
       <td>0</td>
-      <td>755</td>
+      <td>772</td>
       <td>user_shops</td>
-      <td>756</td>
-      <td>65</td>
+      <td>773</td>
+      <td>66</td>
     </tr>
     <tr>
       <th>6</th>
       <td>user_profile</td>
-      <td>(Tags.USER, Tags.CATEGORICAL)</td>
+      <td>(Tags.CATEGORICAL, Tags.USER)</td>
       <td>DType(name='int64', element_type=&lt;ElementType....</td>
       <td>False</td>
       <td>False</td>
@@ -680,15 +696,15 @@ This operator will do something similar with the model, loaded before.</p></li>
       <td>0</td>
       <td>/workspace/data/categories/categories/unique.u...</td>
       <td>0</td>
-      <td>65</td>
+      <td>73</td>
       <td>user_profile</td>
-      <td>66</td>
-      <td>17</td>
+      <td>74</td>
+      <td>18</td>
     </tr>
     <tr>
       <th>7</th>
       <td>user_group</td>
-      <td>(Tags.USER, Tags.CATEGORICAL)</td>
+      <td>(Tags.CATEGORICAL, Tags.USER)</td>
       <td>DType(name='int64', element_type=&lt;ElementType....</td>
       <td>False</td>
       <td>False</td>
@@ -705,7 +721,7 @@ This operator will do something similar with the model, loaded before.</p></li>
     <tr>
       <th>8</th>
       <td>user_gender</td>
-      <td>(Tags.USER, Tags.CATEGORICAL)</td>
+      <td>(Tags.CATEGORICAL, Tags.USER)</td>
       <td>DType(name='int64', element_type=&lt;ElementType....</td>
       <td>False</td>
       <td>False</td>
@@ -722,7 +738,7 @@ This operator will do something similar with the model, loaded before.</p></li>
     <tr>
       <th>9</th>
       <td>user_age</td>
-      <td>(Tags.USER, Tags.CATEGORICAL)</td>
+      <td>(Tags.CATEGORICAL, Tags.USER)</td>
       <td>DType(name='int64', element_type=&lt;ElementType....</td>
       <td>False</td>
       <td>False</td>
@@ -739,7 +755,7 @@ This operator will do something similar with the model, loaded before.</p></li>
     <tr>
       <th>10</th>
       <td>user_consumption_2</td>
-      <td>(Tags.USER, Tags.CATEGORICAL)</td>
+      <td>(Tags.CATEGORICAL, Tags.USER)</td>
       <td>DType(name='int64', element_type=&lt;ElementType....</td>
       <td>False</td>
       <td>False</td>
@@ -756,7 +772,7 @@ This operator will do something similar with the model, loaded before.</p></li>
     <tr>
       <th>11</th>
       <td>user_is_occupied</td>
-      <td>(Tags.USER, Tags.CATEGORICAL)</td>
+      <td>(Tags.CATEGORICAL, Tags.USER)</td>
       <td>DType(name='int64', element_type=&lt;ElementType....</td>
       <td>False</td>
       <td>False</td>
@@ -773,7 +789,7 @@ This operator will do something similar with the model, loaded before.</p></li>
     <tr>
       <th>12</th>
       <td>user_geography</td>
-      <td>(Tags.USER, Tags.CATEGORICAL)</td>
+      <td>(Tags.CATEGORICAL, Tags.USER)</td>
       <td>DType(name='int64', element_type=&lt;ElementType....</td>
       <td>False</td>
       <td>False</td>
@@ -790,7 +806,7 @@ This operator will do something similar with the model, loaded before.</p></li>
     <tr>
       <th>13</th>
       <td>user_intentions</td>
-      <td>(Tags.USER, Tags.CATEGORICAL)</td>
+      <td>(Tags.CATEGORICAL, Tags.USER)</td>
       <td>DType(name='int64', element_type=&lt;ElementType....</td>
       <td>False</td>
       <td>False</td>
@@ -799,15 +815,15 @@ This operator will do something similar with the model, loaded before.</p></li>
       <td>0</td>
       <td>/workspace/data/categories/categories/unique.u...</td>
       <td>0</td>
-      <td>755</td>
+      <td>772</td>
       <td>user_intentions</td>
-      <td>756</td>
-      <td>65</td>
+      <td>773</td>
+      <td>66</td>
     </tr>
     <tr>
       <th>14</th>
       <td>user_brands</td>
-      <td>(Tags.USER, Tags.CATEGORICAL)</td>
+      <td>(Tags.CATEGORICAL, Tags.USER)</td>
       <td>DType(name='int64', element_type=&lt;ElementType....</td>
       <td>False</td>
       <td>False</td>
@@ -816,15 +832,15 @@ This operator will do something similar with the model, loaded before.</p></li>
       <td>0</td>
       <td>/workspace/data/categories/categories/unique.u...</td>
       <td>0</td>
-      <td>755</td>
+      <td>772</td>
       <td>user_brands</td>
-      <td>756</td>
-      <td>65</td>
+      <td>773</td>
+      <td>66</td>
     </tr>
     <tr>
       <th>15</th>
       <td>user_categories</td>
-      <td>(Tags.USER, Tags.CATEGORICAL)</td>
+      <td>(Tags.CATEGORICAL, Tags.USER)</td>
       <td>DType(name='int64', element_type=&lt;ElementType....</td>
       <td>False</td>
       <td>False</td>
@@ -833,10 +849,10 @@ This operator will do something similar with the model, loaded before.</p></li>
       <td>0</td>
       <td>/workspace/data/categories/categories/unique.u...</td>
       <td>0</td>
-      <td>755</td>
+      <td>772</td>
       <td>user_categories</td>
-      <td>756</td>
-      <td>65</td>
+      <td>773</td>
+      <td>66</td>
     </tr>
   </tbody>
 </table>
@@ -1057,13 +1073,13 @@ bytearray(b&#39;[{&quot;name&quot;:&quot;0_transformworkflowtriton&quot;,&quot;v
   </thead>
   <tbody>
     <tr>
-      <th>700000</th>
+      <th>800000</th>
       <td>25</td>
-      <td>104</td>
-      <td>439</td>
-      <td>30900</td>
-      <td>10642</td>
-      <td>1315</td>
+      <td>26</td>
+      <td>85</td>
+      <td>5936</td>
+      <td>2045</td>
+      <td>1670</td>
       <td>2</td>
       <td>1</td>
       <td>1</td>
@@ -1071,37 +1087,37 @@ bytearray(b&#39;[{&quot;name&quot;:&quot;0_transformworkflowtriton&quot;,&quot;v
       <td>1</td>
       <td>1</td>
       <td>1</td>
-      <td>381</td>
-      <td>654</td>
-      <td>69</td>
+      <td>484</td>
+      <td>830</td>
+      <td>88</td>
     </tr>
     <tr>
-      <th>700001</th>
-      <td>47</td>
-      <td>14</td>
-      <td>56</td>
-      <td>3900</td>
-      <td>1344</td>
-      <td>2520</td>
-      <td>3</td>
-      <td>1</td>
-      <td>1</td>
-      <td>1</td>
-      <td>1</td>
-      <td>1</td>
-      <td>1</td>
-      <td>730</td>
-      <td>1253</td>
-      <td>132</td>
-    </tr>
-    <tr>
-      <th>700002</th>
-      <td>11</td>
-      <td>4</td>
+      <th>800001</th>
+      <td>28</td>
       <td>13</td>
-      <td>900</td>
-      <td>310</td>
-      <td>548</td>
+      <td>41</td>
+      <td>2850</td>
+      <td>982</td>
+      <td>1879</td>
+      <td>2</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>1</td>
+      <td>544</td>
+      <td>934</td>
+      <td>98</td>
+    </tr>
+    <tr>
+      <th>800002</th>
+      <td>9</td>
+      <td>2</td>
+      <td>4</td>
+      <td>238</td>
+      <td>82</td>
+      <td>557</td>
       <td>1</td>
       <td>1</td>
       <td>1</td>
@@ -1109,9 +1125,9 @@ bytearray(b&#39;[{&quot;name&quot;:&quot;0_transformworkflowtriton&quot;,&quot;v
       <td>1</td>
       <td>1</td>
       <td>1</td>
-      <td>159</td>
-      <td>273</td>
-      <td>29</td>
+      <td>162</td>
+      <td>277</td>
+      <td>30</td>
     </tr>
   </tbody>
 </table>
@@ -1127,11 +1143,17 @@ bytearray(b&#39;[{&quot;name&quot;:&quot;0_transformworkflowtriton&quot;,&quot;v
 <span class="n">inputs</span> <span class="o">=</span> <span class="n">convert_df_to_triton_input</span><span class="p">(</span><span class="n">workflow</span><span class="o">.</span><span class="n">input_schema</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">grpcclient</span><span class="o">.</span><span class="n">InferInput</span><span class="p">)</span>
 
 <span class="n">output_cols</span> <span class="o">=</span> <span class="n">ensemble</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">output_schema</span><span class="o">.</span><span class="n">column_names</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">output_cols</span><span class="p">)</span>
 
 <span class="n">outputs</span> <span class="o">=</span> <span class="p">[</span>
     <span class="n">grpcclient</span><span class="o">.</span><span class="n">InferRequestedOutput</span><span class="p">(</span><span class="n">col</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">output_cols</span>
 <span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[&#39;click/binary_output&#39;]
 </pre></div>
 </div>
 </div>
@@ -1149,16 +1171,15 @@ bytearray(b&#39;[{&quot;name&quot;:&quot;0_transformworkflowtriton&quot;,&quot;v
 <p>When the server completes the inference request, it returns a response, i.e. likelihood per request. This response is parsed to get the desired predictions.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># access individual response columns to get values back.</span>
-<span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">ensemble</span><span class="o">.</span><span class="n">graph</span><span class="o">.</span><span class="n">output_schema</span><span class="o">.</span><span class="n">column_names</span><span class="p">:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">col</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">as_numpy</span><span class="p">(</span><span class="n">col</span><span class="p">),</span> <span class="n">response</span><span class="o">.</span><span class="n">as_numpy</span><span class="p">(</span><span class="n">col</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">predictions</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">as_numpy</span><span class="p">(</span><span class="s1">&#39;click/binary_output&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">predictions</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>click/binary_output [[0.49933553]
- [0.49950826]
- [0.4993738 ]] (3, 1)
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[[0.5002032]
+ [0.5001995]
+ [0.5001995]]
 </pre></div>
 </div>
 </div>
