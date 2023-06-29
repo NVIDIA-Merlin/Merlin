@@ -19,7 +19,7 @@ TRITON_SERVER_PATH = shutil.which("tritonserver")
 @pytest.mark.skipif(not TRITON_SERVER_PATH, reason="triton server not found")
 def test_serving_ranking_models(tmp_path):
     with testbook(
-        REPO_ROOT / "examples/ranking/TF/Serving-Ranking-Models-with-Merlin-Systems.ipynb",
+        REPO_ROOT / "examples/ranking/tf/Traning-and-Deploying-DLRM-model-with-Models-and-Systems.ipynb",
         execute=False,
         timeout=180,
     ) as tb:

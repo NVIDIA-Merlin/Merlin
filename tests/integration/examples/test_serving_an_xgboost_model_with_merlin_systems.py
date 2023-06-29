@@ -17,7 +17,7 @@ TRITON_SERVER_PATH = shutil.which("tritonserver")
 @pytest.mark.notebook
 def test_example_serving_xgboost(tmpdir):
     with testbook(
-        REPO_ROOT / "examples/Serving-An-XGboost-Model-With-Merlin-Systems.ipynb",
+        REPO_ROOT / "examples/ranking/traditional-ml/Serving-An-XGboost-Model-With-Merlin-Systems.ipynb",
         execute=False,
         timeout=180,
     ) as tb:
