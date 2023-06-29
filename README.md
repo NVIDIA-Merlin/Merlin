@@ -143,7 +143,7 @@ real-world use cases.
 
 ## Merlin Is Built On
 
-**[cuDF](https://github.com/rapidsai/cudf)**<br> Merlin relies on cuDF for
+**[RAPIDS cuDF](https://github.com/rapidsai/cudf)**<br> Merlin relies on cuDF for
 GPU-accelerated DataFrame operations used in feature engineering.
 
 **[Dask](https://www.dask.org/)**<br> Merlin relies on Dask to distribute and scale
