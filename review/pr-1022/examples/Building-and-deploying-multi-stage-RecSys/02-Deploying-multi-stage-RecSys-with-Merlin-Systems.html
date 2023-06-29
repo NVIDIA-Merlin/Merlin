@@ -165,7 +165,7 @@
   _descriptor.FieldDescriptor(
 /usr/local/lib/python3.8/dist-packages/cudf/utils/metadata/orc_column_statistics_pb2.py:30: DeprecationWarning: Call to deprecated create function Descriptor(). Note: Create unlinked descriptors is going to go away. Please use get/find descriptors from generated code or query the descriptor_pool.
   _INTEGERSTATISTICS = _descriptor.Descriptor(
-2023-06-29 19:13:17.254704: I tensorflow/core/platform/cpu_feature_guard.cc:194] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  SSE3 SSE4.1 SSE4.2 AVX
+2023-06-29 19:50:56.885234: I tensorflow/core/platform/cpu_feature_guard.cc:194] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  SSE3 SSE4.1 SSE4.2 AVX
 To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
 /usr/local/lib/python3.8/dist-packages/tensorflow/core/framework/tensor_shape_pb2.py:18: DeprecationWarning: Call to deprecated create function FileDescriptor(). Note: Create unlinked descriptors is going to go away. Please use get/find descriptors from generated code or query the descriptor_pool.
   DESCRIPTOR = _descriptor.FileDescriptor(
@@ -219,10 +219,10 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/raid/workshared/merlin/examples/Building-and-deploying-multi-stage-RecSys/feast_repo/feature_repo
-Created entity <span class=" -Color -Color-Bold -Color-Bold-Green">item_id</span>
 Created entity <span class=" -Color -Color-Bold -Color-Bold-Green">user_id</span>
-Created feature view <span class=" -Color -Color-Bold -Color-Bold-Green">item_features</span>
+Created entity <span class=" -Color -Color-Bold -Color-Bold-Green">item_id</span>
 Created feature view <span class=" -Color -Color-Bold -Color-Bold-Green">user_features</span>
+Created feature view <span class=" -Color -Color-Bold -Color-Bold-Green">item_features</span>
 
 Created sqlite table <span class=" -Color -Color-Bold -Color-Bold-Green">feast_repo_item_features</span>
 Created sqlite table <span class=" -Color -Color-Bold -Color-Bold-Green">feast_repo_user_features</span>
@@ -245,10 +245,10 @@ Created sqlite table <span class=" -Color -Color-Bold -Color-Bold-Green">feast_r
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Materializing <span class=" -Color -Color-Bold -Color-Bold-Green">2</span> feature views from <span class=" -Color -Color-Bold -Color-Bold-Green">1995-01-01 01:01:01+00:00</span> to <span class=" -Color -Color-Bold -Color-Bold-Green">2025-01-01 01:01:01+00:00</span> into the <span class=" -Color -Color-Bold -Color-Bold-Green">sqlite</span> online store.
 
-<span class=" -Color -Color-Bold -Color-Bold-Green">item_features</span>:
-100%|███████████████████████████████████████████████████████████| 450/450 [00:00&lt;00:00, 5815.84it/s]
 <span class=" -Color -Color-Bold -Color-Bold-Green">user_features</span>:
-100%|███████████████████████████████████████████████████████████| 448/448 [00:00&lt;00:00, 1758.64it/s]
+100%|███████████████████████████████████████████████████████████| 460/460 [00:00&lt;00:00, 2521.27it/s]
+<span class=" -Color -Color-Bold -Color-Bold-Green">item_features</span>:
+100%|███████████████████████████████████████████████████████████| 458/458 [00:00&lt;00:00, 3335.12it/s]
 </pre></div>
 </div>
 </div>
@@ -309,12 +309,12 @@ Created sqlite table <span class=" -Color -Color-Bold -Color-Bold-Green">feast_r
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">merlin.systems.dag.ops.faiss</span> <span class="kn">import</span> <span class="n">QueryFaiss</span><span class="p">,</span> <span class="n">setup_faiss</span> 
 
 <span class="n">item_embeddings</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s2">&quot;item_embeddings.parquet&quot;</span><span class="p">))</span>
-<span class="n">setup_faiss</span><span class="p">(</span><span class="n">item_embeddings</span><span class="p">,</span> <span class="n">faiss_index_path</span><span class="p">)</span>
+<span class="n">setup_faiss</span><span class="p">(</span><span class="n">item_embeddings</span><span class="p">,</span> <span class="n">faiss_index_path</span><span class="p">,</span> <span class="n">embedding_column</span><span class="o">=</span><span class="s2">&quot;output_1&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>WARNING clustering 450 points to 32 centroids: please provide at least 1248 training points
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>WARNING clustering 458 points to 32 centroids: please provide at least 1248 training points
 </pre></div>
 </div>
 </div>
@@ -342,9 +342,9 @@ Created sqlite table <span class=" -Color -Color-Bold -Color-Bold-Green">feast_r
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Materializing <span class=" -Color -Color-Bold -Color-Bold-Green">1</span> feature views to <span class=" -Color -Color-Bold -Color-Bold-Green">2023-06-29 19:14:10+00:00</span> into the <span class=" -Color -Color-Bold -Color-Bold-Green">sqlite</span> online store.
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Materializing <span class=" -Color -Color-Bold -Color-Bold-Green">1</span> feature views to <span class=" -Color -Color-Bold -Color-Bold-Green">2023-06-29 19:51:06+00:00</span> into the <span class=" -Color -Color-Bold -Color-Bold-Green">sqlite</span> online store.
 
-<span class=" -Color -Color-Bold -Color-Bold-Green">user_features</span> from <span class=" -Color -Color-Bold -Color-Bold-Green">2025-01-01 01:01:01+00:00</span> to <span class=" -Color -Color-Bold -Color-Bold-Green">2023-06-29 19:14:10+00:00</span>:
+<span class=" -Color -Color-Bold -Color-Bold-Green">user_features</span> from <span class=" -Color -Color-Bold -Color-Bold-Green">2025-01-01 01:01:01+00:00</span> to <span class=" -Color -Color-Bold -Color-Bold-Green">2023-06-29 19:51:06+00:00</span>:
 </pre></div>
 </div>
 <div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0it [00:00, ?it/s]
@@ -394,17 +394,17 @@ Created sqlite table <span class=" -Color -Color-Bold -Color-Bold-Green">feast_r
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2023-06-29 19:14:11.423802: I tensorflow/core/platform/cpu_feature_guard.cc:194] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  SSE3 SSE4.1 SSE4.2 AVX
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2023-06-29 19:51:07.269579: I tensorflow/core/platform/cpu_feature_guard.cc:194] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  SSE3 SSE4.1 SSE4.2 AVX
 To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
-2023-06-29 19:14:14.615977: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1621] Created device /job:localhost/replica:0/task:0/device:GPU:0 with 24576 MB memory:  -&gt; device: 0, name: Quadro RTX 8000, pci bus id: 0000:15:00.0, compute capability: 7.5
-2023-06-29 19:14:14.616886: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1621] Created device /job:localhost/replica:0/task:0/device:GPU:1 with 24576 MB memory:  -&gt; device: 1, name: Quadro RTX 8000, pci bus id: 0000:2d:00.0, compute capability: 7.5
+2023-06-29 19:51:10.430459: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1621] Created device /job:localhost/replica:0/task:0/device:GPU:0 with 24576 MB memory:  -&gt; device: 0, name: Quadro RTX 8000, pci bus id: 0000:15:00.0, compute capability: 7.5
+2023-06-29 19:51:10.431356: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1621] Created device /job:localhost/replica:0/task:0/device:GPU:1 with 24576 MB memory:  -&gt; device: 1, name: Quadro RTX 8000, pci bus id: 0000:2d:00.0, compute capability: 7.5
 WARNING:absl:Found untraced functions such as restored_function_body, restored_function_body, restored_function_body, restored_function_body, restored_function_body while saving (showing 5 of 52). These functions will not be directly callable after loading.
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Assets written to: /tmp/tmpqzazhnjq/assets
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Assets written to: /tmp/tmpdalflmaz/assets
 </pre></div>
 </div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Assets written to: /tmp/tmpqzazhnjq/assets
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Assets written to: /tmp/tmpdalflmaz/assets
 </pre></div>
 </div>
 </div>
@@ -423,9 +423,9 @@ WARNING:absl:Found untraced functions such as restored_function_body, restored_f
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Materializing <span class=" -Color -Color-Bold -Color-Bold-Green">1</span> feature views to <span class=" -Color -Color-Bold -Color-Bold-Green">2023-06-29 19:14:18+00:00</span> into the <span class=" -Color -Color-Bold -Color-Bold-Green">sqlite</span> online store.
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Materializing <span class=" -Color -Color-Bold -Color-Bold-Green">1</span> feature views to <span class=" -Color -Color-Bold -Color-Bold-Green">2023-06-29 19:51:14+00:00</span> into the <span class=" -Color -Color-Bold -Color-Bold-Green">sqlite</span> online store.
 
-<span class=" -Color -Color-Bold -Color-Bold-Green">item_features</span> from <span class=" -Color -Color-Bold -Color-Bold-Green">2025-01-01 01:01:01+00:00</span> to <span class=" -Color -Color-Bold -Color-Bold-Green">2023-06-29 19:14:18+00:00</span>:
+<span class=" -Color -Color-Bold -Color-Bold-Green">item_features</span> from <span class=" -Color -Color-Bold -Color-Bold-Green">2025-01-01 01:01:01+00:00</span> to <span class=" -Color -Color-Bold -Color-Bold-Green">2023-06-29 19:51:14+00:00</span>:
 </pre></div>
 </div>
 <div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0it [00:00, ?it/s]
@@ -477,10 +477,10 @@ WARNING:absl:Found untraced functions such as restored_function_body, restored_f
 <div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>WARNING:absl:Found untraced functions such as restored_function_body, restored_function_body, restored_function_body, restored_function_body, restored_function_body while saving (showing 5 of 98). These functions will not be directly callable after loading.
 </pre></div>
 </div>
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Assets written to: /tmp/tmp6epm9p86/assets
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Assets written to: /tmp/tmpqdd_jn5e/assets
 </pre></div>
 </div>
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Assets written to: /tmp/tmp6epm9p86/assets
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Assets written to: /tmp/tmpqdd_jn5e/assets
 </pre></div>
 </div>
 </div>
@@ -659,9 +659,9 @@ WARNING:absl:Found untraced functions such as restored_function_body, restored_f
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>{&#39;ordered_ids&#39;: array([[ 52, 102,  42, 204, 312, 117, 414, 258,  14, 450]], dtype=int32),
- &#39;ordered_scores&#39;: array([[0.5010059 , 0.5018582 , 0.5001918 , 0.50212526, 0.5004832 ,
-         0.5006511 , 0.50049436, 0.5014268 , 0.5005215 , 0.5017036 ]],
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>{&#39;ordered_ids&#39;: array([[100, 168, 324,  79, 361, 294, 267, 289, 397, 189]], dtype=int32),
+ &#39;ordered_scores&#39;: array([[0.5016385 , 0.50176895, 0.5017176 , 0.5024097 , 0.5018236 ,
+         0.5018286 , 0.50162375, 0.5015677 , 0.50175667, 0.5014358 ]],
        dtype=float32)}
 </pre></div>
 </div>
