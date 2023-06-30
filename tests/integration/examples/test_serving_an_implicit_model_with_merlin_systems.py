@@ -25,7 +25,7 @@ TRITON_SERVER_PATH = shutil.which("tritonserver")
 @pytest.mark.parametrize("gpu", _TRAIN_ON_GPU)
 def test_example_serving_implicit(gpu, tmpdir):
     with testbook(
-        REPO_ROOT / "examples/ranking/traditional-ml/Serving-An-Implicit-Model-With-Merlin-Systems.ipynb",
+        REPO_ROOT / "examples/traditional-ml/Serving-An-Implicit-Model-With-Merlin-Systems.ipynb",
         execute=False,
         timeout=180,
     ) as tb:

@@ -1,6 +1,8 @@
-# Merlin Systems Example Notebook
+# Training and Deploying Ranking models with Merlin
 
-These Jupyter notebooks demonstrate how to use Merlin Systems to deploy ranking models on [Triton Inference Server](https://github.com/triton-inference-server/server). Currently we support models built with TensorFlow framework, and traditional-ml models like XGBoost and python-based models with implicit datasets. Examples built with PyTorch framework are being developed and will be added here soon. 
+Ranking models are probably the most common use case in recommender systems. The examples under this folder are designed to demonstrate how to build, train and evaluate a ranking model (e.g. DLRM) using Merlin Models and deploy on [Triton Inference Server](https://github.com/triton-inference-server/server) with Merlin Systems. Currently we support models built with TensorFlow framework, and traditional-ml models like XGBoost and python-based models with implicit datasets. Examples built with PyTorch framework are being developed and will be added here soon. 
+
+To learn more about ranking models, please visit this documentation [page](https://nvidia-merlin.github.io/Merlin/stable/guide/recommender_models.html#).
 
 ## Running the Example Notebooks
 
