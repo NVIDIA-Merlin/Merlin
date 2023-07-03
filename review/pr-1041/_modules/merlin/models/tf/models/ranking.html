@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>merlin.models.tf.models.ranking &mdash; Merlin  documentation</title><link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/mystnb.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/togglebutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/css/custom.css" type="text/css" />
+    <link rel="canonical" href="https://nvidia-merlin.github.io/Merlin/stable/_modules/merlin/models/tf/models/ranking.html" />
+  <!--[if lt IE 9]>
+    <script src="../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../../../../../" src="../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../_static/jquery.js"></script>
+        <script src="../../../../../_static/underscore.js"></script>
+        <script src="../../../../../_static/doctools.js"></script>
+        <script >let toggleHintShow = 'Click to show';</script>
+        <script >let toggleHintHide = 'Click to hide';</script>
+        <script >let toggleOpenOnPrint = 'true';</script>
+        <script src="../../../../../_static/togglebutton.js"></script>
+        <script >var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="banner">
+    <p class="banner">
+      Beginning in January 2023, versions for all NVIDIA Merlin projects
+      will change from semantic versioning like <code>4.0</code>
+      to calendar versioning like <code>23.01</code>.</p>
+  </div>
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../../index.html" class="icon icon-home">
+            Merlin
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../README.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../guide/recommender_system_guide.html">Recommender System Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../examples/index.html">Example Notebooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../api_overview.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../containers.html">Merlin Containers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../support_matrix/index.html">Merlin Support Matrix</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">Merlin</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">merlin.models.tf.models.ranking</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for merlin.models.tf.models.ranking</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
+
+<span class="kn">from</span> <span class="nn">merlin.models.tf.blocks.cross</span> <span class="kn">import</span> <span class="n">CrossBlock</span>
+<span class="kn">from</span> <span class="nn">merlin.models.tf.blocks.dlrm</span> <span class="kn">import</span> <span class="n">DLRMBlock</span>
+<span class="kn">from</span> <span class="nn">merlin.models.tf.blocks.interaction</span> <span class="kn">import</span> <span class="n">FMBlock</span>
+<span class="kn">from</span> <span class="nn">merlin.models.tf.blocks.mlp</span> <span class="kn">import</span> <span class="n">MLPBlock</span><span class="p">,</span> <span class="n">RegularizerType</span>
+<span class="kn">from</span> <span class="nn">merlin.models.tf.core.aggregation</span> <span class="kn">import</span> <span class="n">ConcatFeatures</span>
+<span class="kn">from</span> <span class="nn">merlin.models.tf.core.base</span> <span class="kn">import</span> <span class="n">Block</span><span class="p">,</span> <span class="n">BlockType</span>
+<span class="kn">from</span> <span class="nn">merlin.models.tf.core.combinators</span> <span class="kn">import</span> <span class="n">ParallelBlock</span><span class="p">,</span> <span class="n">TabularBlock</span>
+<span class="kn">from</span> <span class="nn">merlin.models.tf.inputs.base</span> <span class="kn">import</span> <span class="n">InputBlockV2</span>
+<span class="kn">from</span> <span class="nn">merlin.models.tf.inputs.embedding</span> <span class="kn">import</span> <span class="n">EmbeddingOptions</span><span class="p">,</span> <span class="n">Embeddings</span>
+<span class="kn">from</span> <span class="nn">merlin.models.tf.models.base</span> <span class="kn">import</span> <span class="n">Model</span>
+<span class="kn">from</span> <span class="nn">merlin.models.tf.models.utils</span> <span class="kn">import</span> <span class="n">parse_prediction_blocks</span>
+<span class="kn">from</span> <span class="nn">merlin.models.tf.outputs.base</span> <span class="kn">import</span> <span class="n">ModelOutputType</span>
+<span class="kn">from</span> <span class="nn">merlin.models.tf.prediction_tasks.base</span> <span class="kn">import</span> <span class="n">ParallelPredictionBlock</span><span class="p">,</span> <span class="n">PredictionTask</span>
+<span class="kn">from</span> <span class="nn">merlin.models.tf.transforms.features</span> <span class="kn">import</span> <span class="n">CategoryEncoding</span>
+<span class="kn">from</span> <span class="nn">merlin.schema</span> <span class="kn">import</span> <span class="n">Schema</span><span class="p">,</span> <span class="n">Tags</span>
+
+
+<div class="viewcode-block" id="DLRMModel"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.DLRMModel.html#merlin.models.tf.DLRMModel">[docs]</a><span class="k">def</span> <span class="nf">DLRMModel</span><span class="p">(</span>
+    <span class="n">schema</span><span class="p">:</span> <span class="n">Schema</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">embeddings</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Block</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">embedding_dim</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">embedding_options</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">EmbeddingOptions</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">bottom_block</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Block</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">top_block</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Block</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">prediction_tasks</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span>
+        <span class="n">Union</span><span class="p">[</span>
+            <span class="n">PredictionTask</span><span class="p">,</span>
+            <span class="n">List</span><span class="p">[</span><span class="n">PredictionTask</span><span class="p">],</span>
+            <span class="n">ParallelPredictionBlock</span><span class="p">,</span>
+            <span class="n">ModelOutputType</span><span class="p">,</span>
+        <span class="p">]</span>
+    <span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Model</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;DLRM-model architecture.</span>
+
+<span class="sd">    Example Usage::</span>
+<span class="sd">        dlrm = DLRMModel(schema, embedding_dim=64, bottom_block=MLPBlock([256, 64]))</span>
+<span class="sd">        dlrm.compile(optimizer=&quot;adam&quot;)</span>
+<span class="sd">        dlrm.fit(train_data, epochs=10)</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    [1] Naumov, Maxim, et al. &quot;Deep learning recommendation model for</span>
+<span class="sd">       personalization and recommendation systems.&quot; arXiv preprint arXiv:1906.00091 (2019).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    schema : ~merlin.schema.Schema</span>
+<span class="sd">        The `Schema` with the input features</span>
+<span class="sd">    embeddings : Optional[Block]</span>
+<span class="sd">        Optional block for categorical embeddings.</span>
+<span class="sd">        Overrides the default embeddings inferred from the schema.</span>
+<span class="sd">    embedding_dim : int</span>
+<span class="sd">        Dimension of the embeddings</span>
+<span class="sd">    embedding_options : Optional[EmbeddingOptions]</span>
+<span class="sd">        Configuration for categorical embeddings. Alternatively use the embeddings parameter.</span>
+<span class="sd">    bottom_block : Block</span>
+<span class="sd">        The `Block` that combines the continuous features (typically a `MLPBlock`)</span>
+<span class="sd">    top_block : Optional[Block], optional</span>
+<span class="sd">        The optional `Block` that combines the outputs of bottom layer and of</span>
+<span class="sd">        the factorization machine layer, by default None</span>
+<span class="sd">    prediction_tasks: Optional[Union[PredictionTask,List[PredictionTask],</span>
+<span class="sd">                                ParallelPredictionBlock,ModelOutputType]</span>
+<span class="sd">        The prediction tasks to be used, by default this will be inferred from the Schema.</span>
+<span class="sd">        For custom prediction tasks we recommending using OutputBlock and blocks based</span>
+<span class="sd">        on ModelOutput than the ones based in PredictionTask (that will be deprecated).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Model</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">prediction_blocks</span> <span class="o">=</span> <span class="n">parse_prediction_blocks</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="n">prediction_tasks</span><span class="p">)</span>
+
+    <span class="n">dlrm_body</span> <span class="o">=</span> <span class="n">DLRMBlock</span><span class="p">(</span>
+        <span class="n">schema</span><span class="p">,</span>
+        <span class="n">embedding_dim</span><span class="o">=</span><span class="n">embedding_dim</span><span class="p">,</span>
+        <span class="n">embedding_options</span><span class="o">=</span><span class="n">embedding_options</span><span class="p">,</span>
+        <span class="n">embeddings</span><span class="o">=</span><span class="n">embeddings</span><span class="p">,</span>
+        <span class="n">bottom_block</span><span class="o">=</span><span class="n">bottom_block</span><span class="p">,</span>
+        <span class="n">top_block</span><span class="o">=</span><span class="n">top_block</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">dlrm_body</span><span class="p">,</span> <span class="n">prediction_blocks</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">model</span></div>
+
+
+<div class="viewcode-block" id="DCNModel"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.DCNModel.html#merlin.models.tf.DCNModel">[docs]</a><span class="k">def</span> <span class="nf">DCNModel</span><span class="p">(</span>
+    <span class="n">schema</span><span class="p">:</span> <span class="n">Schema</span><span class="p">,</span>
+    <span class="n">depth</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">deep_block</span><span class="p">:</span> <span class="n">Block</span> <span class="o">=</span> <span class="n">MLPBlock</span><span class="p">([</span><span class="mi">512</span><span class="p">,</span> <span class="mi">256</span><span class="p">]),</span>
+    <span class="n">stacked</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">input_block</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Block</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">prediction_tasks</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span>
+        <span class="n">Union</span><span class="p">[</span>
+            <span class="n">PredictionTask</span><span class="p">,</span>
+            <span class="n">List</span><span class="p">[</span><span class="n">PredictionTask</span><span class="p">],</span>
+            <span class="n">ParallelPredictionBlock</span><span class="p">,</span>
+            <span class="n">ModelOutputType</span><span class="p">,</span>
+        <span class="p">]</span>
+    <span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Model</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a model using the architecture proposed in DCN V2: Improved Deep &amp; Cross Network [1].</span>
+<span class="sd">    See Eq. (1) for full-rank and Eq. (2) for low-rank version.</span>
+
+<span class="sd">    Example Usage::</span>
+<span class="sd">        dcn = DCNModel(schema, depth=2, deep_block=MLPBlock([256, 64]))</span>
+<span class="sd">        dcn.compile(optimizer=&quot;adam&quot;)</span>
+<span class="sd">        dcn.fit(train_data, epochs=10)</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    [1]. Wang, Ruoxi, et al. &quot;DCN V2: Improved deep &amp; cross network and</span>
+<span class="sd">       practical lessons for web-scale learning to rank systems.&quot; Proceedings</span>
+<span class="sd">       of the Web Conference 2021. 2021. https://arxiv.org/pdf/2008.13535.pdf</span>
+
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    schema : ~merlin.schema.Schema</span>
+<span class="sd">        The `Schema` with the input features</span>
+<span class="sd">    depth : int, optional</span>
+<span class="sd">        Number of cross-layers to be stacked, by default 1</span>
+<span class="sd">    deep_block : Block, optional</span>
+<span class="sd">        The `Block` to use as the deep part of the model (typically a `MLPBlock`)</span>
+<span class="sd">    stacked : bool</span>
+<span class="sd">        Whether to use the stacked version of the model or the parallel version.</span>
+<span class="sd">    input_block : Block, optional</span>
+<span class="sd">        The `Block` to use as the input layer. If None, a default `InputBlockV2` object</span>
+<span class="sd">        is instantiated, that creates the embedding tables for the categorical features</span>
+<span class="sd">        based on the schema. The embedding dimensions are inferred from the features</span>
+<span class="sd">        cardinality. For a custom representation of input data you can instantiate</span>
+<span class="sd">        and provide an `InputBlockV2` instance.</span>
+<span class="sd">    prediction_tasks: Optional[Union[PredictionTask,List[PredictionTask],</span>
+<span class="sd">                                ParallelPredictionBlock,ModelOutputType]</span>
+<span class="sd">        The prediction tasks to be used, by default this will be inferred from the Schema.</span>
+<span class="sd">        For custom prediction tasks we recommending using OutputBlock and blocks based</span>
+<span class="sd">        on ModelOutput than the ones based in PredictionTask (that will be deprecated).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    SequentialBlock</span>
+<span class="sd">        A `SequentialBlock` with a number of stacked Cross layers</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        Number of cross layers (depth) should be positive</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">input_block</span> <span class="o">=</span> <span class="n">input_block</span> <span class="ow">or</span> <span class="n">InputBlockV2</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">prediction_blocks</span> <span class="o">=</span> <span class="n">parse_prediction_blocks</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="n">prediction_tasks</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">stacked</span><span class="p">:</span>
+        <span class="n">dcn_body</span> <span class="o">=</span> <span class="n">input_block</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">CrossBlock</span><span class="p">(</span><span class="n">depth</span><span class="p">),</span> <span class="n">deep_block</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">dcn_body</span> <span class="o">=</span> <span class="n">input_block</span><span class="o">.</span><span class="n">connect_branch</span><span class="p">(</span><span class="n">CrossBlock</span><span class="p">(</span><span class="n">depth</span><span class="p">),</span> <span class="n">deep_block</span><span class="p">,</span> <span class="n">aggregation</span><span class="o">=</span><span class="s2">&quot;concat&quot;</span><span class="p">)</span>
+
+    <span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">dcn_body</span><span class="p">,</span> <span class="n">prediction_blocks</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">model</span></div>
+
+
+<div class="viewcode-block" id="DeepFMModel"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.DeepFMModel.html#merlin.models.tf.DeepFMModel">[docs]</a><span class="k">def</span> <span class="nf">DeepFMModel</span><span class="p">(</span>
+    <span class="n">schema</span><span class="p">:</span> <span class="n">Schema</span><span class="p">,</span>
+    <span class="n">embedding_dim</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">deep_block</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Block</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">input_block</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Block</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">wide_input_block</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Block</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">wide_logit_block</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Block</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">deep_logit_block</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Block</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">prediction_tasks</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span>
+        <span class="n">Union</span><span class="p">[</span>
+            <span class="n">PredictionTask</span><span class="p">,</span>
+            <span class="n">List</span><span class="p">[</span><span class="n">PredictionTask</span><span class="p">],</span>
+            <span class="n">ParallelPredictionBlock</span><span class="p">,</span>
+            <span class="n">ModelOutputType</span><span class="p">,</span>
+        <span class="p">]</span>
+    <span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Model</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;DeepFM-model architecture, which is the sum of the 1-dim output</span>
+<span class="sd">    of a Factorization Machine [2] and a Deep Neural Network</span>
+
+<span class="sd">    Example Usage::</span>
+<span class="sd">        deep_fm = DeepFMModel(schema, embedding_dim=64, deep_block=MLPBlock([256, 64]))</span>
+<span class="sd">        deep_fm.compile(optimizer=&quot;adam&quot;)</span>
+<span class="sd">        deep_fm.fit(train_data, epochs=10)</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    [1] Huifeng, Guo, et al.</span>
+<span class="sd">        &quot;DeepFM: A Factorization-Machine based Neural Network for CTR Prediction&quot;</span>
+<span class="sd">        arXiv:1703.04247  (2017).</span>
+<span class="sd">    [2] Steffen, Rendle, &quot;Factorization Machines&quot; IEEE International</span>
+<span class="sd">    Conference on Data Mining, 2010. https://ieeexplore.ieee.org/document/5694074</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    schema : ~merlin.schema.Schema</span>
+<span class="sd">        The `Schema` with the input features</span>
+<span class="sd">    embedding_dim : int</span>
+<span class="sd">        Dimension of the embeddings</span>
+<span class="sd">    deep_block : Optional[Block]</span>
+<span class="sd">        The `Block` that learns high-order feature interactions.</span>
+<span class="sd">        On top of this Block, an MLPBlock([1]) is added to output</span>
+<span class="sd">        a 1-dim logit.</span>
+<span class="sd">        Defaults to MLPBlock([64])</span>
+<span class="sd">    input_block : Block, optional</span>
+<span class="sd">        The `Block` to use as the input layer for the FM and Deep components.</span>
+<span class="sd">        If None, a default `InputBlockV2` object</span>
+<span class="sd">        is instantiated, that creates the embedding tables for the categorical features</span>
+<span class="sd">        based on the schema, with the specified embedding_dim.</span>
+<span class="sd">        For a custom representation of input data you can instantiate</span>
+<span class="sd">        and provide an `InputBlockV2` instance.</span>
+<span class="sd">    wide_input_block: Optional[Block], by default None</span>
+<span class="sd">        The input for the wide block. If not provided,</span>
+<span class="sd">        creates a default block that encodes categorical features</span>
+<span class="sd">        with one-hot / multi-hot representation and also includes the continuous features.</span>
+<span class="sd">    wide_logit_block: Optional[Block], by default None</span>
+<span class="sd">        The output layer of the wide input. The last dimension needs to be 1.</span>
+<span class="sd">        You might want to provide your own output logit block if you want to add</span>
+<span class="sd">        dropout or kernel regularization to the wide block.</span>
+<span class="sd">    deep_logit_block: Optional[Block], by default MLPBlock([1], activation=&quot;linear&quot;, use_bias=True)</span>
+<span class="sd">        The output layer of the deep block. The last dimension needs to be 1.</span>
+<span class="sd">        You might want to provide your own output logit block if you want to add</span>
+<span class="sd">        dropout or kernel regularization to the wide block.</span>
+
+<span class="sd">    prediction_tasks: Optional[Union[PredictionTask,List[PredictionTask],</span>
+<span class="sd">                                ParallelPredictionBlock,ModelOutputType]</span>
+<span class="sd">        The prediction tasks to be used, by default this will be inferred from the Schema.</span>
+<span class="sd">        For custom prediction tasks we recommending using OutputBlock and blocks based</span>
+<span class="sd">        on ModelOutput than the ones based in PredictionTask (that will be deprecated).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Model</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">input_block</span> <span class="o">=</span> <span class="n">input_block</span> <span class="ow">or</span> <span class="n">InputBlockV2</span><span class="p">(</span>
+        <span class="n">schema</span><span class="p">,</span>
+        <span class="n">aggregation</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">categorical</span><span class="o">=</span><span class="n">Embeddings</span><span class="p">(</span><span class="n">schema</span><span class="o">.</span><span class="n">select_by_tag</span><span class="p">(</span><span class="n">Tags</span><span class="o">.</span><span class="n">CATEGORICAL</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="n">embedding_dim</span><span class="p">),</span>
+    <span class="p">)</span>
+
+    <span class="n">fm_tower</span> <span class="o">=</span> <span class="n">FMBlock</span><span class="p">(</span>
+        <span class="n">schema</span><span class="p">,</span>
+        <span class="n">fm_input_block</span><span class="o">=</span><span class="n">input_block</span><span class="p">,</span>
+        <span class="n">wide_input_block</span><span class="o">=</span><span class="n">wide_input_block</span><span class="p">,</span>
+        <span class="n">wide_logit_block</span><span class="o">=</span><span class="n">wide_logit_block</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">deep_block</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">deep_block</span> <span class="o">=</span> <span class="n">MLPBlock</span><span class="p">([</span><span class="mi">64</span><span class="p">])</span>
+    <span class="n">deep_block</span> <span class="o">=</span> <span class="n">deep_block</span><span class="o">.</span><span class="n">prepare</span><span class="p">(</span><span class="n">aggregation</span><span class="o">=</span><span class="n">ConcatFeatures</span><span class="p">())</span>
+
+    <span class="n">deep_logit_block</span> <span class="o">=</span> <span class="n">deep_logit_block</span> <span class="ow">or</span> <span class="n">MLPBlock</span><span class="p">([</span><span class="mi">1</span><span class="p">],</span> <span class="n">activation</span><span class="o">=</span><span class="s2">&quot;linear&quot;</span><span class="p">,</span> <span class="n">use_bias</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">deep_tower</span> <span class="o">=</span> <span class="n">input_block</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">deep_block</span><span class="p">)</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">deep_logit_block</span><span class="p">)</span>
+
+    <span class="n">deep_fm</span> <span class="o">=</span> <span class="n">ParallelBlock</span><span class="p">({</span><span class="s2">&quot;fm&quot;</span><span class="p">:</span> <span class="n">fm_tower</span><span class="p">,</span> <span class="s2">&quot;deep&quot;</span><span class="p">:</span> <span class="n">deep_tower</span><span class="p">},</span> <span class="n">aggregation</span><span class="o">=</span><span class="s2">&quot;element-wise-sum&quot;</span><span class="p">)</span>
+
+    <span class="n">prediction_blocks</span> <span class="o">=</span> <span class="n">parse_prediction_blocks</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="n">prediction_tasks</span><span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">deep_fm</span><span class="p">,</span> <span class="n">prediction_blocks</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">model</span></div>
+
+
+<div class="viewcode-block" id="WideAndDeepModel"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.WideAndDeepModel.html#merlin.models.tf.WideAndDeepModel">[docs]</a><span class="k">def</span> <span class="nf">WideAndDeepModel</span><span class="p">(</span>
+    <span class="n">schema</span><span class="p">:</span> <span class="n">Schema</span><span class="p">,</span>
+    <span class="n">deep_block</span><span class="p">:</span> <span class="n">Block</span><span class="p">,</span>
+    <span class="n">wide_schema</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Schema</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">deep_schema</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Schema</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">wide_preprocess</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Block</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">deep_input_block</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Block</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">wide_input_block</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Block</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">deep_regularizer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">RegularizerType</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">wide_regularizer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">RegularizerType</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">deep_dropout</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">wide_dropout</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">prediction_tasks</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span>
+        <span class="n">Union</span><span class="p">[</span><span class="n">PredictionTask</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">PredictionTask</span><span class="p">],</span> <span class="n">ParallelPredictionBlock</span><span class="p">,</span> <span class="n">ModelOutputType</span><span class="p">]</span>
+    <span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">pre</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">BlockType</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">wide_body_kwargs</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Model</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The Wide&amp;Deep architecture [1] was proposed by Google</span>
+<span class="sd">    in 2016 to balance between the ability of neural networks to generalize and capacity</span>
+<span class="sd">    of linear models to memorize relevant feature interactions. The deep part is an MLP</span>
+<span class="sd">    model, with categorical features represented as embeddings, which are concatenated</span>
+<span class="sd">    with continuous features and fed through multiple MLP layers. The wide part is a</span>
+<span class="sd">    linear model takes a sparse representation of categorical features (i.e. one-hot</span>
+<span class="sd">    or multi-hot representation). Both wide and deep sub-models output a logit,</span>
+<span class="sd">    which is summed and followed by sigmoid for binary classification loss.</span>
+
+<span class="sd">    Example Usage::</span>
+
+<span class="sd">        1. Using default input block</span>
+<span class="sd">        ```python</span>
+<span class="sd">        wide_deep = ml.benchmark.WideAndDeepModel(</span>
+<span class="sd">            schema,</span>
+<span class="sd">            deep_block=ml.MLPBlock([32, 16]),</span>
+<span class="sd">            wide_schema=wide_schema,</span>
+<span class="sd">            deep_schema=deep_schema,</span>
+<span class="sd">            prediction_tasks=ml.BinaryOutput(&quot;click&quot;),</span>
+<span class="sd">        )</span>
+<span class="sd">        wide_deep.compile(optimizer=&quot;adam&quot;)</span>
+<span class="sd">        wide_deep.fit(train_data, epochs=10)</span>
+<span class="sd">        ```</span>
+
+<span class="sd">        2. Custom input block</span>
+<span class="sd">        ```python</span>
+<span class="sd">        deep_embedding = ml.Embeddings(schema, embedding_dim_default=8, infer_embedding_sizes=False)</span>
+<span class="sd">        model = ml.WideAndDeepModel(</span>
+<span class="sd">            schema,</span>
+<span class="sd">            deep_input_block = ml.InputBlockV2(schema=schema, categorical=deep_embedding),</span>
+<span class="sd">            wide_schema=wide_schema,</span>
+<span class="sd">            wide_preprocess=ml.CategoryEncoding(wide_schema, output_mode=&quot;multi_hot&quot;, sparse=True),</span>
+<span class="sd">            deep_block=ml.MLPBlock([32, 16]),</span>
+<span class="sd">            prediction_tasks=ml.BinaryOutput(&quot;click&quot;),</span>
+<span class="sd">        )</span>
+<span class="sd">        ```</span>
+
+<span class="sd">        3. Wide preprocess with one-hot categorical features and hashed 2nd-level feature</span>
+<span class="sd">            interactions</span>
+<span class="sd">        ```python</span>
+<span class="sd">        model = ml.WideAndDeepModel(</span>
+<span class="sd">            schema,</span>
+<span class="sd">            wide_schema=wide_schema,</span>
+<span class="sd">            deep_schema=deep_schema,</span>
+<span class="sd">            wide_preprocess=ml.ParallelBlock(</span>
+<span class="sd">                [</span>
+<span class="sd">                    # One-hot representations of categorical features</span>
+<span class="sd">                    ml.CategoryEncoding(wide_schema, output_mode=&quot;one_hot&quot;, sparse=True),</span>
+<span class="sd">                    # One-hot representations of hashed 2nd-level feature interactions</span>
+<span class="sd">                    ml.HashedCrossAll(wide_schema, num_bins=1000, max_level=2, sparse=True),</span>
+<span class="sd">                ],</span>
+<span class="sd">                aggregation=&quot;concat&quot;,</span>
+<span class="sd">            ),</span>
+<span class="sd">            deep_block=ml.MLPBlock([31, 16]),</span>
+<span class="sd">            prediction_tasks=ml.BinaryOutput(&quot;click&quot;),</span>
+<span class="sd">        )</span>
+<span class="sd">        ```</span>
+
+<span class="sd">        4. Wide preprocess with multi-hot categorical features and hashed 2nd-level multi-hot</span>
+<span class="sd">            feature interactions</span>
+<span class="sd">        ```python</span>
+
+<span class="sd">        one_hot_schema = schema.select_by_name([&#39;categ_1&#39;, &#39;categ_2&#39;])</span>
+<span class="sd">        multi_hot_schema = schema.select_by_name([&#39;categ_multi_hot_3&#39;])</span>
+<span class="sd">        wide_schema = one_hot_schema + multi_hot_schema</span>
+
+<span class="sd">        # One-hot features</span>
+<span class="sd">        one_hot_encoding = mm.SequentialBlock(</span>
+<span class="sd">                   mm.Filter(one_hot_schema),</span>
+<span class="sd">                   mm.CategoryEncoding(one_hot_schema, sparse=True, output_mode=&quot;one_hot&quot;),</span>
+<span class="sd">        )</span>
+<span class="sd">        ```</span>
+
+<span class="sd">        If your dataset contains multi-hot categorical features, i.e. features that may contain</span>
+<span class="sd">        multiple categorical values for a data sample, you can instantiate the `AsDenseFeatures`</span>
+<span class="sd">        block that converts the sparse representation of multi-hot features into a dense one</span>
+<span class="sd">        (with maximum size defined) where the missing values are padded with zeros, as in the</span>
+<span class="sd">        following example.</span>
+
+<span class="sd">        ```python</span>
+<span class="sd">        # Multi-hot features</span>
+<span class="sd">        multi_hot_encoding = mm.SequentialBlock(</span>
+<span class="sd">                mm.Filter(multi_hot_schema),</span>
+<span class="sd">                ml.ToDense(multi_hot_schema),</span>
+<span class="sd">                mm.CategoryEncoding(multi_hot_schema, sparse=True, output_mode=&quot;multi_hot&quot;)</span>
+<span class="sd">        )</span>
+<span class="sd">        ```</span>
+<span class="sd">        Linear models are not able to compute feature interaction (like MLPs).</span>
+<span class="sd">        So to give the wide part more power we perform paired feature interactions</span>
+<span class="sd">        as a preprocessing step, so that every possible combination of the values of</span>
+<span class="sd">        two categorical features is mapped to a single id. That way, the model is be</span>
+<span class="sd">        able to pick paired feature relationships, e.g., a pattern between the a category</span>
+<span class="sd">        of a product and the city of a user.</span>
+<span class="sd">        Although, this approach leads to very high-cardinality resulting feature (product</span>
+<span class="sd">        between the two features cardinalities). So typically we apply the hashing trick</span>
+<span class="sd">        to limit the resulting cardinality. Below you can see how easily you can compute</span>
+<span class="sd">        crossed features with Merlin Models.</span>
+
+<span class="sd">        Note: some feature combinations might not add information to the model, for example</span>
+<span class="sd">        the feature cross between the item id and item category, as every item only maps to a</span>
+<span class="sd">        single item category. You can explicitly ignore those combinations to reduce a bit</span>
+<span class="sd">        the feature space.</span>
+
+<span class="sd">        ```python</span>
+<span class="sd">        # 2nd-level features interaction</span>
+<span class="sd">        features_crossing = mm.SequentialBlock(</span>
+<span class="sd">                    mm.Filter(wide_schema),</span>
+<span class="sd">                    ml.ToDense(wide_schema),</span>
+<span class="sd">                    mm.HashedCrossAll(</span>
+<span class="sd">                        wide_schema,</span>
+<span class="sd">                        # The crossed features will be hashed to this number of bins</span>
+<span class="sd">                        num_bins=100,</span>
+<span class="sd">                        # Performs 2nd feature interactions, typically max is 3rd level</span>
+<span class="sd">                        max_level=2,</span>
+<span class="sd">                        output_mode=&quot;multi_hot&quot;,</span>
+<span class="sd">                        sparse=True,</span>
+<span class="sd">                        ignore_combinations=[[&quot;item_id&quot;, &quot;item_category&quot;],</span>
+<span class="sd">                                            [&quot;item_id&quot;, &quot;item_brand&quot;]]</span>
+<span class="sd">                    ),</span>
+<span class="sd">                )</span>
+
+<span class="sd">        model = ml.WideAndDeepModel(</span>
+<span class="sd">            schema,</span>
+<span class="sd">            wide_schema=wide_schema,</span>
+<span class="sd">            deep_schema=deep_schema,</span>
+<span class="sd">            wide_preprocess=ml.ParallelBlock(</span>
+<span class="sd">                [</span>
+<span class="sd">                    one_hot_encoding,</span>
+<span class="sd">                    multi_hot_encoding,</span>
+<span class="sd">                    features_crossing</span>
+<span class="sd">                ],</span>
+<span class="sd">                aggregation=&quot;concat&quot;,</span>
+<span class="sd">            ),</span>
+<span class="sd">            deep_block=ml.MLPBlock([32, 16]),</span>
+<span class="sd">            prediction_tasks=ml.BinaryOutput(&quot;click&quot;),</span>
+<span class="sd">        )</span>
+<span class="sd">        ```</span>
+
+<span class="sd">        5. On Wide&amp;Deep paper [1] they proposed usage of separate optimizers for dense (AdaGrad) and</span>
+<span class="sd">        sparse embeddings parameters (FTRL). You can implement that by using `MultiOptimizer` class.</span>
+<span class="sd">        For example:</span>
+<span class="sd">        ```python</span>
+<span class="sd">            wide_model = model.blocks[0].parallel_layers[&quot;wide&quot;]</span>
+<span class="sd">            deep_model = model.blocks[0].parallel_layers[&quot;deep&quot;]</span>
+
+<span class="sd">            multi_optimizer = ml.MultiOptimizer(</span>
+<span class="sd">                default_optimizer=tf.keras.optimizers.legacy.Adagrad(learning_rate=0.001),</span>
+<span class="sd">                optimizers_and_blocks=[</span>
+<span class="sd">                    ml.OptimizerBlocks(&quot;ftrl&quot;, wide_model),</span>
+<span class="sd">                    ml.OptimizerBlocks(</span>
+<span class="sd">                    tf.keras.optimizers.legacy.Adagrad(learning_rate=0.001), deep_model</span>
+<span class="sd">                    ),</span>
+<span class="sd">                    ],</span>
+<span class="sd">            )</span>
+<span class="sd">        ```</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    [1] Cheng, Koc, Harmsen, Shaked, Chandra, Aradhye, Anderson et al. &quot;Wide &amp; deep learning for</span>
+<span class="sd">    recommender systems.&quot; In Proceedings of the 1st workshop on deep learning for recommender</span>
+<span class="sd">    systems, pp. 7-10. (2016).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    schema : ~merlin.schema.Schema</span>
+<span class="sd">        The `Schema` with the input features</span>
+<span class="sd">    deep_block: Block</span>
+<span class="sd">        Block (structure) of deep model.</span>
+<span class="sd">    wide_schema : Optional[Schema]</span>
+<span class="sd">        The &#39;Schema&#39; of input features for wide model, by default no features would be sent to</span>
+<span class="sd">        wide model, and the model would become a pure deep model, if specified, only features</span>
+<span class="sd">        in wide_schema would be sent to wide model</span>
+<span class="sd">    deep_schema : Optional[Schema]</span>
+<span class="sd">        The &#39;Schema&#39; of input features for deep model, by default all features would be sent to</span>
+<span class="sd">        deep model. deep_schema and wide_schema could contain the same features</span>
+<span class="sd">    wide_preprocess : Optional[Block]</span>
+<span class="sd">        Transformation block for preprocess data in wide model, such as CategoryEncoding,</span>
+<span class="sd">        HashedCross, and HashedCrossAll. Please note the schema of transformation</span>
+<span class="sd">        block should be the same as the wide_schema. See example usages.</span>
+<span class="sd">        If wide_schema is provided and wide_preprocess, the CategoryEncoding transformation</span>
+<span class="sd">        is used by default for one-hot encoding.</span>
+<span class="sd">    deep_input_block : Optional[Block]</span>
+<span class="sd">        The input block to be used by the deep part. It not provided, it is created internally</span>
+<span class="sd">        by using the deep_schema. Defaults to None.</span>
+<span class="sd">    wide_input_block : Optional[Block]</span>
+<span class="sd">        The input block to be used by the wide part. It not provided, it is created internally</span>
+<span class="sd">        by using the wide_schema. Defaults to None.</span>
+<span class="sd">    deep_regularizer : Optional[RegularizerType]</span>
+<span class="sd">        Regularizer function applied to the last layer kernel weights matrix and biases of</span>
+<span class="sd">        the MLP layer of the wide part. Defaults to None.</span>
+<span class="sd">    wide_regularizer : Optional[RegularizerType]</span>
+<span class="sd">        Regularizer function applied to the last layer kernel weights matrix and biases</span>
+<span class="sd">        of the last MLP layer of deep part). Defaults to None.</span>
+<span class="sd">    deep_dropout: Optional[float]</span>
+<span class="sd">        The dropout to be used by the last layer of deep part. Defaults to None.</span>
+<span class="sd">    wide_dropout: Optional[float]</span>
+<span class="sd">        The dropout to be used by the last layer of wide part. Defaults to None.</span>
+<span class="sd">    prediction_tasks: Optional[Union[PredictionTask,List[PredictionTask],</span>
+<span class="sd">                                ParallelPredictionBlock,ModelOutputType]</span>
+<span class="sd">        The prediction tasks to be used, by default this will be inferred from the Schema.</span>
+<span class="sd">        For custom prediction tasks we recommending using OutputBlock and blocks based</span>
+<span class="sd">        on ModelOutput than the ones based in PredictionTask (that will be deprecated).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Model</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">prediction_blocks</span> <span class="o">=</span> <span class="n">parse_prediction_blocks</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="n">prediction_tasks</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">wide_schema</span><span class="p">:</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;If not specify wide_schema, NO feature would be sent to wide model&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">deep_schema</span><span class="p">:</span>
+        <span class="n">deep_schema</span> <span class="o">=</span> <span class="n">schema</span>
+
+    <span class="n">branches</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">deep_input_block</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">deep_schema</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">deep_schema</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">deep_input_block</span> <span class="o">=</span> <span class="n">InputBlockV2</span><span class="p">(</span>
+                <span class="n">deep_schema</span><span class="p">,</span>
+                <span class="n">categorical</span><span class="o">=</span><span class="n">Embeddings</span><span class="p">(</span>
+                    <span class="n">deep_schema</span><span class="o">.</span><span class="n">select_by_tag</span><span class="p">(</span><span class="n">Tags</span><span class="o">.</span><span class="n">CATEGORICAL</span><span class="p">),</span>
+                    <span class="n">sequence_combiner</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Lambda</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">reduce_mean</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)),</span>
+                <span class="p">),</span>
+            <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">deep_input_block</span><span class="p">:</span>
+        <span class="n">deep_body</span> <span class="o">=</span> <span class="n">deep_input_block</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">deep_block</span><span class="p">)</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span>
+            <span class="n">MLPBlock</span><span class="p">(</span>
+                <span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                <span class="n">no_activation_last_layer</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">kernel_regularizer</span><span class="o">=</span><span class="n">deep_regularizer</span><span class="p">,</span>
+                <span class="n">bias_regularizer</span><span class="o">=</span><span class="n">deep_regularizer</span><span class="p">,</span>
+                <span class="n">dropout</span><span class="o">=</span><span class="n">deep_dropout</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">branches</span><span class="p">[</span><span class="s2">&quot;deep&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">deep_body</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">wide_input_block</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">wide_schema</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">wide_schema</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">wide_preprocess</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">wide_preprocess</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">CategoryEncoding</span><span class="p">(</span><span class="n">wide_schema</span><span class="p">,</span> <span class="n">sparse</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">output_mode</span><span class="o">=</span><span class="s2">&quot;one_hot&quot;</span><span class="p">),</span>
+                <span class="p">)</span>
+            <span class="n">wide_input_block</span> <span class="o">=</span> <span class="n">ParallelBlock</span><span class="p">(</span>
+                <span class="n">TabularBlock</span><span class="o">.</span><span class="n">from_schema</span><span class="p">(</span><span class="n">schema</span><span class="o">=</span><span class="n">wide_schema</span><span class="p">,</span> <span class="n">pre</span><span class="o">=</span><span class="n">wide_preprocess</span><span class="p">),</span>
+                <span class="n">is_input</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">aggregation</span><span class="o">=</span><span class="s2">&quot;concat&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">wide_input_block</span><span class="p">:</span>
+        <span class="n">wide_body</span> <span class="o">=</span> <span class="n">wide_input_block</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span>
+            <span class="n">MLPBlock</span><span class="p">(</span>
+                <span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                <span class="n">no_activation_last_layer</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">kernel_regularizer</span><span class="o">=</span><span class="n">wide_regularizer</span><span class="p">,</span>
+                <span class="n">bias_regularizer</span><span class="o">=</span><span class="n">wide_regularizer</span><span class="p">,</span>
+                <span class="n">dropout</span><span class="o">=</span><span class="n">wide_dropout</span><span class="p">,</span>
+                <span class="o">**</span><span class="n">wide_body_kwargs</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">branches</span><span class="p">[</span><span class="s2">&quot;wide&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">wide_body</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">branches</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;At least the deep part (deep_schema/deep_input_block)&quot;</span>
+            <span class="s2">&quot; or wide part (wide_schema/wide_input_block) must be provided.&quot;</span>
+        <span class="p">)</span>
+
+    <span class="n">wide_and_deep_body</span> <span class="o">=</span> <span class="n">ParallelBlock</span><span class="p">(</span><span class="n">branches</span><span class="p">,</span> <span class="n">pre</span><span class="o">=</span><span class="n">pre</span><span class="p">,</span> <span class="n">aggregation</span><span class="o">=</span><span class="s2">&quot;element-wise-sum&quot;</span><span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">wide_and_deep_body</span><span class="p">,</span> <span class="n">prediction_blocks</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">model</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, NVIDIA.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-NVJ1Y1YJHK"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-NVJ1Y1YJHK', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

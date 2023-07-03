@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>merlin.models.tf.prediction_tasks.base &mdash; Merlin  documentation</title><link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/mystnb.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/togglebutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/css/custom.css" type="text/css" />
+    <link rel="canonical" href="https://nvidia-merlin.github.io/Merlin/stable/_modules/merlin/models/tf/prediction_tasks/base.html" />
+  <!--[if lt IE 9]>
+    <script src="../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../../../../../" src="../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../_static/jquery.js"></script>
+        <script src="../../../../../_static/underscore.js"></script>
+        <script src="../../../../../_static/doctools.js"></script>
+        <script >let toggleHintShow = 'Click to show';</script>
+        <script >let toggleHintHide = 'Click to hide';</script>
+        <script >let toggleOpenOnPrint = 'true';</script>
+        <script src="../../../../../_static/togglebutton.js"></script>
+        <script >var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="banner">
+    <p class="banner">
+      Beginning in January 2023, versions for all NVIDIA Merlin projects
+      will change from semantic versioning like <code>4.0</code>
+      to calendar versioning like <code>23.01</code>.</p>
+  </div>
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../../index.html" class="icon icon-home">
+            Merlin
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../README.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../guide/recommender_system_guide.html">Recommender System Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../examples/index.html">Example Notebooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../api_overview.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../containers.html">Merlin Containers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../support_matrix/index.html">Merlin Support Matrix</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">Merlin</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">merlin.models.tf.prediction_tasks.base</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for merlin.models.tf.prediction_tasks.base</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">NamedTuple</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Text</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
+<span class="kn">from</span> <span class="nn">keras.utils.generic_utils</span> <span class="kn">import</span> <span class="n">to_snake_case</span>
+<span class="kn">from</span> <span class="nn">tensorflow.keras.layers</span> <span class="kn">import</span> <span class="n">Layer</span>
+
+<span class="kn">from</span> <span class="nn">merlin.models.tf.core.base</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Block</span><span class="p">,</span>
+    <span class="n">BlockType</span><span class="p">,</span>
+    <span class="n">ContextMixin</span><span class="p">,</span>
+    <span class="n">ModelContext</span><span class="p">,</span>
+    <span class="n">PredictionOutput</span><span class="p">,</span>
+    <span class="n">name_fn</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">merlin.models.tf.core.combinators</span> <span class="kn">import</span> <span class="n">ParallelBlock</span>
+<span class="kn">from</span> <span class="nn">merlin.models.tf.typing</span> <span class="kn">import</span> <span class="n">TabularData</span><span class="p">,</span> <span class="n">TensorOrTabularData</span>
+<span class="kn">from</span> <span class="nn">merlin.models.tf.utils</span> <span class="kn">import</span> <span class="n">tf_utils</span>
+<span class="kn">from</span> <span class="nn">merlin.models.utils.schema_utils</span> <span class="kn">import</span> <span class="n">tensorflow_metadata_json_to_schema</span>
+<span class="kn">from</span> <span class="nn">merlin.schema</span> <span class="kn">import</span> <span class="n">Schema</span><span class="p">,</span> <span class="n">Tags</span>
+
+
+<span class="k">class</span> <span class="nc">TaskResults</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+    <span class="n">predictions</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">TabularData</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span>
+    <span class="n">targets</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">TabularData</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="PredictionTask"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.PredictionTask.html#merlin.models.tf.PredictionTask">[docs]</a><span class="nd">@tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">register_keras_serializable</span><span class="p">(</span><span class="n">package</span><span class="o">=</span><span class="s2">&quot;merlin.models&quot;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">PredictionTask</span><span class="p">(</span><span class="n">Layer</span><span class="p">,</span> <span class="n">ContextMixin</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base-class for prediction tasks.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    target_name : Optional[str], optional</span>
+<span class="sd">        Label name, by default None</span>
+<span class="sd">    task_name : Optional[str], optional</span>
+<span class="sd">        Task name, by default None</span>
+<span class="sd">    metrics : Optional[MetricOrMetrics], optional</span>
+<span class="sd">        List of Keras metrics to be evaluated, by default None</span>
+<span class="sd">    pre : Optional[Block], optional</span>
+<span class="sd">        Optional block to transform predictions before computing loss and metrics,</span>
+<span class="sd">        by default None</span>
+<span class="sd">    pre_eval_topk : Optional[Block], optional</span>
+<span class="sd">        Optional block to apply additional transform predictions before computing</span>
+<span class="sd">        top-k evaluation loss and metrics, by default None</span>
+<span class="sd">    task_block : Optional[Layer], optional</span>
+<span class="sd">        Optional block to apply to inputs before computing predictions,</span>
+<span class="sd">        by default None</span>
+<span class="sd">    prediction_metrics : Optional[List[tf.keras.metrics.Metric]], optional</span>
+<span class="sd">        List of Keras metrics used to summarize the predictions, by default None</span>
+<span class="sd">    label_metrics : Optional[List[tf.keras.metrics.Metric]], optional</span>
+<span class="sd">        List of Keras metrics used to summarize the labels, by default None</span>
+<span class="sd">    compute_train_metrics : Optional[bool], optional</span>
+<span class="sd">        Enable computing metrics during training, by default True</span>
+<span class="sd">    name : Optional[Text], optional</span>
+<span class="sd">        Task name, by default None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PredictionTask.__init__"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.PredictionTask.html#merlin.models.tf.PredictionTask.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">target_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">task_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">pre</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Block</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">pre_eval_topk</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Block</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">task_block</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Layer</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Text</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+            <span class="s2">&quot;PredictionTask based blocks are going to be deprecated.&quot;</span>
+            <span class="s2">&quot;Please move to ModelOutput based blocks (e.g. replace&quot;</span>
+            <span class="s2">&quot;PredictionTasks() by OutputBlock().&quot;</span><span class="p">,</span>
+            <span class="ne">DeprecationWarning</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">target_name</span> <span class="o">=</span> <span class="n">target_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_task_name</span> <span class="o">=</span> <span class="n">task_name</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">name</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_name</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">task_block</span> <span class="o">=</span> <span class="n">task_block</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pre</span> <span class="o">=</span> <span class="n">pre</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pre_eval_topk</span> <span class="o">=</span> <span class="n">pre_eval_topk</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">pre_eval_topk</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pre_eval_topk</span>
+
+    <span class="nd">@pre_eval_topk</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">pre_eval_topk</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Block</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set pre_eval_topk Block</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        value : Block</span>
+<span class="sd">            The block for top-k evaluation</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pre_eval_topk</span> <span class="o">=</span> <span class="n">value</span>
+
+<div class="viewcode-block" id="PredictionTask.pre_call"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.PredictionTask.html#merlin.models.tf.PredictionTask.pre_call">[docs]</a>    <span class="k">def</span> <span class="nf">pre_call</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">TensorOrTabularData</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Apply PredictionTask to inputs to get predictions scores</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        inputs : TensorOrTabularData</span>
+<span class="sd">            inputs of the prediction task</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        tf.Tensor</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">inputs</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_block</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_block</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pre</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pre</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">x</span></div>
+
+<div class="viewcode-block" id="PredictionTask.pre_loss"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.PredictionTask.html#merlin.models.tf.PredictionTask.pre_loss">[docs]</a>    <span class="k">def</span> <span class="nf">pre_loss</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">outputs</span><span class="p">:</span> <span class="n">PredictionOutput</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;PredictionOutput&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Apply `call_outputs` method of `pre` block to transform predictions and targets</span>
+<span class="sd">        before computing loss and metrics.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        outputs : PredictionOutput</span>
+<span class="sd">            The named tuple containing predictions and targets tensors</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        PredictionOutput</span>
+<span class="sd">             The named tuple containing transformed predictions and targets tensors</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pre</span><span class="o">.</span><span class="n">call_outputs</span><span class="p">(</span><span class="n">outputs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pre</span> <span class="k">else</span> <span class="n">outputs</span>
+
+        <span class="k">return</span> <span class="n">out</span></div>
+
+<div class="viewcode-block" id="PredictionTask.build"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.PredictionTask.html#merlin.models.tf.PredictionTask.build">[docs]</a>    <span class="k">def</span> <span class="nf">build</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_shape</span><span class="p">,</span> <span class="n">features_shape</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pre</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pre</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">input_shape</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">input_shape</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">inputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pre_call</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="c1"># This will call the `call` method implemented by the super class.</span>
+        <span class="n">outputs</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__call__</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>  <span class="c1"># noqa</span>
+
+        <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;training&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span> <span class="ow">or</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;testing&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+            <span class="n">targets</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;targets&quot;</span><span class="p">,</span> <span class="p">{})</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_name</span><span class="p">:</span>
+                <span class="n">targets</span> <span class="o">=</span> <span class="n">targets</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target_name</span><span class="p">,</span> <span class="n">targets</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">outputs</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_name</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_name</span> <span class="ow">in</span> <span class="n">outputs</span><span class="p">:</span>
+                <span class="n">outputs</span> <span class="o">=</span> <span class="n">outputs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">task_name</span><span class="p">]</span>
+
+            <span class="n">prediction_output</span> <span class="o">=</span> <span class="n">PredictionOutput</span><span class="p">(</span><span class="n">outputs</span><span class="p">,</span> <span class="n">targets</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pre</span><span class="p">:</span>
+                <span class="n">prediction_output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pre_loss</span><span class="p">(</span><span class="n">prediction_output</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="p">(</span>
+                <span class="nb">isinstance</span><span class="p">(</span><span class="n">prediction_output</span><span class="o">.</span><span class="n">targets</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span>
+                <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">prediction_output</span><span class="o">.</span><span class="n">targets</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+                <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">prediction_output</span><span class="o">.</span><span class="n">predictions</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+            <span class="p">):</span>
+                <span class="n">prediction_output</span> <span class="o">=</span> <span class="n">prediction_output</span><span class="o">.</span><span class="n">copy_with_updates</span><span class="p">(</span>
+                    <span class="n">predictions</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">prediction_output</span><span class="o">.</span><span class="n">predictions</span><span class="p">)</span>
+                <span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">prediction_output</span>
+
+        <span class="k">return</span> <span class="n">outputs</span>
+
+<div class="viewcode-block" id="PredictionTask.build_task"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.PredictionTask.html#merlin.models.tf.PredictionTask.build_task">[docs]</a>    <span class="k">def</span> <span class="nf">build_task</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_shape</span><span class="p">,</span> <span class="n">schema</span><span class="p">:</span> <span class="n">Schema</span><span class="p">,</span> <span class="n">body</span><span class="p">:</span> <span class="n">Block</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">input_shape</span><span class="p">)</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">task_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_task_name</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_task_name</span>
+
+        <span class="n">base_name</span> <span class="o">=</span> <span class="n">to_snake_case</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">name_fn</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target_name</span><span class="p">,</span> <span class="n">base_name</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_name</span> <span class="k">else</span> <span class="n">base_name</span>
+
+<div class="viewcode-block" id="PredictionTask.child_name"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.PredictionTask.html#merlin.models.tf.PredictionTask.child_name">[docs]</a>    <span class="k">def</span> <span class="nf">child_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">name_fn</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">task_name</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PredictionTask.from_config"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.PredictionTask.html#merlin.models.tf.PredictionTask.from_config">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_config</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">config</span><span class="p">):</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="n">tf_utils</span><span class="o">.</span><span class="n">maybe_deserialize_keras_objects</span><span class="p">(</span>
+            <span class="n">config</span><span class="p">,</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;pre&quot;</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">deserialize</span><span class="p">,</span>
+                <span class="s2">&quot;task_block&quot;</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">deserialize</span><span class="p">,</span>
+            <span class="p">},</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">from_config</span><span class="p">(</span><span class="n">config</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PredictionTask.get_config"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.PredictionTask.html#merlin.models.tf.PredictionTask.get_config">[docs]</a>    <span class="k">def</span> <span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="n">tf_utils</span><span class="o">.</span><span class="n">maybe_serialize_keras_objects</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">config</span><span class="p">,</span>
+            <span class="p">[</span><span class="s2">&quot;pre&quot;</span><span class="p">,</span> <span class="s2">&quot;task_block&quot;</span><span class="p">],</span>
+        <span class="p">)</span>
+
+        <span class="c1"># config[&quot;summary_type&quot;] = self.sequence_summary.summary_type</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_name</span><span class="p">:</span>
+            <span class="n">config</span><span class="p">[</span><span class="s2">&quot;target_name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_name</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_task_name</span><span class="p">:</span>
+            <span class="n">config</span><span class="p">[</span><span class="s2">&quot;task_name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_task_name</span>
+
+        <span class="k">return</span> <span class="n">config</span></div>
+
+<div class="viewcode-block" id="PredictionTask.create_default_metrics"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.PredictionTask.html#merlin.models.tf.PredictionTask.create_default_metrics">[docs]</a>    <span class="k">def</span> <span class="nf">create_default_metrics</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">metrics</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">metric</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">DEFAULT_METRICS</span><span class="p">:</span>
+            <span class="n">metrics</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">metric</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">child_name</span><span class="p">(</span><span class="n">to_snake_case</span><span class="p">(</span><span class="n">metric</span><span class="o">.</span><span class="vm">__name__</span><span class="p">))))</span>
+
+        <span class="k">return</span> <span class="n">metrics</span></div>
+
+<div class="viewcode-block" id="PredictionTask.compute_output_shape"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.PredictionTask.html#merlin.models.tf.PredictionTask.compute_output_shape">[docs]</a>    <span class="k">def</span> <span class="nf">compute_output_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_shape</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_block</span><span class="p">:</span>
+            <span class="n">input_shape</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_block</span><span class="o">.</span><span class="n">compute_output_shape</span><span class="p">(</span><span class="n">input_shape</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pre</span><span class="p">:</span>
+            <span class="n">input_shape</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pre</span><span class="o">.</span><span class="n">compute_output_shape</span><span class="p">(</span><span class="n">input_shape</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">input_shape</span></div></div>
+
+
+<div class="viewcode-block" id="ParallelPredictionBlock"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.ParallelPredictionBlock.html#merlin.models.tf.ParallelPredictionBlock">[docs]</a><span class="nd">@tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">register_keras_serializable</span><span class="p">(</span><span class="n">package</span><span class="o">=</span><span class="s2">&quot;merlin.models&quot;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">ParallelPredictionBlock</span><span class="p">(</span><span class="n">ParallelBlock</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Multi-task prediction block.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    prediction_tasks: *PredictionTask</span>
+<span class="sd">        List of tasks to be used for prediction.</span>
+<span class="sd">    task_blocks: Optional[Union[Layer, Dict[str, Layer]]]</span>
+<span class="sd">        Task blocks to be used for prediction.</span>
+<span class="sd">    task_weights : Optional[List[float]]</span>
+<span class="sd">        Weights for each task.</span>
+<span class="sd">    bias_block : Optional[Layer]</span>
+<span class="sd">        Bias block to be used for prediction.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="ParallelPredictionBlock.__init__"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.ParallelPredictionBlock.html#merlin.models.tf.ParallelPredictionBlock.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="n">prediction_tasks</span><span class="p">:</span> <span class="n">PredictionTask</span><span class="p">,</span>
+        <span class="n">task_blocks</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">Layer</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Layer</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">bias_block</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Layer</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">task_weights</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">pre</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">BlockType</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">post</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">BlockType</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+            <span class="s2">&quot;PredictionTask based blocks are going to be deprecated.&quot;</span>
+            <span class="s2">&quot;Please move to ModelOutput based blocks (e.g. replace&quot;</span>
+            <span class="s2">&quot;PredictionTasks() by OutputBlock().&quot;</span><span class="p">,</span>
+            <span class="ne">DeprecationWarning</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">prediction_tasks</span> <span class="o">=</span> <span class="n">prediction_tasks</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bias_block</span> <span class="o">=</span> <span class="n">bias_block</span>
+        <span class="k">if</span> <span class="n">bias_block</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bias_logit</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">prediction_task_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="n">prediction_tasks</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">task</span> <span class="ow">in</span> <span class="n">prediction_tasks</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">prediction_task_dict</span><span class="p">[</span><span class="n">task</span><span class="o">.</span><span class="n">task_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">task</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">ParallelPredictionBlock</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">prediction_task_dict</span><span class="p">,</span> <span class="n">pre</span><span class="o">=</span><span class="n">pre</span><span class="p">,</span> <span class="n">post</span><span class="o">=</span><span class="n">post</span><span class="p">,</span> <span class="n">use_layer_name</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">task_blocks</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_set_task_blocks</span><span class="p">(</span><span class="n">task_blocks</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ParallelPredictionBlock.get_tasks_from_schema"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.ParallelPredictionBlock.html#merlin.models.tf.ParallelPredictionBlock.get_tasks_from_schema">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">get_tasks_from_schema</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">schema</span><span class="p">,</span>
+        <span class="n">task_weight_dict</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">task_pre_dict</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Block</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Built Multi-task prediction Block from schema</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        schema : Schema</span>
+<span class="sd">            The `Schema` with the input features</span>
+<span class="sd">        task_weight_dict : Optional[Dict[str, float]], optional</span>
+<span class="sd">            Dict where keys are target feature names and values are weights for each task,</span>
+<span class="sd">            by default None</span>
+<span class="sd">        task_pre_dict: Optional[Dict[str, Block]], optional</span>
+<span class="sd">            Dict where keys are target feature names and values are Blocks to be used as</span>
+<span class="sd">            pre for those tasks</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">task_weight_dict</span> <span class="o">=</span> <span class="n">task_weight_dict</span> <span class="ow">or</span> <span class="p">{}</span>
+        <span class="n">task_pre_dict</span> <span class="o">=</span> <span class="n">task_pre_dict</span> <span class="ow">or</span> <span class="p">{}</span>
+
+        <span class="n">tasks</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="kn">from</span> <span class="nn">merlin.models.tf.prediction_tasks.classification</span> <span class="kn">import</span> <span class="n">BinaryClassificationTask</span>
+        <span class="kn">from</span> <span class="nn">merlin.models.tf.prediction_tasks.regression</span> <span class="kn">import</span> <span class="n">RegressionTask</span>
+
+        <span class="k">for</span> <span class="n">target</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">schema</span><span class="o">.</span><span class="n">select_by_tag</span><span class="p">(</span><span class="n">Tags</span><span class="o">.</span><span class="n">BINARY_CLASSIFICATION</span><span class="p">)</span><span class="o">.</span><span class="n">column_names</span><span class="p">):</span>
+            <span class="n">task</span> <span class="o">=</span> <span class="n">BinaryClassificationTask</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">pre</span><span class="o">=</span><span class="n">task_pre_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
+            <span class="n">task_weight</span> <span class="o">=</span> <span class="n">task_weight_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+            <span class="n">tasks</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">target</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">task_weight</span><span class="p">))</span>
+
+        <span class="k">for</span> <span class="n">target</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">schema</span><span class="o">.</span><span class="n">select_by_tag</span><span class="p">(</span><span class="n">Tags</span><span class="o">.</span><span class="n">REGRESSION</span><span class="p">)</span><span class="o">.</span><span class="n">column_names</span><span class="p">):</span>
+            <span class="n">task</span> <span class="o">=</span> <span class="n">RegressionTask</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">pre</span><span class="o">=</span><span class="n">task_pre_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
+            <span class="n">task_weight</span> <span class="o">=</span> <span class="n">task_weight_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+            <span class="n">tasks</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">target</span><span class="p">,</span> <span class="n">task</span><span class="p">,</span> <span class="n">task_weight</span><span class="p">))</span>
+        <span class="c1"># TODO: Add multi-class classification here. Figure out how to get number of classes</span>
+
+        <span class="c1"># Ensures tasks are sorted by name, so that they match the metrics</span>
+        <span class="c1"># which are sorted the same way by Keras</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">tasks</span><span class="p">,</span> <span class="n">tasks_weights</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="nb">sorted</span><span class="p">(</span><span class="n">tasks</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">tasks_weights</span><span class="p">,</span> <span class="n">tasks</span></div>
+
+<div class="viewcode-block" id="ParallelPredictionBlock.from_schema"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.ParallelPredictionBlock.html#merlin.models.tf.ParallelPredictionBlock.from_schema">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_schema</span><span class="p">(</span>  <span class="c1"># type: ignore</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">schema</span><span class="p">:</span> <span class="n">Schema</span><span class="p">,</span>
+        <span class="n">task_blocks</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">Layer</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Layer</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">task_weight_dict</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">task_pre_dict</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Block</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">bias_block</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Layer</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ParallelPredictionBlock&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Built Multi-task prediction Block from schema</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        schema : Schema</span>
+<span class="sd">            The `Schema` with the input features</span>
+<span class="sd">        task_blocks : Optional[Union[Layer, Dict[str, Layer]]], optional</span>
+<span class="sd">            Task blocks to be used for prediction, by default None</span>
+<span class="sd">        task_weight_dict : Optional[Dict[str, float]], optional</span>
+<span class="sd">            Dict where keys are target feature names and values are weights for each task,</span>
+<span class="sd">            by default None</span>
+<span class="sd">        task_pre_dict: Optional[Dict[str, Block]], optional</span>
+<span class="sd">            Dict where keys are target feature names and values are Blocks to be used as pre</span>
+<span class="sd">            for those tasks</span>
+<span class="sd">        bias_block : Optional[Layer], optional</span>
+<span class="sd">            Bias block to be used for prediction, by default None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">task_weight_dict</span> <span class="o">=</span> <span class="n">task_weight_dict</span> <span class="ow">or</span> <span class="p">{}</span>
+
+        <span class="n">task_weights</span><span class="p">,</span> <span class="n">tasks</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">get_tasks_from_schema</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="n">task_weight_dict</span><span class="p">,</span> <span class="n">task_pre_dict</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
+            <span class="o">*</span><span class="n">tasks</span><span class="p">,</span>
+            <span class="n">task_blocks</span><span class="o">=</span><span class="n">task_blocks</span><span class="p">,</span>
+            <span class="n">task_weights</span><span class="o">=</span><span class="n">task_weights</span><span class="p">,</span>
+            <span class="n">bias_block</span><span class="o">=</span><span class="n">bias_block</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="ParallelPredictionBlock.task_names_from_schema"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.ParallelPredictionBlock.html#merlin.models.tf.ParallelPredictionBlock.task_names_from_schema">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">task_names_from_schema</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">schema</span><span class="p">:</span> <span class="n">Schema</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">tasks</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">get_tasks_from_schema</span><span class="p">(</span><span class="n">schema</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">[</span><span class="n">task</span><span class="o">.</span><span class="n">task_name</span> <span class="k">for</span> <span class="n">task</span> <span class="ow">in</span> <span class="n">tasks</span><span class="p">]</span></div>
+
+    <span class="k">def</span> <span class="nf">_set_task_blocks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task_blocks</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">task_blocks</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">tasks_multi_names</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prediction_tasks_multi_names</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">task_block</span> <span class="ow">in</span> <span class="n">task_blocks</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">tasks_multi_names</span><span class="p">:</span>
+                    <span class="n">tasks</span> <span class="o">=</span> <span class="n">tasks_multi_names</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tasks</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">prediction_task_dict</span><span class="p">[</span><span class="n">tasks</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">task_name</span><span class="p">]</span><span class="o">.</span><span class="n">task_block</span> <span class="o">=</span> <span class="n">task_block</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;Ambiguous name: </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">, can&#39;t resolve it to a task &quot;</span>
+                            <span class="s2">&quot;because there are multiple tasks that contain the key: &quot;</span>
+                            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">task</span><span class="o">.</span><span class="n">task_name</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">task</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">tasks</span><span class="p">])</span><span class="si">}</span><span class="s2">&quot;</span>
+                        <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;Couldn&#39;t find </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> in prediction_tasks, &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;only found: </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prediction_task_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">task_blocks</span><span class="p">,</span> <span class="n">Layer</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">prediction_task_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">task_block</span> <span class="o">=</span> <span class="n">task_blocks</span><span class="o">.</span><span class="n">from_config</span><span class="p">(</span><span class="n">task_blocks</span><span class="o">.</span><span class="n">get_config</span><span class="p">())</span>
+                <span class="n">val</span><span class="o">.</span><span class="n">task_block</span> <span class="o">=</span> <span class="n">task_block</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;`task_blocks` must be a Layer or a Dict[str, Layer]&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_prediction_tasks_multi_names</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">PredictionTask</span><span class="p">]]:</span>
+        <span class="n">prediction_tasks_multi_names</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">name</span><span class="p">:</span> <span class="p">[</span><span class="n">val</span><span class="p">]</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">prediction_task_dict</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="p">}</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">prediction_task_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">name_parts</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">name_part</span> <span class="ow">in</span> <span class="n">name_parts</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">name_part</span> <span class="ow">in</span> <span class="n">prediction_tasks_multi_names</span><span class="p">:</span>
+                    <span class="n">prediction_tasks_multi_names</span><span class="p">[</span><span class="n">name_part</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">prediction_tasks_multi_names</span><span class="p">[</span><span class="n">name_part</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">value</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">prediction_tasks_multi_names</span>
+
+<div class="viewcode-block" id="ParallelPredictionBlock.add_task"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.ParallelPredictionBlock.html#merlin.models.tf.ParallelPredictionBlock.add_task">[docs]</a>    <span class="k">def</span> <span class="nf">add_task</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">:</span> <span class="n">PredictionTask</span><span class="p">,</span> <span class="n">task_weight</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="n">task</span><span class="o">.</span><span class="n">target_name</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">key</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;PredictionTask must have a target_name&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parallel_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">task</span>
+        <span class="k">if</span> <span class="n">task_weight</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_task_weight_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">task_weight</span>
+
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="ParallelPredictionBlock.pop_labels"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.ParallelPredictionBlock.html#merlin.models.tf.ParallelPredictionBlock.pop_labels">[docs]</a>    <span class="k">def</span> <span class="nf">pop_labels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Text</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]):</span>
+        <span class="n">outputs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parallel_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">outputs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">inputs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">outputs</span></div>
+
+<div class="viewcode-block" id="ParallelPredictionBlock.call"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.ParallelPredictionBlock.html#merlin.models.tf.ParallelPredictionBlock.call">[docs]</a>    <span class="k">def</span> <span class="nf">call</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">inputs</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">TabularData</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
+        <span class="n">training</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">bias_outputs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span>
+            <span class="n">name</span> <span class="ow">in</span> <span class="n">inputs</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parallel_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="p">):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bias_block</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">bias_outputs</span><span class="p">:</span>
+                <span class="n">bias_outputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bias_block</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="n">training</span><span class="p">)</span>
+            <span class="n">inputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">body</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+
+        <span class="n">outputs</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">ParallelPredictionBlock</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="n">training</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">bias_outputs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">outputs</span><span class="p">:</span>
+                <span class="n">outputs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">+=</span> <span class="n">bias_outputs</span>
+
+        <span class="k">return</span> <span class="n">outputs</span></div>
+
+<div class="viewcode-block" id="ParallelPredictionBlock.compute_call_output_shape"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.ParallelPredictionBlock.html#merlin.models.tf.ParallelPredictionBlock.compute_call_output_shape">[docs]</a>    <span class="k">def</span> <span class="nf">compute_call_output_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_shape</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">input_shape</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span>
+            <span class="n">name</span> <span class="ow">in</span> <span class="n">input_shape</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parallel_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="p">):</span>
+            <span class="n">input_shape</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">body</span><span class="o">.</span><span class="n">compute_output_shape</span><span class="p">(</span><span class="n">input_shape</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">compute_call_output_shape</span><span class="p">(</span><span class="n">input_shape</span><span class="p">)</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">task_blocks</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Layer</span><span class="p">]]:</span>
+        <span class="k">return</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">task</span><span class="o">.</span><span class="n">task_block</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">task</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">prediction_task_dict</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">task_names</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">name</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">prediction_task_dict</span><span class="p">]</span>
+
+<div class="viewcode-block" id="ParallelPredictionBlock.repr_ignore"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.ParallelPredictionBlock.html#merlin.models.tf.ParallelPredictionBlock.repr_ignore">[docs]</a>    <span class="k">def</span> <span class="nf">repr_ignore</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">[</span><span class="s2">&quot;prediction_tasks&quot;</span><span class="p">,</span> <span class="s2">&quot;parallel_layers&quot;</span><span class="p">]</span></div>
+
+    <span class="k">def</span> <span class="nf">_set_context</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="s2">&quot;ModelContext&quot;</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">task</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">prediction_task_dict</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="n">task</span><span class="o">.</span><span class="n">_set_context</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ParallelPredictionBlock</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_set_context</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ParallelPredictionBlock.from_config"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.ParallelPredictionBlock.html#merlin.models.tf.ParallelPredictionBlock.from_config">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_config</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="n">tf_utils</span><span class="o">.</span><span class="n">maybe_deserialize_keras_objects</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;body&quot;</span><span class="p">,</span> <span class="s2">&quot;prediction_tasks&quot;</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="s2">&quot;schema&quot;</span> <span class="ow">in</span> <span class="n">config</span><span class="p">:</span>
+            <span class="n">config</span><span class="p">[</span><span class="s2">&quot;schema&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tensorflow_metadata_json_to_schema</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;schema&quot;</span><span class="p">])</span>
+
+        <span class="n">prediction_tasks</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;prediction_tasks&quot;</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;parallel_layers&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="o">*</span><span class="n">prediction_tasks</span><span class="p">,</span> <span class="o">**</span><span class="n">config</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ParallelPredictionBlock.get_config"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.ParallelPredictionBlock.html#merlin.models.tf.ParallelPredictionBlock.get_config">[docs]</a>    <span class="k">def</span> <span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="n">tf_utils</span><span class="o">.</span><span class="n">maybe_serialize_keras_objects</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;body&quot;</span><span class="p">,</span> <span class="s2">&quot;prediction_tasks&quot;</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="n">config</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, NVIDIA.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-NVJ1Y1YJHK"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-NVJ1Y1YJHK', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

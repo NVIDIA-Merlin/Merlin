@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>merlin.models.tf.inputs.base &mdash; Merlin  documentation</title><link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/mystnb.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/togglebutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/css/custom.css" type="text/css" />
+    <link rel="canonical" href="https://nvidia-merlin.github.io/Merlin/stable/_modules/merlin/models/tf/inputs/base.html" />
+  <!--[if lt IE 9]>
+    <script src="../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../../../../../" src="../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../_static/jquery.js"></script>
+        <script src="../../../../../_static/underscore.js"></script>
+        <script src="../../../../../_static/doctools.js"></script>
+        <script >let toggleHintShow = 'Click to show';</script>
+        <script >let toggleHintHide = 'Click to hide';</script>
+        <script >let toggleOpenOnPrint = 'true';</script>
+        <script src="../../../../../_static/togglebutton.js"></script>
+        <script >var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="banner">
+    <p class="banner">
+      Beginning in January 2023, versions for all NVIDIA Merlin projects
+      will change from semantic versioning like <code>4.0</code>
+      to calendar versioning like <code>23.01</code>.</p>
+  </div>
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../../index.html" class="icon icon-home">
+            Merlin
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../README.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../guide/recommender_system_guide.html">Recommender System Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../examples/index.html">Example Notebooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../api_overview.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../containers.html">Merlin Containers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../support_matrix/index.html">Merlin Support Matrix</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">Merlin</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">merlin.models.tf.inputs.base</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for merlin.models.tf.inputs.base</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># Copyright (c) 2021, NVIDIA CORPORATION.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+<span class="c1">#</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">from</span> <span class="nn">tensorflow.keras.layers</span> <span class="kn">import</span> <span class="n">Layer</span>
+
+<span class="kn">from</span> <span class="nn">merlin.models.tf.core.aggregation</span> <span class="kn">import</span> <span class="n">SequenceAggregator</span>
+<span class="kn">from</span> <span class="nn">merlin.models.tf.core.base</span> <span class="kn">import</span> <span class="n">Block</span><span class="p">,</span> <span class="n">BlockType</span>
+<span class="kn">from</span> <span class="nn">merlin.models.tf.core.combinators</span> <span class="kn">import</span> <span class="n">ParallelBlock</span><span class="p">,</span> <span class="n">TabularAggregationType</span>
+<span class="kn">from</span> <span class="nn">merlin.models.tf.inputs.continuous</span> <span class="kn">import</span> <span class="n">Continuous</span><span class="p">,</span> <span class="n">ContinuousFeatures</span>
+<span class="kn">from</span> <span class="nn">merlin.models.tf.inputs.embedding</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">ContinuousEmbedding</span><span class="p">,</span>
+    <span class="n">EmbeddingFeatures</span><span class="p">,</span>
+    <span class="n">EmbeddingOptions</span><span class="p">,</span>
+    <span class="n">Embeddings</span><span class="p">,</span>
+    <span class="n">PretrainedEmbeddings</span><span class="p">,</span>
+    <span class="n">SequenceEmbeddingFeatures</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">merlin.schema</span> <span class="kn">import</span> <span class="n">Schema</span><span class="p">,</span> <span class="n">Tags</span><span class="p">,</span> <span class="n">TagsType</span>
+
+<span class="n">LOG</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;merlin-models&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="InputBlock"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.InputBlock.html#merlin.models.tf.InputBlock">[docs]</a><span class="k">def</span> <span class="nf">InputBlock</span><span class="p">(</span>
+    <span class="n">schema</span><span class="p">:</span> <span class="n">Schema</span><span class="p">,</span>
+    <span class="n">branches</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Block</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">pre</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">BlockType</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">post</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">BlockType</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">aggregation</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TabularAggregationType</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">seq</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">add_continuous_branch</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">continuous_tags</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">TagsType</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tags</span><span class="p">]]]</span> <span class="o">=</span> <span class="p">(</span><span class="n">Tags</span><span class="o">.</span><span class="n">CONTINUOUS</span><span class="p">,),</span>
+    <span class="n">continuous_projection</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Block</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">add_embedding_branch</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">embedding_options</span><span class="p">:</span> <span class="n">EmbeddingOptions</span> <span class="o">=</span> <span class="n">EmbeddingOptions</span><span class="p">(),</span>
+    <span class="n">categorical_tags</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">TagsType</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tags</span><span class="p">]]]</span> <span class="o">=</span> <span class="p">(</span><span class="n">Tags</span><span class="o">.</span><span class="n">CATEGORICAL</span><span class="p">,),</span>
+    <span class="n">sequential_tags</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">TagsType</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tags</span><span class="p">]]]</span> <span class="o">=</span> <span class="p">(</span><span class="n">Tags</span><span class="o">.</span><span class="n">SEQUENCE</span><span class="p">,),</span>
+    <span class="n">split_sparse</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">seq_aggregator</span><span class="p">:</span> <span class="n">Block</span> <span class="o">=</span> <span class="n">SequenceAggregator</span><span class="p">(</span><span class="s2">&quot;mean&quot;</span><span class="p">),</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Block</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The entry block of the model to process input features from a schema.</span>
+
+<span class="sd">    This function creates continuous and embedding layers, and connects them via `ParallelBlock`.</span>
+<span class="sd">        If aggregation argument is not set, it returns a dictionary of multiple tensors</span>
+<span class="sd">        each corresponds to an input feature. Otherwise, it merges the tensors</span>
+<span class="sd">        into one using the aggregation method.</span>
+
+<span class="sd">    Example usage::</span>
+
+<span class="sd">        mlp = ml.InputBlock(schema).connect(ml.MLPBlock([64, 32]))</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">    ----------</span>
+<span class="sd">    schema: Schema</span>
+<span class="sd">        Schema of the input data. This Schema object will be automatically generated using</span>
+<span class="sd">        [NVTabular](https://nvidia-merlin.github.io/NVTabular/stable/Introduction.html).</span>
+<span class="sd">        Next to this, it&#39;s also possible to construct it manually.</span>
+<span class="sd">    branches: Dict[str, Block], optional</span>
+<span class="sd">        Dictionary of branches to use inside the InputBlock.</span>
+<span class="sd">    pre: Optional[BlockType]</span>
+<span class="sd">        Transformations to apply on the inputs before the module is</span>
+<span class="sd">        called (before &#39;forward&#39;). Default is None.</span>
+<span class="sd">    post: Optional[BlockType]</span>
+<span class="sd">        Transformations to apply on the inputs after the module is</span>
+<span class="sd">        called (so **after** `forward`).</span>
+<span class="sd">        Defaults to None</span>
+<span class="sd">    aggregation: Optional[TabularAggregationType]</span>
+<span class="sd">        Aggregation to apply after processing the  `forward`-method to output a single Tensor.</span>
+<span class="sd">        Defaults to None</span>
+<span class="sd">    seq: bool</span>
+<span class="sd">        Whether to process inputs for sequential model (returns 3-D tensor)</span>
+<span class="sd">        or not (returns 2-D tensor). Use `seq=True` to treat the sparse (list) features</span>
+<span class="sd">        as sequences (e.g. for sequential recommendation) and `seq=False` to treat sparse</span>
+<span class="sd">        features as multi-hot categorical representations.</span>
+<span class="sd">        Defaults to False</span>
+<span class="sd">    add_continuous_branch: bool</span>
+<span class="sd">        If set, add the branch to process continuous features</span>
+<span class="sd">        Defaults to True</span>
+<span class="sd">    continuous_tags: Optional[Union[TagsType, Tuple[Tags]]]</span>
+<span class="sd">        Tags to filter the continuous features</span>
+<span class="sd">        Defaults to  (Tags.CONTINUOUS,)</span>
+<span class="sd">    continuous_projection: Optional[Block]</span>
+<span class="sd">        If set, concatenate all numerical features and project using the</span>
+<span class="sd">        specified Block.</span>
+<span class="sd">        Defaults to None</span>
+<span class="sd">    add_embedding_branch: bool</span>
+<span class="sd">        If set, add the branch to process categorical features</span>
+<span class="sd">        Defaults to True</span>
+<span class="sd">    embedding_options : EmbeddingOptions, optional</span>
+<span class="sd">        An EmbeddingOptions instance, which allows for a number of</span>
+<span class="sd">        options for the embedding table, by default EmbeddingOptions()</span>
+<span class="sd">    categorical_tags: Optional[Union[TagsType, Tuple[Tags]]]</span>
+<span class="sd">        Tags to filter the continuous features</span>
+<span class="sd">        Defaults to (Tags.CATEGORICAL,)</span>
+<span class="sd">    sequential_tags: Optional[Union[TagsType, Tuple[Tags]]]</span>
+<span class="sd">        Tags to filter the sparse features</span>
+<span class="sd">        Defaults to (Tags.SEQUENCE,)</span>
+<span class="sd">    split_sparse: Optional[bool]</span>
+<span class="sd">        When True, separate the processing of context (2-D) and sparse features (3-D).</span>
+<span class="sd">        Defaults to False</span>
+<span class="sd">    seq_aggregator: Block</span>
+<span class="sd">        If non-sequential model (seq=False):</span>
+<span class="sd">        aggregate the sparse features tensor along the sequence axis.</span>
+<span class="sd">        Defaults to SequenceAggregator(&#39;mean&#39;)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># If targets are passed, exclude these from the input block schema</span>
+    <span class="n">schema</span> <span class="o">=</span> <span class="n">schema</span><span class="o">.</span><span class="n">excluding_by_tag</span><span class="p">([</span><span class="n">Tags</span><span class="o">.</span><span class="n">TARGET</span><span class="p">,</span> <span class="n">Tags</span><span class="o">.</span><span class="n">BINARY_CLASSIFICATION</span><span class="p">,</span> <span class="n">Tags</span><span class="o">.</span><span class="n">REGRESSION</span><span class="p">])</span>
+
+    <span class="n">branches</span> <span class="o">=</span> <span class="n">branches</span> <span class="ow">or</span> <span class="p">{}</span>
+
+    <span class="k">if</span> <span class="n">split_sparse</span><span class="p">:</span>
+        <span class="n">sparse_schema</span> <span class="o">=</span> <span class="n">schema</span><span class="o">.</span><span class="n">select_by_tag</span><span class="p">(</span><span class="n">sequential_tags</span><span class="p">)</span>
+        <span class="n">context_schema</span> <span class="o">=</span> <span class="n">schema</span><span class="o">.</span><span class="n">remove_by_tag</span><span class="p">(</span><span class="n">sequential_tags</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">sparse_schema</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Please make sure that schema has features tagged as &#39;sequence&#39; when&quot;</span>
+                <span class="s2">&quot;`split_context` is set to True&quot;</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">aggregation</span><span class="p">:</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="s2">&quot;aggregation is not provided, &quot;</span>
+                <span class="s2">&quot;default `concat` will be used to merge sequential features&quot;</span>
+            <span class="p">)</span>
+            <span class="n">aggregation</span> <span class="o">=</span> <span class="s2">&quot;concat&quot;</span>
+        <span class="n">agg</span> <span class="o">=</span> <span class="n">aggregation</span>
+        <span class="n">sparse_interactions</span> <span class="o">=</span> <span class="n">InputBlock</span><span class="p">(</span>
+            <span class="n">sparse_schema</span><span class="p">,</span>
+            <span class="n">branches</span><span class="p">,</span>
+            <span class="n">post</span><span class="p">,</span>
+            <span class="n">aggregation</span><span class="o">=</span><span class="n">agg</span><span class="p">,</span>
+            <span class="n">seq</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">add_continuous_branch</span><span class="o">=</span><span class="n">add_continuous_branch</span><span class="p">,</span>
+            <span class="n">continuous_tags</span><span class="o">=</span><span class="n">continuous_tags</span><span class="p">,</span>
+            <span class="n">continuous_projection</span><span class="o">=</span><span class="n">continuous_projection</span><span class="p">,</span>
+            <span class="n">add_embedding_branch</span><span class="o">=</span><span class="n">add_embedding_branch</span><span class="p">,</span>
+            <span class="n">embedding_options</span><span class="o">=</span><span class="n">embedding_options</span><span class="p">,</span>
+            <span class="n">categorical_tags</span><span class="o">=</span><span class="n">categorical_tags</span><span class="p">,</span>
+            <span class="n">split_sparse</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">seq</span><span class="p">:</span>
+            <span class="n">sparse_interactions</span> <span class="o">=</span> <span class="n">sparse_interactions</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">seq_aggregator</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">context_schema</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">sparse_interactions</span>
+
+        <span class="n">branches</span><span class="p">[</span><span class="s2">&quot;sparse&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sparse_interactions</span>
+        <span class="k">return</span> <span class="n">InputBlock</span><span class="p">(</span>
+            <span class="n">context_schema</span><span class="p">,</span>
+            <span class="n">branches</span><span class="p">,</span>
+            <span class="n">post</span><span class="p">,</span>
+            <span class="n">aggregation</span><span class="o">=</span><span class="n">agg</span><span class="p">,</span>
+            <span class="n">seq</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">add_continuous_branch</span><span class="o">=</span><span class="n">add_continuous_branch</span><span class="p">,</span>
+            <span class="n">continuous_tags</span><span class="o">=</span><span class="n">continuous_tags</span><span class="p">,</span>
+            <span class="n">continuous_projection</span><span class="o">=</span><span class="n">continuous_projection</span><span class="p">,</span>
+            <span class="n">add_embedding_branch</span><span class="o">=</span><span class="n">add_embedding_branch</span><span class="p">,</span>
+            <span class="n">embedding_options</span><span class="o">=</span><span class="n">embedding_options</span><span class="p">,</span>
+            <span class="n">categorical_tags</span><span class="o">=</span><span class="n">categorical_tags</span><span class="p">,</span>
+            <span class="n">split_sparse</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">if</span> <span class="p">(</span>
+        <span class="n">add_continuous_branch</span>
+        <span class="ow">and</span> <span class="n">schema</span><span class="o">.</span><span class="n">select_by_tag</span><span class="p">(</span><span class="n">continuous_tags</span><span class="p">)</span><span class="o">.</span><span class="n">excluding_by_tag</span><span class="p">(</span><span class="n">Tags</span><span class="o">.</span><span class="n">TARGET</span><span class="p">)</span><span class="o">.</span><span class="n">column_schemas</span>
+    <span class="p">):</span>
+        <span class="n">branches</span><span class="p">[</span><span class="s2">&quot;continuous&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ContinuousFeatures</span><span class="o">.</span><span class="n">from_schema</span><span class="p">(</span>  <span class="c1"># type: ignore</span>
+            <span class="n">schema</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="n">continuous_tags</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="p">(</span>
+        <span class="n">add_embedding_branch</span>
+        <span class="ow">and</span> <span class="n">schema</span><span class="o">.</span><span class="n">select_by_tag</span><span class="p">(</span><span class="n">categorical_tags</span><span class="p">)</span><span class="o">.</span><span class="n">excluding_by_tag</span><span class="p">(</span><span class="n">Tags</span><span class="o">.</span><span class="n">TARGET</span><span class="p">)</span><span class="o">.</span><span class="n">column_schemas</span>
+    <span class="p">):</span>
+        <span class="n">emb_cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">EmbeddingFeatures</span><span class="p">]</span> <span class="o">=</span> <span class="n">SequenceEmbeddingFeatures</span> <span class="k">if</span> <span class="n">seq</span> <span class="k">else</span> <span class="n">EmbeddingFeatures</span>
+
+        <span class="n">branches</span><span class="p">[</span><span class="s2">&quot;categorical&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">emb_cls</span><span class="o">.</span><span class="n">from_schema</span><span class="p">(</span>  <span class="c1"># type: ignore</span>
+            <span class="n">schema</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="n">categorical_tags</span><span class="p">,</span> <span class="n">embedding_options</span><span class="o">=</span><span class="n">embedding_options</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="n">continuous_projection</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">ContinuousEmbedding</span><span class="p">(</span>
+            <span class="n">ParallelBlock</span><span class="p">(</span><span class="n">branches</span><span class="p">),</span>
+            <span class="n">continuous_projection</span><span class="p">,</span>
+            <span class="n">aggregation</span><span class="o">=</span><span class="n">aggregation</span><span class="p">,</span>
+            <span class="n">post</span><span class="o">=</span><span class="n">post</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;continuous_projection&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;is_input&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;is_input&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">ParallelBlock</span><span class="p">(</span><span class="n">branches</span><span class="p">,</span> <span class="n">pre</span><span class="o">=</span><span class="n">pre</span><span class="p">,</span> <span class="n">aggregation</span><span class="o">=</span><span class="n">aggregation</span><span class="p">,</span> <span class="n">post</span><span class="o">=</span><span class="n">post</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<span class="n">INPUT_TAG_TO_BLOCK</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Tags</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Schema</span><span class="p">],</span> <span class="n">Layer</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="n">Tags</span><span class="o">.</span><span class="n">CONTINUOUS</span><span class="p">:</span> <span class="n">Continuous</span><span class="p">,</span>
+    <span class="n">Tags</span><span class="o">.</span><span class="n">CATEGORICAL</span><span class="p">:</span> <span class="n">Embeddings</span><span class="p">,</span>
+    <span class="n">Tags</span><span class="o">.</span><span class="n">EMBEDDING</span><span class="p">:</span> <span class="n">PretrainedEmbeddings</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<div class="viewcode-block" id="InputBlockV2"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.InputBlockV2.html#merlin.models.tf.InputBlockV2">[docs]</a><span class="k">def</span> <span class="nf">InputBlockV2</span><span class="p">(</span>
+    <span class="n">schema</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Schema</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">categorical</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tags</span><span class="p">,</span> <span class="n">Layer</span><span class="p">]</span> <span class="o">=</span> <span class="n">Tags</span><span class="o">.</span><span class="n">CATEGORICAL</span><span class="p">,</span>
+    <span class="n">continuous</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tags</span><span class="p">,</span> <span class="n">Layer</span><span class="p">]</span> <span class="o">=</span> <span class="n">Tags</span><span class="o">.</span><span class="n">CONTINUOUS</span><span class="p">,</span>
+    <span class="n">pretrained_embeddings</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tags</span><span class="p">,</span> <span class="n">Layer</span><span class="p">]</span> <span class="o">=</span> <span class="n">Tags</span><span class="o">.</span><span class="n">EMBEDDING</span><span class="p">,</span>
+    <span class="n">pre</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">BlockType</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">post</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">BlockType</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">aggregation</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TabularAggregationType</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;concat&quot;</span><span class="p">,</span>
+    <span class="n">tag_to_block</span><span class="o">=</span><span class="n">INPUT_TAG_TO_BLOCK</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">branches</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ParallelBlock</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The entry block of the model to process input features from a schema.</span>
+
+<span class="sd">    This is a new version of InputBlock, which is more flexible for accepting</span>
+<span class="sd">    the external definition of `embeddings` block. After `22.10` this will become the default.</span>
+
+<span class="sd">    Simple Usage::</span>
+<span class="sd">        inputs = InputBlockV2(schema)</span>
+
+<span class="sd">    Custom Embeddings::</span>
+<span class="sd">        inputs = InputBlockV2(</span>
+<span class="sd">            schema,</span>
+<span class="sd">            categorical=Embeddings(schema, dim=32)</span>
+<span class="sd">        )</span>
+
+<span class="sd">    Sparse outputs for one-hot::</span>
+<span class="sd">        inputs = InputBlockV2(</span>
+<span class="sd">            schema,</span>
+<span class="sd">            categorical=CategoryEncoding(schema, sparse=True),</span>
+<span class="sd">            post=ToSparse()</span>
+<span class="sd">        )</span>
+
+<span class="sd">    Add continuous projection::</span>
+<span class="sd">        inputs = InputBlockV2(</span>
+<span class="sd">            schema,</span>
+<span class="sd">            continuous=ContinuousProjection(continuous_schema, MLPBlock([32])),</span>
+<span class="sd">        )</span>
+
+<span class="sd">    Merge 2D and 3D (for session-based)::</span>
+<span class="sd">        inputs = InputBlockV2(</span>
+<span class="sd">            schema,</span>
+<span class="sd">            post=BroadcastToSequence(context_schema, sequence_schema)</span>
+<span class="sd">        )</span>
+
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    schema : Schema</span>
+<span class="sd">        Schema of the input data. This Schema object will be automatically generated using</span>
+<span class="sd">        [NVTabular](https://nvidia-merlin.github.io/NVTabular/stable/Introduction.html).</span>
+<span class="sd">        Next to this, it&#39;s also possible to construct it manually.</span>
+<span class="sd">    categorical : Union[Tags, Layer], defaults to `Tags.CATEGORICAL`</span>
+<span class="sd">        A block or column-selector to use for categorical-features.</span>
+<span class="sd">        If a column-selector is provided (either a schema or tags), the selector</span>
+<span class="sd">        will be passed to `Embeddings()` to infer the embedding tables from the column-selector.</span>
+<span class="sd">    continuous : Union[Tags, Layer], defaults to `Tags.CONTINUOUS`</span>
+<span class="sd">        A block to use for continuous-features.</span>
+<span class="sd">        If a column-selector is provided (either a schema or tags), the selector</span>
+<span class="sd">        will be passed to `Continuous()` to infer the features from the column-selector.</span>
+<span class="sd">    pretrained_embeddings : Union[Tags, Layer], defaults to `Tags.EMBEDDING`</span>
+<span class="sd">        A block to use for pre-trained embeddings</span>
+<span class="sd">        If a column-selector is provided (either a schema or tags), the selector</span>
+<span class="sd">        will be passed to `PretrainedEmbeddings()` to infer the features from the column-selector.</span>
+<span class="sd">    pre : Optional[BlockType], optional</span>
+<span class="sd">        Transformation block to apply before the embeddings lookup, by default None</span>
+<span class="sd">    post : Optional[BlockType], optional</span>
+<span class="sd">        Transformation block to apply after the embeddings lookup, by default None</span>
+<span class="sd">    aggregation : Optional[TabularAggregationType], optional</span>
+<span class="sd">        Transformation block to apply for aggregating the inputs, by default &quot;concat&quot;</span>
+<span class="sd">    tag_to_block : Dict[str, Callable[[Schema], Layer]], optional</span>
+<span class="sd">        Mapping from tag to block-type, by default:</span>
+<span class="sd">            Tags.CONTINUOUS -&gt; Continuous</span>
+<span class="sd">            Tags.CATEGORICAL -&gt; Embeddings</span>
+<span class="sd">    **branches : dict</span>
+<span class="sd">        Extra branches to add to the input block.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ParallelBlock</span>
+<span class="sd">        Returns a ParallelBlock with a Dict with two branches:</span>
+<span class="sd">        continuous and embeddings</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># If targets are passed, exclude these from the input block schema</span>
+    <span class="n">schema</span> <span class="o">=</span> <span class="n">schema</span><span class="o">.</span><span class="n">excluding_by_tag</span><span class="p">([</span><span class="n">Tags</span><span class="o">.</span><span class="n">TARGET</span><span class="p">,</span> <span class="n">Tags</span><span class="o">.</span><span class="n">BINARY_CLASSIFICATION</span><span class="p">,</span> <span class="n">Tags</span><span class="o">.</span><span class="n">REGRESSION</span><span class="p">])</span>
+
+    <span class="k">if</span> <span class="s2">&quot;embeddings&quot;</span> <span class="ow">in</span> <span class="n">branches</span><span class="p">:</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+            <span class="s2">&quot;The `embeddings` argument is deprecated and should be replaced &quot;</span>
+            <span class="s2">&quot;by `categorical` argument&quot;</span><span class="p">,</span>
+            <span class="ne">DeprecationWarning</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">categorical</span> <span class="o">=</span> <span class="n">branches</span><span class="p">[</span><span class="s2">&quot;embeddings&quot;</span><span class="p">]</span>
+
+    <span class="n">unparsed</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;categorical&quot;</span><span class="p">:</span> <span class="n">categorical</span><span class="p">,</span>
+        <span class="s2">&quot;continuous&quot;</span><span class="p">:</span> <span class="n">continuous</span><span class="p">,</span>
+        <span class="s2">&quot;pretrained_embeddings&quot;</span><span class="p">:</span> <span class="n">pretrained_embeddings</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">branches</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="n">parsed</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">branch</span> <span class="ow">in</span> <span class="n">unparsed</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">branch</span><span class="p">,</span> <span class="n">Layer</span><span class="p">):</span>
+            <span class="n">parsed</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">branch</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="n">Schema</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;If you pass a column-selector as a branch, &quot;</span>
+                    <span class="s2">&quot;you must also pass a `schema` argument.&quot;</span>
+                <span class="p">)</span>
+            <span class="k">if</span> <span class="n">branch</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">tag_to_block</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No default-block provided for </span><span class="si">{</span><span class="n">branch</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">branch_schema</span><span class="p">:</span> <span class="n">Schema</span> <span class="o">=</span> <span class="n">schema</span><span class="o">.</span><span class="n">select_by_tag</span><span class="p">(</span><span class="n">branch</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">branch_schema</span><span class="p">:</span>
+                <span class="n">parsed</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">tag_to_block</span><span class="p">[</span><span class="n">branch</span><span class="p">](</span><span class="n">branch_schema</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">parsed</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;No columns selected for the input block&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">ParallelBlock</span><span class="p">(</span>
+        <span class="n">parsed</span><span class="p">,</span>
+        <span class="n">pre</span><span class="o">=</span><span class="n">pre</span><span class="p">,</span>
+        <span class="n">post</span><span class="o">=</span><span class="n">post</span><span class="p">,</span>
+        <span class="n">aggregation</span><span class="o">=</span><span class="n">aggregation</span><span class="p">,</span>
+        <span class="n">is_input</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">schema</span><span class="o">=</span><span class="n">schema</span><span class="p">,</span>
+    <span class="p">)</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, NVIDIA.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-NVJ1Y1YJHK"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-NVJ1Y1YJHK', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

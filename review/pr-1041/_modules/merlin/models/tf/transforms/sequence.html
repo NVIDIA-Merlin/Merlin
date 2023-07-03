@@ -1,0 +1,1277 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>merlin.models.tf.transforms.sequence &mdash; Merlin  documentation</title><link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/mystnb.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/togglebutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/css/custom.css" type="text/css" />
+    <link rel="canonical" href="https://nvidia-merlin.github.io/Merlin/stable/_modules/merlin/models/tf/transforms/sequence.html" />
+  <!--[if lt IE 9]>
+    <script src="../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../../../../../" src="../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../_static/jquery.js"></script>
+        <script src="../../../../../_static/underscore.js"></script>
+        <script src="../../../../../_static/doctools.js"></script>
+        <script >let toggleHintShow = 'Click to show';</script>
+        <script >let toggleHintHide = 'Click to hide';</script>
+        <script >let toggleOpenOnPrint = 'true';</script>
+        <script src="../../../../../_static/togglebutton.js"></script>
+        <script >var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="banner">
+    <p class="banner">
+      Beginning in January 2023, versions for all NVIDIA Merlin projects
+      will change from semantic versioning like <code>4.0</code>
+      to calendar versioning like <code>23.01</code>.</p>
+  </div>
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../../index.html" class="icon icon-home">
+            Merlin
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../README.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../guide/recommender_system_guide.html">Recommender System Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../examples/index.html">Example Notebooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../api_overview.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../containers.html">Merlin Containers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../support_matrix/index.html">Merlin Support Matrix</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">Merlin</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">merlin.models.tf.transforms.sequence</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for merlin.models.tf.transforms.sequence</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># Copyright (c) 2021, NVIDIA CORPORATION.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+<span class="c1">#</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
+<span class="kn">from</span> <span class="nn">tensorflow.keras.backend</span> <span class="kn">import</span> <span class="n">random_bernoulli</span>
+
+<span class="kn">from</span> <span class="nn">merlin.models.tf.core</span> <span class="kn">import</span> <span class="n">combinators</span>
+<span class="kn">from</span> <span class="nn">merlin.models.tf.core.base</span> <span class="kn">import</span> <span class="n">Block</span><span class="p">,</span> <span class="n">BlockType</span><span class="p">,</span> <span class="n">PredictionOutput</span>
+<span class="kn">from</span> <span class="nn">merlin.models.tf.core.combinators</span> <span class="kn">import</span> <span class="n">TabularBlock</span>
+<span class="kn">from</span> <span class="nn">merlin.models.tf.transforms.features</span> <span class="kn">import</span> <span class="n">PrepareFeatures</span>
+<span class="kn">from</span> <span class="nn">merlin.models.tf.typing</span> <span class="kn">import</span> <span class="n">TabularData</span>
+<span class="kn">from</span> <span class="nn">merlin.models.tf.utils</span> <span class="kn">import</span> <span class="n">tf_utils</span>
+<span class="kn">from</span> <span class="nn">merlin.models.utils</span> <span class="kn">import</span> <span class="n">schema_utils</span>
+<span class="kn">from</span> <span class="nn">merlin.models.utils.dependencies</span> <span class="kn">import</span> <span class="n">is_transformers_available</span>
+<span class="kn">from</span> <span class="nn">merlin.schema</span> <span class="kn">import</span> <span class="n">ColumnSchema</span><span class="p">,</span> <span class="n">Schema</span><span class="p">,</span> <span class="n">Tags</span>
+
+
+<span class="nd">@Block</span><span class="o">.</span><span class="n">registry</span><span class="o">.</span><span class="n">register_with_multiple_names</span><span class="p">(</span><span class="s2">&quot;remove_pad_3d&quot;</span><span class="p">)</span>
+<span class="nd">@tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">register_keras_serializable</span><span class="p">(</span><span class="n">package</span><span class="o">=</span><span class="s2">&quot;merlin_models&quot;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">RemovePad3D</span><span class="p">(</span><span class="n">Block</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Flatten the sequence of labels and filter out non-targets positions</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">        padding_idx: int</span>
+<span class="sd">            The padding index value.</span>
+<span class="sd">            Defaults to 0.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">        targets: tf.Tensor</span>
+<span class="sd">            The flattened vector of true targets positions</span>
+<span class="sd">        flatten_predictions: tf.Tensor</span>
+<span class="sd">            If the predictions are 3-D vectors (sequential task),</span>
+<span class="sd">            flatten the predictions vectors to keep only the ones related to target positions.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">padding_idx</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">def</span> <span class="nf">compute_output_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_shape</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">input_shape</span>
+
+    <span class="k">def</span> <span class="nf">call_outputs</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">outputs</span><span class="p">:</span> <span class="n">PredictionOutput</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;PredictionOutput&quot;</span><span class="p">:</span>
+        <span class="n">targets</span><span class="p">,</span> <span class="n">predictions</span> <span class="o">=</span> <span class="n">outputs</span><span class="o">.</span><span class="n">targets</span><span class="p">,</span> <span class="n">outputs</span><span class="o">.</span><span class="n">predictions</span>
+        <span class="n">targets</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,))</span>
+        <span class="n">non_pad_mask</span> <span class="o">=</span> <span class="n">targets</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">padding_idx</span>
+        <span class="n">targets</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">boolean_mask</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span> <span class="n">non_pad_mask</span><span class="p">)</span>
+
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">predictions</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">),</span> <span class="s2">&quot;Predictions must be a tensor&quot;</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="n">predictions</span><span class="o">.</span><span class="n">get_shape</span><span class="p">()))</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="n">predictions</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">predictions</span><span class="p">,</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">predictions</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
+            <span class="n">predictions</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">boolean_mask</span><span class="p">(</span>
+                <span class="n">predictions</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">broadcast_to</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">non_pad_mask</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">tf</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">predictions</span><span class="p">))</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">outputs</span><span class="o">.</span><span class="n">copy_with_updates</span><span class="p">(</span><span class="n">predictions</span><span class="o">=</span><span class="n">predictions</span><span class="p">,</span> <span class="n">targets</span><span class="o">=</span><span class="n">targets</span><span class="p">)</span>
+
+
+<span class="nd">@tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">register_keras_serializable</span><span class="p">(</span><span class="n">package</span><span class="o">=</span><span class="s2">&quot;merlin_models&quot;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">SequenceTransform</span><span class="p">(</span><span class="n">TabularBlock</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class for preparing sequential inputs and targets.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    schema : Schema</span>
+<span class="sd">        The schema with the sequential columns to be truncated</span>
+<span class="sd">    target : Union[str, Tags, ColumnSchema]</span>
+<span class="sd">        The sequential input column that will be used to extract the target</span>
+<span class="sd">    pre : Optional[BlockType], optional</span>
+<span class="sd">        A block that is called before this method call().</span>
+<span class="sd">        P.s. The PrepareFeatures() block is applied to convert</span>
+<span class="sd">        the tuple representation of sequential features to RaggedTensors,</span>
+<span class="sd">        so that the tensors sequences can be shifted/truncated</span>
+<span class="sd">    transformer:  Optional[TransformerBlock]</span>
+<span class="sd">        The transformer block that leverages the group of sequences returned</span>
+<span class="sd">        by the given SequenceTransform, by default None.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">schema</span><span class="p">:</span> <span class="n">Schema</span><span class="p">,</span>
+        <span class="n">target</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tags</span><span class="p">,</span> <span class="n">ColumnSchema</span><span class="p">],</span>
+        <span class="n">pre</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">BlockType</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">transformer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="n">_pre</span> <span class="o">=</span> <span class="n">PrepareFeatures</span><span class="p">(</span><span class="n">schema</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">pre</span><span class="p">:</span>
+            <span class="n">_pre</span> <span class="o">=</span> <span class="n">_pre</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">pre</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">pre</span><span class="o">=</span><span class="n">_pre</span><span class="p">,</span> <span class="n">schema</span><span class="o">=</span><span class="n">schema</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">target</span> <span class="o">=</span> <span class="n">target</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">target_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_target</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transformer</span> <span class="o">=</span> <span class="n">transformer</span>
+
+    <span class="k">def</span> <span class="nf">_get_target</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">target</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">column_names</span><span class="p">)</span>
+            <span class="ow">or</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">Tags</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">select_by_tag</span><span class="p">(</span><span class="n">target</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="ow">or</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">ColumnSchema</span><span class="p">)</span> <span class="ow">and</span> <span class="n">target</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">schema</span><span class="p">)</span>
+        <span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The target column needs to be part of the sequential schema&quot;</span><span class="p">)</span>
+
+        <span class="n">target_name</span> <span class="o">=</span> <span class="n">target</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">ColumnSchema</span><span class="p">):</span>
+            <span class="n">target_name</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">name</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">Tags</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">select_by_tag</span><span class="p">(</span><span class="n">target</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;Only 1 column should the Tag (</span><span class="si">{target}</span><span class="s2">) provided for target, but&quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;the following columns have that tag: &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">select_by_tag</span><span class="p">(</span><span class="n">target</span><span class="p">)</span><span class="o">.</span><span class="n">column_names</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+            <span class="n">target_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">select_by_tag</span><span class="p">(</span><span class="n">target</span><span class="p">)</span><span class="o">.</span><span class="n">column_names</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">target_name</span>
+
+    <span class="k">def</span> <span class="nf">call</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">TabularData</span><span class="p">,</span> <span class="n">targets</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">testing</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_check_seq_inputs_targets</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">TabularData</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">inputs</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;The inputs provided does contain the target column (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">target_name</span><span class="si">}</span><span class="s2">)&quot;</span>
+            <span class="p">)</span>
+
+        <span class="n">target_shape</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">target_name</span><span class="p">]</span><span class="o">.</span><span class="n">get_shape</span><span class="p">()</span><span class="o">.</span><span class="n">as_list</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">target_shape</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;The sequential target column (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">target_name</span><span class="si">}</span><span class="s2">) cannot be a 1D tensor,&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot; but the shape is </span><span class="si">{</span><span class="n">target_shape</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">target_shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;The 2nd dim of the target column (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">target_name</span><span class="si">}</span><span class="s2">) should be greater&quot;</span>
+                <span class="s2">&quot; than 1, so that the sequential input can be shifted as target&quot;</span>
+            <span class="p">)</span>
+
+        <span class="n">seq_inputs_shapes</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">col</span><span class="p">:</span> <span class="n">inputs</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">get_shape</span><span class="p">()</span><span class="o">.</span><span class="n">as_list</span><span class="p">()</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">column_names</span>
+        <span class="p">}</span>
+
+        <span class="n">seq_shapes</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">seq_inputs_shapes</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">x</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="n">seq_shapes</span><span class="p">[</span><span class="mi">0</span><span class="p">][:</span><span class="mi">2</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">seq_shapes</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;The sequential inputs must have the first two dims equal, but they &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;are different: </span><span class="si">{</span><span class="n">seq_inputs_shapes</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">compute_output_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_shape</span><span class="p">):</span>
+        <span class="n">new_input_shapes</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">input_shape</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">new_input_shapes</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">column_names</span><span class="p">:</span>
+                <span class="c1"># If it is a list/sparse feature (in tuple representation), uses the offset as shape</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">tf</span><span class="o">.</span><span class="n">TensorShape</span><span class="p">):</span>
+                    <span class="n">new_input_shapes</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">TensorShape</span><span class="p">([</span><span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="kc">None</span><span class="p">])</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">new_input_shapes</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+
+        <span class="k">return</span> <span class="n">new_input_shapes</span>
+
+    <span class="k">def</span> <span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the config of the layer as a Python dictionary.&quot;&quot;&quot;</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span>
+        <span class="n">config</span><span class="p">[</span><span class="s2">&quot;target&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">target</span>
+
+        <span class="k">return</span> <span class="n">config</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_config</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">config</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Creates layer from its config. Returning the instance.&quot;&quot;&quot;</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="n">tf_utils</span><span class="o">.</span><span class="n">maybe_deserialize_keras_objects</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;pre&quot;</span><span class="p">,</span> <span class="s2">&quot;post&quot;</span><span class="p">,</span> <span class="s2">&quot;aggregation&quot;</span><span class="p">])</span>
+        <span class="n">config</span><span class="p">[</span><span class="s2">&quot;schema&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">schema_utils</span><span class="o">.</span><span class="n">tensorflow_metadata_json_to_schema</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;schema&quot;</span><span class="p">])</span>
+        <span class="n">schema</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;schema&quot;</span><span class="p">)</span>
+        <span class="n">target</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;target&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="o">**</span><span class="n">config</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">configure_for_train</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Method called by the model.fit() to set additional model&#39;s</span>
+<span class="sd">        configuration before calling keras parent class `fit()`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">configure_for_test</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Method called by the model.evaluate() to check any custom model&#39;s</span>
+<span class="sd">        configuration before calling keras parent class `evaluate()`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+
+
+<div class="viewcode-block" id="SequencePredictNext"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.SequencePredictNext.html#merlin.models.tf.SequencePredictNext">[docs]</a><span class="nd">@Block</span><span class="o">.</span><span class="n">registry</span><span class="o">.</span><span class="n">register_with_multiple_names</span><span class="p">(</span><span class="s2">&quot;seq_predict_next&quot;</span><span class="p">)</span>
+<span class="nd">@tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">register_keras_serializable</span><span class="p">(</span><span class="n">package</span><span class="o">=</span><span class="s2">&quot;merlin_models&quot;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">SequencePredictNext</span><span class="p">(</span><span class="n">SequenceTransform</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Prepares sequential inputs and targets for next-item prediction.</span>
+<span class="sd">    The target is extracted from the shifted sequence of item ids and</span>
+<span class="sd">    the sequential input features are truncated in the last position.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    schema : Schema</span>
+<span class="sd">        The schema with the sequential columns to be truncated</span>
+<span class="sd">    target : Union[str, Tags, ColumnSchema]</span>
+<span class="sd">        The sequential input column that will be used to extract the target</span>
+<span class="sd">    pre : Optional[BlockType], optional</span>
+<span class="sd">        A block that is called before this method call().</span>
+<span class="sd">        P.s. The PrepareFeatures() is called automatically before the pre</span>
+<span class="sd">        to convert the list features representation</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="SequencePredictNext.call"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.SequencePredictNext.html#merlin.models.tf.SequencePredictNext.call">[docs]</a>    <span class="k">def</span> <span class="nf">call</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">TabularData</span><span class="p">,</span> <span class="n">targets</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">testing</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_seq_inputs_targets</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+
+        <span class="c1"># Shifts the target column to be the next item of corresponding input column</span>
+        <span class="n">new_target</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">target_name</span><span class="p">][:,</span> <span class="mi">1</span><span class="p">:]</span>
+        <span class="k">if</span> <span class="n">targets</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">targets</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">({</span><span class="bp">self</span><span class="o">.</span><span class="n">target_name</span><span class="p">:</span> <span class="n">new_target</span><span class="p">})</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">targets</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">target_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_target</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Targets should be None or a dict of tensors&quot;</span><span class="p">)</span>
+
+        <span class="n">new_inputs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">inputs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">column_names</span><span class="p">:</span>
+                <span class="c1"># Removes the last item of the sequence, as it belongs to the target</span>
+                <span class="n">new_inputs</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span><span class="p">[:,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">new_inputs</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+
+        <span class="k">return</span> <span class="p">(</span><span class="n">new_inputs</span><span class="p">,</span> <span class="n">targets</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SequencePredictNext.compute_output_shape"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.SequencePredictNext.html#merlin.models.tf.SequencePredictNext.compute_output_shape">[docs]</a>    <span class="k">def</span> <span class="nf">compute_output_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_shape</span><span class="p">):</span>
+        <span class="n">new_input_shapes</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">input_shape</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">new_input_shapes</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">column_names</span><span class="p">:</span>
+                <span class="c1"># If it is a list/sparse feature (in tuple representation), uses the offset as shape</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">tf</span><span class="o">.</span><span class="n">TensorShape</span><span class="p">):</span>
+                    <span class="n">new_input_shapes</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">TensorShape</span><span class="p">([</span><span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="kc">None</span><span class="p">])</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># Reducing 1 position of the seq length</span>
+                    <span class="n">new_input_shapes</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">TensorShape</span><span class="p">([</span><span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="n">new_input_shapes</span></div>
+
+<div class="viewcode-block" id="SequencePredictNext.compute_mask"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.SequencePredictNext.html#merlin.models.tf.SequencePredictNext.compute_mask">[docs]</a>    <span class="k">def</span> <span class="nf">compute_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">new_item_id_seq</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">target_name</span><span class="p">][:,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">target_mask</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">RaggedTensor</span><span class="o">.</span><span class="n">from_row_lengths</span><span class="p">(</span>
+            <span class="n">values</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">new_item_id_seq</span><span class="o">.</span><span class="n">flat_values</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">bool</span><span class="p">),</span>
+            <span class="n">row_lengths</span><span class="o">=</span><span class="n">new_item_id_seq</span><span class="o">.</span><span class="n">row_lengths</span><span class="p">(),</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">target_mask</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">target_mask</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">targets_mask</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">({</span><span class="bp">self</span><span class="o">.</span><span class="n">target_name</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_mask</span><span class="p">})</span>
+        <span class="n">inputs_mask</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">inputs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">column_names</span><span class="p">:</span>
+                <span class="n">inputs_mask</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_mask</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">inputs_mask</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">inputs_mask</span><span class="p">,</span> <span class="n">targets_mask</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SequencePredictNext.configure_for_train"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.SequencePredictNext.html#merlin.models.tf.SequencePredictNext.configure_for_train">[docs]</a>    <span class="k">def</span> <span class="nf">configure_for_train</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Method called by the model.fit() to set the specialized</span>
+<span class="sd">        `masking_post` and `masking_pre` needed by the TransformerBlock</span>
+<span class="sd">        to align with the SequencePredictNext outputs.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">transformer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">is_transformers_available</span><span class="p">():</span>
+                <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="s2">&quot;HuggingFace library `transformers` is required&quot;</span><span class="p">)</span>
+            <span class="kn">from</span> <span class="nn">merlin.models.tf.transformers.transforms</span> <span class="kn">import</span> <span class="p">(</span>
+                <span class="n">TransformerInferenceHiddenState</span><span class="p">,</span>
+                <span class="n">TransformerOutputToRagged</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="c1"># set the tansformer block with the correct masking block</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">transformer</span><span class="o">.</span><span class="n">masking_post</span> <span class="o">=</span> <span class="n">combinators</span><span class="o">.</span><span class="n">SequentialBlock</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">TransformerOutputToRagged</span><span class="p">(),</span> <span class="n">TransformerInferenceHiddenState</span><span class="p">()]</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">transformer</span><span class="o">.</span><span class="n">masking_pre</span> <span class="o">=</span> <span class="n">combinators</span><span class="o">.</span><span class="n">SequentialBlock</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">SequenceCausalLastInference</span><span class="p">(),</span> <span class="n">ExtractMaskFromTargets</span><span class="p">()]</span>
+            <span class="p">)</span></div>
+
+<div class="viewcode-block" id="SequencePredictNext.configure_for_test"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.SequencePredictNext.html#merlin.models.tf.SequencePredictNext.configure_for_test">[docs]</a>    <span class="k">def</span> <span class="nf">configure_for_test</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Method called by the model.evaluate() to check that the</span>
+<span class="sd">        `masking_post` and `masking_pre` set in the TransformerBlock</span>
+<span class="sd">        are aligned with the evaluation strategy of SequencePredictNext</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">transformer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">transformer</span><span class="o">.</span><span class="n">masking_pre</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;To evaluate using `SequencePredictNext`, ensure that your TransformerBlock has&quot;</span>
+                    <span class="s2">&quot; `masking_pre` set as&quot;</span>
+                    <span class="s2">&quot; `combinators.SequentialBlock(&quot;</span>
+                    <span class="s2">&quot;    [SequenceCausalLastInference(), ExtractMaskFromTargets()]&quot;</span>
+                    <span class="s2">&quot;)`.&quot;</span>
+                    <span class="s2">&quot; You can automatically set `masking_pre` by passing `SequencePredictNext`&quot;</span>
+                    <span class="s2">&quot; as the `pre` argument to the `fit` method: &quot;</span>
+                    <span class="s2">&quot;`model.fit(..., pre=SequencePredictNext(...))`.&quot;</span>
+                <span class="p">)</span>
+
+            <span class="k">if</span> <span class="nb">any</span><span class="p">(</span>
+                <span class="nb">isinstance</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="n">ReplaceMaskedEmbeddings</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">transformer</span><span class="o">.</span><span class="n">masking_pre</span><span class="o">.</span><span class="n">layers</span>
+            <span class="p">):</span>
+                <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;You cannot use `ReplaceMaskedEmbeddings` as `masking_pre`&quot;</span>
+                    <span class="s2">&quot; of your TransformerBlock with the `SequencePredictNext`&quot;</span>
+                    <span class="s2">&quot; evaluation strategy. Please ensure that your Transformer&quot;</span>
+                    <span class="s2">&quot; model has been trained with `SequencePredictNext`&quot;</span>
+                    <span class="s2">&quot; by passing it as the `pre` argument to the `fit` method: &quot;</span>
+                    <span class="s2">&quot;`model.fit(..., pre=SequencePredictNext(...))`.&quot;</span>
+                <span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="SequencePredictLast"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.SequencePredictLast.html#merlin.models.tf.SequencePredictLast">[docs]</a><span class="nd">@Block</span><span class="o">.</span><span class="n">registry</span><span class="o">.</span><span class="n">register_with_multiple_names</span><span class="p">(</span><span class="s2">&quot;seq_predict_last&quot;</span><span class="p">)</span>
+<span class="nd">@tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">register_keras_serializable</span><span class="p">(</span><span class="n">package</span><span class="o">=</span><span class="s2">&quot;merlin_models&quot;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">SequencePredictLast</span><span class="p">(</span><span class="n">SequenceTransform</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Prepares sequential inputs and targets for last-item prediction.</span>
+<span class="sd">    The target is extracted from the last element of sequence of item ids and</span>
+<span class="sd">    the sequential input features are truncated before the last position.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    schema : Schema</span>
+<span class="sd">        The schema with the sequential columns to be truncated</span>
+<span class="sd">    target : Union[str, Tags, ColumnSchema]</span>
+<span class="sd">        The sequential input column that will be used to extract the target</span>
+<span class="sd">    pre : Optional[BlockType], optional</span>
+<span class="sd">        A block that is called before this method call().</span>
+<span class="sd">        P.s. The PrepareFeatures() is called automatically before the pre</span>
+<span class="sd">        to convert the list features representation</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="SequencePredictLast.call"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.SequencePredictLast.html#merlin.models.tf.SequencePredictLast.call">[docs]</a>    <span class="nd">@tf</span><span class="o">.</span><span class="n">function</span>
+    <span class="k">def</span> <span class="nf">call</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">TabularData</span><span class="p">,</span> <span class="n">targets</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">testing</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_seq_inputs_targets</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+
+        <span class="c1"># Shifts the target column to be the next item of corresponding input column</span>
+        <span class="n">new_target</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">inputs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">target_name</span><span class="p">][:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">:],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">targets</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">targets</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">({</span><span class="bp">self</span><span class="o">.</span><span class="n">target_name</span><span class="p">:</span> <span class="n">new_target</span><span class="p">})</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">targets</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">target_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_target</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Targets should be None or a dict of tensors&quot;</span><span class="p">)</span>
+
+        <span class="n">new_inputs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">inputs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">column_names</span><span class="p">:</span>
+                <span class="c1"># Removes the last item of the sequence, as it belongs to the target</span>
+                <span class="n">new_inputs</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span><span class="p">[:,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">new_inputs</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+
+        <span class="k">return</span> <span class="p">(</span><span class="n">new_inputs</span><span class="p">,</span> <span class="n">targets</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SequencePredictLast.compute_output_shape"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.SequencePredictLast.html#merlin.models.tf.SequencePredictLast.compute_output_shape">[docs]</a>    <span class="k">def</span> <span class="nf">compute_output_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_shape</span><span class="p">):</span>
+        <span class="n">new_input_shapes</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">input_shape</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">new_input_shapes</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">column_names</span><span class="p">:</span>
+                <span class="c1"># If it is a list/sparse feature (in tuple representation), uses the offset as shape</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">tf</span><span class="o">.</span><span class="n">TensorShape</span><span class="p">):</span>
+                    <span class="n">new_input_shapes</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">TensorShape</span><span class="p">([</span><span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="kc">None</span><span class="p">])</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># Reducing 1 position of the seq length</span>
+                    <span class="n">new_input_shapes</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">TensorShape</span><span class="p">([</span><span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="n">new_input_shapes</span></div>
+
+<div class="viewcode-block" id="SequencePredictLast.compute_mask"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.SequencePredictLast.html#merlin.models.tf.SequencePredictLast.compute_mask">[docs]</a>    <span class="k">def</span> <span class="nf">compute_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">new_item_id_seq</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">target_name</span><span class="p">][:,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">target_mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate_target_mask</span><span class="p">(</span><span class="n">new_item_id_seq</span><span class="p">)</span>
+        <span class="n">inputs_mask</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">inputs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">column_names</span><span class="p">:</span>
+                <span class="n">inputs_mask</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_mask</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">inputs_mask</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">return</span> <span class="p">(</span><span class="n">inputs_mask</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_mask</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_generate_target_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ids_seq</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">RaggedTensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">tf</span><span class="o">.</span><span class="n">RaggedTensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a bool ragged tensor with the last positions of the sequence masked</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        ids_seq : tf.RaggedTensor</span>
+<span class="sd">            Sequence of ids, which are used to infer how many values</span>
+<span class="sd">            each sequence contains</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        tf.RaggedTensor</span>
+<span class="sd">            Mask tensor, with True at the last positions</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">row_lengths</span> <span class="o">=</span> <span class="n">ids_seq</span><span class="o">.</span><span class="n">row_lengths</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">max_seq_length</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">reduce_max</span><span class="p">(</span><span class="n">row_lengths</span><span class="p">),</span> <span class="n">tf</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+
+        <span class="n">padding_mask</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">sequence_mask</span><span class="p">(</span><span class="n">row_lengths</span><span class="p">)</span>
+        <span class="n">targets_mask</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">ragged</span><span class="o">.</span><span class="n">boolean_mask</span><span class="p">(</span>
+            <span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">one_hot</span><span class="p">(</span><span class="n">row_lengths</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">max_seq_length</span><span class="p">),</span> <span class="n">tf</span><span class="o">.</span><span class="n">bool</span><span class="p">),</span> <span class="n">padding_mask</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">targets_mask</span></div>
+
+
+<div class="viewcode-block" id="SequencePredictRandom"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.SequencePredictRandom.html#merlin.models.tf.SequencePredictRandom">[docs]</a><span class="nd">@Block</span><span class="o">.</span><span class="n">registry</span><span class="o">.</span><span class="n">register_with_multiple_names</span><span class="p">(</span><span class="s2">&quot;seq_predict_random&quot;</span><span class="p">)</span>
+<span class="nd">@tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">register_keras_serializable</span><span class="p">(</span><span class="n">package</span><span class="o">=</span><span class="s2">&quot;merlin_models&quot;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">SequencePredictRandom</span><span class="p">(</span><span class="n">SequenceTransform</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Prepares sequential inputs and targets for random-item prediction.</span>
+<span class="sd">    A random element in the sequence (except the first one) is selected</span>
+<span class="sd">    as target and all elements before the selected target as used as</span>
+<span class="sd">    input features.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    schema : Schema</span>
+<span class="sd">        The schema with the sequential columns to be truncated</span>
+<span class="sd">    target : Union[str, Tags, ColumnSchema]</span>
+<span class="sd">        The sequential input column that will be used to extract the target</span>
+<span class="sd">    pre : Optional[BlockType], optional</span>
+<span class="sd">        A block that is called before this method call().</span>
+<span class="sd">        P.s. The PrepareFeatures() is called automatically before the pre</span>
+<span class="sd">        to convert the list features representation</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="SequencePredictRandom.call"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.SequencePredictRandom.html#merlin.models.tf.SequencePredictRandom.call">[docs]</a>    <span class="k">def</span> <span class="nf">call</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">TabularData</span><span class="p">,</span> <span class="n">targets</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">testing</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_seq_inputs_targets</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+
+        <span class="n">batch_size</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">target_name</span><span class="p">]</span><span class="o">.</span><span class="n">nrows</span><span class="p">()</span>
+        <span class="n">seq_length</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">target_name</span><span class="p">]</span><span class="o">.</span><span class="n">row_lengths</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">max_length</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">reduce_max</span><span class="p">(</span><span class="n">seq_length</span><span class="p">)</span>
+        <span class="n">random_targets_indices</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span>
+            <span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span>
+                <span class="n">tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span>
+                    <span class="p">(</span>
+                        <span class="n">tf</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span>
+                            <span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="n">batch_size</span><span class="p">],</span> <span class="n">minval</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">maxval</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span>
+                        <span class="p">)</span>
+                        <span class="o">*</span> <span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">seq_length</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+                    <span class="p">)</span>
+                    <span class="o">+</span> <span class="mi">1</span>
+                <span class="p">),</span>
+                <span class="n">tf</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="mi">1</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">positions_matrix</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span>
+            <span class="n">tf</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">max_length</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">int32</span><span class="p">),</span> <span class="mi">0</span><span class="p">),</span> <span class="p">[</span><span class="n">batch_size</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">random_mask</span> <span class="o">=</span> <span class="n">positions_matrix</span> <span class="o">&lt;</span> <span class="n">random_targets_indices</span>
+        <span class="n">target_mask</span> <span class="o">=</span> <span class="n">positions_matrix</span> <span class="o">==</span> <span class="n">random_targets_indices</span>
+
+        <span class="n">new_target</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span>
+            <span class="n">tf</span><span class="o">.</span><span class="n">ragged</span><span class="o">.</span><span class="n">boolean_mask</span><span class="p">(</span><span class="n">inputs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">target_name</span><span class="p">],</span> <span class="n">target_mask</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">targets</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">targets</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">({</span><span class="bp">self</span><span class="o">.</span><span class="n">target_name</span><span class="p">:</span> <span class="n">new_target</span><span class="p">})</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">targets</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">target_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_target</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Targets should be None or a dict of tensors&quot;</span><span class="p">)</span>
+
+        <span class="n">new_inputs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">inputs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">column_names</span><span class="p">:</span>
+                <span class="n">new_inputs</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">ragged</span><span class="o">.</span><span class="n">boolean_mask</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">random_mask</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">new_inputs</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+
+        <span class="k">return</span> <span class="p">(</span><span class="n">new_inputs</span><span class="p">,</span> <span class="n">targets</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SequencePredictRandom.compute_mask"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.SequencePredictRandom.html#merlin.models.tf.SequencePredictRandom.compute_mask">[docs]</a>    <span class="k">def</span> <span class="nf">compute_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">new_item_id_seq</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">ragged</span><span class="o">.</span><span class="n">boolean_mask</span><span class="p">(</span><span class="n">inputs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">target_name</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">random_mask</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">target_mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate_target_mask</span><span class="p">(</span><span class="n">new_item_id_seq</span><span class="p">)</span>
+        <span class="n">inputs_mask</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">inputs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">column_names</span><span class="p">:</span>
+                <span class="n">inputs_mask</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_mask</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">inputs_mask</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">return</span> <span class="p">(</span><span class="n">inputs_mask</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_mask</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_generate_target_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ids_seq</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">RaggedTensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">tf</span><span class="o">.</span><span class="n">RaggedTensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a bool ragged tensor with the last positions of the sequence masked</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        ids_seq : tf.RaggedTensor</span>
+<span class="sd">            Sequence of ids, which are used to infer how many values</span>
+<span class="sd">            each sequence contains</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        tf.RaggedTensor</span>
+<span class="sd">            Mask tensor, with True at the last positions</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">row_lengths</span> <span class="o">=</span> <span class="n">ids_seq</span><span class="o">.</span><span class="n">row_lengths</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">max_seq_length</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">reduce_max</span><span class="p">(</span><span class="n">row_lengths</span><span class="p">),</span> <span class="n">tf</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+
+        <span class="n">padding_mask</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">sequence_mask</span><span class="p">(</span><span class="n">row_lengths</span><span class="p">)</span>
+        <span class="n">targets_mask</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">ragged</span><span class="o">.</span><span class="n">boolean_mask</span><span class="p">(</span>
+            <span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">one_hot</span><span class="p">(</span><span class="n">row_lengths</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">max_seq_length</span><span class="p">),</span> <span class="n">tf</span><span class="o">.</span><span class="n">bool</span><span class="p">),</span> <span class="n">padding_mask</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">targets_mask</span></div>
+
+
+<div class="viewcode-block" id="SequenceTargetAsInput"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.SequenceTargetAsInput.html#merlin.models.tf.SequenceTargetAsInput">[docs]</a><span class="nd">@Block</span><span class="o">.</span><span class="n">registry</span><span class="o">.</span><span class="n">register_with_multiple_names</span><span class="p">(</span><span class="s2">&quot;seq_target_as_input&quot;</span><span class="p">)</span>
+<span class="nd">@tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">register_keras_serializable</span><span class="p">(</span><span class="n">package</span><span class="o">=</span><span class="s2">&quot;merlin_models&quot;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">SequenceTargetAsInput</span><span class="p">(</span><span class="n">SequenceTransform</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Creates targets to be equal to one of the sequential input features.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    schema : Schema</span>
+<span class="sd">        The schema with the sequential columns to be truncated</span>
+<span class="sd">    target : Union[str, Tags, ColumnSchema]</span>
+<span class="sd">        The sequential input column that will be used to extract the target</span>
+<span class="sd">    pre : Optional[BlockType], optional</span>
+<span class="sd">        A block that is called before this method call().</span>
+<span class="sd">        P.s. The PrepareFeatures() is called automatically before the pre</span>
+<span class="sd">        to convert the list features representation</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="SequenceTargetAsInput.call"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.SequenceTargetAsInput.html#merlin.models.tf.SequenceTargetAsInput.call">[docs]</a>    <span class="nd">@tf</span><span class="o">.</span><span class="n">function</span>
+    <span class="k">def</span> <span class="nf">call</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">TabularData</span><span class="p">,</span> <span class="n">targets</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">testing</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_seq_inputs_targets</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+
+        <span class="n">new_target</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">identity</span><span class="p">(</span><span class="n">inputs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">target_name</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">targets</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">targets</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">({</span><span class="bp">self</span><span class="o">.</span><span class="n">target_name</span><span class="p">:</span> <span class="n">new_target</span><span class="p">})</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">targets</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">target_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_target</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Targets should be None or a dict of tensors&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">targets</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SequenceTargetAsInput.from_config"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.SequenceTargetAsInput.html#merlin.models.tf.SequenceTargetAsInput.from_config">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_config</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">config</span><span class="p">):</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="n">tf_utils</span><span class="o">.</span><span class="n">maybe_deserialize_keras_objects</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;pre&quot;</span><span class="p">,</span> <span class="s2">&quot;post&quot;</span><span class="p">,</span> <span class="s2">&quot;aggregation&quot;</span><span class="p">])</span>
+        <span class="n">schema</span> <span class="o">=</span> <span class="n">schema_utils</span><span class="o">.</span><span class="n">tensorflow_metadata_json_to_schema</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;schema&quot;</span><span class="p">))</span>
+        <span class="n">target</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;target&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="o">**</span><span class="n">config</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="SequenceMaskRandom"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.SequenceMaskRandom.html#merlin.models.tf.SequenceMaskRandom">[docs]</a><span class="nd">@tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">register_keras_serializable</span><span class="p">(</span><span class="n">package</span><span class="o">=</span><span class="s2">&quot;merlin.models&quot;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">SequenceMaskRandom</span><span class="p">(</span><span class="n">SequenceTargetAsInput</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;This block implements the Masked Language Modeling (MLM) training approach</span>
+<span class="sd">    introduced in BERT (NLP) and later adapted to RecSys by BERT4Rec [1].</span>
+<span class="sd">    Given an input tf.RaggedTensor with sequences of embeddings</span>
+<span class="sd">    and the corresponding sequence of item ids, some positions are randomly selected (masked)</span>
+<span class="sd">    to be the targets for prediction.</span>
+<span class="sd">    The targets are output being the same as the input ids sequence.</span>
+<span class="sd">    The target masks are returned by using Keras Masking</span>
+<span class="sd">    (._keras_mask), which is set by the compute_mask() method.</span>
+
+<span class="sd">    Note: The SequenceMaskRandom is meant to be used as a `pre` of model.fit(),</span>
+<span class="sd">    e.g. model.fit(..., pre=SequenceMaskRandom(...)).</span>
+<span class="sd">    Note: Typically during model.evaluate() you want to evaluate the model</span>
+<span class="sd">    to predict the last position of the sequence, as it mimics the next-item predicion</span>
+<span class="sd">    task. In that case, you should use model.evaluate(..., pre=SequenceMaskLast(...))</span>
+<span class="sd">    instead of SequenceMaskRandom(...).</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [1] Sun, Fei, et al. &quot;BERT4Rec: Sequential recommendation with bidirectional encoder</span>
+<span class="sd">           representations from transformer.&quot; Proceedings of the 28th ACM international</span>
+<span class="sd">           conference on information and knowledge management. 2019.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    schema : Schema</span>
+<span class="sd">        The input schema, that will be used to discover the name</span>
+<span class="sd">        of the item id column</span>
+<span class="sd">    target : Union[str, Tags, ColumnSchema]</span>
+<span class="sd">        The sequential input column that will be used to extract the target</span>
+<span class="sd">    masking_prob : float, optional</span>
+<span class="sd">        Probability of an item to be selected (masked) as a label of the given sequence.</span>
+<span class="sd">        Note: We enforce that at least one item is masked for each sequence, so that it</span>
+<span class="sd">        is useful for training, by default 0.2</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="SequenceMaskRandom.__init__"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.SequenceMaskRandom.html#merlin.models.tf.SequenceMaskRandom.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">schema</span><span class="p">:</span> <span class="n">Schema</span><span class="p">,</span>
+        <span class="n">target</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tags</span><span class="p">,</span> <span class="n">ColumnSchema</span><span class="p">],</span>
+        <span class="n">masking_prob</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">masking_prob</span> <span class="o">=</span> <span class="n">masking_prob</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SequenceMaskRandom.compute_mask"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.SequenceMaskRandom.html#merlin.models.tf.SequenceMaskRandom.compute_mask">[docs]</a>    <span class="nd">@tf</span><span class="o">.</span><span class="n">function</span>
+    <span class="k">def</span> <span class="nf">compute_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Selects (masks) some positions of the targets to be predicted.</span>
+<span class="sd">        This method is called by Keras after call()</span>
+<span class="sd">        and returns the targets mask that will</span>
+<span class="sd">        be assigned to the input tensors and targets, being accessible</span>
+<span class="sd">        by tensor._keras_mask</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">item_id_seq</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">target_name</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">target_mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate_target_mask</span><span class="p">(</span><span class="n">item_id_seq</span><span class="p">)</span>
+
+        <span class="n">inputs_mask</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">inputs</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">column_names</span><span class="p">:</span>
+                <span class="n">inputs_mask</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_mask</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">inputs_mask</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="n">targets_mask</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">({</span><span class="bp">self</span><span class="o">.</span><span class="n">target_name</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_mask</span><span class="p">})</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">inputs_mask</span><span class="p">,</span> <span class="n">targets_mask</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_generate_target_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ids_seq</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">RaggedTensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">tf</span><span class="o">.</span><span class="n">RaggedTensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generates a target mask according to the defined probability and</span>
+<span class="sd">        to the constraints for Masked Language Modeling training (i.e., each</span>
+<span class="sd">        sequence might have between 1 and length-1 masked positions.)</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        ids_seq : tf.RaggedTensor</span>
+<span class="sd">            Sequence of ids, which are used to infer how many values</span>
+<span class="sd">            each sequence contains</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        tf.RaggedTensor</span>
+<span class="sd">            Mask tensor, with True at the positions where targets were</span>
+<span class="sd">            selected to be predicted</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">row_lengths</span> <span class="o">=</span> <span class="n">ids_seq</span><span class="o">.</span><span class="n">row_lengths</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">assertion_min_seq_length</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">Assert</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">reduce_all</span><span class="p">(</span><span class="n">row_lengths</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">),</span> <span class="p">[</span><span class="n">row_lengths</span><span class="p">])</span>
+
+        <span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">control_dependencies</span><span class="p">([</span><span class="n">assertion_min_seq_length</span><span class="p">]):</span>
+            <span class="c1"># Targets are masked according to a probability</span>
+            <span class="n">target_mask_by_prob</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_masked_by_prob</span><span class="p">(</span><span class="n">row_lengths</span><span class="p">,</span> <span class="n">prob</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">masking_prob</span><span class="p">)</span>
+            <span class="c1"># Exactly one target is masked per row</span>
+            <span class="n">one_target_mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_one_masked</span><span class="p">(</span><span class="n">row_lengths</span><span class="p">)</span>
+
+            <span class="c1"># For sequences (rows) with either all or none elements sampled (masked) as targets</span>
+            <span class="c1"># as those sequences would be invalid for training</span>
+            <span class="c1"># the row mask is replaced by a row mask that contains exactly one masked target</span>
+            <span class="n">replacement_cond</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">logical_or</span><span class="p">(</span>
+                <span class="n">tf</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">reduce_any</span><span class="p">(</span><span class="n">target_mask_by_prob</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)),</span>
+                <span class="n">tf</span><span class="o">.</span><span class="n">reduce_all</span><span class="p">(</span><span class="n">target_mask_by_prob</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+            <span class="p">)</span>
+            <span class="n">target_mask</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+                <span class="n">tf</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">replacement_cond</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">one_target_mask</span><span class="p">,</span> <span class="n">target_mask_by_prob</span>
+            <span class="p">)</span>
+            <span class="n">padding_mask</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">sequence_mask</span><span class="p">(</span><span class="n">row_lengths</span><span class="p">)</span>
+            <span class="n">target_mask_ragged</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">ragged</span><span class="o">.</span><span class="n">boolean_mask</span><span class="p">(</span><span class="n">target_mask</span><span class="p">,</span> <span class="n">padding_mask</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">target_mask_ragged</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_get_masked_by_prob</span><span class="p">(</span><span class="n">row_lengths</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">prob</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generates a dense mask boolean tensor with True values</span>
+<span class="sd">        for randomly selected targets</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">max_seq_length</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">reduce_max</span><span class="p">(</span><span class="n">row_lengths</span><span class="p">),</span> <span class="n">tf</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+        <span class="n">batch_size</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">row_lengths</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">random_bernoulli</span><span class="p">([</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">max_seq_length</span><span class="p">],</span> <span class="n">p</span><span class="o">=</span><span class="n">prob</span><span class="p">),</span> <span class="n">tf</span><span class="o">.</span><span class="n">bool</span><span class="p">)</span>
+        <span class="n">padding_mask</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">sequence_mask</span><span class="p">(</span><span class="n">row_lengths</span><span class="p">)</span>
+        <span class="c1"># Ignoring masked items in the padding positions</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">padding_mask</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">output</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_get_one_masked</span><span class="p">(</span><span class="n">row_lengths</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generates a dense mask boolean tensor where for each tensor (row)</span>
+<span class="sd">        there is exactly one True value (selected target)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">max_seq_length</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">reduce_max</span><span class="p">(</span><span class="n">row_lengths</span><span class="p">),</span> <span class="n">tf</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+        <span class="n">random_targets_indices</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span>
+            <span class="n">tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span>
+                <span class="p">(</span>
+                    <span class="n">tf</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span>
+                        <span class="n">shape</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">row_lengths</span><span class="p">),</span> <span class="n">minval</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">maxval</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span>
+                    <span class="p">)</span>
+                    <span class="o">*</span> <span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">row_lengths</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+                <span class="p">)</span>
+            <span class="p">),</span>
+            <span class="n">tf</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">one_target_mask</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">one_hot</span><span class="p">(</span><span class="n">random_targets_indices</span><span class="p">,</span> <span class="n">max_seq_length</span><span class="p">),</span> <span class="n">tf</span><span class="o">.</span><span class="n">bool</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">one_target_mask</span>
+
+<div class="viewcode-block" id="SequenceMaskRandom.get_config"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.SequenceMaskRandom.html#merlin.models.tf.SequenceMaskRandom.get_config">[docs]</a>    <span class="k">def</span> <span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span>
+        <span class="n">config</span><span class="p">[</span><span class="s2">&quot;masking_prob&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">masking_prob</span>
+        <span class="k">return</span> <span class="n">config</span></div>
+
+<div class="viewcode-block" id="SequenceMaskRandom.from_config"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.SequenceMaskRandom.html#merlin.models.tf.SequenceMaskRandom.from_config">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_config</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">config</span><span class="p">):</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="n">tf_utils</span><span class="o">.</span><span class="n">maybe_deserialize_keras_objects</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;pre&quot;</span><span class="p">,</span> <span class="s2">&quot;post&quot;</span><span class="p">,</span> <span class="s2">&quot;aggregation&quot;</span><span class="p">])</span>
+        <span class="n">schema</span> <span class="o">=</span> <span class="n">schema_utils</span><span class="o">.</span><span class="n">tensorflow_metadata_json_to_schema</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;schema&quot;</span><span class="p">))</span>
+        <span class="n">target</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;target&quot;</span><span class="p">)</span>
+        <span class="n">masking_prob</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;masking_prob&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">masking_prob</span><span class="p">,</span> <span class="o">**</span><span class="n">config</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SequenceMaskRandom.configure_for_train"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.SequenceMaskRandom.html#merlin.models.tf.SequenceMaskRandom.configure_for_train">[docs]</a>    <span class="k">def</span> <span class="nf">configure_for_train</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Method called by the model.fit() to set the specialized</span>
+<span class="sd">        `masking_post` and `masking_pre` needed by the TransformerBlock</span>
+<span class="sd">        to align with the SequencePredictNext outputs.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">transformer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">is_transformers_available</span><span class="p">():</span>
+                <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="s2">&quot;HuggingFace library `transformers` is required&quot;</span><span class="p">)</span>
+            <span class="kn">from</span> <span class="nn">merlin.models.tf.transformers.transforms</span> <span class="kn">import</span> <span class="p">(</span>
+                <span class="n">TransformerInferenceHiddenState</span><span class="p">,</span>
+                <span class="n">TransformerOutputToRagged</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="c1"># set the tansformer block with the correct masking blocks</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">transformer</span><span class="o">.</span><span class="n">masking_post</span> <span class="o">=</span> <span class="n">combinators</span><span class="o">.</span><span class="n">SequentialBlock</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">TransformerOutputToRagged</span><span class="p">(),</span> <span class="n">TransformerInferenceHiddenState</span><span class="p">()]</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">transformer</span><span class="o">.</span><span class="n">masking_pre</span> <span class="o">=</span> <span class="n">combinators</span><span class="o">.</span><span class="n">SequentialBlock</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">SequenceMaskLastInference</span><span class="p">(),</span> <span class="n">ExtractMaskFromTargets</span><span class="p">(),</span> <span class="n">ReplaceMaskedEmbeddings</span><span class="p">()]</span>
+            <span class="p">)</span></div>
+
+<div class="viewcode-block" id="SequenceMaskRandom.configure_for_test"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.SequenceMaskRandom.html#merlin.models.tf.SequenceMaskRandom.configure_for_test">[docs]</a>    <span class="k">def</span> <span class="nf">configure_for_test</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Method called by the model.evaluate() to check that the</span>
+<span class="sd">        `masking_pre` set in the TransformerBlock is aligned with</span>
+<span class="sd">        the evaluation strategy of SequenceMaskRandom</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">transformer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">transformer</span><span class="o">.</span><span class="n">masking_pre</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;To evaluate using `SequenceMaskRandom`, ensure that your TransformerBlock has&quot;</span>
+                    <span class="s2">&quot; `masking_pre` set as&quot;</span>
+                    <span class="s2">&quot; `combinators.SequentialBlock(&quot;</span>
+                    <span class="s2">&quot;   [&quot;</span>
+                    <span class="s2">&quot;        SequenceMaskLastInference(),&quot;</span>
+                    <span class="s2">&quot;        ExtractMaskFromTargets(),&quot;</span>
+                    <span class="s2">&quot;        ReplaceMaskedEmbeddings()&quot;</span>
+                    <span class="s2">&quot;   ]&quot;</span>
+                    <span class="s2">&quot;)`&quot;</span>
+                    <span class="s2">&quot; You can automatically set `masking_pre` by passing `SequenceMaskRandom`&quot;</span>
+                    <span class="s2">&quot; as the `pre` argument to the `fit` method:&quot;</span>
+                    <span class="s2">&quot; `model.fit(..., pre=SequenceMaskRandom(...))`.&quot;</span>
+                <span class="p">)</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span>
+                <span class="nb">isinstance</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="n">ReplaceMaskedEmbeddings</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">transformer</span><span class="o">.</span><span class="n">masking_pre</span><span class="o">.</span><span class="n">layers</span>
+            <span class="p">):</span>
+                <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot; The block `ReplaceMaskedEmbeddings` must be part of the `masking_pre`&quot;</span>
+                    <span class="s2">&quot; of your TransformerBlock to be able to use `SequenceMaskRandom`&quot;</span>
+                    <span class="s2">&quot; evaluation strategy.&quot;</span>
+                    <span class="s2">&quot; Please ensure that your Transformer model has been trained with&quot;</span>
+                    <span class="s2">&quot; `SequenceMaskRandom` or `SequenceMaskLast`&quot;</span>
+                    <span class="s2">&quot; by passing it as the `pre` argument to the `fit` method: &quot;</span>
+                    <span class="s2">&quot;`model.fit(..., pre=SequenceMaskRandom(...))`.&quot;</span>
+                <span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="SequenceMaskLast"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.SequenceMaskLast.html#merlin.models.tf.SequenceMaskLast">[docs]</a><span class="nd">@tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">register_keras_serializable</span><span class="p">(</span><span class="n">package</span><span class="o">=</span><span class="s2">&quot;merlin.models&quot;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">SequenceMaskLast</span><span class="p">(</span><span class="n">SequenceTargetAsInput</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;This block copies one of the sequence input features to be</span>
+<span class="sd">    the target feature. The last item of the target (and corresponding</span>
+<span class="sd">    sequences) is selected (masked) to be predicted</span>
+<span class="sd">    The input and target masks are returned by using Keras Masking</span>
+<span class="sd">    (._keras_mask), which is set by the compute_mask() method.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    schema : Schema</span>
+<span class="sd">        The input schema, that will be used to discover the name</span>
+<span class="sd">        of the item id column</span>
+<span class="sd">    target : Union[str, Tags, ColumnSchema]</span>
+<span class="sd">        The sequential input column that will be used to extract the target</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="SequenceMaskLast.compute_mask"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.SequenceMaskLast.html#merlin.models.tf.SequenceMaskLast.compute_mask">[docs]</a>    <span class="k">def</span> <span class="nf">compute_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Selects (masks) the last position of the sequential targets</span>
+<span class="sd">        to be predicted.</span>
+<span class="sd">        This method is called by Keras after call()</span>
+<span class="sd">        and returns the targets mask that will</span>
+<span class="sd">        be assigned to the input tensors and targets, being accessible</span>
+<span class="sd">        by tensor._keras_mask</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">item_id_seq</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">target_name</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">target_mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_generate_target_mask</span><span class="p">(</span><span class="n">item_id_seq</span><span class="p">)</span>
+
+        <span class="n">inputs_mask</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">inputs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">column_names</span><span class="p">:</span>
+                <span class="n">inputs_mask</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_mask</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">inputs_mask</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">return</span> <span class="p">(</span><span class="n">inputs_mask</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_mask</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_generate_target_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ids_seq</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">RaggedTensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">tf</span><span class="o">.</span><span class="n">RaggedTensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a bool ragged tensor with the last positions of the sequence masked</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        ids_seq : tf.RaggedTensor</span>
+<span class="sd">            Sequence of ids, which are used to infer how many values</span>
+<span class="sd">            each sequence contains</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        tf.RaggedTensor</span>
+<span class="sd">            Mask tensor, with True at the last positions</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">row_lengths</span> <span class="o">=</span> <span class="n">ids_seq</span><span class="o">.</span><span class="n">row_lengths</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">max_seq_length</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">reduce_max</span><span class="p">(</span><span class="n">row_lengths</span><span class="p">),</span> <span class="n">tf</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+
+        <span class="n">assertion_min_seq_length</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">Assert</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">reduce_all</span><span class="p">(</span><span class="n">row_lengths</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">),</span> <span class="p">[</span><span class="n">row_lengths</span><span class="p">])</span>
+
+        <span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">control_dependencies</span><span class="p">([</span><span class="n">assertion_min_seq_length</span><span class="p">]):</span>
+            <span class="n">padding_mask</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">sequence_mask</span><span class="p">(</span><span class="n">row_lengths</span><span class="p">)</span>
+            <span class="n">targets_mask</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">ragged</span><span class="o">.</span><span class="n">boolean_mask</span><span class="p">(</span>
+                <span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">one_hot</span><span class="p">(</span><span class="n">row_lengths</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">max_seq_length</span><span class="p">),</span> <span class="n">tf</span><span class="o">.</span><span class="n">bool</span><span class="p">),</span> <span class="n">padding_mask</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="n">targets_mask</span>
+
+<div class="viewcode-block" id="SequenceMaskLast.from_config"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.SequenceMaskLast.html#merlin.models.tf.SequenceMaskLast.from_config">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_config</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">config</span><span class="p">):</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="n">tf_utils</span><span class="o">.</span><span class="n">maybe_deserialize_keras_objects</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;pre&quot;</span><span class="p">,</span> <span class="s2">&quot;post&quot;</span><span class="p">,</span> <span class="s2">&quot;aggregation&quot;</span><span class="p">])</span>
+        <span class="n">schema</span> <span class="o">=</span> <span class="n">schema_utils</span><span class="o">.</span><span class="n">tensorflow_metadata_json_to_schema</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;schema&quot;</span><span class="p">))</span>
+        <span class="n">target</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;target&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="o">**</span><span class="n">config</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SequenceMaskLast.configure_for_train"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.SequenceMaskLast.html#merlin.models.tf.SequenceMaskLast.configure_for_train">[docs]</a>    <span class="k">def</span> <span class="nf">configure_for_train</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Method called by the model.fit() to set the specialized</span>
+<span class="sd">        `masking_post` and `masking_pre` needed by the TransformerBlock</span>
+<span class="sd">        to align with the SequencePredictNext outputs.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">transformer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">is_transformers_available</span><span class="p">():</span>
+                <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="s2">&quot;HuggingFace library `transformers` is required&quot;</span><span class="p">)</span>
+            <span class="kn">from</span> <span class="nn">merlin.models.tf.transformers.transforms</span> <span class="kn">import</span> <span class="p">(</span>
+                <span class="n">TransformerInferenceHiddenState</span><span class="p">,</span>
+                <span class="n">TransformerOutputToRagged</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="c1"># set the tansformer block with the correct masking blocks</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">transformer</span><span class="o">.</span><span class="n">masking_post</span> <span class="o">=</span> <span class="n">combinators</span><span class="o">.</span><span class="n">SequentialBlock</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">TransformerOutputToRagged</span><span class="p">(),</span> <span class="n">TransformerInferenceHiddenState</span><span class="p">()]</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">transformer</span><span class="o">.</span><span class="n">masking_pre</span> <span class="o">=</span> <span class="n">combinators</span><span class="o">.</span><span class="n">SequentialBlock</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">SequenceMaskLastInference</span><span class="p">(),</span> <span class="n">ExtractMaskFromTargets</span><span class="p">(),</span> <span class="n">ReplaceMaskedEmbeddings</span><span class="p">()]</span>
+            <span class="p">)</span></div>
+
+<div class="viewcode-block" id="SequenceMaskLast.configure_for_test"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.SequenceMaskLast.html#merlin.models.tf.SequenceMaskLast.configure_for_test">[docs]</a>    <span class="k">def</span> <span class="nf">configure_for_test</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Method called by the model.evaluate() to check that the</span>
+<span class="sd">        `masking_pre` set in the TransformerBlock is aligned with</span>
+<span class="sd">        the evaluation strategy of SequenceMaskRandom</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">transformer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">transformer</span><span class="o">.</span><span class="n">masking_pre</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;To evaluate using `SequenceMaskLast`, ensure that your TransformerBlock has&quot;</span>
+                    <span class="s2">&quot; `masking_pre` set as&quot;</span>
+                    <span class="s2">&quot; `combinators.SequentialBlock(&quot;</span>
+                    <span class="s2">&quot;   [&quot;</span>
+                    <span class="s2">&quot;        SequenceMaskLastInference(),&quot;</span>
+                    <span class="s2">&quot;        ExtractMaskFromTargets(),&quot;</span>
+                    <span class="s2">&quot;        ReplaceMaskedEmbeddings()&quot;</span>
+                    <span class="s2">&quot;   ]&quot;</span>
+                    <span class="s2">&quot;)`&quot;</span>
+                    <span class="s2">&quot; You can automatically set `masking_pre` by passing `SequenceMaskRandom`&quot;</span>
+                    <span class="s2">&quot; or `SequenceMaskLast` as the `pre` argument to the `fit` method:&quot;</span>
+                    <span class="s2">&quot; `model.fit(..., pre=SequenceMaskRandom(...))`.&quot;</span>
+                <span class="p">)</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span>
+                <span class="nb">isinstance</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="n">ReplaceMaskedEmbeddings</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">transformer</span><span class="o">.</span><span class="n">masking_pre</span><span class="o">.</span><span class="n">layers</span>
+            <span class="p">):</span>
+                <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;The block `ReplaceMaskedEmbeddings` must be part of the `masking_pre`&quot;</span>
+                    <span class="s2">&quot; of your TransformerBlock to be able to use `SequenceMaskRandom`&quot;</span>
+                    <span class="s2">&quot; evaluation strategy.&quot;</span>
+                    <span class="s2">&quot; Please ensure that your Transformer model has been trained with&quot;</span>
+                    <span class="s2">&quot; `SequenceMaskRandom` or `SequenceMaskLast`&quot;</span>
+                    <span class="s2">&quot; by passing it as the `pre` argument to the `fit` method: &quot;</span>
+                    <span class="s2">&quot;`model.fit(..., pre=SequenceMaskLast(...))`.&quot;</span>
+                <span class="p">)</span></div></div>
+
+
+<span class="nd">@tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">register_keras_serializable</span><span class="p">(</span><span class="n">package</span><span class="o">=</span><span class="s2">&quot;merlin.models&quot;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">SequenceMaskLastInference</span><span class="p">(</span><span class="n">Block</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">call</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">testing</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">inference_mode</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">training</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">testing</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">inference_mode</span><span class="p">:</span>
+            <span class="c1"># Extending sequences in one position by copying the last embedding</span>
+            <span class="n">repeat</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">:,</span> <span class="p">:]</span>
+            <span class="c1"># repeat = tf.expand_dims(repeat, 1)</span>
+            <span class="n">inputs</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">inputs</span><span class="p">,</span> <span class="n">repeat</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">inputs</span>
+
+    <span class="k">def</span> <span class="nf">compute_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Selects (masks) the next position after the</span>
+<span class="sd">        last valid (non-padded) position of the sequential targets</span>
+<span class="sd">        to be predicted.</span>
+<span class="sd">        This method is called by Keras after call()</span>
+<span class="sd">        and returns the mask that is going to be assigned</span>
+<span class="sd">        to the input tensors, being accessible</span>
+<span class="sd">        by tensor._keras_mask</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">targets_mask</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">inference_mode</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">RaggedTensor</span><span class="p">):</span>
+                <span class="n">row_lengths</span> <span class="o">=</span> <span class="n">inputs</span><span class="o">.</span><span class="n">row_lengths</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="n">max_seq_length</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">reduce_max</span><span class="p">(</span><span class="n">row_lengths</span><span class="p">),</span> <span class="n">tf</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+
+                <span class="n">padding_mask</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">sequence_mask</span><span class="p">(</span><span class="n">row_lengths</span><span class="p">)</span>
+                <span class="n">targets_mask</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">ragged</span><span class="o">.</span><span class="n">boolean_mask</span><span class="p">(</span>
+                    <span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">one_hot</span><span class="p">(</span><span class="n">row_lengths</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">max_seq_length</span><span class="p">),</span> <span class="n">tf</span><span class="o">.</span><span class="n">bool</span><span class="p">),</span> <span class="n">padding_mask</span>
+                <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">targets_mask</span>
+
+
+<div class="viewcode-block" id="ReplaceMaskedEmbeddings"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.ReplaceMaskedEmbeddings.html#merlin.models.tf.ReplaceMaskedEmbeddings">[docs]</a><span class="nd">@tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">register_keras_serializable</span><span class="p">(</span><span class="n">package</span><span class="o">=</span><span class="s2">&quot;merlin.models&quot;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">ReplaceMaskedEmbeddings</span><span class="p">(</span><span class="n">Block</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Takes a 3D input tensor (batch size x seq. length x embedding dim) and replaces</span>
+<span class="sd">    by a dummy trainable single embedding at the positions to be masked.</span>
+
+<span class="sd">    This is useful to be used when PredictMasked() transformation is used in</span>
+<span class="sd">    the fit()/eval() methods, which randomly selects some targets to be predicted and uses</span>
+<span class="sd">    Keras Masking to cascade the `_keras_mask`. By replacing input embeddings</span>
+<span class="sd">    at masked positions we avoid target leakage when training models with</span>
+<span class="sd">    Masked Language Modeling (BERT-like).</span>
+
+<span class="sd">    To support masked training approach in Transformer-based model,</span>
+<span class="sd">    SequenceMaskRandom and SequenceLastRandom implements `configure_for_train` method</span>
+<span class="sd">    that sets `ReplaceMaskedEmbeddings` as part of the `masking_pre` of</span>
+<span class="sd">    the transformer block.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="ReplaceMaskedEmbeddings.__init__"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.ReplaceMaskedEmbeddings.html#merlin.models.tf.ReplaceMaskedEmbeddings.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes the block.&quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">supports_masking</span> <span class="o">=</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="ReplaceMaskedEmbeddings.build"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.ReplaceMaskedEmbeddings.html#merlin.models.tf.ReplaceMaskedEmbeddings.build">[docs]</a>    <span class="k">def</span> <span class="nf">build</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_shape</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Builds the block&#39;s internal variables.</span>
+
+<span class="sd">        This method creates a trainable embedding to replace masked interactions in the input.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        input_shape : tf.TensorShape</span>
+<span class="sd">            Shape of the input tensor.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If the last dimension of the input shape is None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hidden_size</span> <span class="o">=</span> <span class="n">input_shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hidden_size</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The last dim of inputs cannot be None&quot;</span><span class="p">)</span>
+        <span class="c1"># Create a trainable embedding to replace masked interactions</span>
+        <span class="n">initializer</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">random_normal_initializer</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">stddev</span><span class="o">=</span><span class="mf">0.001</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">masked_embedding</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">initializer</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">hidden_size</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">input_shape</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ReplaceMaskedEmbeddings.call"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.ReplaceMaskedEmbeddings.html#merlin.models.tf.ReplaceMaskedEmbeddings.call">[docs]</a>    <span class="k">def</span> <span class="nf">call</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">inputs</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">RaggedTensor</span><span class="p">],</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">RaggedTensor</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;If the sequence of input embeddings is masked (with `tensor._keras_mask` defined),</span>
+<span class="sd">        replaces the input embeddings for masked elements</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        inputs : Union[tf.Tensor, tf.RaggedTensor]</span>
+<span class="sd">            A tensor with sequences of vectors.</span>
+<span class="sd">            Needs to be 3D (batch_size, sequence_length, embeddings dim).</span>
+<span class="sd">            If inputs._keras_mask is defined uses it to infer the mask</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Union[tf.Tensor, tf.RaggedTensor]</span>
+<span class="sd">            returns a tensor with the masked inputs replaced by the dummy embedding</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">outputs</span> <span class="o">=</span> <span class="n">inputs</span>
+        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="s2">&quot;_keras_mask&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Replaces the embeddings at masked positions by a dummy trainable embedding</span>
+            <span class="n">outputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_replace_masked_embeddings</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">inputs</span><span class="o">.</span><span class="n">_keras_mask</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">outputs</span></div>
+
+    <span class="k">def</span> <span class="nf">_replace_masked_embeddings</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">RaggedTensor</span><span class="p">],</span> <span class="n">mask</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">RaggedTensor</span><span class="p">]</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">tf</span><span class="o">.</span><span class="n">RaggedTensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Replaces in the inputs tensors the values masked as targets by a common trainable</span>
+<span class="sd">        embedding</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">tf</span><span class="o">.</span><span class="n">Assert</span><span class="p">(</span>
+            <span class="n">tf_utils</span><span class="o">.</span><span class="n">check_inputs_mask_compatible_shape</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">mask</span><span class="p">),</span>
+            <span class="p">[</span>
+                <span class="s2">&quot;The inputs and mask need to be compatible: have the same dtype &quot;</span>
+                <span class="s2">&quot;(tf.Tensor or tf.RaggedTensor) and the tf.rank(mask) == tf.rank(inputs)-1&quot;</span>
+            <span class="p">],</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">RaggedTensor</span><span class="p">):</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="n">mask</span><span class="o">.</span><span class="n">with_row_splits_dtype</span><span class="p">(</span><span class="n">inputs</span><span class="o">.</span><span class="n">row_splits</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+
+        <span class="n">output</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+            <span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">tf</span><span class="o">.</span><span class="n">bool</span><span class="p">),</span>
+            <span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">masked_embedding</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">inputs</span><span class="o">.</span><span class="n">dtype</span><span class="p">),</span>
+            <span class="n">inputs</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">output</span></div>
+
+
+<span class="nd">@tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">register_keras_serializable</span><span class="p">(</span><span class="n">package</span><span class="o">=</span><span class="s2">&quot;merlin.models&quot;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">ExtractMaskFromTargets</span><span class="p">(</span><span class="n">Block</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Recovers the mask information for the inputs from the mask information</span>
+<span class="sd">    stored in the targets.</span>
+
+<span class="sd">    This block looks for the Keras mask (`._keras_mask`) in the following order:</span>
+<span class="sd">        1. Checks if the input tensor has a mask.</span>
+<span class="sd">        2. Checks if there is a single target and if it has a mask.</span>
+<span class="sd">        3. If there are multiple targets (dictionary), returns the mask of the target</span>
+<span class="sd">        that matches the first two dimensions of the input.</span>
+
+<span class="sd">    This is useful to use when the mask information for the inputs may be lost in</span>
+<span class="sd">    previous non-mask-aware Merlin blocks.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">call</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">inputs</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">RaggedTensor</span><span class="p">],</span>
+        <span class="n">targets</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">RaggedTensor</span><span class="p">,</span> <span class="n">TabularData</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">RaggedTensor</span><span class="p">]:</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_infer_mask_from_inputs_or_targets</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">targets</span><span class="p">)</span>
+        <span class="n">inputs</span><span class="o">.</span><span class="n">_keras_mask</span> <span class="o">=</span> <span class="n">mask</span>
+        <span class="k">return</span> <span class="n">inputs</span>
+
+    <span class="k">def</span> <span class="nf">_infer_mask_from_inputs_or_targets</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">inputs</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">RaggedTensor</span><span class="p">],</span>
+        <span class="n">targets</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">RaggedTensor</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="s2">&quot;_keras_mask&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="n">inputs</span><span class="o">.</span><span class="n">_keras_mask</span>
+
+        <span class="k">elif</span> <span class="n">targets</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">targets</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">single_target</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">targets</span><span class="o">.</span><span class="n">values</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">single_target</span><span class="p">,</span> <span class="s2">&quot;_keras_mask&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">mask</span> <span class="o">=</span> <span class="n">single_target</span><span class="o">.</span><span class="n">_keras_mask</span>
+                <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">targets</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="c1"># If there is more than 1 target, checks if only one</span>
+                    <span class="c1"># target matches the shape sequence of the inputs</span>
+                    <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">targets</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span>
+                            <span class="n">v</span><span class="p">,</span> <span class="s2">&quot;_keras_mask&quot;</span><span class="p">,</span> <span class="kc">None</span>
+                        <span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">tf_utils</span><span class="o">.</span><span class="n">check_inputs_mask_compatible_shape</span><span class="p">(</span>
+                            <span class="n">inputs</span><span class="p">,</span> <span class="n">v</span><span class="o">.</span><span class="n">_keras_mask</span>
+                        <span class="p">):</span>
+                            <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                                <span class="n">mask</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">_keras_mask</span>
+                            <span class="k">else</span><span class="p">:</span>
+                                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                                    <span class="s2">&quot;It is not possible to infer the mask &quot;</span>
+                                    <span class="s2">&quot;from the targets because there are more than &quot;</span>
+                                    <span class="s2">&quot;one target with the expected shape that matches &quot;</span>
+                                    <span class="s2">&quot;the inputs shape (batch_size x seq_length)&quot;</span>
+                                <span class="p">)</span>
+            <span class="k">elif</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span> <span class="s2">&quot;_keras_mask&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">mask</span> <span class="o">=</span> <span class="n">targets</span><span class="o">.</span><span class="n">_keras_mask</span>
+
+        <span class="k">return</span> <span class="n">mask</span>
+
+
+<span class="nd">@tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">register_keras_serializable</span><span class="p">(</span><span class="n">package</span><span class="o">=</span><span class="s2">&quot;merlin.models&quot;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">SequenceCausalLastInference</span><span class="p">(</span><span class="n">Block</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">call</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">testing</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">inference_mode</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">training</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">testing</span>
+        <span class="k">return</span> <span class="n">inputs</span>
+
+    <span class="k">def</span> <span class="nf">compute_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Selects (masks) the last non padded position of the</span>
+<span class="sd">        input sequence to be predicted.</span>
+<span class="sd">        This method is called by Keras after call()</span>
+<span class="sd">        and returns the mask that is going to be assigned</span>
+<span class="sd">        to the input tensors, being accessible</span>
+<span class="sd">        by tensor._keras_mask</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">inference_mode</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">RaggedTensor</span><span class="p">):</span>
+                <span class="n">row_lengths</span> <span class="o">=</span> <span class="n">inputs</span><span class="o">.</span><span class="n">row_lengths</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+                <span class="n">max_seq_length</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">reduce_max</span><span class="p">(</span><span class="n">row_lengths</span><span class="p">),</span> <span class="n">tf</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+
+                <span class="n">padding_mask</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">sequence_mask</span><span class="p">(</span><span class="n">row_lengths</span><span class="p">)</span>
+                <span class="n">mask</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">ragged</span><span class="o">.</span><span class="n">boolean_mask</span><span class="p">(</span>
+                    <span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">one_hot</span><span class="p">(</span><span class="n">row_lengths</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">max_seq_length</span><span class="p">),</span> <span class="n">tf</span><span class="o">.</span><span class="n">bool</span><span class="p">),</span> <span class="n">padding_mask</span>
+                <span class="p">)</span>
+        <span class="k">return</span> <span class="n">mask</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, NVIDIA.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-NVJ1Y1YJHK"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-NVJ1Y1YJHK', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>merlin.dataloader.loader_base.ChunkQueue &mdash; Merlin  documentation</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/mystnb.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/togglebutton.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
+    <link rel="canonical" href="https://nvidia-merlin.github.io/Merlin/stable/generated/merlin.dataloader.loader_base.ChunkQueue.html" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script >let toggleHintShow = 'Click to show';</script>
+        <script >let toggleHintHide = 'Click to hide';</script>
+        <script >let toggleOpenOnPrint = 'true';</script>
+        <script src="../_static/togglebutton.js"></script>
+        <script >var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="merlin.io package" href="../api_core/merlin.io.html" />
+    <link rel="prev" title="merlin.dataloader.loader_base.LoaderBase" href="merlin.dataloader.loader_base.LoaderBase.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="banner">
+    <p class="banner">
+      Beginning in January 2023, versions for all NVIDIA Merlin projects
+      will change from semantic versioning like <code>4.0</code>
+      to calendar versioning like <code>23.01</code>.</p>
+  </div>
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Merlin
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../README.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/recommender_system_guide.html">Recommender System Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/index.html">Example Notebooks</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../api_overview.html">API Documentation</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../api_core/merlin.dag.html">merlin.dag</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../api_dataloader.html">merlin.loader</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="merlin.dataloader.tensorflow.Loader.html">merlin.dataloader.tensorflow.Loader</a></li>
+<li class="toctree-l3"><a class="reference internal" href="merlin.dataloader.tensorflow.KerasSequenceValidater.html">merlin.dataloader.tensorflow.KerasSequenceValidater</a></li>
+<li class="toctree-l3"><a class="reference internal" href="merlin.dataloader.tf_utils.configure_tensorflow.html">merlin.dataloader.tf_utils.configure_tensorflow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="merlin.dataloader.tf_utils.get_dataset_schema_from_feature_columns.html">merlin.dataloader.tf_utils.get_dataset_schema_from_feature_columns</a></li>
+<li class="toctree-l3"><a class="reference internal" href="merlin.dataloader.tf_utils.HAS_GPU.html">merlin.dataloader.tf_utils.HAS_GPU</a></li>
+<li class="toctree-l3"><a class="reference internal" href="merlin.dataloader.torch.Loader.html">merlin.dataloader.torch.Loader</a></li>
+<li class="toctree-l3"><a class="reference internal" href="merlin.dataloader.torch.DLDataLoader.html">merlin.dataloader.torch.DLDataLoader</a></li>
+<li class="toctree-l3"><a class="reference internal" href="merlin.dataloader.loader_base.LoaderBase.html">merlin.dataloader.loader_base.LoaderBase</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">merlin.dataloader.loader_base.ChunkQueue</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../api_core/merlin.io.html">merlin.io</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api_models.html">merlin.models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api_core/merlin.schema.html">merlin.schema</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api_systems.html">merlin.systems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api_nvtabular.html">nvtabular</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../containers.html">Merlin Containers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../support_matrix/index.html">Merlin Support Matrix</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Merlin</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../api_overview.html">API Documentation</a></li>
+          <li class="breadcrumb-item"><a href="../api_dataloader.html">API Documentation</a></li>
+      <li class="breadcrumb-item active">merlin.dataloader.loader_base.ChunkQueue</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="merlin-dataloader-loader-base-chunkqueue">
+<h1>merlin.dataloader.loader_base.ChunkQueue<a class="headerlink" href="#merlin-dataloader-loader-base-chunkqueue" title="Permalink to this headline"></a></h1>
+<dl class="py class">
+<dt id="merlin.dataloader.loader_base.ChunkQueue">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">merlin.dataloader.loader_base.</span></code><code class="sig-name descname"><span class="pre">ChunkQueue</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataloader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qsize</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_parts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shuffle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">put_wait</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-06</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epochs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/merlin/dataloader/loader_base.html#ChunkQueue"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#merlin.dataloader.loader_base.ChunkQueue" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>This class takes partitions (parts) from an merlin.io.Dataset
+and concatenates them into a cudf dataframe “chunk.” This chunk
+is subsequently transformed into its tensor representation using
+the iterator’s transform.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>qsize</strong> (<em>int</em>) – Maximum number of elements to hold in the buffer at one time.</p></li>
+<li><p><strong>num_parts</strong> (<em>int</em>) – Number of partitions from the iterator, a merlin.io.Dataset to
+concatenate into a “chunk.”</p></li>
+<li><p><strong>shuffle</strong> (<em>bool</em>) – Enable or disable chunk-level shuffling.</p></li>
+<li><p><strong>put_wait</strong> (<em>float</em>) – Specifies the timeout to wait for a full queue to open up before checking
+for errors and trying again.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="merlin.dataloader.loader_base.ChunkQueue.__init__">
+<code class="sig-name descname"><span class="pre">__init__</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataloader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qsize</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_parts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shuffle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">put_wait</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-06</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epochs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/merlin/dataloader/loader_base.html#ChunkQueue.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#merlin.dataloader.loader_base.ChunkQueue.__init__" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#merlin.dataloader.loader_base.ChunkQueue.__init__" title="merlin.dataloader.loader_base.ChunkQueue.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(dataloader, qsize[, num_parts, …])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#merlin.dataloader.loader_base.ChunkQueue.batch" title="merlin.dataloader.loader_base.ChunkQueue.batch"><code class="xref py py-obj docutils literal notranslate"><span class="pre">batch</span></code></a>(itr)</p></td>
+<td><p>Iterates through gpu_mem_frac size chunks of dataset and concatenates every <cite>num_parts</cite> of them.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#merlin.dataloader.loader_base.ChunkQueue.chunk_logic" title="merlin.dataloader.loader_base.ChunkQueue.chunk_logic"><code class="xref py py-obj docutils literal notranslate"><span class="pre">chunk_logic</span></code></a>(itr)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#merlin.dataloader.loader_base.ChunkQueue.get" title="merlin.dataloader.loader_base.ChunkQueue.get"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#merlin.dataloader.loader_base.ChunkQueue.get_batch_div_chunk" title="merlin.dataloader.loader_base.ChunkQueue.get_batch_div_chunk"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_batch_div_chunk</span></code></a>(chunks, batch_size)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#merlin.dataloader.loader_base.ChunkQueue.load_chunks" title="merlin.dataloader.loader_base.ChunkQueue.load_chunks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_chunks</span></code></a>(dev)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#merlin.dataloader.loader_base.ChunkQueue.put" title="merlin.dataloader.loader_base.ChunkQueue.put"><code class="xref py py-obj docutils literal notranslate"><span class="pre">put</span></code></a>(packet)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#merlin.dataloader.loader_base.ChunkQueue.start" title="merlin.dataloader.loader_base.ChunkQueue.start"><code class="xref py py-obj docutils literal notranslate"><span class="pre">start</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#merlin.dataloader.loader_base.ChunkQueue.stop" title="merlin.dataloader.loader_base.ChunkQueue.stop"><code class="xref py py-obj docutils literal notranslate"><span class="pre">stop</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Attributes</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#merlin.dataloader.loader_base.ChunkQueue.empty" title="merlin.dataloader.loader_base.ChunkQueue.empty"><code class="xref py py-obj docutils literal notranslate"><span class="pre">empty</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#merlin.dataloader.loader_base.ChunkQueue.stopped" title="merlin.dataloader.loader_base.ChunkQueue.stopped"><code class="xref py py-obj docutils literal notranslate"><span class="pre">stopped</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt id="merlin.dataloader.loader_base.ChunkQueue.stopped">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">stopped</span></code><a class="headerlink" href="#merlin.dataloader.loader_base.ChunkQueue.stopped" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="merlin.dataloader.loader_base.ChunkQueue.empty">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">empty</span></code><a class="headerlink" href="#merlin.dataloader.loader_base.ChunkQueue.empty" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="merlin.dataloader.loader_base.ChunkQueue.get">
+<code class="sig-name descname"><span class="pre">get</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/merlin/dataloader/loader_base.html#ChunkQueue.get"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#merlin.dataloader.loader_base.ChunkQueue.get" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="merlin.dataloader.loader_base.ChunkQueue.put">
+<code class="sig-name descname"><span class="pre">put</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">packet</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/merlin/dataloader/loader_base.html#ChunkQueue.put"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#merlin.dataloader.loader_base.ChunkQueue.put" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="merlin.dataloader.loader_base.ChunkQueue.batch">
+<code class="sig-name descname"><span class="pre">batch</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">itr</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/merlin/dataloader/loader_base.html#ChunkQueue.batch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#merlin.dataloader.loader_base.ChunkQueue.batch" title="Permalink to this definition"></a></dt>
+<dd><p>Iterates through gpu_mem_frac size chunks of dataset
+and concatenates every <cite>num_parts</cite> of them.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="merlin.dataloader.loader_base.ChunkQueue.chunk_logic">
+<code class="sig-name descname"><span class="pre">chunk_logic</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">itr</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/merlin/dataloader/loader_base.html#ChunkQueue.chunk_logic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#merlin.dataloader.loader_base.ChunkQueue.chunk_logic" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="merlin.dataloader.loader_base.ChunkQueue.load_chunks">
+<code class="sig-name descname"><span class="pre">load_chunks</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dev</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/merlin/dataloader/loader_base.html#ChunkQueue.load_chunks"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#merlin.dataloader.loader_base.ChunkQueue.load_chunks" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="merlin.dataloader.loader_base.ChunkQueue.stop">
+<code class="sig-name descname"><span class="pre">stop</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/merlin/dataloader/loader_base.html#ChunkQueue.stop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#merlin.dataloader.loader_base.ChunkQueue.stop" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="merlin.dataloader.loader_base.ChunkQueue.start">
+<code class="sig-name descname"><span class="pre">start</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/merlin/dataloader/loader_base.html#ChunkQueue.start"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#merlin.dataloader.loader_base.ChunkQueue.start" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="merlin.dataloader.loader_base.ChunkQueue.get_batch_div_chunk">
+<code class="sig-name descname"><span class="pre">get_batch_div_chunk</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chunks</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/merlin/dataloader/loader_base.html#ChunkQueue.get_batch_div_chunk"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#merlin.dataloader.loader_base.ChunkQueue.get_batch_div_chunk" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="merlin.dataloader.loader_base.LoaderBase.html" class="btn btn-neutral float-left" title="merlin.dataloader.loader_base.LoaderBase" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../api_core/merlin.io.html" class="btn btn-neutral float-right" title="merlin.io package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, NVIDIA.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-NVJ1Y1YJHK"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-NVJ1Y1YJHK', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

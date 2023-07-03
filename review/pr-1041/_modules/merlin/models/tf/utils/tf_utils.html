@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>merlin.models.tf.utils.tf_utils &mdash; Merlin  documentation</title><link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/mystnb.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/togglebutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/css/custom.css" type="text/css" />
+    <link rel="canonical" href="https://nvidia-merlin.github.io/Merlin/stable/_modules/merlin/models/tf/utils/tf_utils.html" />
+  <!--[if lt IE 9]>
+    <script src="../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../../../../../" src="../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../_static/jquery.js"></script>
+        <script src="../../../../../_static/underscore.js"></script>
+        <script src="../../../../../_static/doctools.js"></script>
+        <script >let toggleHintShow = 'Click to show';</script>
+        <script >let toggleHintHide = 'Click to hide';</script>
+        <script >let toggleOpenOnPrint = 'true';</script>
+        <script src="../../../../../_static/togglebutton.js"></script>
+        <script >var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="banner">
+    <p class="banner">
+      Beginning in January 2023, versions for all NVIDIA Merlin projects
+      will change from semantic versioning like <code>4.0</code>
+      to calendar versioning like <code>23.01</code>.</p>
+  </div>
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../../index.html" class="icon icon-home">
+            Merlin
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../README.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../guide/recommender_system_guide.html">Recommender System Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../examples/index.html">Example Notebooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../api_overview.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../containers.html">Merlin Containers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../support_matrix/index.html">Merlin Support Matrix</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">Merlin</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">merlin.models.tf.utils.tf_utils</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for merlin.models.tf.utils.tf_utils</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># Copyright (c) 2021, NVIDIA CORPORATION.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+<span class="c1">#</span>
+<span class="kn">import</span> <span class="nn">collections</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
+<span class="kn">from</span> <span class="nn">keras.utils.tf_inspect</span> <span class="kn">import</span> <span class="n">getfullargspec</span>
+<span class="kn">from</span> <span class="nn">packaging</span> <span class="kn">import</span> <span class="n">version</span>
+<span class="kn">from</span> <span class="nn">tensorflow.python</span> <span class="kn">import</span> <span class="n">to_dlpack</span>
+
+<span class="kn">from</span> <span class="nn">merlin.core.compat</span> <span class="kn">import</span> <span class="n">cudf</span><span class="p">,</span> <span class="n">cupy</span>
+<span class="kn">from</span> <span class="nn">merlin.core.dispatch</span> <span class="kn">import</span> <span class="n">DataFrameType</span>
+<span class="kn">from</span> <span class="nn">merlin.io</span> <span class="kn">import</span> <span class="n">Dataset</span>
+<span class="kn">from</span> <span class="nn">merlin.models.tf.core.base</span> <span class="kn">import</span> <span class="n">Block</span><span class="p">,</span> <span class="n">ModelContext</span>
+<span class="kn">from</span> <span class="nn">merlin.models.tf.typing</span> <span class="kn">import</span> <span class="n">TabularData</span>
+<span class="kn">from</span> <span class="nn">merlin.models.utils.misc_utils</span> <span class="kn">import</span> <span class="n">filter_kwargs</span>
+
+<span class="k">if</span> <span class="n">version</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">__version__</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">version</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="s2">&quot;2.3.0&quot;</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">tfdlpack</span> <span class="kn">import</span> <span class="n">from_dlpack</span>
+    <span class="k">except</span> <span class="ne">ModuleNotFoundError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="s2">&quot;If using TensorFlow &lt; 2.3.0, you must install tfdlpack-gpu extension library&quot;</span>
+        <span class="k">raise</span> <span class="ne">ModuleNotFoundError</span><span class="p">(</span><span class="n">message</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">e</span>
+
+<span class="k">else</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">tensorflow.experimental.dlpack</span> <span class="kn">import</span> <span class="n">from_dlpack</span>
+
+
+<span class="k">def</span> <span class="nf">get_output_sizes_from_schema</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">max_sequence_length</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="n">sizes</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="n">schema</span><span class="p">:</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">feature</span><span class="o">.</span><span class="n">name</span>
+        <span class="k">if</span> <span class="n">feature</span><span class="o">.</span><span class="n">is_list</span><span class="p">:</span>
+            <span class="n">sizes</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">TensorShape</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="n">batch_size</span><span class="p">,</span>
+                    <span class="n">max_sequence_length</span> <span class="k">if</span> <span class="n">max_sequence_length</span> <span class="k">else</span> <span class="n">feature</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">dims</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">,</span>
+                <span class="p">]</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="n">feature</span><span class="o">.</span><span class="n">HasField</span><span class="p">(</span><span class="s2">&quot;shape&quot;</span><span class="p">):</span>
+            <span class="n">sizes</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">TensorShape</span><span class="p">([</span><span class="n">batch_size</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">d</span><span class="o">.</span><span class="n">size</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">feature</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">dim</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">sizes</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">TensorShape</span><span class="p">([</span><span class="n">batch_size</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">sizes</span>
+
+
+<span class="k">def</span> <span class="nf">calculate_batch_size_from_inputs</span><span class="p">(</span><span class="n">inputs</span><span class="p">):</span>
+    <span class="n">input_shapes</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span><span class="o">.</span><span class="n">shape</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">inputs</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+    <span class="n">batch_size</span> <span class="o">=</span> <span class="n">calculate_batch_size_from_input_shapes</span><span class="p">(</span><span class="n">input_shapes</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">batch_size</span>
+
+
+<span class="k">def</span> <span class="nf">calculate_batch_size_from_input_shapes</span><span class="p">(</span><span class="n">input_shapes</span><span class="p">):</span>
+    <span class="n">non_ragged_features</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+        <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">input_shapes</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">k</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;__values&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">k</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;__offsets&quot;</span><span class="p">)]</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">non_ragged_features</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">batch_size</span> <span class="o">=</span> <span class="n">input_shapes</span><span class="p">[</span><span class="n">non_ragged_features</span><span class="p">[</span><span class="mi">0</span><span class="p">]][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">batch_size</span>
+
+    <span class="n">ragged_features_offsets</span> <span class="o">=</span> <span class="nb">list</span><span class="p">([</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">input_shapes</span> <span class="k">if</span> <span class="n">k</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;__offsets&quot;</span><span class="p">)])</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ragged_features_offsets</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">batch_size</span> <span class="o">=</span> <span class="n">input_shapes</span><span class="p">[</span><span class="n">ragged_features_offsets</span><span class="p">[</span><span class="mi">0</span><span class="p">]][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">batch_size</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">batch_size</span> <span class="o">-=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="n">batch_size</span>
+
+    <span class="k">return</span> <span class="kc">None</span>
+
+
+<span class="k">def</span> <span class="nf">maybe_serialize_keras_objects</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span>
+    <span class="n">config</span><span class="p">,</span>
+    <span class="n">maybe_serialize_keys</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">maybe_serialize_keys</span><span class="p">:</span>
+        <span class="n">maybe_value</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">maybe_value</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">maybe_value</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="n">config</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="n">k</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">serialize_keras_object</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">maybe_value</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+                <span class="p">}</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">maybe_value</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+                <span class="n">config</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">serialize_keras_object</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">maybe_value</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">config</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">serialize_keras_object</span><span class="p">(</span><span class="n">maybe_value</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">config</span>
+
+
+<span class="k">def</span> <span class="nf">maybe_deserialize_keras_objects</span><span class="p">(</span>
+    <span class="n">config</span><span class="p">,</span>
+    <span class="n">to_deserialize</span><span class="p">,</span>
+    <span class="n">deserialize_fn</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">deserialize_keras_object</span><span class="p">,</span>
+    <span class="n">custom_objects</span><span class="o">=</span><span class="p">{},</span>
+<span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">to_deserialize</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="n">to_deserialize</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">deserialize_fn</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">to_deserialize</span><span class="p">}</span>
+
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">fn</span> <span class="ow">in</span> <span class="n">to_deserialize</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">maybe_val</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">maybe_val</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">maybe_val</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="n">config</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">fn</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">custom_objects</span><span class="o">=</span><span class="n">custom_objects</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">maybe_val</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">config</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">fn</span><span class="p">(</span><span class="n">maybe_val</span><span class="p">,</span> <span class="n">custom_objects</span><span class="o">=</span><span class="n">custom_objects</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">config</span>
+
+
+<span class="k">def</span> <span class="nf">rescore_false_negatives</span><span class="p">(</span>
+    <span class="n">positive_item_ids</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">neg_samples_item_ids</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">negative_scores</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">false_negatives_score</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Zeroes the logits of accidental negatives.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Removing dimensions of size 1 from the shape of the item ids, if applicable</span>
+    <span class="n">positive_item_ids</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">positive_item_ids</span><span class="p">),</span> <span class="n">neg_samples_item_ids</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+    <span class="n">neg_samples_item_ids</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">neg_samples_item_ids</span><span class="p">)</span>
+
+    <span class="c1"># Reshapes positive and negative ids so that false_negatives_mask matches the scores shape</span>
+    <span class="n">false_negatives_mask</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">equal</span><span class="p">(</span>
+        <span class="n">tf</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">positive_item_ids</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">tf</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">neg_samples_item_ids</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Setting a very small value for false negatives (accidental hits) so that it has</span>
+    <span class="c1"># negligicle effect on the loss functions</span>
+    <span class="n">negative_scores</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+        <span class="n">false_negatives_mask</span><span class="p">,</span>
+        <span class="n">tf</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">negative_scores</span><span class="p">)</span> <span class="o">*</span> <span class="n">false_negatives_score</span><span class="p">,</span>
+        <span class="n">negative_scores</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">valid_negatives_mask</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">false_negatives_mask</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">negative_scores</span><span class="p">),</span> <span class="n">valid_negatives_mask</span>
+
+
+<span class="k">def</span> <span class="nf">extract_topk</span><span class="p">(</span>
+    <span class="n">k</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">predictions</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">labels</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">shuffle_ties</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">shuffle_ties_epsilon</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span>
+    <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Extracts top-k values of predictions, sorting the corresponding</span>
+<span class="sd">    labels accordingly.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    k : int</span>
+<span class="sd">        Cut-off to extract top-k items</span>
+<span class="sd">    predictions : tf.Tensor</span>
+<span class="sd">        Tensor with the predictions per example</span>
+<span class="sd">    labels : tf.Tensor</span>
+<span class="sd">        Tensor with the labels per example</span>
+<span class="sd">    shuffle_ties : bool, optional</span>
+<span class="sd">        Adds a small random value to predictions to break ties if any, by default False</span>
+<span class="sd">    shuffle_ties_epsilon : float, optional</span>
+<span class="sd">        The maximum random value to be added to break ties (used only if shuffle_ties=True),</span>
+<span class="sd">        by default 1e-6</span>
+<span class="sd">    seed : int, optional</span>
+<span class="sd">        Random seed to use for tie breaking</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Tuple(tf.Tensor,tf.Tensor,tf.Tensor)</span>
+<span class="sd">        Returns a triple with the following tensors</span>
+<span class="sd">        (topk_predictions,topk_labels,label_relevant_counts).</span>
+<span class="sd">        The label_relevant_counts holds the total number of positive values per example,</span>
+<span class="sd">        as some metrics (e.g. recall) need that information, which is lost when we</span>
+<span class="sd">        extract top-k values</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Computes the number of relevant items per row (before extracting only the top-k)</span>
+    <span class="n">label_relevant_counts</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">reduce_sum</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="c1"># Limits k to the number of prediction scores</span>
+    <span class="n">k</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">predictions</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="k">if</span> <span class="n">shuffle_ties</span><span class="p">:</span>
+        <span class="c1"># Adds a small random value to break ties in the range [0,shuffle_ties_epsilon)</span>
+        <span class="k">if</span> <span class="n">seed</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">tf</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">set_seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+        <span class="n">predictions</span> <span class="o">=</span> <span class="n">predictions</span> <span class="o">+</span> <span class="p">(</span>
+            <span class="n">tf</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">predictions</span><span class="p">))</span> <span class="o">*</span> <span class="n">shuffle_ties_epsilon</span>
+        <span class="p">)</span>
+
+    <span class="n">topk_predictions</span><span class="p">,</span> <span class="n">topk_indices</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">top_k</span><span class="p">(</span><span class="n">predictions</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
+    <span class="n">topk_labels</span> <span class="o">=</span> <span class="n">gather_torch_like</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">topk_indices</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">topk_predictions</span><span class="p">,</span> <span class="n">topk_labels</span><span class="p">,</span> <span class="n">label_relevant_counts</span>
+
+
+<span class="k">def</span> <span class="nf">transform_label_to_onehot</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">vocab_size</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">one_hot</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,)),</span> <span class="n">vocab_size</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">create_output_placeholder</span><span class="p">(</span><span class="n">scores</span><span class="p">,</span> <span class="n">ks</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">tf</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">scores</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">len</span><span class="p">(</span><span class="n">ks</span><span class="p">)],</span> <span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">))</span>
+
+
+<span class="k">def</span> <span class="nf">gather_torch_like</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">indices</span><span class="p">,</span> <span class="n">max_k</span><span class="p">):</span>
+    <span class="n">row_idxs</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">range</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">labels</span><span class="p">)[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">max_k</span><span class="p">)</span>
+    <span class="n">col_idx</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">indices</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">row_idxs</span><span class="p">))</span>
+    <span class="n">all_indices</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">row_idxs</span><span class="p">,</span> <span class="n">col_idx</span><span class="p">]))</span>
+
+    <span class="n">labels</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">gather_nd</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">all_indices</span><span class="p">),</span> <span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">labels</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="n">max_k</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">labels</span>
+
+
+<span class="k">def</span> <span class="nf">batch_ref</span><span class="p">(</span><span class="n">inputs</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">TabularData</span><span class="p">]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get hash-code of a tensor or a dictionary of tensors.&quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="n">inputs</span><span class="o">.</span><span class="n">ref</span><span class="p">())</span>
+
+    <span class="n">refs</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">keys</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">inputs</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+        <span class="n">refs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">inputs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">ref</span><span class="p">())</span>
+
+    <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="n">refs</span><span class="p">))</span>
+
+
+<span class="k">def</span> <span class="nf">pack_df</span><span class="p">(</span><span class="n">gdf</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">gdf</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">gdf</span>
+    <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">gdf</span><span class="p">,</span> <span class="s2">&quot;to_dlpack&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">callable</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">gdf</span><span class="p">,</span> <span class="s2">&quot;to_dlpack&quot;</span><span class="p">)):</span>
+        <span class="k">return</span> <span class="n">gdf</span><span class="o">.</span><span class="n">to_dlpack</span><span class="p">()</span>
+    <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">gdf</span><span class="p">,</span> <span class="s2">&quot;to_numpy&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">callable</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">gdf</span><span class="p">,</span> <span class="s2">&quot;to_numpy&quot;</span><span class="p">)):</span>
+        <span class="n">gdf</span> <span class="o">=</span> <span class="n">gdf</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">gdf</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="n">gdf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">gdf</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">gdf</span>
+    <span class="k">return</span> <span class="n">gdf</span><span class="o">.</span><span class="n">toDlpack</span><span class="p">()</span>
+
+
+<span class="k">def</span> <span class="nf">unpack_df</span><span class="p">(</span><span class="n">gdf</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">gdf</span><span class="p">,</span> <span class="s2">&quot;shape&quot;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">convert_to_tensor</span><span class="p">(</span><span class="n">gdf</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">from_dlpack</span><span class="p">(</span><span class="n">gdf</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">df_to_tensor</span><span class="p">(</span><span class="n">gdf</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">gdf</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+        <span class="k">return</span>
+
+    <span class="c1"># checks necessary because of this bug</span>
+    <span class="c1"># https://github.com/tensorflow/tensorflow/issues/42660</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">gdf</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">gdf</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">dlpack</span> <span class="o">=</span> <span class="n">pack_df</span><span class="p">(</span><span class="n">gdf</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">gdf</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">dlpack</span> <span class="o">=</span> <span class="n">pack_df</span><span class="p">(</span><span class="n">gdf</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">dlpack</span> <span class="o">=</span> <span class="n">pack_df</span><span class="p">(</span><span class="n">gdf</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+    <span class="c1"># catch error caused by tf eager context</span>
+    <span class="c1"># not being initialized</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">unpack_df</span><span class="p">(</span><span class="n">dlpack</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">AssertionError</span><span class="p">:</span>
+        <span class="n">tf</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">((</span><span class="mi">1</span><span class="p">,))</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">unpack_df</span><span class="p">(</span><span class="n">dlpack</span><span class="p">)</span>
+    <span class="c1"># if rank is already two it is  already in list format</span>
+    <span class="k">if</span> <span class="n">gdf</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">tf</span><span class="o">.</span><span class="n">rank</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="c1"># batch size 1 so got squashed to a vector</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">gdf</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="c1"># sort of a generic check for any other</span>
+        <span class="c1"># len(shape)==1 case, could probably</span>
+        <span class="c1"># be more specific</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">gdf</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="c1"># matrix which means we had to transpose</span>
+        <span class="c1"># for the bug above, so untranspose</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">dtype</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dtype</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">x</span>
+
+
+<span class="k">def</span> <span class="nf">tensor_to_df</span><span class="p">(</span><span class="n">tensor</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gpu</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">gpu</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">gpu</span> <span class="o">=</span> <span class="n">cudf</span>
+
+    <span class="k">if</span> <span class="n">gpu</span><span class="p">:</span>
+        <span class="c1"># Note: It is not possible to convert Tensorflow tensors to the cudf dataframe</span>
+        <span class="c1"># directly using dlPack (as the example commented below) because cudf.from_dlpack()</span>
+        <span class="c1"># expects the 2D tensor to be in Fortran order (column-major), which is not</span>
+        <span class="c1"># supported by TF (https://github.com/rapidsai/cudf/issues/10754).</span>
+        <span class="c1"># df = cudf.from_dlpack(to_dlpack(tf.convert_to_tensor(embeddings)))</span>
+        <span class="n">tensor_cupy</span> <span class="o">=</span> <span class="n">cupy</span><span class="o">.</span><span class="n">fromDlpack</span><span class="p">(</span><span class="n">to_dlpack</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">convert_to_tensor</span><span class="p">(</span><span class="n">tensor</span><span class="p">)))</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">cudf</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">tensor_cupy</span><span class="p">)</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">col</span><span class="p">)</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">)]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">index</span><span class="p">:</span>
+            <span class="n">index</span> <span class="o">=</span> <span class="n">cudf</span><span class="o">.</span><span class="n">RangeIndex</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">tensor</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">tensor</span><span class="o">.</span><span class="n">numpy</span><span class="p">())</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">col</span><span class="p">)</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">)]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">index</span><span class="p">:</span>
+            <span class="n">index</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">RangeIndex</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">tensor</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">df</span>
+
+
+<span class="k">def</span> <span class="nf">add_epsilon_to_zeros</span><span class="p">(</span><span class="n">tensor</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">epsilon</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-24</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Replaces zeros by adding a small epsilon value to them.</span>
+<span class="sd">    This is useful to avoid inf and nan errors on math ops</span>
+<span class="sd">    like log().</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    tensor : tf.Tensor</span>
+<span class="sd">        Tensor to operate on</span>
+<span class="sd">    epsilon : float, optional</span>
+<span class="sd">        Small value to add to zeros, by default 1e-24</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    tf.Tensor</span>
+<span class="sd">        The tensor without zeros</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">equal</span><span class="p">(</span><span class="n">tensor</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span> <span class="n">tensor</span> <span class="o">+</span> <span class="n">epsilon</span><span class="p">,</span> <span class="n">tensor</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">get_candidate_probs</span><span class="p">(</span>
+    <span class="n">item_freq_probs</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">],</span> <span class="n">is_prob_distribution</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns the candidate probs after checking if</span>
+<span class="sd">    item_freq_probs is frequencies or probs and their</span>
+<span class="sd">    dtype and shape according to the item feature cardinality</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">    ----------</span>
+<span class="sd">    item_freq_probs : Union[tf.Tensor, Sequence]</span>
+<span class="sd">        A Tensor or list with item frequencies (if is_prob_distribution=False)</span>
+<span class="sd">        or with item probabilities (if is_prob_distribution=True)</span>
+<span class="sd">    is_prob_distribution: bool, optional</span>
+<span class="sd">        If True, the item_freq_probs should be a probability distribution of the items.</span>
+<span class="sd">        If False, the item frequencies is converted to probabilities</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">        A tensor with the item probability distributon</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">item_freq_probs</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">convert_to_tensor</span><span class="p">(</span><span class="n">item_freq_probs</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">is_prob_distribution</span><span class="p">:</span>
+        <span class="n">tf</span><span class="o">.</span><span class="n">debugging</span><span class="o">.</span><span class="n">assert_type</span><span class="p">(</span>
+            <span class="n">item_freq_probs</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s2">&quot;The item_weights should have tf.float32 dtype&quot;</span>
+        <span class="p">)</span>
+        <span class="n">tf</span><span class="o">.</span><span class="n">debugging</span><span class="o">.</span><span class="n">assert_near</span><span class="p">(</span>
+            <span class="n">tf</span><span class="o">.</span><span class="n">reduce_sum</span><span class="p">(</span><span class="n">item_freq_probs</span><span class="p">),</span>
+            <span class="mf">1.0</span><span class="p">,</span>
+            <span class="n">message</span><span class="o">=</span><span class="s2">&quot;The item_weights should be a probability distribution and sum to 1.0&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">candidate_probs</span> <span class="o">=</span> <span class="n">item_freq_probs</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">item_freq_probs</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">item_freq_probs</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="n">candidate_probs</span> <span class="o">=</span> <span class="n">item_freq_probs</span> <span class="o">/</span> <span class="n">tf</span><span class="o">.</span><span class="n">reduce_sum</span><span class="p">(</span><span class="n">item_freq_probs</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">candidate_probs</span>
+
+
+<div class="viewcode-block" id="TensorInitializer"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.TensorInitializer.html#merlin.models.tf.TensorInitializer">[docs]</a><span class="nd">@tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">register_keras_serializable</span><span class="p">(</span><span class="n">package</span><span class="o">=</span><span class="s2">&quot;merlin.models&quot;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">TensorInitializer</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">initializers</span><span class="o">.</span><span class="n">Initializer</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Initializer that returns a tensor (e.g. pre-trained</span>
+<span class="sd">    embeddings) set in the constructor</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="TensorInitializer.__init__"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.TensorInitializer.html#merlin.models.tf.TensorInitializer.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">weights</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_weights</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">convert_to_tensor</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shape</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">TensorShape</span><span class="p">,</span> <span class="n">dtype</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">DType</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a tensor object initialized with the tensor</span>
+<span class="sd">        set in the constructor.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        shape : tf.TensorShape</span>
+<span class="sd">            Shape of the variable to be initialized</span>
+<span class="sd">        dtype : tf.DType, optional</span>
+<span class="sd">            Optional dtype of the tensor. Only numeric or boolean dtypes are</span>
+<span class="sd">        supported, by default None</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        tf.Tensor</span>
+<span class="sd">            Returns the tensor set in the constructor</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tf</span><span class="o">.</span><span class="n">assert_equal</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_weights</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+        <span class="n">weights</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_weights</span>
+        <span class="k">if</span> <span class="n">dtype</span><span class="p">:</span>
+            <span class="n">weights</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_weights</span><span class="p">,</span> <span class="n">dtype</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">weights</span>
+
+<div class="viewcode-block" id="TensorInitializer.from_dataset"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.TensorInitializer.html#merlin.models.tf.TensorInitializer.from_dataset">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_dataset</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Dataset</span><span class="p">,</span> <span class="n">DataFrameType</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;TensorInitializer&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;to_ddf&quot;</span><span class="p">):</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">to_ddf</span><span class="p">()</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+        <span class="n">embeddings</span> <span class="o">=</span> <span class="n">df_to_tensor</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">weights</span><span class="o">=</span><span class="n">embeddings</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TensorInitializer.get_config"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.TensorInitializer.html#merlin.models.tf.TensorInitializer.get_config">[docs]</a>    <span class="k">def</span> <span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>  <span class="c1"># To support serialization</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;weights&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_weights</span><span class="o">.</span><span class="n">numpy</span><span class="p">()}</span></div></div>
+
+
+<span class="k">def</span> <span class="nf">call_layer</span><span class="p">(</span><span class="n">layer</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Layer</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Calls a layer with the given inputs and filters kwargs. Returns the output&quot;&quot;&quot;</span>
+
+    <span class="n">has_custom_call</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="s2">&quot;_has_custom__call__&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+    <span class="n">_k</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">cascade_kwargs_if_possible</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">argspec_fn</span><span class="o">=</span><span class="n">getfullargspec</span><span class="p">)</span>
+
+    <span class="n">filtered_kwargs</span> <span class="o">=</span> <span class="n">filter_kwargs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">layer</span><span class="p">,</span> <span class="o">**</span><span class="n">_k</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">has_custom_call</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Lambda</span><span class="p">):</span>
+            <span class="n">filtered_kwargs</span> <span class="o">=</span> <span class="n">filter_kwargs</span><span class="p">(</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">layer</span><span class="o">.</span><span class="n">function</span><span class="p">,</span> <span class="o">**</span><span class="n">_k</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># We need to check the call method on the type since when the model gets saved</span>
+            <span class="c1"># we can&#39;t infer the kwargs from using `layer.call` directly</span>
+            <span class="n">call_fn</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">layer</span><span class="p">)</span><span class="o">.</span><span class="n">call</span>
+
+            <span class="n">filtered_kwargs</span> <span class="o">=</span> <span class="n">filter_kwargs</span><span class="p">(</span><span class="n">filtered_kwargs</span><span class="p">,</span> <span class="n">call_fn</span><span class="p">,</span> <span class="o">**</span><span class="n">_k</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">layer</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">filtered_kwargs</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">get_sub_blocks</span><span class="p">(</span><span class="n">blocks</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Block</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Block</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get all sub-blocks of given blocks, including blocks themselves, return a list of blocks</span>
+<span class="sd">    Traverse(Iterate) the model to check each block (sub_block) by BFS&quot;&quot;&quot;</span>
+    <span class="n">result_blocks</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">blocks</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+        <span class="n">blocks</span> <span class="o">=</span> <span class="p">[</span><span class="n">blocks</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">block</span> <span class="ow">in</span> <span class="n">blocks</span><span class="p">:</span>
+        <span class="c1"># Iterate all submodule (BFS) except ModelContext</span>
+        <span class="n">deque</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">deque</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">block</span><span class="p">,</span> <span class="n">ModelContext</span><span class="p">):</span>
+            <span class="n">deque</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">block</span><span class="p">)</span>
+        <span class="k">while</span> <span class="n">deque</span><span class="p">:</span>
+            <span class="n">current_module</span> <span class="o">=</span> <span class="n">deque</span><span class="o">.</span><span class="n">popleft</span><span class="p">()</span>
+            <span class="c1"># Add all sub-blocks include itself</span>
+            <span class="n">result_blocks</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">current_module</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">sub_module</span> <span class="ow">in</span> <span class="n">current_module</span><span class="o">.</span><span class="n">_flatten_modules</span><span class="p">(</span><span class="n">include_self</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">recursive</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+                <span class="c1"># filter out modelcontext</span>
+                <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">sub_module</span><span class="p">)</span> <span class="o">!=</span> <span class="n">ModelContext</span><span class="p">:</span>
+                    <span class="n">deque</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sub_module</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">result_blocks</span><span class="p">)</span>
+
+
+<span class="nd">@tf</span><span class="o">.</span><span class="n">function</span>
+<span class="k">def</span> <span class="nf">list_col_to_ragged</span><span class="p">(</span><span class="n">values</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">offsets</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">offsets</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">is_floating</span><span class="p">:</span>
+        <span class="n">offsets</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">offsets</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">RaggedTensor</span><span class="o">.</span><span class="n">from_row_splits</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">offsets</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">check_inputs_mask_compatible_shape</span><span class="p">(</span>
+    <span class="n">inputs</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">RaggedTensor</span><span class="p">],</span> <span class="n">mask</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">RaggedTensor</span><span class="p">]</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check if the shape and the type of the input and mask tensors are compatible.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    inputs : Union[tf.Tensor, tf.RaggedTensor]</span>
+<span class="sd">        The input tensor, which can be either a dense or ragged tensor.</span>
+<span class="sd">    mask : Union[tf.Tensor, tf.RaggedTensor]</span>
+<span class="sd">        The mask tensor, which can be either a dense or ragged tensor.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    bool:</span>
+<span class="sd">        Returns True if the shape of the input and mask tensors are compatible, False otherwise.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">       The function assumes that the `inputs` tensor has one more dimension than the `mask` tensor,</span>
+<span class="sd">       with the extra dimension typically related to the embeddings dimension.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span> <span class="o">==</span> <span class="nb">type</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">inputs</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">as_list</span><span class="p">()[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">mask</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">as_list</span><span class="p">()):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">RaggedTensor</span><span class="p">):</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">reduce_all</span><span class="p">(</span>
+                <span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">inputs</span><span class="o">.</span><span class="n">row_lengths</span><span class="p">(),</span> <span class="n">tf</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span> <span class="o">==</span> <span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">mask</span><span class="o">.</span><span class="n">row_lengths</span><span class="p">(),</span> <span class="n">tf</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">return</span> <span class="n">result</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, NVIDIA.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-NVJ1Y1YJHK"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-NVJ1Y1YJHK', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

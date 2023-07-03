@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>merlin.schema.schema &mdash; Merlin  documentation</title><link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/mystnb.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/togglebutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/custom.css" type="text/css" />
+    <link rel="canonical" href="https://nvidia-merlin.github.io/Merlin/stable/_modules/merlin/schema/schema.html" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script >let toggleHintShow = 'Click to show';</script>
+        <script >let toggleHintHide = 'Click to hide';</script>
+        <script >let toggleOpenOnPrint = 'true';</script>
+        <script src="../../../_static/togglebutton.js"></script>
+        <script >var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="banner">
+    <p class="banner">
+      Beginning in January 2023, versions for all NVIDIA Merlin projects
+      will change from semantic versioning like <code>4.0</code>
+      to calendar versioning like <code>23.01</code>.</p>
+  </div>
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            Merlin
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../README.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/recommender_system_guide.html">Recommender System Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/index.html">Example Notebooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_overview.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../containers.html">Merlin Containers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../support_matrix/index.html">Merlin Support Matrix</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Merlin</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">merlin.schema.schema</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for merlin.schema.schema</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># Copyright (c) 2022, NVIDIA CORPORATION.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+<span class="c1">#</span>
+
+<span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">InitVar</span><span class="p">,</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">replace</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Text</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="kn">import</span> <span class="nn">merlin.dtypes</span> <span class="k">as</span> <span class="nn">md</span>
+<span class="kn">from</span> <span class="nn">merlin.dtypes</span> <span class="kn">import</span> <span class="n">DType</span>
+<span class="kn">from</span> <span class="nn">merlin.dtypes.shape</span> <span class="kn">import</span> <span class="n">Shape</span>
+<span class="kn">from</span> <span class="nn">merlin.schema.tags</span> <span class="kn">import</span> <span class="n">Tags</span><span class="p">,</span> <span class="n">TagSet</span>
+
+
+<span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">Domain</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Describes an integer or float domain.</span>
+
+<span class="sd">    Can be partially specified. With any of name, min, max.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="nb">min</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="nb">max</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">is_bounded</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns True of domain has both a lower and upper bound.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        bool</span>
+<span class="sd">            True if domain has both min and max defined.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">max</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">min</span>
+
+
+<div class="viewcode-block" id="ColumnSchema"><a class="viewcode-back" href="../../../api_core/merlin.schema.html#merlin.schema.ColumnSchema">[docs]</a><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">ColumnSchema</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A schema containing metadata of a dataframe column.&quot;&quot;&quot;</span>
+
+    <span class="n">name</span><span class="p">:</span> <span class="n">Text</span>
+    <span class="n">tags</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">TagSet</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tags</span><span class="p">]]]]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="n">TagSet</span><span class="p">)</span>
+    <span class="n">properties</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
+    <span class="n">dtype</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">DType</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">is_list</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">is_ragged</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">dims</span><span class="p">:</span> <span class="n">InitVar</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">Tuple</span><span class="p">,</span> <span class="n">Shape</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dims</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Standardize tags and dtypes on initialization</span>
+
+<span class="sd">        This method works around the inability to set attributes on frozen dataclass</span>
+<span class="sd">        objects by using object.__setattr__, which bypasses the methods that frozen</span>
+<span class="sd">        dataclasses lock down. That approach allows to do some normalization on the</span>
+<span class="sd">        object&#39;s attribute values in the post init hook that we otherwise wouldn&#39;t</span>
+<span class="sd">        have a way to implement.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            TypeError: If the provided dtype cannot be cast to a numpy dtype</span>
+<span class="sd">            ValueError: If the provided shape, value counts, and/or flags are inconsistent</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Provide defaults and minor conversions for convenience</span>
+        <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;tags&quot;</span><span class="p">,</span> <span class="n">TagSet</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tags</span><span class="p">))</span>
+
+        <span class="n">dtype</span> <span class="o">=</span> <span class="n">md</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span> <span class="ow">or</span> <span class="n">md</span><span class="o">.</span><span class="n">unknown</span><span class="p">)</span><span class="o">.</span><span class="n">without_shape</span>
+        <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;dtype&quot;</span><span class="p">,</span> <span class="n">dtype</span><span class="p">)</span>
+
+        <span class="c1"># Validate that everything provided is consistent</span>
+        <span class="n">value_counts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;value_count&quot;</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_list</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_ragged</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;max&quot;</span> <span class="ow">in</span> <span class="n">value_counts</span> <span class="ow">and</span> <span class="s2">&quot;min&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">value_counts</span><span class="p">:</span>
+                <span class="n">value_counts</span><span class="p">[</span><span class="s2">&quot;min&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">value_counts</span><span class="p">[</span><span class="s2">&quot;max&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="s2">&quot;max&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">value_counts</span> <span class="ow">and</span> <span class="s2">&quot;min&quot;</span> <span class="ow">in</span> <span class="n">value_counts</span><span class="p">:</span>
+                <span class="n">value_counts</span><span class="p">[</span><span class="s2">&quot;max&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">value_counts</span><span class="p">[</span><span class="s2">&quot;min&quot;</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_validate_shape_info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">value_counts</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_list</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_ragged</span><span class="p">)</span>
+
+        <span class="c1"># Pick which source to pull shape info from</span>
+        <span class="k">if</span> <span class="n">dims</span><span class="p">:</span>
+            <span class="n">new_shape</span> <span class="o">=</span> <span class="n">Shape</span><span class="p">(</span><span class="n">dims</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">dtype</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">dims</span><span class="p">:</span>
+            <span class="n">new_shape</span> <span class="o">=</span> <span class="n">dtype</span><span class="o">.</span><span class="n">shape</span>
+        <span class="k">elif</span> <span class="n">value_counts</span><span class="p">:</span>
+            <span class="n">new_shape</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shape_from_counts</span><span class="p">(</span><span class="n">Domain</span><span class="p">(</span><span class="o">**</span><span class="n">value_counts</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_list</span><span class="p">:</span>
+            <span class="n">new_shape</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shape_from_flags</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">is_list</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">new_shape</span> <span class="o">=</span> <span class="n">Shape</span><span class="p">()</span>
+
+        <span class="c1"># Update the shape and propagate out to flags and value counts</span>
+        <span class="n">dtype</span> <span class="o">=</span> <span class="n">dtype</span><span class="o">.</span><span class="n">with_shape</span><span class="p">(</span><span class="n">new_shape</span><span class="p">)</span>
+        <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;dtype&quot;</span><span class="p">,</span> <span class="n">dtype</span><span class="p">)</span>
+        <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;is_list&quot;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">is_list</span><span class="p">)</span>
+        <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;is_ragged&quot;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">is_ragged</span><span class="p">)</span>
+
+        <span class="n">properties</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">properties</span><span class="p">}</span>
+
+        <span class="k">if</span> <span class="n">new_shape</span><span class="o">.</span><span class="n">dims</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">new_shape</span><span class="o">.</span><span class="n">dims</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">value_counts</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="n">new_shape</span><span class="o">.</span><span class="n">dims</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="n">new_shape</span><span class="o">.</span><span class="n">dims</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">}</span>
+            <span class="n">properties</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="n">properties</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="s2">&quot;value_count&quot;</span><span class="p">:</span> <span class="n">value_counts</span><span class="p">}}</span>
+
+        <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;properties&quot;</span><span class="p">,</span> <span class="n">properties</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_shape_from_flags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">is_list</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">Shape</span><span class="p">(((</span><span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">)))</span> <span class="k">if</span> <span class="n">is_list</span> <span class="k">else</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">_shape_from_counts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value_count</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">Shape</span><span class="p">(((</span><span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="p">(</span><span class="n">value_count</span><span class="o">.</span><span class="n">min</span> <span class="ow">or</span> <span class="mi">0</span><span class="p">,</span> <span class="n">value_count</span><span class="o">.</span><span class="n">max</span><span class="p">)))</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">shape</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">shape</span>
+
+<div class="viewcode-block" id="ColumnSchema.with_name"><a class="viewcode-back" href="../../../api_core/merlin.schema.html#merlin.schema.ColumnSchema.with_name">[docs]</a>    <span class="k">def</span> <span class="nf">with_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ColumnSchema&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a copy of this ColumnSchema object with a different column name</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        name : str</span>
+<span class="sd">            New column name</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ColumnSchema</span>
+<span class="sd">            Copied object with new column name</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_replace</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ColumnSchema.with_tags"><a class="viewcode-back" href="../../../api_core/merlin.schema.html#merlin.schema.ColumnSchema.with_tags">[docs]</a>    <span class="k">def</span> <span class="nf">with_tags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tags</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tags</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s2">&quot;ColumnSchema&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a copy of this ColumnSchema object with different column tags</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        tags : Union[str, Tags]</span>
+<span class="sd">            New column tags</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ColumnSchema</span>
+<span class="sd">            Copied object with new column tags</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_replace</span><span class="p">(</span><span class="n">tags</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">override</span><span class="p">(</span><span class="n">tags</span><span class="p">))</span>  <span class="c1"># type: ignore</span></div>
+
+<div class="viewcode-block" id="ColumnSchema.with_properties"><a class="viewcode-back" href="../../../api_core/merlin.schema.html#merlin.schema.ColumnSchema.with_properties">[docs]</a>    <span class="k">def</span> <span class="nf">with_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">properties</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ColumnSchema&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a copy of this ColumnSchema object with different column properties</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        properties : dict</span>
+<span class="sd">            New column properties</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ColumnSchema</span>
+<span class="sd">            Copied object with new column properties</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        TypeError</span>
+<span class="sd">            If properties are not a dict</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">properties</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;ColumnSchema properties must be a dictionary&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Using new dictionary to avoid passing old ref to new schema</span>
+        <span class="n">new_properties</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">properties</span><span class="p">,</span> <span class="o">**</span><span class="n">properties</span><span class="p">}</span>
+
+        <span class="n">value_counts</span> <span class="o">=</span> <span class="n">properties</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;value_count&quot;</span><span class="p">,</span> <span class="p">{})</span>
+
+        <span class="k">if</span> <span class="n">value_counts</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_replace</span><span class="p">(</span>
+                <span class="n">properties</span><span class="o">=</span><span class="n">new_properties</span><span class="p">,</span>
+                <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">without_shape</span><span class="p">,</span>
+                <span class="n">is_list</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">is_ragged</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_replace</span><span class="p">(</span>
+                <span class="n">properties</span><span class="o">=</span><span class="n">new_properties</span><span class="p">,</span>
+            <span class="p">)</span></div>
+
+<div class="viewcode-block" id="ColumnSchema.with_dtype"><a class="viewcode-back" href="../../../api_core/merlin.schema.html#merlin.schema.ColumnSchema.with_dtype">[docs]</a>    <span class="k">def</span> <span class="nf">with_dtype</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dtype</span><span class="p">,</span> <span class="n">is_list</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">is_ragged</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;ColumnSchema&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a copy of this ColumnSchema object with different column dtype</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        dtype : np.dtype</span>
+<span class="sd">            New column dtype</span>
+<span class="sd">        is_list: bool :</span>
+<span class="sd">            Whether rows in this column contain lists.</span>
+<span class="sd">             (Default value = None)</span>
+<span class="sd">        is_ragged: bool :</span>
+<span class="sd">            Whether lists in this column have varying lengths.</span>
+<span class="sd">             (Default value = None)</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ColumnSchema</span>
+<span class="sd">            Copied object with new column dtype</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">new_dtype</span> <span class="o">=</span> <span class="n">md</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span><span class="o">.</span><span class="n">with_shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+        <span class="n">properties</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">is_list</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">is_ragged</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">properties</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;value_count&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="n">new_dtype</span> <span class="o">=</span> <span class="n">new_dtype</span><span class="o">.</span><span class="n">without_shape</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_replace</span><span class="p">(</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="n">new_dtype</span><span class="p">,</span> <span class="n">properties</span><span class="o">=</span><span class="n">properties</span><span class="p">,</span> <span class="n">is_list</span><span class="o">=</span><span class="n">is_list</span><span class="p">,</span> <span class="n">is_ragged</span><span class="o">=</span><span class="n">is_ragged</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="ColumnSchema.with_shape"><a class="viewcode-back" href="../../../api_core/merlin.schema.html#merlin.schema.ColumnSchema.with_shape">[docs]</a>    <span class="k">def</span> <span class="nf">with_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shape</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tuple</span><span class="p">,</span> <span class="n">Shape</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s2">&quot;ColumnSchema&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create a copy of this object with a new shape</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        shape : Union[Tuple, Shape]</span>
+<span class="sd">            Object to set as shape, must be either a tuple or Shape.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ColumnSchema</span>
+<span class="sd">            A copy of this object containing the provided shape value</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        TypeError</span>
+<span class="sd">            If value is not either a tuple or a Shape</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">dims</span> <span class="o">=</span> <span class="n">Shape</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span><span class="o">.</span><span class="n">as_tuple</span>
+        <span class="n">properties</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">properties</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;value_count&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_replace</span><span class="p">(</span>
+            <span class="n">dims</span><span class="o">=</span><span class="n">dims</span><span class="p">,</span>
+            <span class="n">properties</span><span class="o">=</span><span class="n">properties</span><span class="p">,</span>
+            <span class="n">is_list</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">is_ragged</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">int_domain</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Domain</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_domain</span><span class="p">()</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">is_integer</span> <span class="k">else</span> <span class="kc">None</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">float_domain</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Domain</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_domain</span><span class="p">()</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">is_float</span> <span class="k">else</span> <span class="kc">None</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">value_count</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Domain</span><span class="p">]:</span>
+        <span class="n">value_count</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;value_count&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Domain</span><span class="p">(</span><span class="o">**</span><span class="n">value_count</span><span class="p">)</span> <span class="k">if</span> <span class="n">value_count</span> <span class="k">else</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">__merge__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="n">col_schema</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">with_name</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">with_dtype</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">with_tags</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">tags</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">with_properties</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">properties</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">with_shape</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">col_schema</span>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
+
+    <span class="k">def</span> <span class="nf">_domain</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Domain</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; &quot;&quot;&quot;</span>
+        <span class="n">domain</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;domain&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Domain</span><span class="p">(</span><span class="o">**</span><span class="n">domain</span><span class="p">)</span> <span class="k">if</span> <span class="n">domain</span> <span class="k">else</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">_replace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="s2">&quot;dims&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="ow">and</span> <span class="ow">not</span> <span class="p">(</span>
+            <span class="s2">&quot;properties&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="ow">and</span> <span class="s2">&quot;value_count&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;properties&quot;</span><span class="p">]</span>
+        <span class="p">):</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;dims&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">as_tuple</span>
+        <span class="k">return</span> <span class="n">replace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_validate_shape_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="n">value_counts</span><span class="p">,</span> <span class="n">is_list</span><span class="p">,</span> <span class="n">is_ragged</span><span class="p">):</span>
+        <span class="n">value_counts</span> <span class="o">=</span> <span class="n">value_counts</span> <span class="ow">or</span> <span class="p">{}</span>
+
+        <span class="n">min_count</span> <span class="o">=</span> <span class="n">value_counts</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;min&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">max_count</span> <span class="o">=</span> <span class="n">value_counts</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;max&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">ragged_counts</span> <span class="o">=</span> <span class="n">min_count</span> <span class="o">!=</span> <span class="n">max_count</span>
+
+        <span class="k">if</span> <span class="n">shape</span> <span class="ow">and</span> <span class="n">shape</span><span class="o">.</span><span class="n">dims</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">is_ragged</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">shape</span><span class="o">.</span><span class="n">is_ragged</span> <span class="o">!=</span> <span class="n">is_ragged</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Provided value of `is_ragged=</span><span class="si">{</span><span class="n">is_ragged</span><span class="si">}</span><span class="s2">` &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;is inconsistent with shape `</span><span class="si">{</span><span class="n">shape</span><span class="si">}</span><span class="s2">`.&quot;</span>
+                <span class="p">)</span>
+            <span class="k">elif</span> <span class="n">is_list</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">shape</span><span class="o">.</span><span class="n">is_list</span> <span class="o">!=</span> <span class="n">is_list</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Provided value of `is_list=</span><span class="si">{</span><span class="n">is_list</span><span class="si">}</span><span class="s2">` &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;is inconsistent with shape `</span><span class="si">{</span><span class="n">shape</span><span class="si">}</span><span class="s2">`.&quot;</span>
+                <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">value_counts</span> <span class="ow">and</span> <span class="n">shape</span> <span class="ow">and</span> <span class="n">shape</span><span class="o">.</span><span class="n">dims</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">min_count</span> <span class="ow">and</span> <span class="n">min_count</span> <span class="o">!=</span> <span class="n">shape</span><span class="o">.</span><span class="n">dims</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span>
+                <span class="n">max_count</span> <span class="ow">and</span> <span class="n">max_count</span> <span class="o">!=</span> <span class="n">shape</span><span class="o">.</span><span class="n">dims</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">max</span>
+            <span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Provided value counts `</span><span class="si">{</span><span class="n">value_counts</span><span class="si">}</span><span class="s2">` &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;are inconsistent with shape `</span><span class="si">{</span><span class="n">shape</span><span class="si">}</span><span class="s2">`.&quot;</span>
+                <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">is_list</span> <span class="ow">is</span> <span class="kc">False</span> <span class="ow">and</span> <span class="n">is_ragged</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Columns with `is_list=False` can&#39;t set `is_ragged=True`, &quot;</span>
+                <span class="s2">&quot;since non-list columns can&#39;t be ragged.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">value_counts</span> <span class="ow">and</span> <span class="n">is_ragged</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">is_ragged</span> <span class="o">!=</span> <span class="n">ragged_counts</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Provided value of `is_ragged=</span><span class="si">{</span><span class="n">is_ragged</span><span class="si">}</span><span class="s2">` &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;is inconsistent with value counts `</span><span class="si">{</span><span class="n">value_counts</span><span class="si">}</span><span class="s2">`.&quot;</span>
+            <span class="p">)</span></div>
+
+        <span class="c1"># TODO: Enable this validation once we&#39;ve removed these cases</span>
+        <span class="c1">#       from downstream Merlin libraries</span>
+        <span class="c1"># if (</span>
+        <span class="c1">#     not value_counts</span>
+        <span class="c1">#     and not (shape and shape.dims)</span>
+        <span class="c1">#     and is_list is True</span>
+        <span class="c1">#     and is_ragged is False</span>
+        <span class="c1"># ):</span>
+        <span class="c1">#     raise ValueError(</span>
+        <span class="c1">#         &quot;Can&#39;t determine a shape for this column from &quot;</span>
+        <span class="c1">#         &quot;`is_list=True` and `is_ragged=False` without value counts. &quot;</span>
+        <span class="c1">#     )</span>
+
+
+<div class="viewcode-block" id="Schema"><a class="viewcode-back" href="../../../api_core/merlin.schema.html#merlin.schema.Schema">[docs]</a><span class="k">class</span> <span class="nc">Schema</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A collection of column schemas for a dataset.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">column_schemas</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">column_schemas</span> <span class="o">=</span> <span class="n">column_schemas</span> <span class="ow">or</span> <span class="p">{}</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">column_schemas</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">column_schemas</span> <span class="o">=</span> <span class="n">column_schemas</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">column_schemas</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">column_schemas</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">column_schema</span> <span class="ow">in</span> <span class="n">column_schemas</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">column_schema</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                    <span class="n">column_schema</span> <span class="o">=</span> <span class="n">ColumnSchema</span><span class="p">(</span><span class="n">column_schema</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">column_schemas</span><span class="p">[</span><span class="n">column_schema</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">column_schema</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;The `column_schemas` parameter must be a list or dict.&quot;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">column_names</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">column_schemas</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+
+<div class="viewcode-block" id="Schema.select"><a class="viewcode-back" href="../../../api_core/merlin.schema.html#merlin.schema.Schema.select">[docs]</a>    <span class="k">def</span> <span class="nf">select</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">selector</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Schema&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Select matching columns from this Schema object using a ColumnSelector</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        selector : ColumnSelector</span>
+<span class="sd">            Selector that describes which columns match</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Schema</span>
+<span class="sd">            New object containing only the ColumnSchemas of selected columns</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">selector</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">selector</span><span class="o">.</span><span class="n">all</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span>
+
+            <span class="n">schema</span> <span class="o">=</span> <span class="n">Schema</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">selector</span><span class="o">.</span><span class="n">names</span><span class="p">:</span>
+                <span class="n">schema</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">select_by_name</span><span class="p">(</span><span class="n">selector</span><span class="o">.</span><span class="n">names</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">selector</span><span class="o">.</span><span class="n">tags</span><span class="p">:</span>
+                <span class="n">schema</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">select_by_tag</span><span class="p">(</span><span class="n">selector</span><span class="o">.</span><span class="n">tags</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">schema</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="Schema.apply"><a class="viewcode-back" href="../../../api_core/merlin.schema.html#merlin.schema.Schema.apply">[docs]</a>    <span class="k">def</span> <span class="nf">apply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">selector</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Schema&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">selector</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Schema.excluding"><a class="viewcode-back" href="../../../api_core/merlin.schema.html#merlin.schema.Schema.excluding">[docs]</a>    <span class="k">def</span> <span class="nf">excluding</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">selector</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Schema&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Select non-matching columns from this Schema object using a ColumnSelector</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        selector : ColumnSelector</span>
+<span class="sd">            Selector that describes which columns match</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Schema</span>
+<span class="sd">            New object containing only the ColumnSchemas of selected columns</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">schema</span> <span class="o">=</span> <span class="bp">self</span>
+        <span class="k">if</span> <span class="n">selector</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">selector</span><span class="o">.</span><span class="n">all</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">Schema</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">selector</span><span class="o">.</span><span class="n">names</span><span class="p">:</span>
+                <span class="n">schema</span> <span class="o">=</span> <span class="n">schema</span><span class="o">.</span><span class="n">excluding_by_name</span><span class="p">(</span><span class="n">selector</span><span class="o">.</span><span class="n">names</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">selector</span><span class="o">.</span><span class="n">tags</span><span class="p">:</span>
+                <span class="n">schema</span> <span class="o">=</span> <span class="n">schema</span><span class="o">.</span><span class="n">excluding_by_tag</span><span class="p">(</span><span class="n">selector</span><span class="o">.</span><span class="n">tags</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">schema</span></div>
+
+<div class="viewcode-block" id="Schema.apply_inverse"><a class="viewcode-back" href="../../../api_core/merlin.schema.html#merlin.schema.Schema.apply_inverse">[docs]</a>    <span class="k">def</span> <span class="nf">apply_inverse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">selector</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Schema&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">excluding</span><span class="p">(</span><span class="n">selector</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Schema.select_by_tag"><a class="viewcode-back" href="../../../api_core/merlin.schema.html#merlin.schema.Schema.select_by_tag">[docs]</a>    <span class="k">def</span> <span class="nf">select_by_tag</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">tags</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tags</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tags</span><span class="p">]]],</span>
+        <span class="n">pred_fn</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Schema&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Select columns from this Schema that match ANY of the supplied tags.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        tags : List[Union[str, Tags]] :</span>
+<span class="sd">            List of tags that describes which columns match</span>
+<span class="sd">        pred_fn : `any` or `all`</span>
+<span class="sd">            Predicate function that decides if the column should be selected.</span>
+<span class="sd">            Receives iterable of bool values indicating whether each</span>
+<span class="sd">            of the provided tags is present on a column schema.</span>
+<span class="sd">            Returning True selects this column, False will not return that column.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Schema</span>
+<span class="sd">            New object containing only the ColumnSchemas of selected columns</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">pred_fn</span> <span class="o">=</span> <span class="n">pred_fn</span> <span class="ow">or</span> <span class="nb">any</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tags</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+            <span class="n">tags</span> <span class="o">=</span> <span class="p">[</span><span class="n">tags</span><span class="p">]</span>
+
+        <span class="n">selected_schemas</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="n">normalized_tags</span> <span class="o">=</span> <span class="n">TagSet</span><span class="p">(</span><span class="n">tags</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tags</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">normalized_tags</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">pred_fn</span> <span class="o">=</span> <span class="nb">all</span>
+
+        <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">column_schema</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">column_schemas</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">pred_fn</span><span class="p">(</span><span class="n">x</span> <span class="ow">in</span> <span class="n">column_schema</span><span class="o">.</span><span class="n">tags</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">normalized_tags</span><span class="p">):</span>
+                <span class="n">selected_schemas</span><span class="p">[</span><span class="n">column_schema</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">column_schema</span>
+
+        <span class="k">return</span> <span class="n">Schema</span><span class="p">(</span><span class="n">selected_schemas</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Schema.excluding_by_tag"><a class="viewcode-back" href="../../../api_core/merlin.schema.html#merlin.schema.Schema.excluding_by_tag">[docs]</a>    <span class="k">def</span> <span class="nf">excluding_by_tag</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tags</span><span class="p">,</span> <span class="n">pred_fn</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Schema&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Remove columns from the schema that match ANY of the supplied tags.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        tags : _type_</span>
+<span class="sd">            List of tags that describes which columns remove</span>
+<span class="sd">        pred_fn : `any` or `all`, optional, by default None (ANY)</span>
+<span class="sd">            Predicate function that decides if a column should be selected.</span>
+<span class="sd">            `all` can be provided to remove columns that contain ALL the tags provided</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Schema</span>
+<span class="sd">            New Schema containing only the columns that don&#39;t contain the provided tags</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">pred_fn</span> <span class="o">=</span> <span class="n">pred_fn</span> <span class="ow">or</span> <span class="nb">any</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tags</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+            <span class="n">tags</span> <span class="o">=</span> <span class="p">[</span><span class="n">tags</span><span class="p">]</span>
+
+        <span class="n">selected_schemas</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="n">normalized_tags</span> <span class="o">=</span> <span class="n">TagSet</span><span class="p">(</span><span class="n">tags</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tags</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">normalized_tags</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">pred_fn</span> <span class="o">=</span> <span class="nb">all</span>
+
+        <span class="k">for</span> <span class="n">column_schema</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">column_schemas</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">pred_fn</span><span class="p">(</span><span class="n">x</span> <span class="ow">in</span> <span class="n">column_schema</span><span class="o">.</span><span class="n">tags</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">normalized_tags</span><span class="p">):</span>
+                <span class="n">selected_schemas</span><span class="p">[</span><span class="n">column_schema</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">column_schema</span>
+
+        <span class="k">return</span> <span class="n">Schema</span><span class="p">(</span><span class="n">selected_schemas</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Schema.remove_by_tag"><a class="viewcode-back" href="../../../api_core/merlin.schema.html#merlin.schema.Schema.remove_by_tag">[docs]</a>    <span class="k">def</span> <span class="nf">remove_by_tag</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tags</span><span class="p">,</span> <span class="n">pred_fn</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Schema&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">excluding_by_tag</span><span class="p">(</span><span class="n">tags</span><span class="p">,</span> <span class="n">pred_fn</span><span class="o">=</span><span class="n">pred_fn</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Schema.select_by_name"><a class="viewcode-back" href="../../../api_core/merlin.schema.html#merlin.schema.Schema.select_by_name">[docs]</a>    <span class="k">def</span> <span class="nf">select_by_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">names</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s2">&quot;Schema&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Select matching columns from this Schema object using a list of column names</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        names: List[str] :</span>
+<span class="sd">            List of column names that describes which columns match</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Schema</span>
+<span class="sd">            New object containing only the ColumnSchemas of selected columns</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">names</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">names</span> <span class="o">=</span> <span class="p">[</span><span class="n">names</span><span class="p">]</span>
+
+        <span class="n">selected_schemas</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">key</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">column_schemas</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">names</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">column_schemas</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="n">Schema</span><span class="p">(</span><span class="n">selected_schemas</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Schema.excluding_by_name"><a class="viewcode-back" href="../../../api_core/merlin.schema.html#merlin.schema.Schema.excluding_by_name">[docs]</a>    <span class="k">def</span> <span class="nf">excluding_by_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">col_names</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Remove columns from this Schema object by name</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        col_names : List[str]</span>
+<span class="sd">            Names of the column to remove</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Schema</span>
+<span class="sd">            New Schema object after the columns are removed</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">Schema</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="n">col_schema</span>
+                <span class="k">for</span> <span class="n">col_name</span><span class="p">,</span> <span class="n">col_schema</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">column_schemas</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">col_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">col_names</span>
+            <span class="p">]</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Schema.remove_col"><a class="viewcode-back" href="../../../api_core/merlin.schema.html#merlin.schema.Schema.remove_col">[docs]</a>    <span class="k">def</span> <span class="nf">remove_col</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">col_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Schema&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Remove a column from this Schema object by name</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        col_name : str</span>
+<span class="sd">            Name of the column to remove</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Schema</span>
+<span class="sd">            This Schema object after the column is removed</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">excluding_by_name</span><span class="p">([</span><span class="n">col_name</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="Schema.without"><a class="viewcode-back" href="../../../api_core/merlin.schema.html#merlin.schema.Schema.without">[docs]</a>    <span class="k">def</span> <span class="nf">without</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">col_names</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s2">&quot;Schema&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">excluding_by_name</span><span class="p">(</span><span class="n">col_names</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Schema.get"><a class="viewcode-back" href="../../../api_core/merlin.schema.html#merlin.schema.Schema.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">col_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="p">:</span> <span class="n">ColumnSchema</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ColumnSchema</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get a ColumnSchema by name</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        col_name : str</span>
+<span class="sd">            Name of the column to get</span>
+<span class="sd">        default: ColumnSchema :</span>
+<span class="sd">            Default value to return if column is not found.</span>
+<span class="sd">             (Default value = None)</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ColumnSchema</span>
+<span class="sd">            Retrieved column schema (or default value, if not found)</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">column_schemas</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">col_name</span><span class="p">,</span> <span class="n">default</span><span class="p">)</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">first</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ColumnSchema</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the first ColumnSchema in the Schema. Useful for cases where you select down</span>
+<span class="sd">        to a single column via select_by_name or select_by_tag, and just want the value</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ColumnSchema</span>
+<span class="sd">            The first column schema present in this Schema object</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If this Schema object contains no column schemas</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">column_schemas</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;There are no columns in this schema to call .first on&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">column_schemas</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
+
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">column_name</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">column_name</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">column_schemas</span><span class="p">[</span><span class="n">column_name</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">column_name</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+            <span class="k">return</span> <span class="n">Schema</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">column_schemas</span><span class="p">[</span><span class="n">col_name</span><span class="p">]</span> <span class="k">for</span> <span class="n">col_name</span> <span class="ow">in</span> <span class="n">column_name</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">column_name</span><span class="p">,</span> <span class="n">column_schema</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">column_schemas</span><span class="p">[</span><span class="n">column_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">column_schema</span>
+
+    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">column_schemas</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">column_schemas</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">([</span><span class="n">col_schema</span><span class="o">.</span><span class="vm">__dict__</span> <span class="k">for</span> <span class="n">col_schema</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">column_schemas</span><span class="o">.</span><span class="n">values</span><span class="p">()])</span>
+
+    <span class="k">def</span> <span class="nf">_repr_html_</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Repr for Jupyter Notebook</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_pandas</span><span class="p">()</span><span class="o">.</span><span class="n">_repr_html_</span><span class="p">()</span>
+
+<div class="viewcode-block" id="Schema.to_pandas"><a class="viewcode-back" href="../../../api_core/merlin.schema.html#merlin.schema.Schema.to_pandas">[docs]</a>    <span class="k">def</span> <span class="nf">to_pandas</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert this Schema object to a pandas DataFrame</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        pd.DataFrame</span>
+<span class="sd">            DataFrame containing the column schemas in this Schema object</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">props</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="vm">__dict__</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">column_schemas</span><span class="o">.</span><span class="n">values</span><span class="p">()]</span>
+
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">json_normalize</span><span class="p">(</span><span class="n">props</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Schema</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">column_schemas</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">column_schemas</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">column_schemas</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">column_schemas</span>
+
+    <span class="k">def</span> <span class="fm">__add__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">other</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Schema</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;unsupported operand type(s) for +: &#39;Schema&#39; and </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">col_schemas</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># must account for same columns in both schemas,</span>
+        <span class="c1"># use the one with more information for each field</span>
+        <span class="n">keys_self_not_other</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">col_name</span> <span class="k">for</span> <span class="n">col_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">column_names</span> <span class="k">if</span> <span class="n">col_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">other</span><span class="o">.</span><span class="n">column_names</span>
+        <span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys_self_not_other</span><span class="p">:</span>
+            <span class="n">col_schemas</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">column_schemas</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+
+        <span class="k">for</span> <span class="n">col_name</span><span class="p">,</span> <span class="n">other_schema</span> <span class="ow">in</span> <span class="n">other</span><span class="o">.</span><span class="n">column_schemas</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">col_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">column_schemas</span><span class="p">:</span>
+                <span class="c1"># check which one</span>
+                <span class="n">self_schema</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">column_schemas</span><span class="p">[</span><span class="n">col_name</span><span class="p">]</span>
+                <span class="n">col_schemas</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">self_schema</span><span class="o">.</span><span class="n">__merge__</span><span class="p">(</span><span class="n">other_schema</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">col_schemas</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">other_schema</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">Schema</span><span class="p">(</span><span class="n">col_schemas</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__radd__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__add__</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__sub__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">other</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Schema</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;unsupported operand type(s) for -: &#39;Schema&#39; and </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">other</span><span class="o">.</span><span class="n">column_schemas</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">column_schemas</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">result</span><span class="o">.</span><span class="n">column_schemas</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">result</span>
+
+<div class="viewcode-block" id="Schema.copy"><a class="viewcode-back" href="../../../api_core/merlin.schema.html#merlin.schema.Schema.copy">[docs]</a>    <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Schema&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a copy of the schema&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">Schema</span><span class="p">({</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">column_schemas</span><span class="p">})</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, NVIDIA.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-NVJ1Y1YJHK"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-NVJ1Y1YJHK', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

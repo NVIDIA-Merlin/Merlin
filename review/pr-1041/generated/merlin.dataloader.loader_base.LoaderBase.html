@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>merlin.dataloader.loader_base.LoaderBase &mdash; Merlin  documentation</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/mystnb.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/togglebutton.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
+    <link rel="canonical" href="https://nvidia-merlin.github.io/Merlin/stable/generated/merlin.dataloader.loader_base.LoaderBase.html" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script >let toggleHintShow = 'Click to show';</script>
+        <script >let toggleHintHide = 'Click to hide';</script>
+        <script >let toggleOpenOnPrint = 'true';</script>
+        <script src="../_static/togglebutton.js"></script>
+        <script >var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="merlin.dataloader.loader_base.ChunkQueue" href="merlin.dataloader.loader_base.ChunkQueue.html" />
+    <link rel="prev" title="merlin.dataloader.torch.DLDataLoader" href="merlin.dataloader.torch.DLDataLoader.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="banner">
+    <p class="banner">
+      Beginning in January 2023, versions for all NVIDIA Merlin projects
+      will change from semantic versioning like <code>4.0</code>
+      to calendar versioning like <code>23.01</code>.</p>
+  </div>
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Merlin
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../README.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/recommender_system_guide.html">Recommender System Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/index.html">Example Notebooks</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../api_overview.html">API Documentation</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../api_core/merlin.dag.html">merlin.dag</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../api_dataloader.html">merlin.loader</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="merlin.dataloader.tensorflow.Loader.html">merlin.dataloader.tensorflow.Loader</a></li>
+<li class="toctree-l3"><a class="reference internal" href="merlin.dataloader.tensorflow.KerasSequenceValidater.html">merlin.dataloader.tensorflow.KerasSequenceValidater</a></li>
+<li class="toctree-l3"><a class="reference internal" href="merlin.dataloader.tf_utils.configure_tensorflow.html">merlin.dataloader.tf_utils.configure_tensorflow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="merlin.dataloader.tf_utils.get_dataset_schema_from_feature_columns.html">merlin.dataloader.tf_utils.get_dataset_schema_from_feature_columns</a></li>
+<li class="toctree-l3"><a class="reference internal" href="merlin.dataloader.tf_utils.HAS_GPU.html">merlin.dataloader.tf_utils.HAS_GPU</a></li>
+<li class="toctree-l3"><a class="reference internal" href="merlin.dataloader.torch.Loader.html">merlin.dataloader.torch.Loader</a></li>
+<li class="toctree-l3"><a class="reference internal" href="merlin.dataloader.torch.DLDataLoader.html">merlin.dataloader.torch.DLDataLoader</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">merlin.dataloader.loader_base.LoaderBase</a></li>
+<li class="toctree-l3"><a class="reference internal" href="merlin.dataloader.loader_base.ChunkQueue.html">merlin.dataloader.loader_base.ChunkQueue</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../api_core/merlin.io.html">merlin.io</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api_models.html">merlin.models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api_core/merlin.schema.html">merlin.schema</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api_systems.html">merlin.systems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api_nvtabular.html">nvtabular</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../containers.html">Merlin Containers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../support_matrix/index.html">Merlin Support Matrix</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Merlin</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../api_overview.html">API Documentation</a></li>
+          <li class="breadcrumb-item"><a href="../api_dataloader.html">API Documentation</a></li>
+      <li class="breadcrumb-item active">merlin.dataloader.loader_base.LoaderBase</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="merlin-dataloader-loader-base-loaderbase">
+<h1>merlin.dataloader.loader_base.LoaderBase<a class="headerlink" href="#merlin-dataloader-loader-base-loaderbase" title="Permalink to this headline"></a></h1>
+<dl class="py class">
+<dt id="merlin.dataloader.loader_base.LoaderBase">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">merlin.dataloader.loader_base.</span></code><code class="sig-name descname"><span class="pre">LoaderBase</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shuffle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed_fn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parts_per_chunk</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">global_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">global_rank</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drop_last</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transforms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/merlin/dataloader/loader_base.html#LoaderBase"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#merlin.dataloader.loader_base.LoaderBase" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Base class containing common functionality between the PyTorch and TensorFlow dataloaders.</p>
+<dl class="py method">
+<dt id="merlin.dataloader.loader_base.LoaderBase.__init__">
+<code class="sig-name descname"><span class="pre">__init__</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shuffle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed_fn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parts_per_chunk</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">global_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">global_rank</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drop_last</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transforms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/merlin/dataloader/loader_base.html#LoaderBase.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#merlin.dataloader.loader_base.LoaderBase.__init__" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#merlin.dataloader.loader_base.LoaderBase.__init__" title="merlin.dataloader.loader_base.LoaderBase.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(dataset, batch_size[, shuffle, …])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#merlin.dataloader.loader_base.LoaderBase.array_lib" title="merlin.dataloader.loader_base.LoaderBase.array_lib"><code class="xref py py-obj docutils literal notranslate"><span class="pre">array_lib</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#merlin.dataloader.loader_base.LoaderBase.epochs" title="merlin.dataloader.loader_base.LoaderBase.epochs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">epochs</span></code></a>([epochs])</p></td>
+<td><p>Create a dataloader that will efficiently run for more than one epoch.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#merlin.dataloader.loader_base.LoaderBase.make_tensors" title="merlin.dataloader.loader_base.LoaderBase.make_tensors"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_tensors</span></code></a>(gdf[, use_row_lengths])</p></td>
+<td><p>Yields batches of tensors from a dataframe</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#merlin.dataloader.loader_base.LoaderBase.peek" title="merlin.dataloader.loader_base.LoaderBase.peek"><code class="xref py py-obj docutils literal notranslate"><span class="pre">peek</span></code></a>()</p></td>
+<td><p>Get the next batch without advancing the iterator.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#merlin.dataloader.loader_base.LoaderBase.stop" title="merlin.dataloader.loader_base.LoaderBase.stop"><code class="xref py py-obj docutils literal notranslate"><span class="pre">stop</span></code></a>()</p></td>
+<td><p>Halts and resets the initialization parameters of the dataloader.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Attributes</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#merlin.dataloader.loader_base.LoaderBase.input_schema" title="merlin.dataloader.loader_base.LoaderBase.input_schema"><code class="xref py py-obj docutils literal notranslate"><span class="pre">input_schema</span></code></a></p></td>
+<td><p>Get input schema of data to be loaded.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#merlin.dataloader.loader_base.LoaderBase.output_schema" title="merlin.dataloader.loader_base.LoaderBase.output_schema"><code class="xref py py-obj docutils literal notranslate"><span class="pre">output_schema</span></code></a></p></td>
+<td><p>Get output schema of data being loaded.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#merlin.dataloader.loader_base.LoaderBase.schema" title="merlin.dataloader.loader_base.LoaderBase.schema"><code class="xref py py-obj docutils literal notranslate"><span class="pre">schema</span></code></a></p></td>
+<td><p>Get input schema of data to be loaded</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#merlin.dataloader.loader_base.LoaderBase.transforms" title="merlin.dataloader.loader_base.LoaderBase.transforms"><code class="xref py py-obj docutils literal notranslate"><span class="pre">transforms</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt id="merlin.dataloader.loader_base.LoaderBase.transforms">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">transforms</span></code><a class="headerlink" href="#merlin.dataloader.loader_base.LoaderBase.transforms" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="merlin.dataloader.loader_base.LoaderBase.epochs">
+<code class="sig-name descname"><span class="pre">epochs</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">epochs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/merlin/dataloader/loader_base.html#LoaderBase.epochs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#merlin.dataloader.loader_base.LoaderBase.epochs" title="Permalink to this definition"></a></dt>
+<dd><p>Create a dataloader that will efficiently run for more than one epoch.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>epochs</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of epochs the dataloader should process data, by default 1</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>return a dataloader that will run for user defined epochs.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>DataLoader</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="merlin.dataloader.loader_base.LoaderBase.stop">
+<code class="sig-name descname"><span class="pre">stop</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/merlin/dataloader/loader_base.html#LoaderBase.stop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#merlin.dataloader.loader_base.LoaderBase.stop" title="Permalink to this definition"></a></dt>
+<dd><p>Halts and resets the initialization parameters of the dataloader.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="merlin.dataloader.loader_base.LoaderBase.peek">
+<code class="sig-name descname"><span class="pre">peek</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/merlin/dataloader/loader_base.html#LoaderBase.peek"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#merlin.dataloader.loader_base.LoaderBase.peek" title="Permalink to this definition"></a></dt>
+<dd><p>Get the next batch without advancing the iterator.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="merlin.dataloader.loader_base.LoaderBase.make_tensors">
+<code class="sig-name descname"><span class="pre">make_tensors</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gdf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_row_lengths</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/merlin/dataloader/loader_base.html#LoaderBase.make_tensors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#merlin.dataloader.loader_base.LoaderBase.make_tensors" title="Permalink to this definition"></a></dt>
+<dd><p>Yields batches of tensors from a dataframe</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>gdf</strong> (<em>DataFrame</em>) – A dataframe type object.</p></li>
+<li><p><strong>use_row_lengths</strong> (<em>bool</em><em>, </em><em>optional</em>) – Enable using row lengths instead of offsets for list columns, by default False</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A dictionary of the column tensor representations.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Dict[Tensors]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="merlin.dataloader.loader_base.LoaderBase.array_lib">
+<code class="sig-name descname"><span class="pre">array_lib</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/merlin/dataloader/loader_base.html#LoaderBase.array_lib"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#merlin.dataloader.loader_base.LoaderBase.array_lib" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="merlin.dataloader.loader_base.LoaderBase.schema">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">schema</span></code><a class="headerlink" href="#merlin.dataloader.loader_base.LoaderBase.schema" title="Permalink to this definition"></a></dt>
+<dd><p>Get input schema of data to be loaded</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Schema corresponding to the data</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="../api_core/merlin.schema.html#merlin.schema.Schema" title="merlin.schema.Schema">Schema</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="merlin.dataloader.loader_base.LoaderBase.output_schema">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">output_schema</span></code><a class="headerlink" href="#merlin.dataloader.loader_base.LoaderBase.output_schema" title="Permalink to this definition"></a></dt>
+<dd><p>Get output schema of data being loaded.</p>
+<p>When there are transforms defined that change the features being loaded,
+This output schema is intended to account for this and should match
+the features returned by the loader. If there are no transforms then this
+will be the same as the input schema.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Schema corresponding to the data that will be output by the loader</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="../api_core/merlin.schema.html#merlin.schema.Schema" title="merlin.schema.Schema">Schema</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="merlin.dataloader.loader_base.LoaderBase.input_schema">
+<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">input_schema</span></code><a class="headerlink" href="#merlin.dataloader.loader_base.LoaderBase.input_schema" title="Permalink to this definition"></a></dt>
+<dd><p>Get input schema of data to be loaded.</p>
+<p>If there are no transforms then this will be the same as the output schema.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Schema corresponding to the data that will be loaded  prior to any transforms.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="../api_core/merlin.schema.html#merlin.schema.Schema" title="merlin.schema.Schema">Schema</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="merlin.dataloader.torch.DLDataLoader.html" class="btn btn-neutral float-left" title="merlin.dataloader.torch.DLDataLoader" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="merlin.dataloader.loader_base.ChunkQueue.html" class="btn btn-neutral float-right" title="merlin.dataloader.loader_base.ChunkQueue" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, NVIDIA.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-NVJ1Y1YJHK"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-NVJ1Y1YJHK', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>merlin.models.tf.loader &mdash; Merlin  documentation</title><link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/mystnb.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/togglebutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/custom.css" type="text/css" />
+    <link rel="canonical" href="https://nvidia-merlin.github.io/Merlin/stable/_modules/merlin/models/tf/loader.html" />
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+        <script >let toggleHintShow = 'Click to show';</script>
+        <script >let toggleHintHide = 'Click to hide';</script>
+        <script >let toggleOpenOnPrint = 'true';</script>
+        <script src="../../../../_static/togglebutton.js"></script>
+        <script >var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="banner">
+    <p class="banner">
+      Beginning in January 2023, versions for all NVIDIA Merlin projects
+      will change from semantic versioning like <code>4.0</code>
+      to calendar versioning like <code>23.01</code>.</p>
+  </div>
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            Merlin
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../README.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guide/recommender_system_guide.html">Recommender System Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../examples/index.html">Example Notebooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api_overview.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../containers.html">Merlin Containers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../support_matrix/index.html">Merlin Support Matrix</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">Merlin</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">merlin.models.tf.loader</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for merlin.models.tf.loader</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># Copyright (c) 2021, NVIDIA CORPORATION.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+<span class="c1">#</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Protocol</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">dask.dataframe</span> <span class="k">as</span> <span class="nn">dd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
+
+<span class="kn">import</span> <span class="nn">merlin.dataloader.tensorflow</span>
+<span class="kn">from</span> <span class="nn">merlin.core.dispatch</span> <span class="kn">import</span> <span class="n">HAS_GPU</span>
+<span class="kn">from</span> <span class="nn">merlin.dataloader.tf_utils</span> <span class="kn">import</span> <span class="n">get_dataset_schema_from_feature_columns</span>
+<span class="kn">from</span> <span class="nn">merlin.io</span> <span class="kn">import</span> <span class="n">Dataset</span>
+<span class="kn">from</span> <span class="nn">merlin.models.loader.backend</span> <span class="kn">import</span> <span class="n">_augment_schema</span>
+<span class="kn">from</span> <span class="nn">merlin.models.tf.distributed.backend</span> <span class="kn">import</span> <span class="n">hvd</span><span class="p">,</span> <span class="n">hvd_installed</span>
+<span class="kn">from</span> <span class="nn">merlin.models.utils.schema_utils</span> <span class="kn">import</span> <span class="n">select_targets</span>
+<span class="kn">from</span> <span class="nn">merlin.schema</span> <span class="kn">import</span> <span class="n">Schema</span><span class="p">,</span> <span class="n">Tags</span>
+
+<span class="n">LOG</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;merlin.models&quot;</span><span class="p">)</span>
+
+<span class="c1"># pylint has issues with TF array ops, so disable checks until fixed:</span>
+<span class="c1"># https://github.com/PyCQA/pylint/issues/3613</span>
+<span class="c1"># pylint: disable=no-value-for-parameter,unexpected-keyword-arg,redundant-keyword-arg</span>
+
+
+<span class="n">dd_engine</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;parquet&quot;</span><span class="p">:</span> <span class="n">dd</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">,</span>
+    <span class="s2">&quot;csv&quot;</span><span class="p">:</span> <span class="n">dd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">,</span>
+    <span class="s2">&quot;df&quot;</span><span class="p">:</span> <span class="n">dd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<span class="k">def</span> <span class="nf">_validate_dataset</span><span class="p">(</span><span class="n">paths_or_dataset</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">buffer_size</span><span class="p">,</span> <span class="n">engine</span><span class="p">,</span> <span class="n">device</span><span class="p">,</span> <span class="n">reader_kwargs</span><span class="p">):</span>
+    <span class="c1"># TODO: put this in parent class and allow</span>
+    <span class="c1"># torch dataset to leverage as well?</span>
+
+    <span class="c1"># if a dataset was passed, just return it</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">paths_or_dataset</span><span class="p">,</span> <span class="s2">&quot;schema&quot;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">paths_or_dataset</span>
+
+    <span class="c1"># otherwise initialize a dataset</span>
+    <span class="c1"># from paths or glob pattern</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">paths_or_dataset</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">files</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">gfile</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">paths_or_dataset</span><span class="p">)</span>
+        <span class="n">parent</span><span class="p">,</span> <span class="n">file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">paths_or_dataset</span><span class="p">)</span>
+        <span class="n">_is_empty_msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Couldn&#39;t find file pattern </span><span class="si">{</span><span class="n">file</span><span class="si">}</span><span class="s2"> in directory </span><span class="si">{</span><span class="n">parent</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># TODO: some checking around attribute</span>
+        <span class="c1"># error here?</span>
+        <span class="n">files</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">paths_or_dataset</span><span class="p">)</span>
+        <span class="n">_is_empty_msg</span> <span class="o">=</span> <span class="s2">&quot;paths_or_dataset list must contain at least one filename&quot;</span>
+
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">files</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">files</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">_is_empty_msg</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">engine</span><span class="p">:</span>
+        <span class="c1"># default engine is parquet</span>
+        <span class="n">engine</span> <span class="o">=</span> <span class="s2">&quot;parquet&quot;</span>
+
+    <span class="n">cpu</span> <span class="o">=</span> <span class="n">device</span> <span class="ow">and</span> <span class="s2">&quot;cpu&quot;</span> <span class="ow">in</span> <span class="n">device</span>
+
+    <span class="k">return</span> <span class="n">Dataset</span><span class="p">(</span><span class="n">files</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="n">engine</span><span class="p">,</span> <span class="n">cpu</span><span class="o">=</span><span class="n">cpu</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_validate_schema</span><span class="p">(</span><span class="n">feature_columns</span><span class="p">,</span> <span class="n">cat_names</span><span class="p">,</span> <span class="n">cont_names</span><span class="p">,</span> <span class="n">label_names</span><span class="p">,</span> <span class="n">schema</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="n">_uses_feature_columns</span> <span class="o">=</span> <span class="n">feature_columns</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+    <span class="n">_uses_explicit_schema</span> <span class="o">=</span> <span class="p">(</span><span class="n">cat_names</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">cont_names</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span>
+
+    <span class="n">cat_tag_names</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">schema</span><span class="o">.</span><span class="n">select_by_tag</span><span class="p">([</span><span class="n">Tags</span><span class="o">.</span><span class="n">CATEGORICAL</span><span class="p">])</span><span class="o">.</span><span class="n">excluding_by_tag</span><span class="p">(</span><span class="n">Tags</span><span class="o">.</span><span class="n">TARGET</span><span class="p">)</span><span class="o">.</span><span class="n">column_names</span>
+        <span class="k">if</span> <span class="n">schema</span>
+        <span class="k">else</span> <span class="p">[]</span>
+    <span class="p">)</span>
+    <span class="n">cont_tag_names</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">schema</span><span class="o">.</span><span class="n">select_by_tag</span><span class="p">([</span><span class="n">Tags</span><span class="o">.</span><span class="n">CONTINUOUS</span><span class="p">])</span><span class="o">.</span><span class="n">excluding_by_tag</span><span class="p">(</span><span class="n">Tags</span><span class="o">.</span><span class="n">TARGET</span><span class="p">)</span><span class="o">.</span><span class="n">column_names</span>
+        <span class="k">if</span> <span class="n">schema</span>
+        <span class="k">else</span> <span class="p">[]</span>
+    <span class="p">)</span>
+    <span class="n">label_names</span> <span class="o">=</span> <span class="n">label_names</span> <span class="ow">or</span> <span class="p">[]</span>
+    <span class="n">_uses_dataset_schema</span> <span class="o">=</span> <span class="n">cat_tag_names</span> <span class="ow">or</span> <span class="n">cont_tag_names</span>
+
+    <span class="k">if</span> <span class="n">_uses_feature_columns</span> <span class="ow">and</span> <span class="n">_uses_explicit_schema</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;Passed `feature_column`s and explicit column names, must be one or the other&quot;</span>
+        <span class="p">)</span>
+    <span class="k">elif</span> <span class="n">_uses_feature_columns</span><span class="p">:</span>
+        <span class="n">cat_names</span><span class="p">,</span> <span class="n">cont_names</span> <span class="o">=</span> <span class="n">get_dataset_schema_from_feature_columns</span><span class="p">(</span><span class="n">feature_columns</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">cat_names</span><span class="p">,</span> <span class="n">cont_names</span><span class="p">,</span> <span class="n">label_names</span>
+    <span class="k">elif</span> <span class="n">_uses_explicit_schema</span><span class="p">:</span>
+        <span class="n">cat_names</span> <span class="o">=</span> <span class="n">cat_names</span> <span class="ow">or</span> <span class="p">[]</span>
+        <span class="n">cont_names</span> <span class="o">=</span> <span class="n">cont_names</span> <span class="ow">or</span> <span class="p">[]</span>
+
+        <span class="k">return</span> <span class="n">cat_names</span><span class="p">,</span> <span class="n">cont_names</span><span class="p">,</span> <span class="n">label_names</span>
+    <span class="k">elif</span> <span class="n">_uses_dataset_schema</span><span class="p">:</span>
+        <span class="n">label_names</span> <span class="o">=</span> <span class="n">label_names</span> <span class="ow">or</span> <span class="n">select_targets</span><span class="p">(</span><span class="n">schema</span><span class="p">)</span><span class="o">.</span><span class="n">column_names</span>
+
+        <span class="k">return</span> <span class="n">cat_tag_names</span><span class="p">,</span> <span class="n">cont_tag_names</span><span class="p">,</span> <span class="n">label_names</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;Must either pass a list of TensorFlow `feature_column`s &quot;</span>
+            <span class="s2">&quot;or explicit `cat_name` and `cont_name` column name lists.&quot;</span>
+        <span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_get_schema</span><span class="p">(</span><span class="n">dataset</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="s2">&quot;schema&quot;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">dataset</span><span class="o">.</span><span class="n">schema</span>
+    <span class="k">return</span> <span class="kc">None</span>
+
+
+<span class="k">class</span> <span class="nc">SchemaAwareTransform</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="o">...</span>
+
+    <span class="k">def</span> <span class="nf">compute_output_schema</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">schema</span><span class="p">:</span> <span class="n">Schema</span><span class="p">):</span>
+        <span class="o">...</span>
+
+
+<div class="viewcode-block" id="Loader"><a class="viewcode-back" href="../../../../generated/merlin.models.tf.Loader.html#merlin.models.tf.Loader">[docs]</a><span class="k">class</span> <span class="nc">Loader</span><span class="p">(</span><span class="n">merlin</span><span class="o">.</span><span class="n">dataloader</span><span class="o">.</span><span class="n">tensorflow</span><span class="o">.</span><span class="n">Loader</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Override class to customize data loading for backward compatibility with</span>
+<span class="sd">    older NVTabular releases.</span>
+
+<span class="sd">    In most cases, when you use the `merlin.io.Dataset` class, data loading</span>
+<span class="sd">    for model training and evaluation is performed automatically by Merlin Models.</span>
+
+<span class="sd">    Infinite generator used to asynchronously iterate through CSV or Parquet</span>
+<span class="sd">    dataframes on GPU by leveraging an NVTabular `Dataset`. Applies preprocessing</span>
+<span class="sd">    via NVTabular `Workflow` objects and outputs tabular dictionaries of TensorFlow</span>
+<span class="sd">    Tensors via `dlpack &lt;https://github.com/dmlc/dlpack&gt;`_. Useful for training tabular models</span>
+<span class="sd">    built in Keras and trained via</span>
+<span class="sd">    `tf.keras.Model.fit &lt;https://www.tensorflow.org/api_docs/python/tf/keras/Model&gt;`_.</span>
+
+<span class="sd">    The data loading scheme is implemented by loading, preprocessing, and</span>
+<span class="sd">    batching data in an asynchronous thread. The amount of randomness in</span>
+<span class="sd">    shuffling is controlled by the `buffer_size` and `parts_per_chunk`</span>
+<span class="sd">    kwargs. At load time, sub-chunks of data with size controlled by</span>
+<span class="sd">    `buffer_size` are loaded from random partitions in the dataset,</span>
+<span class="sd">    and `parts_per_chunk` of them are concatenated into a single chunk,</span>
+<span class="sd">    shuffled, and split into batches. This means that each chunk has</span>
+<span class="sd">    `buffer_size*parts_per_chunk` rows, and due to the asynchronous</span>
+<span class="sd">    nature of the dataloader that means there are, including the batch</span>
+<span class="sd">    being processed by your network, `3*buffer_size*parts_per_chunk`</span>
+<span class="sd">    rows of data in GPU memory at any given time. This means that</span>
+<span class="sd">    for a fixed memory budget, using more `parts_per_chunk` will</span>
+<span class="sd">    come at the expense of smaller `buffer_size`, increasing the number</span>
+<span class="sd">    of reads and reducing throughput. The goal should be to maximize the</span>
+<span class="sd">    total amount of memory utilized at once without going OOM and with</span>
+<span class="sd">    the fewest number of reads to meet your epoch-level randomness needs.</span>
+
+<span class="sd">    An important thing to note is that TensorFlow&#39;s default behavior</span>
+<span class="sd">    is to claim all GPU memory for itself at initialziation time,</span>
+<span class="sd">    which leaves none for NVTabular to load or preprocess data.</span>
+<span class="sd">    As such, we attempt to configure TensorFlow to restrict</span>
+<span class="sd">    its memory allocation on a given GPU using the environment variables</span>
+<span class="sd">    `TF_MEMORY_ALLOCATION` and `TF_VISIBLE_DEVICE`. If `TF_MEMORY_ALLOCATION &lt; 1`,</span>
+<span class="sd">    it will be assumed that this refers to a fraction of free GPU</span>
+<span class="sd">    memory on the given device. Otherwise, it will refer to an explicit</span>
+<span class="sd">    allocation amount in MB. `TF_VISIBLE_DEVICE` should be an integer GPU</span>
+<span class="sd">    index.</span>
+
+<span class="sd">    Iterator output is of the form `(dict(features), list(labels))`,</span>
+<span class="sd">    where each element of the features dict is a</span>
+<span class="sd">    `feature_name: feature_tensor`  and each elemtn of the labels</span>
+<span class="sd">    list is a tensor, and all tensors are of shape `(batch_size, 1)`.</span>
+<span class="sd">    Note that this means vectorized continuous and multi-hot categorical</span>
+<span class="sd">    features are not currently supported.</span>
+<span class="sd">    The underlying NVTabular `Dataset` object is stored in the `data`</span>
+<span class="sd">    attribute, and should be used for updating NVTabular `Workflow`</span>
+<span class="sd">    statistics::</span>
+
+<span class="sd">        workflow = nvt.Workflow(...)</span>
+<span class="sd">        dataset = KerasSequenceLoader(...)</span>
+<span class="sd">        workflow.update_stats(dataset.data.to_iter(), record_stats=True)</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -------------</span>
+<span class="sd">    paths_or_dataset: str or list(str)</span>
+<span class="sd">        Either a string representing a file pattern (see `tf.glob` for</span>
+<span class="sd">        pattern rules), a list of filenames to be iterated through, or</span>
+<span class="sd">        a Dataset object, in which case `buffer_size`, `engine`, and</span>
+<span class="sd">        `reader_kwargs` will be ignored</span>
+<span class="sd">    batch_size: int</span>
+<span class="sd">        Number of samples to yield at each iteration</span>
+<span class="sd">    label_names: list(str)</span>
+<span class="sd">        Column name of the target variable in the dataframe specified by</span>
+<span class="sd">        `paths_or_dataset`</span>
+<span class="sd">    feature_columns: list(tf.feature_column) or None</span>
+<span class="sd">        A list of TensorFlow feature columns representing the inputs</span>
+<span class="sd">        exposed to the model to be trained. Columns with parent columns</span>
+<span class="sd">        will climb the parent tree, and the names of the columns in the</span>
+<span class="sd">        unique set of terminal columns will be used as the column names.</span>
+<span class="sd">        If left as None, must specify `cat_names` and `cont_names`</span>
+<span class="sd">    cat_names: list(str) or None</span>
+<span class="sd">        List of categorical column names. Ignored if `feature_columns` is</span>
+<span class="sd">        specified</span>
+<span class="sd">    cont_names: list(str) or None</span>
+<span class="sd">        List of continuous column names. Ignored if `feature_columns` is</span>
+<span class="sd">        specified</span>
+<span class="sd">    engine: {&#39;csv&#39;, &#39;parquet&#39;, None}, default None</span>
+<span class="sd">        String specifying the type of read engine to use. If left as `None`,</span>
+<span class="sd">        will try to infer the engine type from the file extension.</span>
+<span class="sd">    shuffle: bool, default True</span>
+<span class="sd">        Whether to shuffle chunks of batches before iterating through them.</span>
+<span class="sd">    buffer_size: float or int</span>
+<span class="sd">        If `0 &lt;  buffer_size &lt; 1`, `buffer_size` will refer to the fraction of</span>
+<span class="sd">        total GPU memory to occupy with a buffered chunk. If `1 &lt; buffer_size &lt;</span>
+<span class="sd">        batch_size`, the number of rows read for a buffered chunk will</span>
+<span class="sd">        be equal to `int(buffer_size*batch_size)`. Otherwise, if `buffer_size &gt;</span>
+<span class="sd">        batch_size`, `buffer_size` rows will be read in each chunk (except for</span>
+<span class="sd">        the last chunk in a dataset, which will, in general, be smaller).</span>
+<span class="sd">        Larger chunk sizes will lead to more efficiency and randomness,</span>
+<span class="sd">        but require more memory.</span>
+<span class="sd">    device: None</span>
+<span class="sd">        Which GPU device to load from. Ignored for now</span>
+<span class="sd">    parts_per_chunk: int</span>
+<span class="sd">        Number of dataset partitions with size dictated by `buffer_size`</span>
+<span class="sd">        to load and concatenate asynchronously. More partitions leads to</span>
+<span class="sd">        better epoch-level randomness but can negatively impact throughput</span>
+<span class="sd">    reader_kwargs: dict</span>
+<span class="sd">        extra kwargs to pass when instantiating the underlying</span>
+<span class="sd">        `nvtabular.Dataset`</span>
+<span class="sd">    sparse_list : list(str) or None</span>
+<span class="sd">        list with column names of columns that should be represented as sparse tensors</span>
+<span class="sd">    sparse_max : dict</span>
+<span class="sd">        dictionary of key: column_name + value: integer representing max sequence length for column</span>
+<span class="sd">    sparse_as_dense : bool</span>
+<span class="sd">        bool value to activate transforming sparse tensors to dense</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Loader.__init__"><a class="viewcode-back" href="../../../../generated/merlin.models.tf.Loader.html#merlin.models.tf.Loader.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">paths_or_dataset</span><span class="p">,</span>
+        <span class="n">batch_size</span><span class="p">,</span>
+        <span class="n">label_names</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">feature_columns</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">cat_names</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">cont_names</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">engine</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">seed_fn</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">buffer_size</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+        <span class="n">device</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">parts_per_chunk</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">reader_kwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">global_size</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">global_rank</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">drop_last</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">sparse_names</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">sparse_max</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">sparse_as_dense</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">schema</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">loader_kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="n">dataset</span> <span class="o">=</span> <span class="n">_validate_dataset</span><span class="p">(</span>
+            <span class="n">paths_or_dataset</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">buffer_size</span><span class="p">,</span> <span class="n">engine</span><span class="p">,</span> <span class="n">device</span><span class="p">,</span> <span class="n">reader_kwargs</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">schema</span><span class="p">:</span>
+            <span class="n">dataset</span><span class="o">.</span><span class="n">schema</span> <span class="o">=</span> <span class="n">schema</span>
+
+        <span class="n">cat_names</span> <span class="o">=</span> <span class="n">cat_names</span> <span class="ow">or</span> <span class="p">(</span>
+            <span class="n">dataset</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">select_by_tag</span><span class="p">(</span><span class="n">Tags</span><span class="o">.</span><span class="n">CATEGORICAL</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">excluding_by_tag</span><span class="p">(</span><span class="n">Tags</span><span class="o">.</span><span class="n">TARGET</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">column_names</span>
+            <span class="k">if</span> <span class="n">_get_schema</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
+            <span class="k">else</span> <span class="p">[]</span>
+        <span class="p">)</span>
+        <span class="n">cont_names</span> <span class="o">=</span> <span class="n">cont_names</span> <span class="ow">or</span> <span class="p">(</span>
+            <span class="n">dataset</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">select_by_tag</span><span class="p">(</span><span class="n">Tags</span><span class="o">.</span><span class="n">CONTINUOUS</span><span class="p">)</span><span class="o">.</span><span class="n">excluding_by_tag</span><span class="p">(</span><span class="n">Tags</span><span class="o">.</span><span class="n">TARGET</span><span class="p">)</span><span class="o">.</span><span class="n">column_names</span>
+            <span class="k">if</span> <span class="n">_get_schema</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
+            <span class="k">else</span> <span class="p">[]</span>
+        <span class="p">)</span>
+        <span class="n">label_names</span> <span class="o">=</span> <span class="n">label_names</span> <span class="ow">or</span> <span class="p">(</span>
+            <span class="n">dataset</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">select_by_tag</span><span class="p">(</span><span class="n">Tags</span><span class="o">.</span><span class="n">TARGET</span><span class="p">)</span><span class="o">.</span><span class="n">column_names</span> <span class="k">if</span> <span class="n">_get_schema</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span> <span class="k">else</span> <span class="p">[]</span>
+        <span class="p">)</span>
+
+        <span class="n">cat_names</span><span class="p">,</span> <span class="n">cont_names</span><span class="p">,</span> <span class="n">label_names</span> <span class="o">=</span> <span class="n">_validate_schema</span><span class="p">(</span>
+            <span class="n">feature_columns</span><span class="p">,</span> <span class="n">cat_names</span><span class="p">,</span> <span class="n">cont_names</span><span class="p">,</span> <span class="n">label_names</span><span class="p">,</span> <span class="n">schema</span><span class="o">=</span><span class="n">dataset</span><span class="o">.</span><span class="n">schema</span>
+        <span class="p">)</span>
+
+        <span class="n">dataset</span><span class="o">.</span><span class="n">schema</span> <span class="o">=</span> <span class="n">_augment_schema</span><span class="p">(</span>
+            <span class="n">dataset</span><span class="o">.</span><span class="n">schema</span><span class="p">,</span>
+            <span class="n">cat_names</span><span class="p">,</span>
+            <span class="n">cont_names</span><span class="p">,</span>
+            <span class="n">label_names</span><span class="p">,</span>
+            <span class="n">sparse_names</span><span class="p">,</span>
+            <span class="n">sparse_max</span><span class="p">,</span>
+            <span class="n">sparse_as_dense</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">device</span> <span class="o">=</span> <span class="s2">&quot;cpu&quot;</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">HAS_GPU</span> <span class="k">else</span> <span class="n">device</span>
+        <span class="k">if</span> <span class="n">hvd_installed</span> <span class="ow">and</span> <span class="n">hvd</span><span class="o">.</span><span class="n">size</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">device</span> <span class="o">=</span> <span class="n">hvd</span><span class="o">.</span><span class="n">local_rank</span><span class="p">()</span>
+            <span class="n">global_size</span> <span class="o">=</span> <span class="n">global_size</span> <span class="ow">or</span> <span class="n">hvd</span><span class="o">.</span><span class="n">size</span><span class="p">()</span>
+            <span class="n">global_rank</span> <span class="o">=</span> <span class="n">global_rank</span> <span class="ow">or</span> <span class="n">hvd</span><span class="o">.</span><span class="n">rank</span><span class="p">()</span>
+            <span class="n">seed_fn</span> <span class="o">=</span> <span class="n">seed_fn</span> <span class="ow">or</span> <span class="n">get_default_hvd_seed_fn</span><span class="p">()</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">dataset</span><span class="p">,</span>
+            <span class="n">batch_size</span><span class="p">,</span>
+            <span class="n">shuffle</span><span class="o">=</span><span class="n">shuffle</span><span class="p">,</span>
+            <span class="n">seed_fn</span><span class="o">=</span><span class="n">seed_fn</span><span class="p">,</span>
+            <span class="n">parts_per_chunk</span><span class="o">=</span><span class="n">parts_per_chunk</span><span class="p">,</span>
+            <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
+            <span class="n">global_size</span><span class="o">=</span><span class="n">global_size</span><span class="p">,</span>
+            <span class="n">global_rank</span><span class="o">=</span><span class="n">global_rank</span><span class="p">,</span>
+            <span class="n">drop_last</span><span class="o">=</span><span class="n">drop_last</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">loader_kwargs</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Override these parameters after initializing the parent dataloader</span>
+        <span class="c1"># class since the new dataloader will use sparse tensors for list</span>
+        <span class="c1"># columns by default, but sparse tensors were disabled by default</span>
+        <span class="c1"># and were optional in the old version of merlin.loader.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sparse_names</span> <span class="o">=</span> <span class="n">sparse_names</span> <span class="ow">or</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sparse_max</span> <span class="o">=</span> <span class="n">sparse_max</span> <span class="ow">or</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sparse_as_dense</span> <span class="o">=</span> <span class="n">sparse_as_dense</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">output_schema</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Schema</span><span class="p">:</span>
+        <span class="n">output_schema</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">output_schema</span>
+        <span class="k">for</span> <span class="n">map_fn</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_map_fns</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">map_fn</span><span class="p">,</span> <span class="s2">&quot;compute_output_schema&quot;</span><span class="p">):</span>
+                <span class="n">output_schema</span> <span class="o">=</span> <span class="n">map_fn</span><span class="o">.</span><span class="n">compute_output_schema</span><span class="p">(</span><span class="n">output_schema</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Couldn&#39;t infer schema from transform </span><span class="si">{</span><span class="n">map_fn</span><span class="si">}</span><span class="s2">. &quot;</span>
+                    <span class="s2">&quot;Please implement the `compute_output_schema` method on &quot;</span>
+                    <span class="s2">&quot;the transform layer.&quot;</span>
+                <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">output_schema</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">has_transforms</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns True if Loader has transforms or map functions.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        bool</span>
+<span class="sd">            True if Loader has transforms or map functions, otherwise False.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_map_fns</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">transforms</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span></div>
+
+
+<span class="n">KerasSequenceValidater</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">KerasSequenceValidator</span>
+<span class="p">)</span> <span class="o">=</span> <span class="n">merlin</span><span class="o">.</span><span class="n">dataloader</span><span class="o">.</span><span class="n">tensorflow</span><span class="o">.</span><span class="n">KerasSequenceValidater</span>
+
+
+<span class="k">def</span> <span class="nf">sample_batch</span><span class="p">(</span>
+    <span class="n">dataset_or_loader</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Dataset</span><span class="p">,</span> <span class="n">Loader</span><span class="p">],</span>
+    <span class="n">batch_size</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">shuffle</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">include_targets</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">prepare_features</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Util function to generate a batch of input tensors from a merlin.io.Dataset instance</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data: merlin.io.dataset</span>
+<span class="sd">        A Dataset object.</span>
+<span class="sd">    batch_size: int</span>
+<span class="sd">        Number of samples to return.</span>
+<span class="sd">    shuffle: bool</span>
+<span class="sd">        Whether to sample a random batch or not, by default False.</span>
+<span class="sd">    include_targets: bool</span>
+<span class="sd">        Whether to include the targets in the returned batch, by default True.</span>
+<span class="sd">    prepare_features: bool</span>
+<span class="sd">        Whether to prepare features from dataloader for the model, by default False.</span>
+<span class="sd">        If enabled, it converts multi-hot/list features to dense or ragged based on the schema.</span>
+<span class="sd">        It also ensures that scalar features are converted to 2D (batch size, 1).</span>
+<span class="sd">        P.s. The features are automatically prepared by InputBlockV2 if it is used</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    batch: Dict[tf.tensor]</span>
+<span class="sd">        dictionary of input tensors.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="kn">from</span> <span class="nn">merlin.models.tf.transforms.features</span> <span class="kn">import</span> <span class="n">PrepareFeatures</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dataset_or_loader</span><span class="p">,</span> <span class="n">Dataset</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">batch_size</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Either use &#39;Loader&#39; or specify &#39;batch_size&#39;&quot;</span><span class="p">)</span>
+        <span class="n">loader</span> <span class="o">=</span> <span class="n">Loader</span><span class="p">(</span><span class="n">dataset_or_loader</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="n">shuffle</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">loader</span> <span class="o">=</span> <span class="n">dataset_or_loader</span>
+
+    <span class="n">batch</span> <span class="o">=</span> <span class="n">loader</span><span class="o">.</span><span class="n">peek</span><span class="p">()</span>
+    <span class="c1"># batch could be of type Prediction, so we can&#39;t unpack directly</span>
+    <span class="n">inputs</span><span class="p">,</span> <span class="n">targets</span> <span class="o">=</span> <span class="n">batch</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">batch</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">prepare_features</span><span class="p">:</span>
+        <span class="n">pf</span> <span class="o">=</span> <span class="n">PrepareFeatures</span><span class="p">(</span><span class="n">loader</span><span class="o">.</span><span class="n">output_schema</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">targets</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">inputs</span><span class="p">,</span> <span class="n">targets</span> <span class="o">=</span> <span class="n">pf</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">targets</span><span class="o">=</span><span class="n">targets</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">inputs</span> <span class="o">=</span> <span class="n">pf</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">include_targets</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">inputs</span>
+    <span class="k">return</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">targets</span>
+
+
+<span class="k">def</span> <span class="nf">get_default_hvd_seed_fn</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generate consistent dataloader shuffle seeds across workers</span>
+<span class="sd">    Reseeds each worker&#39;s dataloader each epoch to get fresh a shuffle</span>
+<span class="sd">    that&#39;s consistent across workers.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">HAS_GPU</span><span class="p">:</span>
+        <span class="kn">import</span> <span class="nn">cupy</span>
+
+        <span class="n">cupy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">hvd_installed</span><span class="p">:</span>
+        <span class="kn">import</span> <span class="nn">horovod</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="s2">&quot;&#39;horovod&#39; is required to use this function.&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_seed_fn</span><span class="p">():</span>
+        <span class="n">min_int</span><span class="p">,</span> <span class="n">max_int</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">int32</span><span class="o">.</span><span class="n">limits</span>
+        <span class="n">max_rand</span> <span class="o">=</span> <span class="n">max_int</span> <span class="o">//</span> <span class="n">horovod</span><span class="o">.</span><span class="n">tensorflow</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">size</span><span class="p">()</span>
+        <span class="c1"># Generate a seed fragment on each worker</span>
+        <span class="k">if</span> <span class="n">HAS_GPU</span><span class="p">:</span>
+            <span class="n">seed_fragment</span> <span class="o">=</span> <span class="n">cupy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">max_rand</span><span class="p">)</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">seed_fragment</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">max_rand</span><span class="p">)</span>
+        <span class="c1"># Aggregate seed fragments from all Horovod workers</span>
+        <span class="n">seed_tensor</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">constant</span><span class="p">(</span><span class="n">seed_fragment</span><span class="p">)</span>
+        <span class="n">reduced_seed</span> <span class="o">=</span> <span class="n">hvd</span><span class="o">.</span><span class="n">allreduce</span><span class="p">(</span>
+            <span class="n">seed_tensor</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;shuffle_seed&quot;</span><span class="p">,</span> <span class="n">op</span><span class="o">=</span><span class="n">horovod</span><span class="o">.</span><span class="n">tensorflow</span><span class="o">.</span><span class="n">mpi_ops</span><span class="o">.</span><span class="n">Sum</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">reduced_seed</span> <span class="o">%</span> <span class="n">max_rand</span>
+
+    <span class="k">return</span> <span class="n">_seed_fn</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, NVIDIA.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-NVJ1Y1YJHK"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-NVJ1Y1YJHK', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>merlin.dataloader.loader_base &mdash; Merlin  documentation</title><link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/mystnb.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/togglebutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/custom.css" type="text/css" />
+    <link rel="canonical" href="https://nvidia-merlin.github.io/Merlin/stable/_modules/merlin/dataloader/loader_base.html" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script >let toggleHintShow = 'Click to show';</script>
+        <script >let toggleHintHide = 'Click to hide';</script>
+        <script >let toggleOpenOnPrint = 'true';</script>
+        <script src="../../../_static/togglebutton.js"></script>
+        <script >var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="banner">
+    <p class="banner">
+      Beginning in January 2023, versions for all NVIDIA Merlin projects
+      will change from semantic versioning like <code>4.0</code>
+      to calendar versioning like <code>23.01</code>.</p>
+  </div>
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            Merlin
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../README.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/recommender_system_guide.html">Recommender System Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/index.html">Example Notebooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_overview.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../containers.html">Merlin Containers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../support_matrix/index.html">Merlin Support Matrix</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Merlin</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">merlin.dataloader.loader_base</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for merlin.dataloader.loader_base</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># Copyright (c) 2021, NVIDIA CORPORATION.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+<span class="c1">#</span>
+<span class="kn">import</span> <span class="nn">contextlib</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">queue</span>
+<span class="kn">import</span> <span class="nn">threading</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
+
+<span class="kn">from</span> <span class="nn">merlin.core.compat</span> <span class="kn">import</span> <span class="n">HAS_GPU</span><span class="p">,</span> <span class="n">cudf</span><span class="p">,</span> <span class="n">cupy</span>
+<span class="kn">from</span> <span class="nn">merlin.core.compat</span> <span class="kn">import</span> <span class="n">numpy</span> <span class="k">as</span> <span class="n">np</span>
+<span class="kn">from</span> <span class="nn">merlin.core.compat</span> <span class="kn">import</span> <span class="n">pandas</span> <span class="k">as</span> <span class="n">pd</span>
+<span class="kn">from</span> <span class="nn">merlin.core.dispatch</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">annotate</span><span class="p">,</span>
+    <span class="n">concat</span><span class="p">,</span>
+    <span class="n">generate_local_seed</span><span class="p">,</span>
+    <span class="n">is_list_dtype</span><span class="p">,</span>
+    <span class="n">make_df</span><span class="p">,</span>
+    <span class="n">pull_apart_list</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">merlin.dag</span> <span class="kn">import</span> <span class="n">BaseOperator</span><span class="p">,</span> <span class="n">ColumnSelector</span><span class="p">,</span> <span class="n">Graph</span><span class="p">,</span> <span class="n">Node</span><span class="p">,</span> <span class="n">ungroup_values_offsets</span>
+<span class="kn">from</span> <span class="nn">merlin.dag.executors</span> <span class="kn">import</span> <span class="n">LocalExecutor</span>
+<span class="kn">from</span> <span class="nn">merlin.io</span> <span class="kn">import</span> <span class="n">shuffle_df</span>
+<span class="kn">from</span> <span class="nn">merlin.schema</span> <span class="kn">import</span> <span class="n">Schema</span><span class="p">,</span> <span class="n">Tags</span>
+<span class="kn">from</span> <span class="nn">merlin.table</span> <span class="kn">import</span> <span class="n">TensorTable</span>
+
+
+<span class="k">def</span> <span class="nf">_num_steps</span><span class="p">(</span><span class="n">num_samples</span><span class="p">,</span> <span class="n">step_size</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">num_samples</span> <span class="o">/</span> <span class="n">step_size</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="LoaderBase"><a class="viewcode-back" href="../../../generated/merlin.dataloader.loader_base.LoaderBase.html#merlin.dataloader.loader_base.LoaderBase">[docs]</a><span class="k">class</span> <span class="nc">LoaderBase</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class containing common functionality between the PyTorch and TensorFlow dataloaders.&quot;&quot;&quot;</span>
+
+    <span class="n">_use_row_lengths</span> <span class="o">=</span> <span class="kc">False</span>
+
+<div class="viewcode-block" id="LoaderBase.__init__"><a class="viewcode-back" href="../../../generated/merlin.dataloader.loader_base.LoaderBase.html#merlin.dataloader.loader_base.LoaderBase.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">dataset</span><span class="p">,</span>
+        <span class="n">batch_size</span><span class="p">,</span>
+        <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">seed_fn</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">parts_per_chunk</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">global_size</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">global_rank</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">drop_last</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">transforms</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">device</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span> <span class="o">=</span> <span class="n">dataset</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span> <span class="o">=</span> <span class="n">batch_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shuffle</span> <span class="o">=</span> <span class="n">shuffle</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">seed_fn</span> <span class="o">=</span> <span class="n">seed_fn</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parts_per_chunk</span> <span class="o">=</span> <span class="n">parts_per_chunk</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">global_size</span> <span class="o">=</span> <span class="n">global_size</span> <span class="ow">or</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">global_rank</span> <span class="o">=</span> <span class="n">global_rank</span> <span class="ow">or</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">drop_last</span> <span class="o">=</span> <span class="n">drop_last</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_map_fns</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">device</span> <span class="o">=</span> <span class="n">device</span> <span class="ow">or</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="s2">&quot;cpu&quot;</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">HAS_GPU</span> <span class="ow">or</span> <span class="n">dataset</span><span class="o">.</span><span class="n">cpu</span> <span class="k">else</span> <span class="n">device</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="o">==</span> <span class="s2">&quot;cpu&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_array_lib</span> <span class="o">=</span> <span class="n">np</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_array_lib</span> <span class="o">=</span> <span class="n">cupy</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">indices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array_lib</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">npartitions</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">dataset</span><span class="o">.</span><span class="n">schema</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="s2">&quot;no schema associated with the input dataset. &quot;</span>
+                <span class="s2">&quot;Calling dataset.infer_schema to automatically generate&quot;</span>
+            <span class="p">)</span>
+            <span class="n">dataset</span><span class="o">.</span><span class="n">schema</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">infer_schema</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_epochs</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_rows_processed</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">__buff</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__buff_len</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_batch_itr</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_workers</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_transforms</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">executor</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_transform_graph</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">transforms</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">transforms</span><span class="p">,</span> <span class="n">List</span><span class="p">):</span>
+                <span class="n">carry_node</span> <span class="o">=</span> <span class="n">Node</span><span class="p">(</span><span class="n">ColumnSelector</span><span class="p">(</span><span class="s2">&quot;*&quot;</span><span class="p">))</span>
+                <span class="k">for</span> <span class="n">transform</span> <span class="ow">in</span> <span class="n">transforms</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">transform</span><span class="p">,</span> <span class="n">BaseOperator</span><span class="p">):</span>
+                        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;Detected invalid transform, </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">transform</span><span class="p">)</span><span class="si">}</span><span class="s2">,&quot;</span>
+                            <span class="s2">&quot;we only support operators based on the merlin core&quot;</span>
+                            <span class="s2">&quot;`BaseOperator`&quot;</span>
+                        <span class="p">)</span>
+                    <span class="n">carry_node</span> <span class="o">=</span> <span class="n">carry_node</span> <span class="o">&gt;&gt;</span> <span class="n">transform</span>
+                <span class="n">transform_graph</span> <span class="o">=</span> <span class="n">Graph</span><span class="p">(</span><span class="n">carry_node</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">transforms</span><span class="p">,</span> <span class="n">Graph</span><span class="p">):</span>
+                <span class="n">transform_graph</span> <span class="o">=</span> <span class="n">transforms</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">transforms</span><span class="p">,</span> <span class="n">Node</span><span class="p">):</span>
+                <span class="n">transform_graph</span> <span class="o">=</span> <span class="n">Graph</span><span class="p">(</span><span class="n">transforms</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_transform_graph</span> <span class="o">=</span> <span class="n">transform_graph</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">executor</span> <span class="o">=</span> <span class="n">LocalExecutor</span><span class="p">()</span>
+
+        <span class="n">schema</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">schema</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">input_schema</span> <span class="o">=</span> <span class="n">schema</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">transforms</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Node</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transforms</span>
+
+    <span class="k">def</span> <span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exc_type</span><span class="p">,</span> <span class="n">exc_value</span><span class="p">,</span> <span class="n">traceback</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_buff</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__buff</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># we set size of chunk queue to 1 we only want one chunk in queue at a time.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__buff</span> <span class="o">=</span> <span class="n">ChunkQueue</span><span class="p">(</span>
+                <span class="bp">self</span><span class="p">,</span>
+                <span class="mi">1</span><span class="p">,</span>
+                <span class="n">num_parts</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">parts_per_chunk</span><span class="p">,</span>
+                <span class="n">shuffle</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">shuffle</span><span class="p">,</span>
+                <span class="n">epochs</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_epochs</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__buff</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_buff_len</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__buff_len</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># run once instead of every time len called</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__buff_len</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_buff</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__buff_len</span>
+
+<div class="viewcode-block" id="LoaderBase.epochs"><a class="viewcode-back" href="../../../generated/merlin.dataloader.loader_base.LoaderBase.html#merlin.dataloader.loader_base.LoaderBase.epochs">[docs]</a>    <span class="k">def</span> <span class="nf">epochs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a dataloader that will efficiently run for more than one epoch.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        epochs : int, optional</span>
+<span class="sd">            Number of epochs the dataloader should process data, by default 1</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        DataLoader</span>
+<span class="sd">            return a dataloader that will run for user defined epochs.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">epochs</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_epochs</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span>
+        <span class="n">new_dataloader</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">new_dataloader</span><span class="o">.</span><span class="n">_set_epochs</span><span class="p">(</span><span class="n">epochs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">new_dataloader</span></div>
+
+    <span class="k">def</span> <span class="nf">_set_epochs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epochs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__buff</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__buff_len</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_epochs</span> <span class="o">=</span> <span class="n">epochs</span>
+
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets batch at position `index`.</span>
+
+<span class="sd">        Note: This returns the next batch in the iterator.</span>
+<span class="sd">              Not the batch at position `index`.</span>
+<span class="sd">              This is because the dataloader is implemented as an iterator and</span>
+<span class="sd">              don&#39;t currently support fetching a batch by index.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__next__</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">batches</span> <span class="o">=</span> <span class="n">_num_steps</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_buff_len</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">drop_last</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_buff_len</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">batches</span> <span class="o">=</span> <span class="n">batches</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="n">batches</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_working</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_workers</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">any</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">is_alive</span><span class="p">()</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_workers</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+<div class="viewcode-block" id="LoaderBase.stop"><a class="viewcode-back" href="../../../generated/merlin.dataloader.loader_base.LoaderBase.html#merlin.dataloader.loader_base.LoaderBase.stop">[docs]</a>    <span class="k">def</span> <span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Halts and resets the initialization parameters of the dataloader.&quot;&quot;&quot;</span>
+        <span class="c1"># TODO: raise warning or even error if condition</span>
+        <span class="c1"># isn&#39;t met?</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_workers</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_buff</span><span class="o">.</span><span class="n">stopped</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_buff</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_workers</span><span class="p">:</span>
+                <span class="n">t</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+            <span class="c1"># remove joined threads from list</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_workers</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_buff</span><span class="o">.</span><span class="n">q_out</span><span class="o">.</span><span class="n">queue</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_batch_itr</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+    <span class="k">def</span> <span class="nf">_indices_for_process</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># this should be self.indices divided by total processes, global set</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">indices</span><span class="p">)</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">global_size</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;&quot;&quot;You have more processes(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">global_size</span><span class="si">}</span><span class="s2">) than dataset</span>
+<span class="s2">                    partitions(</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">indices</span><span class="p">)</span><span class="si">}</span><span class="s2">), reduce the number of processes.&quot;&quot;&quot;</span>
+            <span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">IndexError</span>
+        <span class="n">per_worker</span> <span class="o">=</span> <span class="n">_num_steps</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">indices</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">global_size</span><span class="p">)</span>
+        <span class="c1"># identify process rank out of all processes (not local rank)</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">global_rank</span> <span class="o">*</span> <span class="n">per_worker</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">indices</span><span class="p">[</span><span class="n">start</span> <span class="p">:</span> <span class="n">start</span> <span class="o">+</span> <span class="n">per_worker</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+
+    <span class="nd">@annotate</span><span class="p">(</span><span class="s2">&quot;_shuffle_indices&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;darkgreen&quot;</span><span class="p">,</span> <span class="n">domain</span><span class="o">=</span><span class="s2">&quot;merlin_dataloader&quot;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_shuffle_indices</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">generate_local_seed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">global_rank</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">global_size</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">seed_fn</span><span class="p">:</span>
+            <span class="n">new_seed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">seed_fn</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_array_lib</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">new_seed</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_array_lib</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">indices</span><span class="p">)</span>
+        <span class="n">generate_local_seed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">global_rank</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">global_size</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_rows_processed</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_buff</span><span class="o">.</span><span class="n">stopped</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_buff</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+        <span class="c1"># shuffle partition indices to bring disparate</span>
+        <span class="c1"># parts of the dataset &quot;close&quot; to one another</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">shuffle</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_shuffle_indices</span><span class="p">()</span>
+
+        <span class="c1"># build and start new threads for loading and</span>
+        <span class="c1"># concatenating data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_workers</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_buff</span><span class="o">.</span><span class="n">load_chunks</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">,))</span>
+        <span class="n">t</span><span class="o">.</span><span class="n">daemon</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">t</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_workers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="fm">__next__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the next batch.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_next_batch</span><span class="p">()</span>
+
+<div class="viewcode-block" id="LoaderBase.peek"><a class="viewcode-back" href="../../../generated/merlin.dataloader.loader_base.LoaderBase.html#merlin.dataloader.loader_base.LoaderBase.peek">[docs]</a>    <span class="k">def</span> <span class="nf">peek</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the next batch without advancing the iterator.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_peek_next_batch</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="nf">_data_iter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epochs</span><span class="p">):</span>
+        <span class="n">indices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_indices_for_process</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">to_iter</span><span class="p">(</span>
+            <span class="n">indices</span><span class="o">=</span><span class="n">indices</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="n">epochs</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">column_names</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_fetch_chunk</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">chunks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_buff</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">chunks</span><span class="p">,</span> <span class="ne">Exception</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+            <span class="k">raise</span> <span class="n">chunks</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_batch_itr</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">chunks</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_peek_next_batch</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return next batch without advancing the iterator.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_workers</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">LoaderBase</span><span class="o">.</span><span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+        <span class="c1"># get the first chunks</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_batch_itr</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_fetch_chunk</span><span class="p">()</span>
+
+        <span class="c1"># try to iterate through existing batches</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">batch</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_batch_itr</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_batch_itr</span> <span class="o">=</span> <span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="p">([</span><span class="n">batch</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_batch_itr</span><span class="p">)</span>
+
+        <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
+            <span class="c1"># anticipate any more chunks getting created</span>
+            <span class="c1"># if not, raise the StopIteration</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_working</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_buff</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_workers</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_batch_itr</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="k">raise</span>
+
+            <span class="c1"># otherwise get the next chunks and return</span>
+            <span class="c1"># the first batch</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_fetch_chunk</span><span class="p">()</span>
+            <span class="n">batch</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_batch_itr</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_batch_itr</span> <span class="o">=</span> <span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="p">([</span><span class="n">batch</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_batch_itr</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">batch</span>
+
+    <span class="k">def</span> <span class="nf">_get_next_batch</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        adding this cheap shim so that we can call this</span>
+<span class="sd">        step without it getting overridden by the</span>
+<span class="sd">        framework-specific parent class&#39;s `__next__` method.</span>
+<span class="sd">        TODO: can this be better solved with a metaclass</span>
+<span class="sd">        implementation? My gut is that we don&#39;t actually</span>
+<span class="sd">        necessarily *want*, in general, to be overriding</span>
+<span class="sd">        __next__ and __iter__ methods</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># we&#39;ve never initialized, do that now</span>
+        <span class="c1"># need this because tf.keras.Model.fit will</span>
+        <span class="c1"># call next() cold</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_workers</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">LoaderBase</span><span class="o">.</span><span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+        <span class="c1"># get the first chunks</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_batch_itr</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_fetch_chunk</span><span class="p">()</span>
+
+        <span class="c1"># try to iterate through existing batches</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">batch</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_batch_itr</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
+            <span class="c1"># anticipate any more chunks getting created</span>
+            <span class="c1"># if not, raise the StopIteration</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_working</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_buff</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_workers</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_batch_itr</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="k">raise</span>
+
+            <span class="c1"># otherwise get the next chunks and return</span>
+            <span class="c1"># the first batch</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_fetch_chunk</span><span class="p">()</span>
+            <span class="n">batch</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_batch_itr</span><span class="p">)</span>
+        <span class="c1"># if batch[0] is empty but other exist</span>
+        <span class="k">for</span> <span class="n">sub</span> <span class="ow">in</span> <span class="n">batch</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">sub</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">sub</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">num_rows_processed</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">sub</span><span class="p">)</span>
+                <span class="k">break</span>
+        <span class="k">return</span> <span class="n">batch</span>
+
+<div class="viewcode-block" id="LoaderBase.make_tensors"><a class="viewcode-back" href="../../../generated/merlin.dataloader.loader_base.LoaderBase.html#merlin.dataloader.loader_base.LoaderBase.make_tensors">[docs]</a>    <span class="nd">@annotate</span><span class="p">(</span><span class="s2">&quot;make_tensors&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;darkgreen&quot;</span><span class="p">,</span> <span class="n">domain</span><span class="o">=</span><span class="s2">&quot;merlin_dataloader&quot;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">make_tensors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gdf</span><span class="p">,</span> <span class="n">use_row_lengths</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Yields batches of tensors from a dataframe</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        gdf : DataFrame</span>
+<span class="sd">            A dataframe type object.</span>
+<span class="sd">        use_row_lengths : bool, optional</span>
+<span class="sd">            Enable using row lengths instead of offsets for list columns, by default False</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Dict[Tensors]</span>
+<span class="sd">            A dictionary of the column tensor representations.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tensors_by_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_convert_df_to_tensors</span><span class="p">(</span><span class="n">gdf</span><span class="p">)</span>
+        <span class="n">rows_per_batch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_rows_per_batch</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">gdf</span><span class="p">))</span>
+
+        <span class="n">tensor_batches</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">for</span> <span class="n">tensor_key</span><span class="p">,</span> <span class="n">tensor_value</span> <span class="ow">in</span> <span class="n">tensors_by_name</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tensor_value</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+                <span class="c1"># List feature</span>
+                <span class="n">full_tensor_values</span><span class="p">,</span> <span class="n">full_tensor_offsets</span> <span class="o">=</span> <span class="n">tensor_value</span>
+
+                <span class="n">splits</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">accumulate</span><span class="p">(</span><span class="n">rows_per_batch</span><span class="p">))</span>
+
+                <span class="n">offsets_grouped_by_batch</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">if</span> <span class="n">splits</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">split</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">([</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">splits</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]):</span>
+                        <span class="n">start</span> <span class="o">=</span> <span class="n">split</span>
+                        <span class="n">end</span> <span class="o">=</span> <span class="n">splits</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+                        <span class="n">offsets_grouped_by_batch</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">full_tensor_offsets</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="p">])</span>
+
+                <span class="n">subtracted_offsets_grouped_by_batch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_subtract_offsets</span><span class="p">(</span>
+                    <span class="n">offsets_grouped_by_batch</span>
+                <span class="p">)</span>
+                <span class="n">num_values_per_batch</span> <span class="o">=</span> <span class="p">[</span>
+                    <span class="nb">int</span><span class="p">(</span><span class="n">batch_offsets</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">batch_offsets</span> <span class="ow">in</span> <span class="n">subtracted_offsets_grouped_by_batch</span>
+                <span class="p">]</span>
+
+                <span class="n">batch_values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_split_values</span><span class="p">(</span><span class="n">full_tensor_values</span><span class="p">,</span> <span class="n">num_values_per_batch</span><span class="p">)</span>
+                <span class="n">tensor_batches</span><span class="p">[</span><span class="n">tensor_key</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s2">&quot;values&quot;</span><span class="p">:</span> <span class="n">batch_values</span><span class="p">,</span>
+                    <span class="s2">&quot;offsets&quot;</span><span class="p">:</span> <span class="n">subtracted_offsets_grouped_by_batch</span><span class="p">,</span>
+                <span class="p">}</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Scalar feature</span>
+                <span class="n">num_values_per_batch</span> <span class="o">=</span> <span class="n">rows_per_batch</span>
+                <span class="n">tensor_batches</span><span class="p">[</span><span class="n">tensor_key</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_split_values</span><span class="p">(</span><span class="n">tensor_value</span><span class="p">,</span> <span class="n">num_values_per_batch</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">batch_idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">rows_per_batch</span><span class="p">)):</span>
+            <span class="n">batch</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">tensor_key</span> <span class="ow">in</span> <span class="n">tensors_by_name</span><span class="p">:</span>
+                <span class="n">tensor_value</span> <span class="o">=</span> <span class="n">tensor_batches</span><span class="p">[</span><span class="n">tensor_key</span><span class="p">]</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tensor_value</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                    <span class="n">full_tensor_values</span> <span class="o">=</span> <span class="n">tensor_value</span><span class="p">[</span><span class="s2">&quot;values&quot;</span><span class="p">][</span><span class="n">batch_idx</span><span class="p">]</span>
+                    <span class="n">offsets</span> <span class="o">=</span> <span class="n">tensor_value</span><span class="p">[</span><span class="s2">&quot;offsets&quot;</span><span class="p">][</span><span class="n">batch_idx</span><span class="p">]</span>
+                    <span class="n">batch</span><span class="p">[</span><span class="n">tensor_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">full_tensor_values</span><span class="p">,</span> <span class="n">offsets</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">batch</span><span class="p">[</span><span class="n">tensor_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">tensor_value</span><span class="p">[</span><span class="n">batch_idx</span><span class="p">]</span>
+
+            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">_process_batch</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_get_rows_per_batch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_samples</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Helper function to build indices to pass</span>
+<span class="sd">        to &lt;torch|tf&gt;.split functions for breaking</span>
+<span class="sd">        up into batches</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">num_full_batches</span> <span class="o">=</span> <span class="n">_num_steps</span><span class="p">(</span><span class="n">num_samples</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_full_batches</span><span class="p">)]</span>
+        <span class="n">idx</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">num_samples</span> <span class="o">-</span> <span class="n">num_full_batches</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">idx</span>
+
+    <span class="k">def</span> <span class="nf">_to_tensor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df_or_series</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        One of the mandatory functions a child class needs</span>
+<span class="sd">        to implement. Maps from a cudf DataFrame to a</span>
+<span class="sd">        tensor in the appropriate library, with an optional</span>
+<span class="sd">        dtype kwarg to do explicit casting if need be</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">df_or_series</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="c1"># if you have one series in a dataframe pull that series out</span>
+        <span class="c1"># otherwise you will add a dimension to the column [[1,2,3]]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">df_or_series</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">df_or_series</span> <span class="o">=</span> <span class="n">df_or_series</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="o">==</span> <span class="s2">&quot;cpu&quot;</span><span class="p">:</span>
+            <span class="n">tensor</span> <span class="o">=</span> <span class="n">df_or_series</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">tensor</span> <span class="o">=</span> <span class="n">df_or_series</span><span class="o">.</span><span class="n">to_cupy</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">tensor</span>
+
+    <span class="nd">@contextlib</span><span class="o">.</span><span class="n">contextmanager</span>
+    <span class="k">def</span> <span class="nf">_get_device_ctx</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dev</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        One of the mandatory functions a child class needs</span>
+<span class="sd">        to implement. Maps from a GPU index to a framework</span>
+<span class="sd">        context object for placing tensors on specific GPUs</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">yield</span> <span class="n">dev</span>
+
+    <span class="k">def</span> <span class="nf">_cast_to_numpy_dtype</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dtype</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the numpy dtype from the framework dtype.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="n">dtype</span>
+
+    <span class="k">def</span> <span class="nf">_split_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tensor</span><span class="p">,</span> <span class="n">values_per_batch</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="c1"># splits are like offsets but without the first and last entry</span>
+        <span class="n">splits</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">accumulate</span><span class="p">(</span><span class="n">values_per_batch</span><span class="p">))[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">array_lib</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">tensor</span><span class="p">,</span> <span class="n">splits</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_subtract_offsets</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">offsets_grouped_by_batch</span><span class="p">):</span>
+        <span class="n">subtracted_offsets_grouped_by_batch</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">batch_offsets</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">offsets_grouped_by_batch</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">idx</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">previous_batch_offsets</span> <span class="o">=</span> <span class="n">offsets_grouped_by_batch</span><span class="p">[</span><span class="n">idx</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+                <span class="n">batch_offsets</span> <span class="o">=</span> <span class="n">batch_offsets</span> <span class="o">-</span> <span class="n">previous_batch_offsets</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">subtracted_offsets_grouped_by_batch</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">batch_offsets</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">subtracted_offsets_grouped_by_batch</span>
+
+    <span class="k">def</span> <span class="nf">_separate_list_columns</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gdf</span><span class="p">):</span>
+        <span class="n">lists</span><span class="p">,</span> <span class="n">scalars</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">gdf</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">is_list_dtype</span><span class="p">(</span><span class="n">gdf</span><span class="p">[</span><span class="n">col</span><span class="p">]):</span>
+                <span class="n">lists</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">col</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">scalars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">col</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">scalars</span><span class="p">,</span> <span class="n">lists</span>
+
+<div class="viewcode-block" id="LoaderBase.array_lib"><a class="viewcode-back" href="../../../generated/merlin.dataloader.loader_base.LoaderBase.html#merlin.dataloader.loader_base.LoaderBase.array_lib">[docs]</a>    <span class="k">def</span> <span class="nf">array_lib</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_array_lib</span></div>
+
+    <span class="k">def</span> <span class="nf">_split_fn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tensor</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="n">splits</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">accumulate</span><span class="p">(</span><span class="n">idx</span><span class="p">))[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">array_lib</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">tensor</span><span class="p">,</span> <span class="n">splits</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_tensor_split</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tensor</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">array_lib</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">tensor</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">)</span>
+
+    <span class="nd">@annotate</span><span class="p">(</span><span class="s2">&quot;_convert_df_to_tensors&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;darkgreen&quot;</span><span class="p">,</span> <span class="n">domain</span><span class="o">=</span><span class="s2">&quot;merlin_dataloader&quot;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_convert_df_to_tensors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gdf</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert a dataframe into framework tensors.</span>
+<span class="sd">        Returns dictionary of tensors by feature name.</span>
+<span class="sd">        Where scalar features are grouped under the same key (tuple of column names)</span>
+<span class="sd">        when they share the same dtype.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tensors_by_name</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">column_names</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtype_reverse_map</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="n">gdf_i</span> <span class="o">=</span> <span class="n">gdf</span><span class="p">[</span><span class="n">column_names</span><span class="p">]</span>
+            <span class="n">gdf</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">column_names</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+            <span class="n">scalars</span><span class="p">,</span> <span class="n">lists</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_separate_list_columns</span><span class="p">(</span><span class="n">gdf_i</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">scalars</span><span class="p">:</span>
+                <span class="c1"># split out cols and change all scalars</span>
+                <span class="c1"># should always return dict column_name: values, offsets (optional)</span>
+                <span class="k">for</span> <span class="n">column_name</span> <span class="ow">in</span> <span class="n">column_names</span><span class="p">:</span>
+                    <span class="n">tensors_by_name</span><span class="p">[</span><span class="n">column_name</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_tensor</span><span class="p">(</span><span class="n">gdf_i</span><span class="p">[[</span><span class="n">column_name</span><span class="p">]])</span>
+
+            <span class="k">if</span> <span class="n">lists</span><span class="p">:</span>
+                <span class="c1"># split out lists</span>
+                <span class="k">for</span> <span class="n">column_name</span> <span class="ow">in</span> <span class="n">lists</span><span class="p">:</span>
+                    <span class="n">column</span> <span class="o">=</span> <span class="n">gdf_i</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">column_name</span><span class="p">)</span>
+
+                    <span class="k">if</span> <span class="n">cudf</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">column</span><span class="p">,</span> <span class="n">cudf</span><span class="o">.</span><span class="n">Series</span><span class="p">):</span>
+                        <span class="n">is_fixed_length</span> <span class="o">=</span> <span class="p">(</span>
+                            <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_schema</span><span class="p">[</span><span class="n">column_name</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">is_ragged</span>
+                            <span class="ow">and</span> <span class="p">(</span><span class="n">column</span><span class="o">.</span><span class="n">list</span><span class="o">.</span><span class="n">len</span><span class="p">()</span> <span class="o">==</span> <span class="n">column</span><span class="o">.</span><span class="n">list</span><span class="o">.</span><span class="n">len</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+                        <span class="p">)</span>
+                        <span class="k">if</span> <span class="n">is_fixed_length</span><span class="p">:</span>
+                            <span class="n">values</span> <span class="o">=</span> <span class="n">column</span><span class="o">.</span><span class="n">list</span><span class="o">.</span><span class="n">leaves</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
+                                <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">*</span><span class="n">cupy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">column</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">shape</span>
+                            <span class="p">)</span>
+                            <span class="n">tensors_by_name</span><span class="p">[</span><span class="n">column_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">values</span>
+                            <span class="k">continue</span>
+                    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">column</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">):</span>
+                        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">input_schema</span><span class="p">[</span><span class="n">column_name</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="o">.</span><span class="n">is_ragged</span><span class="p">:</span>
+                            <span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">_array_leaves</span><span class="p">(</span><span class="n">column</span><span class="o">.</span><span class="n">values</span><span class="p">)))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
+                                <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">column</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">shape</span>
+                            <span class="p">)</span>
+                            <span class="n">tensors_by_name</span><span class="p">[</span><span class="n">column_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">values</span>
+                            <span class="k">continue</span>
+
+                    <span class="n">leaves</span><span class="p">,</span> <span class="n">col_offsets</span> <span class="o">=</span> <span class="n">pull_apart_list</span><span class="p">(</span><span class="n">column</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">leaves</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">list</span><span class="p">):</span>
+                        <span class="n">leaves</span><span class="p">,</span> <span class="n">nest_offsets</span> <span class="o">=</span> <span class="n">pull_apart_list</span><span class="p">(</span><span class="n">leaves</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+                        <span class="n">col_offsets</span> <span class="o">=</span> <span class="n">nest_offsets</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">col_offsets</span><span class="p">[:]]</span>
+
+                    <span class="n">tensors_by_name</span><span class="p">[</span><span class="n">column_name</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_tensor</span><span class="p">(</span><span class="n">leaves</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_tensor</span><span class="p">(</span>
+                        <span class="n">col_offsets</span>
+                    <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">tensors_by_name</span>
+
+    <span class="nd">@annotate</span><span class="p">(</span><span class="s2">&quot;_process_batch&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;darkgreen&quot;</span><span class="p">,</span> <span class="n">domain</span><span class="o">=</span><span class="s2">&quot;merlin_dataloader&quot;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_process_batch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tensors</span><span class="p">):</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">ungroup_values_offsets</span><span class="p">(</span><span class="n">tensors</span><span class="p">)</span>
+
+        <span class="c1"># Return a tensor if we have only one label column, but return a</span>
+        <span class="c1"># dictionary of tensors if there are multiple label columns, since</span>
+        <span class="c1"># dictionary output is required in Merlin Models and Transformers4Rec.</span>
+        <span class="c1"># If a user is using a vanilla Keras model with multiple labels,</span>
+        <span class="c1"># they would need to provide matching column names in the output layer</span>
+        <span class="c1"># of the Keras model.</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">label_names</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">labels</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">label_names</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">labels</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">label_names</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">labels</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">label_names</span><span class="p">:</span>
+                <span class="n">labels</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">label</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">transforms</span><span class="p">:</span>
+            <span class="n">X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">executor</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">TensorTable</span><span class="p">(</span><span class="n">X</span><span class="p">),</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">transforms</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="n">X</span><span class="p">,</span> <span class="n">labels</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">schema</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Schema</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get input schema of data to be loaded</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ~merlin.schema.Schema</span>
+<span class="sd">            Schema corresponding to the data</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+            <span class="s2">&quot;This `schema` property is deprecated and will be removed in a future version. &quot;</span>
+            <span class="s2">&quot;Please use either the `input_schema` or `output_schema` property instead.&quot;</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_input_schema</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">input_schema</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Schema</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get input schema of data to be loaded.</span>
+
+<span class="sd">        If there are no transforms then this will be the same as the output schema.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ~merlin.schema.Schema</span>
+<span class="sd">            Schema corresponding to the data that will be loaded  prior to any transforms.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_input_schema</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">output_schema</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Schema</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get output schema of data being loaded.</span>
+
+<span class="sd">        When there are transforms defined that change the features being loaded,</span>
+<span class="sd">        This output schema is intended to account for this and should match</span>
+<span class="sd">        the features returned by the loader. If there are no transforms then this</span>
+<span class="sd">        will be the same as the input schema.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ~merlin.schema.Schema</span>
+<span class="sd">            Schema corresponding to the data that will be output by the loader</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_output_schema</span>
+
+    <span class="nd">@input_schema</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">input_schema</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set schema property</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        value : ~merlin.schema.Schema</span>
+<span class="sd">            The schema corresponding to data to be loaded.</span>
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            When value provided doesn&#39;t match expected type</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_batch_itr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="s2">&quot;Setting the input_schema after the dataloader has started is not supported. &quot;</span>
+                <span class="s2">&quot;If you would like to change the input_schema &quot;</span>
+                <span class="s2">&quot;please change before reading the first batch. &quot;</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">Schema</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;schema value on loader must be of type merlin.io.Schema. &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;provided: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_input_schema</span> <span class="o">=</span> <span class="n">value</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">cat_names</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">value</span><span class="o">.</span><span class="n">select_by_tag</span><span class="p">(</span><span class="n">Tags</span><span class="o">.</span><span class="n">CATEGORICAL</span><span class="p">)</span><span class="o">.</span><span class="n">excluding_by_tag</span><span class="p">(</span><span class="n">Tags</span><span class="o">.</span><span class="n">TARGET</span><span class="p">)</span><span class="o">.</span><span class="n">column_names</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cont_names</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">value</span><span class="o">.</span><span class="n">select_by_tag</span><span class="p">(</span><span class="n">Tags</span><span class="o">.</span><span class="n">CONTINUOUS</span><span class="p">)</span><span class="o">.</span><span class="n">excluding_by_tag</span><span class="p">(</span><span class="n">Tags</span><span class="o">.</span><span class="n">TARGET</span><span class="p">)</span><span class="o">.</span><span class="n">column_names</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">label_names</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">select_by_tag</span><span class="p">(</span><span class="n">Tags</span><span class="o">.</span><span class="n">TARGET</span><span class="p">)</span><span class="o">.</span><span class="n">column_names</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">dtype_reverse_map</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">for</span> <span class="n">col_name</span><span class="p">,</span> <span class="n">col_spec</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_input_schema</span><span class="o">.</span><span class="n">column_schemas</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">col_spec</span><span class="o">.</span><span class="n">dtype</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtype_reverse_map</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">dtype_reverse_map</span><span class="p">[</span><span class="n">col_spec</span><span class="o">.</span><span class="n">dtype</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">col_name</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">dtype_reverse_map</span><span class="p">[</span><span class="n">col_spec</span><span class="o">.</span><span class="n">dtype</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">col_name</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transform_graph</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_transforms</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transform_graph</span><span class="o">.</span><span class="n">construct_schema</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_input_schema</span><span class="o">.</span><span class="n">excluding_by_tag</span><span class="p">(</span><span class="n">Tags</span><span class="o">.</span><span class="n">TARGET</span><span class="p">)</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">output_node</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_output_schema</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transforms</span><span class="o">.</span><span class="n">output_schema</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_output_schema</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_input_schema</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype_reverse_map</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Neither Categorical or Continuous columns were found by the dataloader. &quot;</span>
+                <span class="s2">&quot;You must either specify the cat_names, cont_names and &quot;</span>
+                <span class="s2">&quot;label_names properties or supply a schema.pbtxt file in dataset directory.&quot;</span>
+            <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ChunkQueue"><a class="viewcode-back" href="../../../generated/merlin.dataloader.loader_base.ChunkQueue.html#merlin.dataloader.loader_base.ChunkQueue">[docs]</a><span class="k">class</span> <span class="nc">ChunkQueue</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;This class takes partitions (parts) from an merlin.io.Dataset</span>
+<span class="sd">    and concatenates them into a cudf dataframe &quot;chunk.&quot; This chunk</span>
+<span class="sd">    is subsequently transformed into its tensor representation using</span>
+<span class="sd">    the iterator&#39;s transform.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    qsize: int</span>
+<span class="sd">        Maximum number of elements to hold in the buffer at one time.</span>
+<span class="sd">    num_parts : int</span>
+<span class="sd">        Number of partitions from the iterator, a merlin.io.Dataset to</span>
+<span class="sd">        concatenate into a &quot;chunk.&quot;</span>
+<span class="sd">    shuffle : bool</span>
+<span class="sd">        Enable or disable chunk-level shuffling.</span>
+<span class="sd">    put_wait: float</span>
+<span class="sd">        Specifies the timeout to wait for a full queue to open up before checking</span>
+<span class="sd">        for errors and trying again.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="ChunkQueue.__init__"><a class="viewcode-back" href="../../../generated/merlin.dataloader.loader_base.ChunkQueue.html#merlin.dataloader.loader_base.ChunkQueue.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataloader</span><span class="p">,</span> <span class="n">qsize</span><span class="p">,</span> <span class="n">num_parts</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">put_wait</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_parts</span> <span class="o">=</span> <span class="n">num_parts</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shuffle</span> <span class="o">=</span> <span class="n">shuffle</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">put_wait</span> <span class="o">=</span> <span class="n">put_wait</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">q_out</span> <span class="o">=</span> <span class="n">queue</span><span class="o">.</span><span class="n">Queue</span><span class="p">(</span><span class="n">qsize</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stop_event</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Event</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">itr</span> <span class="o">=</span> <span class="n">dataloader</span><span class="o">.</span><span class="n">_data_iter</span><span class="p">(</span><span class="n">epochs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataloader</span> <span class="o">=</span> <span class="n">dataloader</span></div>
+
+    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">itr</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">stopped</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_event</span><span class="o">.</span><span class="n">is_set</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">empty</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">q_out</span><span class="o">.</span><span class="n">empty</span><span class="p">()</span>
+
+<div class="viewcode-block" id="ChunkQueue.get"><a class="viewcode-back" href="../../../generated/merlin.dataloader.loader_base.ChunkQueue.html#merlin.dataloader.loader_base.ChunkQueue.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">q_out</span><span class="o">.</span><span class="n">get</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="ChunkQueue.put"><a class="viewcode-back" href="../../../generated/merlin.dataloader.loader_base.ChunkQueue.html#merlin.dataloader.loader_base.ChunkQueue.put">[docs]</a>    <span class="k">def</span> <span class="nf">put</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">packet</span><span class="p">):</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">stopped</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">True</span>
+
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">q_out</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">packet</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">put_wait</span><span class="p">)</span>
+                <span class="k">return</span> <span class="kc">False</span>
+            <span class="k">except</span> <span class="n">queue</span><span class="o">.</span><span class="n">Full</span><span class="p">:</span>
+                <span class="k">continue</span></div>
+
+<div class="viewcode-block" id="ChunkQueue.batch"><a class="viewcode-back" href="../../../generated/merlin.dataloader.loader_base.ChunkQueue.html#merlin.dataloader.loader_base.ChunkQueue.batch">[docs]</a>    <span class="nd">@annotate</span><span class="p">(</span><span class="s2">&quot;batch&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;darkgreen&quot;</span><span class="p">,</span> <span class="n">domain</span><span class="o">=</span><span class="s2">&quot;merlin_dataloader&quot;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">batch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">itr</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Iterates through gpu_mem_frac size chunks of dataset</span>
+<span class="sd">        and concatenates every `num_parts` of them.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">current</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">itr</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">current</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="k">yield</span> <span class="n">current</span>
+                <span class="k">break</span>
+
+            <span class="n">current</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">current</span><span class="p">)</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_parts</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">current</span>
+                <span class="n">current</span> <span class="o">=</span> <span class="p">[]</span></div>
+
+<div class="viewcode-block" id="ChunkQueue.chunk_logic"><a class="viewcode-back" href="../../../generated/merlin.dataloader.loader_base.ChunkQueue.html#merlin.dataloader.loader_base.ChunkQueue.chunk_logic">[docs]</a>    <span class="nd">@annotate</span><span class="p">(</span><span class="s2">&quot;chunk_logic&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;darkgreen&quot;</span><span class="p">,</span> <span class="n">domain</span><span class="o">=</span><span class="s2">&quot;merlin_dataloader&quot;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">chunk_logic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">itr</span><span class="p">):</span>
+        <span class="n">spill</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">chunks</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch</span><span class="p">(</span><span class="n">itr</span><span class="p">):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">stopped</span><span class="p">:</span>
+                <span class="k">return</span>
+
+            <span class="k">if</span> <span class="n">spill</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">spill</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+                <span class="n">chunks</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">spill</span><span class="p">)</span>
+
+            <span class="n">chunks</span> <span class="o">=</span> <span class="n">concat</span><span class="p">(</span><span class="n">chunks</span><span class="p">)</span>
+            <span class="n">chunks</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">chunks</span><span class="p">,</span> <span class="n">spill</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_batch_div_chunk</span><span class="p">(</span><span class="n">chunks</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataloader</span><span class="o">.</span><span class="n">batch_size</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">shuffle</span><span class="p">:</span>
+                <span class="n">chunks</span> <span class="o">=</span> <span class="n">shuffle_df</span><span class="p">(</span><span class="n">chunks</span><span class="p">,</span> <span class="n">keep_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">chunks</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">chunks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataloader</span><span class="o">.</span><span class="n">make_tensors</span><span class="p">(</span><span class="n">chunks</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataloader</span><span class="o">.</span><span class="n">_use_row_lengths</span><span class="p">)</span>
+                <span class="c1"># put returns True if buffer is stopped before</span>
+                <span class="c1"># packet can be put in queue. Keeps us from</span>
+                <span class="c1"># freezing on a put on a full queue</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">chunks</span><span class="p">):</span>
+                    <span class="k">return</span>
+            <span class="n">chunks</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># takes care final batch, which is less than batch size</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataloader</span><span class="o">.</span><span class="n">drop_last</span> <span class="ow">and</span> <span class="n">spill</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">spill</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+            <span class="n">spill</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataloader</span><span class="o">.</span><span class="n">make_tensors</span><span class="p">(</span><span class="n">spill</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataloader</span><span class="o">.</span><span class="n">_use_row_lengths</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">spill</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ChunkQueue.load_chunks"><a class="viewcode-back" href="../../../generated/merlin.dataloader.loader_base.ChunkQueue.html#merlin.dataloader.loader_base.ChunkQueue.load_chunks">[docs]</a>    <span class="nd">@annotate</span><span class="p">(</span><span class="s2">&quot;load_chunks&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;darkgreen&quot;</span><span class="p">,</span> <span class="n">domain</span><span class="o">=</span><span class="s2">&quot;merlin_dataloader&quot;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">load_chunks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dev</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">itr</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">itr</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataloader</span><span class="o">.</span><span class="n">device</span> <span class="o">!=</span> <span class="s2">&quot;cpu&quot;</span><span class="p">:</span>
+                <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataloader</span><span class="o">.</span><span class="n">_get_device_ctx</span><span class="p">(</span><span class="n">dev</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">chunk_logic</span><span class="p">(</span><span class="n">itr</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">chunk_logic</span><span class="p">(</span><span class="n">itr</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>  <span class="c1"># pylint: disable=broad-except</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">e</span><span class="p">)</span></div>
+
+    <span class="c1"># For when an iterator is stopped before iteration is complete.</span>
+<div class="viewcode-block" id="ChunkQueue.stop"><a class="viewcode-back" href="../../../generated/merlin.dataloader.loader_base.ChunkQueue.html#merlin.dataloader.loader_base.ChunkQueue.stop">[docs]</a>    <span class="k">def</span> <span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stop_event</span><span class="o">.</span><span class="n">set</span><span class="p">()</span>
+        <span class="c1"># TODO: should we be clearing? I can imagine a world where</span>
+        <span class="c1"># you want the thread to stop but still want to grab</span>
+        <span class="c1"># data out of the buffer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">q_out</span><span class="o">.</span><span class="n">queue</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="ChunkQueue.start"><a class="viewcode-back" href="../../../generated/merlin.dataloader.loader_base.ChunkQueue.html#merlin.dataloader.loader_base.ChunkQueue.start">[docs]</a>    <span class="k">def</span> <span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stop_event</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="ChunkQueue.get_batch_div_chunk"><a class="viewcode-back" href="../../../generated/merlin.dataloader.loader_base.ChunkQueue.html#merlin.dataloader.loader_base.ChunkQueue.get_batch_div_chunk">[docs]</a>    <span class="k">def</span> <span class="nf">get_batch_div_chunk</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chunks</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">):</span>
+        <span class="c1"># TODO: is there a way to do this using cupy?</span>
+        <span class="n">spill_idx</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">chunks</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">batch_size</span><span class="p">)</span> <span class="o">*</span> <span class="n">batch_size</span>
+        <span class="n">spill</span> <span class="o">=</span> <span class="n">make_df</span><span class="p">(</span><span class="n">chunks</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">spill_idx</span><span class="p">:])</span>
+        <span class="n">chunks</span> <span class="o">=</span> <span class="n">make_df</span><span class="p">(</span><span class="n">chunks</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:</span><span class="n">spill_idx</span><span class="p">])</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">chunks</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+            <span class="n">chunks</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">spill</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+            <span class="n">spill</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">chunks</span><span class="p">,</span> <span class="n">spill</span></div></div>
+
+
+<span class="k">def</span> <span class="nf">_array_leaves</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)):</span>
+        <span class="k">for</span> <span class="n">element</span> <span class="ow">in</span> <span class="n">x</span><span class="p">:</span>
+            <span class="k">yield from</span> <span class="n">_array_leaves</span><span class="p">(</span><span class="n">element</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="n">x</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, NVIDIA.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-NVJ1Y1YJHK"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-NVJ1Y1YJHK', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

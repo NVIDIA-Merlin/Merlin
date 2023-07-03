@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>merlin.models.utils.schema_utils &mdash; Merlin  documentation</title><link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/mystnb.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/togglebutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/custom.css" type="text/css" />
+    <link rel="canonical" href="https://nvidia-merlin.github.io/Merlin/stable/_modules/merlin/models/utils/schema_utils.html" />
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+        <script >let toggleHintShow = 'Click to show';</script>
+        <script >let toggleHintHide = 'Click to hide';</script>
+        <script >let toggleOpenOnPrint = 'true';</script>
+        <script src="../../../../_static/togglebutton.js"></script>
+        <script >var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="banner">
+    <p class="banner">
+      Beginning in January 2023, versions for all NVIDIA Merlin projects
+      will change from semantic versioning like <code>4.0</code>
+      to calendar versioning like <code>23.01</code>.</p>
+  </div>
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            Merlin
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../README.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../guide/recommender_system_guide.html">Recommender System Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../examples/index.html">Example Notebooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api_overview.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../containers.html">Merlin Containers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../support_matrix/index.html">Merlin Support Matrix</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">Merlin</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">merlin.models.utils.schema_utils</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for merlin.models.utils.schema_utils</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># Copyright (c) 2022, NVIDIA CORPORATION.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+<span class="c1">#</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">merlin.schema</span> <span class="kn">import</span> <span class="n">ColumnSchema</span><span class="p">,</span> <span class="n">Schema</span><span class="p">,</span> <span class="n">Tags</span><span class="p">,</span> <span class="n">TagsType</span>
+<span class="kn">from</span> <span class="nn">merlin.schema.io.tensorflow_metadata</span> <span class="kn">import</span> <span class="n">TensorflowMetadata</span>
+
+
+<div class="viewcode-block" id="select_targets"><a class="viewcode-back" href="../../../../generated/merlin.models.utils.schema_utils.select_targets.html#merlin.models.utils.schema_utils.select_targets">[docs]</a><span class="k">def</span> <span class="nf">select_targets</span><span class="p">(</span><span class="n">schema</span><span class="p">:</span> <span class="n">Schema</span><span class="p">,</span> <span class="n">extra_tags</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TagsType</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Schema</span><span class="p">:</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">schema</span><span class="o">.</span><span class="n">select_by_tag</span><span class="p">(</span><span class="n">Tags</span><span class="o">.</span><span class="n">BINARY_CLASSIFICATION</span><span class="p">)</span>
+    <span class="n">out</span> <span class="o">+=</span> <span class="n">schema</span><span class="o">.</span><span class="n">select_by_tag</span><span class="p">(</span><span class="n">Tags</span><span class="o">.</span><span class="n">TARGET</span><span class="p">)</span>
+    <span class="n">out</span> <span class="o">+=</span> <span class="n">schema</span><span class="o">.</span><span class="n">select_by_tag</span><span class="p">(</span><span class="n">Tags</span><span class="o">.</span><span class="n">REGRESSION</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">extra_tags</span><span class="p">:</span>
+        <span class="n">out</span> <span class="o">+=</span> <span class="n">schema</span><span class="o">.</span><span class="n">select_by_tag</span><span class="p">(</span><span class="n">extra_tags</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">out</span></div>
+
+
+<div class="viewcode-block" id="schema_to_tensorflow_metadata_json"><a class="viewcode-back" href="../../../../generated/merlin.models.utils.schema_utils.schema_to_tensorflow_metadata_json.html#merlin.models.utils.schema_utils.schema_to_tensorflow_metadata_json">[docs]</a><span class="k">def</span> <span class="nf">schema_to_tensorflow_metadata_json</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="n">json</span> <span class="o">=</span> <span class="n">TensorflowMetadata</span><span class="o">.</span><span class="n">from_merlin_schema</span><span class="p">(</span><span class="n">schema</span><span class="p">)</span><span class="o">.</span><span class="n">to_json</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">path</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">o</span><span class="p">:</span>
+            <span class="n">o</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">json</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">json</span></div>
+
+
+<div class="viewcode-block" id="tensorflow_metadata_json_to_schema"><a class="viewcode-back" href="../../../../generated/merlin.models.utils.schema_utils.tensorflow_metadata_json_to_schema.html#merlin.models.utils.schema_utils.tensorflow_metadata_json_to_schema">[docs]</a><span class="k">def</span> <span class="nf">tensorflow_metadata_json_to_schema</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">TensorflowMetadata</span><span class="o">.</span><span class="n">from_json</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="n">to_merlin_schema</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="create_categorical_column"><a class="viewcode-back" href="../../../../generated/merlin.models.utils.schema_utils.create_categorical_column.html#merlin.models.utils.schema_utils.create_categorical_column">[docs]</a><span class="k">def</span> <span class="nf">create_categorical_column</span><span class="p">(</span>
+    <span class="n">name</span><span class="p">,</span>
+    <span class="n">num_items</span><span class="p">,</span>
+    <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span>
+    <span class="n">domain_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">tags</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">properties</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">min_value_count</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">max_value_count</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="n">properties</span> <span class="o">=</span> <span class="n">properties</span> <span class="ow">or</span> <span class="p">{}</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">domain_name</span><span class="p">:</span>
+        <span class="n">domain_name</span> <span class="o">=</span> <span class="n">name</span>
+    <span class="k">if</span> <span class="n">num_items</span><span class="p">:</span>
+        <span class="n">properties</span><span class="p">[</span><span class="s2">&quot;domain&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">domain_name</span><span class="p">,</span> <span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="n">num_items</span><span class="p">}</span>
+
+    <span class="n">tags</span> <span class="o">=</span> <span class="n">tags</span> <span class="ow">or</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">Tags</span><span class="o">.</span><span class="n">CATEGORICAL</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">tags</span><span class="p">:</span>
+        <span class="n">tags</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Tags</span><span class="o">.</span><span class="n">CATEGORICAL</span><span class="p">)</span>
+
+    <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">if</span> <span class="n">min_value_count</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;dims&quot;</span><span class="p">:</span> <span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="p">(</span><span class="n">min_value_count</span><span class="p">,</span> <span class="n">max_value_count</span><span class="p">))}</span>
+
+    <span class="k">return</span> <span class="n">ColumnSchema</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="n">tags</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">properties</span><span class="o">=</span><span class="n">properties</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="create_continuous_column"><a class="viewcode-back" href="../../../../generated/merlin.models.utils.schema_utils.create_continuous_column.html#merlin.models.utils.schema_utils.create_continuous_column">[docs]</a><span class="k">def</span> <span class="nf">create_continuous_column</span><span class="p">(</span>
+    <span class="n">name</span><span class="p">,</span>
+    <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span>
+    <span class="n">tags</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">properties</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">min_value</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">max_value</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="n">properties</span> <span class="o">=</span> <span class="n">properties</span> <span class="ow">or</span> <span class="p">{}</span>
+    <span class="n">domain</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">if</span> <span class="n">min_value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">domain</span><span class="p">[</span><span class="s2">&quot;min&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">min_value</span>
+    <span class="k">if</span> <span class="n">max_value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">domain</span><span class="p">[</span><span class="s2">&quot;max&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">max_value</span>
+    <span class="k">if</span> <span class="n">domain</span><span class="p">:</span>
+        <span class="n">properties</span><span class="p">[</span><span class="s2">&quot;domain&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">domain</span>
+
+    <span class="n">tags</span> <span class="o">=</span> <span class="n">tags</span> <span class="ow">or</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">Tags</span><span class="o">.</span><span class="n">CONTINUOUS</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">tags</span><span class="p">:</span>
+        <span class="n">tags</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Tags</span><span class="o">.</span><span class="n">CONTINUOUS</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">ColumnSchema</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="n">tags</span><span class="p">,</span> <span class="n">properties</span><span class="o">=</span><span class="n">properties</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="filter_dict_by_schema"><a class="viewcode-back" href="../../../../generated/merlin.models.utils.schema_utils.filter_dict_by_schema.html#merlin.models.utils.schema_utils.filter_dict_by_schema">[docs]</a><span class="k">def</span> <span class="nf">filter_dict_by_schema</span><span class="p">(</span><span class="n">input_dict</span><span class="p">,</span> <span class="n">schema</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Filters out entries from input_dict, returns a dictionary</span>
+<span class="sd">    where every entry corresponds to a column in the schema&quot;&quot;&quot;</span>
+    <span class="n">column_names</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">schema</span><span class="o">.</span><span class="n">column_names</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">input_dict</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">column_names</span><span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="categorical_cardinalities"><a class="viewcode-back" href="../../../../generated/merlin.models.utils.schema_utils.categorical_cardinalities.html#merlin.models.utils.schema_utils.categorical_cardinalities">[docs]</a><span class="k">def</span> <span class="nf">categorical_cardinalities</span><span class="p">(</span><span class="n">schema</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
+    <span class="n">outputs</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">schema</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">Tags</span><span class="o">.</span><span class="n">CATEGORICAL</span> <span class="ow">in</span> <span class="n">col</span><span class="o">.</span><span class="n">tags</span><span class="p">:</span>
+            <span class="n">domain</span> <span class="o">=</span> <span class="n">col</span><span class="o">.</span><span class="n">int_domain</span>
+            <span class="k">if</span> <span class="n">domain</span><span class="p">:</span>
+                <span class="n">outputs</span><span class="p">[</span><span class="n">col</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">domain</span><span class="o">.</span><span class="n">max</span> <span class="o">+</span> <span class="mi">1</span>
+
+    <span class="k">return</span> <span class="n">outputs</span></div>
+
+
+<div class="viewcode-block" id="categorical_domains"><a class="viewcode-back" href="../../../../generated/merlin.models.utils.schema_utils.categorical_domains.html#merlin.models.utils.schema_utils.categorical_domains">[docs]</a><span class="k">def</span> <span class="nf">categorical_domains</span><span class="p">(</span><span class="n">schema</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+    <span class="n">outputs</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">schema</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">Tags</span><span class="o">.</span><span class="n">CATEGORICAL</span> <span class="ow">in</span> <span class="n">col</span><span class="o">.</span><span class="n">tags</span><span class="p">:</span>
+            <span class="n">domain</span> <span class="o">=</span> <span class="n">col</span><span class="o">.</span><span class="n">int_domain</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">col</span><span class="o">.</span><span class="n">name</span>
+            <span class="k">if</span> <span class="n">domain</span> <span class="ow">and</span> <span class="n">domain</span><span class="o">.</span><span class="n">name</span><span class="p">:</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="n">domain</span><span class="o">.</span><span class="n">name</span>
+            <span class="n">outputs</span><span class="p">[</span><span class="n">col</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">name</span>
+
+    <span class="k">return</span> <span class="n">outputs</span></div>
+
+
+<div class="viewcode-block" id="get_embedding_sizes_from_schema"><a class="viewcode-back" href="../../../../generated/merlin.models.utils.schema_utils.get_embedding_sizes_from_schema.html#merlin.models.utils.schema_utils.get_embedding_sizes_from_schema">[docs]</a><span class="k">def</span> <span class="nf">get_embedding_sizes_from_schema</span><span class="p">(</span>
+    <span class="n">schema</span><span class="p">:</span> <span class="n">Schema</span><span class="p">,</span> <span class="n">multiplier</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">2.0</span><span class="p">,</span> <span class="n">ensure_multiple_of_8</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Provides a heristic (from Google) that suggests the embedding sizes</span>
+<span class="sd">    as a function (forth root) of categorical features cardinalities, obtained</span>
+<span class="sd">    from the schema.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    schema : Schema</span>
+<span class="sd">        Featires schema</span>
+<span class="sd">    multiplier : float, optional</span>
+<span class="sd">        Multiplier to be applied on the forth root of the cardinality.</span>
+<span class="sd">        Google recommends multiplier in the [2.0,10.0] range, by default 2.0</span>
+<span class="sd">    ensure_multiple_of_8 : bool, optional</span>
+<span class="sd">        If enabled, adjusts the embedding dim to the smallest greater</span>
+<span class="sd">        number multiple of 8, to ensure best performance with GPU ops, by default False</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Dict[str, int]</span>
+<span class="sd">        A dict with the feature names and the suggested embedding sizes based</span>
+<span class="sd">        on the features cardinalities obtained from the schema</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">cardinalities</span> <span class="o">=</span> <span class="n">categorical_cardinalities</span><span class="p">(</span><span class="n">schema</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="n">key</span><span class="p">:</span> <span class="n">get_embedding_size_from_cardinality</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">multiplier</span><span class="p">,</span> <span class="n">ensure_multiple_of_8</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">cardinalities</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+    <span class="p">}</span></div>
+
+
+<span class="k">def</span> <span class="nf">col_is_list</span><span class="p">(</span><span class="n">col</span><span class="p">:</span> <span class="n">ColumnSchema</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">Tags</span><span class="o">.</span><span class="n">SEQUENCE</span> <span class="ow">in</span> <span class="n">col</span><span class="o">.</span><span class="n">tags</span> <span class="ow">or</span> <span class="n">Tags</span><span class="o">.</span><span class="n">LIST</span> <span class="ow">in</span> <span class="n">col</span><span class="o">.</span><span class="n">tags</span> <span class="ow">or</span> <span class="n">col</span><span class="o">.</span><span class="n">is_list</span>
+
+
+<div class="viewcode-block" id="get_embedding_size_from_cardinality"><a class="viewcode-back" href="../../../../generated/merlin.models.utils.schema_utils.get_embedding_size_from_cardinality.html#merlin.models.utils.schema_utils.get_embedding_size_from_cardinality">[docs]</a><span class="k">def</span> <span class="nf">get_embedding_size_from_cardinality</span><span class="p">(</span>
+    <span class="n">cardinality</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">multiplier</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">2.0</span><span class="p">,</span> <span class="n">ensure_multiple_of_8</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Provides a heuristic (from Google) that suggests the embedding</span>
+<span class="sd">    dimension as a function (forth root) of the feature cardinality.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    cardinality : int</span>
+<span class="sd">        The number of unique values of a categorical feature</span>
+<span class="sd">    multiplier : float, optional</span>
+<span class="sd">        Multiplier to be applied on the forth root of the cardinality.</span>
+<span class="sd">        Google recommends multiplier in the [2.0,10.0] range, by default 2.0</span>
+<span class="sd">    ensure_multiple_of_8 : bool, optional</span>
+<span class="sd">        If enabled, adjusts the embedding dim to the smallest greater</span>
+<span class="sd">        number multiple of 8, to ensure best performance with GPU ops, by default False</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    int</span>
+<span class="sd">        The suggested embedding dimension based on the feature cardinality</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># A rule-of-thumb from Google.</span>
+    <span class="n">embedding_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="n">cardinality</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">)</span> <span class="o">*</span> <span class="n">multiplier</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">ensure_multiple_of_8</span><span class="p">:</span>
+        <span class="n">embedding_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">((</span><span class="n">embedding_size</span> <span class="o">/</span> <span class="mi">8</span><span class="p">))</span> <span class="o">*</span> <span class="mi">8</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">embedding_size</span></div>
+
+
+<span class="k">def</span> <span class="nf">infer_embedding_dim</span><span class="p">(</span>
+    <span class="n">col_schema</span><span class="p">:</span> <span class="n">ColumnSchema</span><span class="p">,</span> <span class="n">multiplier</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">2.0</span><span class="p">,</span> <span class="n">ensure_multiple_of_8</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="p">):</span>
+    <span class="n">cardinality</span> <span class="o">=</span> <span class="n">col_schema</span><span class="o">.</span><span class="n">int_domain</span><span class="o">.</span><span class="n">max</span> <span class="o">+</span> <span class="mi">1</span>
+
+    <span class="k">return</span> <span class="n">get_embedding_size_from_cardinality</span><span class="p">(</span>
+        <span class="n">cardinality</span><span class="p">,</span> <span class="n">multiplier</span><span class="o">=</span><span class="n">multiplier</span><span class="p">,</span> <span class="n">ensure_multiple_of_8</span><span class="o">=</span><span class="n">ensure_multiple_of_8</span>
+    <span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, NVIDIA.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-NVJ1Y1YJHK"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-NVJ1Y1YJHK', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>merlin.models.tf.blocks.retrieval.base &mdash; Merlin  documentation</title><link rel="stylesheet" href="../../../../../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../../_static/mystnb.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../../_static/togglebutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../../_static/css/custom.css" type="text/css" />
+    <link rel="canonical" href="https://nvidia-merlin.github.io/Merlin/stable/_modules/merlin/models/tf/blocks/retrieval/base.html" />
+  <!--[if lt IE 9]>
+    <script src="../../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../../../../../../" src="../../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../../_static/jquery.js"></script>
+        <script src="../../../../../../_static/underscore.js"></script>
+        <script src="../../../../../../_static/doctools.js"></script>
+        <script >let toggleHintShow = 'Click to show';</script>
+        <script >let toggleHintHide = 'Click to hide';</script>
+        <script >let toggleOpenOnPrint = 'true';</script>
+        <script src="../../../../../../_static/togglebutton.js"></script>
+        <script >var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script src="../../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="banner">
+    <p class="banner">
+      Beginning in January 2023, versions for all NVIDIA Merlin projects
+      will change from semantic versioning like <code>4.0</code>
+      to calendar versioning like <code>23.01</code>.</p>
+  </div>
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../../../index.html" class="icon icon-home">
+            Merlin
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../README.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../guide/recommender_system_guide.html">Recommender System Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../examples/index.html">Example Notebooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../api_overview.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../containers.html">Merlin Containers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../support_matrix/index.html">Merlin Support Matrix</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../../index.html">Merlin</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">merlin.models.tf.blocks.retrieval.base</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for merlin.models.tf.blocks.retrieval.base</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># Copyright (c) 2021, NVIDIA CORPORATION.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+<span class="c1">#</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
+<span class="kn">from</span> <span class="nn">keras.utils</span> <span class="kn">import</span> <span class="n">tf_inspect</span>
+<span class="kn">from</span> <span class="nn">tensorflow.python.ops</span> <span class="kn">import</span> <span class="n">embedding_ops</span>
+
+<span class="kn">from</span> <span class="nn">merlin.models.tf.blocks.sampling.base</span> <span class="kn">import</span> <span class="n">ItemSampler</span>
+<span class="kn">from</span> <span class="nn">merlin.models.tf.core.base</span> <span class="kn">import</span> <span class="n">Block</span><span class="p">,</span> <span class="n">BlockType</span><span class="p">,</span> <span class="n">EmbeddingWithMetadata</span><span class="p">,</span> <span class="n">PredictionOutput</span>
+<span class="kn">from</span> <span class="nn">merlin.models.tf.core.combinators</span> <span class="kn">import</span> <span class="n">ParallelBlock</span>
+<span class="kn">from</span> <span class="nn">merlin.models.tf.core.tabular</span> <span class="kn">import</span> <span class="n">TabularAggregationType</span>
+<span class="kn">from</span> <span class="nn">merlin.models.tf.models.base</span> <span class="kn">import</span> <span class="n">ModelBlock</span>
+<span class="kn">from</span> <span class="nn">merlin.models.tf.transforms.regularization</span> <span class="kn">import</span> <span class="n">L2Norm</span>
+<span class="kn">from</span> <span class="nn">merlin.models.tf.typing</span> <span class="kn">import</span> <span class="n">TabularData</span>
+<span class="kn">from</span> <span class="nn">merlin.models.tf.utils.tf_utils</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">maybe_deserialize_keras_objects</span><span class="p">,</span>
+    <span class="n">maybe_serialize_keras_objects</span><span class="p">,</span>
+    <span class="n">rescore_false_negatives</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">merlin.models.utils.constants</span> <span class="kn">import</span> <span class="n">MIN_FLOAT</span>
+<span class="kn">from</span> <span class="nn">merlin.schema</span> <span class="kn">import</span> <span class="n">Schema</span>
+
+<span class="n">LOG</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;merlin_models&quot;</span><span class="p">)</span>
+
+
+<span class="nd">@tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">register_keras_serializable</span><span class="p">(</span><span class="n">package</span><span class="o">=</span><span class="s2">&quot;merlin_models&quot;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">TowerBlock</span><span class="p">(</span><span class="n">ModelBlock</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;TowerBlock to wrap item or query tower&quot;&quot;&quot;</span>
+
+    <span class="k">pass</span>
+
+
+<span class="k">class</span> <span class="nc">RetrievalMixin</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">query_block</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TowerBlock</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Method to return the query tower from a RetrievalModel instance&quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">item_block</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TowerBlock</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Method to return the item tower from a RetrievalModel instance&quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
+
+
+<div class="viewcode-block" id="DualEncoderBlock"><a class="viewcode-back" href="../../../../../../generated/merlin.models.tf.DualEncoderBlock.html#merlin.models.tf.DualEncoderBlock">[docs]</a><span class="nd">@tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">register_keras_serializable</span><span class="p">(</span><span class="n">package</span><span class="o">=</span><span class="s2">&quot;merlin.models&quot;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">DualEncoderBlock</span><span class="p">(</span><span class="n">ParallelBlock</span><span class="p">):</span>
+<div class="viewcode-block" id="DualEncoderBlock.__init__"><a class="viewcode-back" href="../../../../../../generated/merlin.models.tf.DualEncoderBlock.html#merlin.models.tf.DualEncoderBlock.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">query_block</span><span class="p">:</span> <span class="n">Block</span><span class="p">,</span>
+        <span class="n">item_block</span><span class="p">:</span> <span class="n">Block</span><span class="p">,</span>
+        <span class="n">pre</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">BlockType</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">post</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">BlockType</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">aggregation</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TabularAggregationType</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">schema</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Schema</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">strict</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">l2_normalization</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Prepare the Query and Item towers of a Retrieval block</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        query_block : Block</span>
+<span class="sd">            The `Block` instance that combines user features</span>
+<span class="sd">        item_block : Block</span>
+<span class="sd">            Optional `Block` instance that combines items features.</span>
+<span class="sd">        pre : Optional[BlockType], optional</span>
+<span class="sd">            Optional `Block` instance to apply before the `call` method of the Two-Tower block</span>
+<span class="sd">        post : Optional[BlockType], optional</span>
+<span class="sd">            Optional `Block` instance to apply on both outputs of Two-tower model</span>
+<span class="sd">        aggregation : Optional[TabularAggregationType], optional</span>
+<span class="sd">            The Aggregation operation to apply after processing the `call` method</span>
+<span class="sd">            to output a single Tensor.</span>
+<span class="sd">        schema : Optional[Schema], optional</span>
+<span class="sd">            The `Schema` object with the input features.</span>
+<span class="sd">        name : Optional[str], optional</span>
+<span class="sd">            Name of the layer.</span>
+<span class="sd">        strict : bool, optional</span>
+<span class="sd">            If enabled, check that the input of the ParallelBlock instance is a dictionary.</span>
+<span class="sd">        l2_normalization: bool</span>
+<span class="sd">            Apply L2 normalization to the user and item representations before</span>
+<span class="sd">            computing dot interactions.</span>
+<span class="sd">            Defaults to False.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">l2_normalization</span><span class="p">:</span>
+            <span class="n">query_block</span> <span class="o">=</span> <span class="n">query_block</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">L2Norm</span><span class="p">())</span>
+            <span class="n">item_block</span> <span class="o">=</span> <span class="n">item_block</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">L2Norm</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_query_block</span> <span class="o">=</span> <span class="n">TowerBlock</span><span class="p">(</span><span class="n">query_block</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_item_block</span> <span class="o">=</span> <span class="n">TowerBlock</span><span class="p">(</span><span class="n">item_block</span><span class="p">)</span>
+
+        <span class="n">branches</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query_block</span><span class="p">,</span> <span class="s2">&quot;item&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_item_block</span><span class="p">}</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">branches</span><span class="p">,</span>
+            <span class="n">pre</span><span class="o">=</span><span class="n">pre</span><span class="p">,</span>
+            <span class="n">post</span><span class="o">=</span><span class="n">post</span><span class="p">,</span>
+            <span class="n">aggregation</span><span class="o">=</span><span class="n">aggregation</span><span class="p">,</span>
+            <span class="n">schema</span><span class="o">=</span><span class="n">schema</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">strict</span><span class="o">=</span><span class="n">strict</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="DualEncoderBlock.query_block"><a class="viewcode-back" href="../../../../../../generated/merlin.models.tf.DualEncoderBlock.html#merlin.models.tf.DualEncoderBlock.query_block">[docs]</a>    <span class="k">def</span> <span class="nf">query_block</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TowerBlock</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query_block</span></div>
+
+<div class="viewcode-block" id="DualEncoderBlock.item_block"><a class="viewcode-back" href="../../../../../../generated/merlin.models.tf.DualEncoderBlock.html#merlin.models.tf.DualEncoderBlock.item_block">[docs]</a>    <span class="k">def</span> <span class="nf">item_block</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TowerBlock</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_item_block</span></div>
+
+<div class="viewcode-block" id="DualEncoderBlock.from_config"><a class="viewcode-back" href="../../../../../../generated/merlin.models.tf.DualEncoderBlock.html#merlin.models.tf.DualEncoderBlock.from_config">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_config</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">custom_objects</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">inputs</span><span class="p">,</span> <span class="n">config</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">parse_config</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">custom_objects</span><span class="p">)</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">ParallelBlock</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="o">**</span><span class="n">config</span><span class="p">)</span>
+        <span class="n">output</span><span class="o">.</span><span class="vm">__class__</span> <span class="o">=</span> <span class="bp">cls</span>
+
+        <span class="k">return</span> <span class="n">output</span></div></div>
+
+
+<div class="viewcode-block" id="ItemRetrievalScorer"><a class="viewcode-back" href="../../../../../../generated/merlin.models.tf.ItemRetrievalScorer.html#merlin.models.tf.ItemRetrievalScorer">[docs]</a><span class="nd">@Block</span><span class="o">.</span><span class="n">registry</span><span class="o">.</span><span class="n">register_with_multiple_names</span><span class="p">(</span><span class="s2">&quot;item_retrieval_scorer&quot;</span><span class="p">)</span>
+<span class="nd">@tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">register_keras_serializable</span><span class="p">(</span><span class="n">package</span><span class="o">=</span><span class="s2">&quot;merlin_models&quot;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">ItemRetrievalScorer</span><span class="p">(</span><span class="n">Block</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Block for ItemRetrieval, which expects query/user and item embeddings as input and</span>
+<span class="sd">    uses dot product to score the positive item (inputs[&quot;item&quot;]) and also sampled negative</span>
+<span class="sd">    items (during training).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    samplers: List[ItemSampler], optional</span>
+<span class="sd">        List of item samplers that provide negative samples when `training=True`</span>
+<span class="sd">    sampling_downscore_false_negatives: bool, optional</span>
+<span class="sd">        Identify false negatives (sampled item ids equal to the positive item and downscore them</span>
+<span class="sd">        to the `sampling_downscore_false_negatives_value`), by default True</span>
+<span class="sd">    sampling_downscore_false_negatives_value: int, optional</span>
+<span class="sd">        Value to be used to downscore false negatives when</span>
+<span class="sd">        `sampling_downscore_false_negatives=True`, by default `np.finfo(np.float32).min / 100.0`</span>
+<span class="sd">    item_id_feature_name: str</span>
+<span class="sd">        Name of the column containing the item ids</span>
+<span class="sd">        Defaults to `item_id`</span>
+<span class="sd">    query_name: str</span>
+<span class="sd">        Identify query tower for query/user embeddings, by default &#39;query&#39;</span>
+<span class="sd">    item_name: str</span>
+<span class="sd">        Identify item tower for item embeddings, by default&#39;item&#39;</span>
+<span class="sd">    cache_query: bool</span>
+<span class="sd">        Add query embeddings to the context block, by default False</span>
+<span class="sd">    sampled_softmax_mode: bool</span>
+<span class="sd">        Use sampled softmax for scoring, by default False</span>
+<span class="sd">    store_negative_ids: bool</span>
+<span class="sd">        Returns negative items ids as part of the output, by default False</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="ItemRetrievalScorer.__init__"><a class="viewcode-back" href="../../../../../../generated/merlin.models.tf.ItemRetrievalScorer.html#merlin.models.tf.ItemRetrievalScorer.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">samplers</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">ItemSampler</span><span class="p">]</span> <span class="o">=</span> <span class="p">(),</span>
+        <span class="n">sampling_downscore_false_negatives</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">sampling_downscore_false_negatives_value</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">MIN_FLOAT</span><span class="p">,</span>
+        <span class="n">item_id_feature_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;item_id&quot;</span><span class="p">,</span>
+        <span class="n">item_domain</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;item_id&quot;</span><span class="p">,</span>
+        <span class="n">query_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;query&quot;</span><span class="p">,</span>
+        <span class="n">item_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;item&quot;</span><span class="p">,</span>
+        <span class="n">cache_query</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">sampled_softmax_mode</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">store_negative_ids</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes the `ItemRetrievalScorer` class.&quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">downscore_false_negatives</span> <span class="o">=</span> <span class="n">sampling_downscore_false_negatives</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">false_negatives_score</span> <span class="o">=</span> <span class="n">sampling_downscore_false_negatives_value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">item_id_feature_name</span> <span class="o">=</span> <span class="n">item_id_feature_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">item_domain</span> <span class="o">=</span> <span class="n">item_domain</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">query_name</span> <span class="o">=</span> <span class="n">query_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">item_name</span> <span class="o">=</span> <span class="n">item_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cache_query</span> <span class="o">=</span> <span class="n">cache_query</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">store_negative_ids</span> <span class="o">=</span> <span class="n">store_negative_ids</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">samplers</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+            <span class="n">samplers</span> <span class="o">=</span> <span class="p">(</span><span class="n">samplers</span><span class="p">,)</span>  <span class="c1"># type: ignore</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">samplers</span> <span class="o">=</span> <span class="n">samplers</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sampled_softmax_mode</span> <span class="o">=</span> <span class="n">sampled_softmax_mode</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_required_features</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="ItemRetrievalScorer.build"><a class="viewcode-back" href="../../../../../../generated/merlin.models.tf.ItemRetrievalScorer.html#merlin.models.tf.ItemRetrievalScorer.build">[docs]</a>    <span class="k">def</span> <span class="nf">build</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_shapes</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Builds the block.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        input_shapes: tuple or dict</span>
+<span class="sd">            Shape of the input tensor.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">input_shapes</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">query_shape</span> <span class="o">=</span> <span class="n">input_shapes</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">query_name</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">add_weight</span><span class="p">(</span>
+                <span class="n">name</span><span class="o">=</span><span class="s2">&quot;query&quot;</span><span class="p">,</span>
+                <span class="n">shape</span><span class="o">=</span><span class="n">query_shape</span><span class="p">,</span>
+                <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span>
+                <span class="n">trainable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">initializer</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">initializers</span><span class="o">.</span><span class="n">Zeros</span><span class="p">(),</span>
+            <span class="p">)</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">input_shapes</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_check_input_from_two_tower</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Checks if the inputs from the two towers (query and item) are correctly provided.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        inputs: dict</span>
+<span class="sd">            Dictionary of inputs.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">inputs</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">!=</span> <span class="nb">set</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">query_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_name</span><span class="p">]):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Wrong input-names, expected: </span><span class="si">{</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">query_name</span><span class="p">,</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">item_name</span><span class="p">]</span><span class="si">}</span><span class="s2"> &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;but got: </span><span class="si">{</span><span class="n">inputs</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+<div class="viewcode-block" id="ItemRetrievalScorer.call"><a class="viewcode-back" href="../../../../../../generated/merlin.models.tf.ItemRetrievalScorer.html#merlin.models.tf.ItemRetrievalScorer.call">[docs]</a>    <span class="k">def</span> <span class="nf">call</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">inputs</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">TabularData</span><span class="p">],</span>
+        <span class="n">training</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">testing</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">TabularData</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Based on the user/query embedding (inputs[self.query_name]), uses dot product to score</span>
+<span class="sd">            the positive item (inputs[&quot;item&quot;]).</span>
+<span class="sd">            For the sampled-softmax mode, logits are computed by multiplying the query vector</span>
+<span class="sd">            and the item embeddings matrix (self.context.get_embedding(self.item_domain))</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        inputs : Union[tf.Tensor, TabularData]</span>
+<span class="sd">            Dict with the query and item embeddings (e.g. `{&quot;query&quot;: &lt;emb&gt;}, &quot;item&quot;: &lt;emb&gt;}`),</span>
+<span class="sd">            where embeddings are 2D tensors (batch size, embedding size)</span>
+<span class="sd">        training : bool, optional</span>
+<span class="sd">            Flag that indicates whether in training mode, by default True</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        tf.Tensor</span>
+<span class="sd">            2D Tensor with the scores for the positive items,</span>
+<span class="sd">            If `training=True`, return the original inputs</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache_query</span><span class="p">:</span>
+            <span class="c1"># enabled only during top-k evaluation</span>
+
+            <span class="n">query</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">query_name</span><span class="p">]</span>
+            <span class="n">context_query_size</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="p">[</span><span class="s2">&quot;query&quot;</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="c1"># pad with zeros to match shape of initial query variable</span>
+            <span class="n">padding_size</span> <span class="o">=</span> <span class="n">context_query_size</span> <span class="o">-</span> <span class="n">tf</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">query</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">padding_size</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">query</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="n">padding_size</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]])</span>
+
+            <span class="n">query</span> <span class="o">=</span> <span class="n">query</span><span class="p">[:</span><span class="n">context_query_size</span><span class="p">]</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="p">[</span><span class="s2">&quot;query&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">training</span> <span class="ow">or</span> <span class="n">testing</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">inputs</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampled_softmax_mode</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_logits_for_sampled_softmax</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_input_from_two_tower</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+        <span class="n">positive_scores</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">reduce_sum</span><span class="p">(</span>
+            <span class="n">tf</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">inputs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">query_name</span><span class="p">],</span> <span class="n">inputs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">item_name</span><span class="p">]),</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">positive_scores</span></div>
+
+<div class="viewcode-block" id="ItemRetrievalScorer.call_outputs"><a class="viewcode-back" href="../../../../../../generated/merlin.models.tf.ItemRetrievalScorer.html#merlin.models.tf.ItemRetrievalScorer.call_outputs">[docs]</a>    <span class="nd">@tf</span><span class="o">.</span><span class="n">function</span>
+    <span class="k">def</span> <span class="nf">call_outputs</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">outputs</span><span class="p">:</span> <span class="n">PredictionOutput</span><span class="p">,</span>
+        <span class="n">features</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">training</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">testing</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;PredictionOutput&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Based on the user/query embedding (inputs[self.query_name]), uses dot product to score</span>
+<span class="sd">            the positive item and also sampled negative items (during training).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        inputs : TabularData</span>
+<span class="sd">            Dict with the query and item embeddings (e.g. `{&quot;query&quot;: &lt;emb&gt;}, &quot;item&quot;: &lt;emb&gt;}`),</span>
+<span class="sd">            where embeddings are 2D tensors (batch size, embedding size)</span>
+<span class="sd">        training : bool, optional</span>
+<span class="sd">            Flag that indicates whether in training mode, by default True</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        [tf.Tensor,tf.Tensor]</span>
+<span class="sd">            all_scores: 2D Tensor with the scores for the positive items and, if `training=True`,</span>
+<span class="sd">            for the negative sampled items too.</span>
+<span class="sd">            Return tensor is 2D (batch size, 1 + #negatives)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">targets</span><span class="p">,</span> <span class="n">predictions</span> <span class="o">=</span> <span class="n">outputs</span><span class="o">.</span><span class="n">targets</span><span class="p">,</span> <span class="n">outputs</span><span class="o">.</span><span class="n">predictions</span>
+        <span class="n">valid_negatives_mask</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampled_softmax_mode</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+            <span class="n">positive_item_ids</span> <span class="o">=</span> <span class="n">targets</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">positive_item_ids</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">features</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">item_id_feature_name</span><span class="p">])</span>
+
+        <span class="n">neg_items_ids</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">training</span> <span class="ow">or</span> <span class="n">testing</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="p">(</span>
+                <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">samplers</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
+            <span class="p">),</span> <span class="s2">&quot;At least one sampler is required by ItemRetrievalScorer for negative sampling&quot;</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampled_softmax_mode</span><span class="p">:</span>
+                <span class="n">predictions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prepare_query_item_vectors_for_sampled_softmax</span><span class="p">(</span>
+                    <span class="n">predictions</span><span class="p">,</span> <span class="n">targets</span>
+                <span class="p">)</span>
+
+            <span class="n">batch_items_embeddings</span> <span class="o">=</span> <span class="n">predictions</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">item_name</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampled_softmax_mode</span><span class="p">:</span>
+                <span class="n">batch_items_metadata</span> <span class="o">=</span> <span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">item_id_feature_name</span><span class="p">:</span> <span class="n">positive_item_ids</span><span class="p">}</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">batch_items_metadata</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="n">feat_name</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">features</span><span class="p">[</span><span class="n">feat_name</span><span class="p">])</span>
+                    <span class="k">for</span> <span class="n">feat_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_required_features</span>
+                <span class="p">}</span>
+
+            <span class="n">positive_scores</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">reduce_sum</span><span class="p">(</span>
+                <span class="n">tf</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">predictions</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">query_name</span><span class="p">],</span> <span class="n">predictions</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">item_name</span><span class="p">]),</span>
+                <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="n">neg_items_embeddings_list</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">neg_items_ids_list</span> <span class="o">=</span> <span class="p">[]</span>
+
+            <span class="c1"># Adds items from the current batch into samplers and sample a number of negatives</span>
+            <span class="k">for</span> <span class="n">sampler</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">samplers</span><span class="p">:</span>
+                <span class="n">input_data</span> <span class="o">=</span> <span class="n">EmbeddingWithMetadata</span><span class="p">(</span><span class="n">batch_items_embeddings</span><span class="p">,</span> <span class="n">batch_items_metadata</span><span class="p">)</span>
+                <span class="n">sampling_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;training&quot;</span><span class="p">:</span> <span class="n">training</span><span class="p">}</span>
+                <span class="k">if</span> <span class="s2">&quot;item_weights&quot;</span> <span class="ow">in</span> <span class="n">tf_inspect</span><span class="o">.</span><span class="n">getargspec</span><span class="p">(</span><span class="n">sampler</span><span class="o">.</span><span class="n">call</span><span class="p">)</span><span class="o">.</span><span class="n">args</span><span class="p">:</span>
+                    <span class="n">sampling_kwargs</span><span class="p">[</span><span class="s2">&quot;item_weights&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">get_embedding</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">item_domain</span><span class="p">)</span>
+                <span class="n">neg_items</span> <span class="o">=</span> <span class="n">sampler</span><span class="p">(</span><span class="n">input_data</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">,</span> <span class="o">**</span><span class="n">sampling_kwargs</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">tf</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">neg_items</span><span class="o">.</span><span class="n">embeddings</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="c1"># Accumulates sampled negative items from all samplers</span>
+                    <span class="n">neg_items_embeddings_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">neg_items</span><span class="o">.</span><span class="n">embeddings</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">downscore_false_negatives</span><span class="p">:</span>
+                        <span class="n">neg_items_ids_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">neg_items</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">item_id_feature_name</span><span class="p">])</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">LOG</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;The sampler </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">sampler</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> returned no samples for this batch.&quot;</span>
+                    <span class="p">)</span>
+
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">neg_items_embeddings_list</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No negative items where sampled from samplers </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">samplers</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">neg_items_embeddings_list</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">neg_items_embeddings</span> <span class="o">=</span> <span class="n">neg_items_embeddings_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">neg_items_embeddings</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">neg_items_embeddings_list</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+            <span class="n">negative_scores</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span>
+                <span class="n">predictions</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">query_name</span><span class="p">],</span> <span class="n">neg_items_embeddings</span><span class="p">,</span> <span class="n">transpose_b</span><span class="o">=</span><span class="kc">True</span>
+            <span class="p">)</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">downscore_false_negatives</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">store_negative_ids</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+                    <span class="n">positive_item_ids</span> <span class="o">=</span> <span class="n">targets</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">positive_item_ids</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">features</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">item_id_feature_name</span><span class="p">])</span>
+
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">neg_items_ids_list</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">neg_items_ids</span> <span class="o">=</span> <span class="n">neg_items_ids_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">neg_items_ids</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">neg_items_ids_list</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+                <span class="n">negative_scores</span><span class="p">,</span> <span class="n">valid_negatives_mask</span> <span class="o">=</span> <span class="n">rescore_false_negatives</span><span class="p">(</span>
+                    <span class="n">positive_item_ids</span><span class="p">,</span> <span class="n">neg_items_ids</span><span class="p">,</span> <span class="n">negative_scores</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">false_negatives_score</span>
+                <span class="p">)</span>
+
+            <span class="n">predictions</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">positive_scores</span><span class="p">,</span> <span class="n">negative_scores</span><span class="p">],</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+
+            <span class="c1"># To ensure that the output is always fp32, avoiding numerical</span>
+            <span class="c1"># instabilities with mixed_float16 policy</span>
+            <span class="n">predictions</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">predictions</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">predictions</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">),</span> <span class="s2">&quot;Predictions must be a tensor&quot;</span>
+        <span class="c1"># prepare targets for computing the loss and metrics</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampled_softmax_mode</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">training</span><span class="p">:</span>
+            <span class="c1"># Converts target ids to one-hot representation</span>
+            <span class="n">num_classes</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">predictions</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">targets_one_hot</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">one_hot</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,)),</span> <span class="n">num_classes</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">PredictionOutput</span><span class="p">(</span>
+                <span class="n">predictions</span><span class="p">,</span>
+                <span class="n">targets_one_hot</span><span class="p">,</span>
+                <span class="n">positive_item_ids</span><span class="o">=</span><span class="n">positive_item_ids</span><span class="p">,</span>
+                <span class="n">valid_negatives_mask</span><span class="o">=</span><span class="n">valid_negatives_mask</span><span class="p">,</span>
+                <span class="n">negative_item_ids</span><span class="o">=</span><span class="n">neg_items_ids</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Positives in the first column and negatives in the subsequent columns</span>
+            <span class="n">targets</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="n">tf</span><span class="o">.</span><span class="n">ones</span><span class="p">([</span><span class="n">tf</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">predictions</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">1</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">predictions</span><span class="o">.</span><span class="n">dtype</span><span class="p">),</span>
+                    <span class="n">tf</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
+                        <span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">predictions</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="n">tf</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">predictions</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">],</span>
+                        <span class="n">dtype</span><span class="o">=</span><span class="n">predictions</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span>
+                    <span class="p">),</span>
+                <span class="p">],</span>
+                <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="n">PredictionOutput</span><span class="p">(</span>
+                <span class="n">predictions</span><span class="p">,</span>
+                <span class="n">targets</span><span class="p">,</span>
+                <span class="n">positive_item_ids</span><span class="o">=</span><span class="n">positive_item_ids</span><span class="p">,</span>
+                <span class="n">valid_negatives_mask</span><span class="o">=</span><span class="n">valid_negatives_mask</span><span class="p">,</span>
+                <span class="n">negative_item_ids</span><span class="o">=</span><span class="n">neg_items_ids</span><span class="p">,</span>
+            <span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_get_logits_for_sampled_softmax</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Inputs to the Sampled Softmax block should be tensors, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        <span class="n">embedding_table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">get_embedding</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">item_domain</span><span class="p">)</span>
+        <span class="n">all_scores</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">embedding_table</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">all_scores</span>
+
+    <span class="k">def</span> <span class="nf">_prepare_query_item_vectors_for_sampled_softmax</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">predictions</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">targets</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span>
+    <span class="p">):</span>
+        <span class="c1"># extract positive items embeddings</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">predictions</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Inputs to the Sampled Softmax block should be tensors, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">predictions</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        <span class="n">embedding_table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">get_embedding</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">item_domain</span><span class="p">)</span>
+        <span class="n">batch_items_embeddings</span> <span class="o">=</span> <span class="n">embedding_ops</span><span class="o">.</span><span class="n">embedding_lookup</span><span class="p">(</span><span class="n">embedding_table</span><span class="p">,</span> <span class="n">targets</span><span class="p">)</span>
+        <span class="n">predictions</span> <span class="o">=</span> <span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">query_name</span><span class="p">:</span> <span class="n">predictions</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_name</span><span class="p">:</span> <span class="n">batch_items_embeddings</span><span class="p">}</span>
+        <span class="k">return</span> <span class="n">predictions</span>
+
+<div class="viewcode-block" id="ItemRetrievalScorer.set_required_features"><a class="viewcode-back" href="../../../../../../generated/merlin.models.tf.ItemRetrievalScorer.html#merlin.models.tf.ItemRetrievalScorer.set_required_features">[docs]</a>    <span class="k">def</span> <span class="nf">set_required_features</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Sets the required features for the samplers.&quot;&quot;&quot;</span>
+        <span class="n">required_features</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">downscore_false_negatives</span><span class="p">:</span>
+            <span class="n">required_features</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">item_id_feature_name</span><span class="p">)</span>
+
+        <span class="n">required_features</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">feature</span> <span class="k">for</span> <span class="n">sampler</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">samplers</span> <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="n">sampler</span><span class="o">.</span><span class="n">required_features</span><span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_required_features</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">required_features</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ItemRetrievalScorer.get_config"><a class="viewcode-back" href="../../../../../../generated/merlin.models.tf.ItemRetrievalScorer.html#merlin.models.tf.ItemRetrievalScorer.get_config">[docs]</a>    <span class="k">def</span> <span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the configuration of the model as a dictionary.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict</span>
+<span class="sd">            The configuration of the model.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="n">maybe_serialize_keras_objects</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;samplers&quot;</span><span class="p">])</span>
+        <span class="n">config</span><span class="p">[</span><span class="s2">&quot;sampling_downscore_false_negatives&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">downscore_false_negatives</span>
+        <span class="n">config</span><span class="p">[</span><span class="s2">&quot;sampling_downscore_false_negatives_value&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">false_negatives_score</span>
+        <span class="n">config</span><span class="p">[</span><span class="s2">&quot;item_id_feature_name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_id_feature_name</span>
+        <span class="n">config</span><span class="p">[</span><span class="s2">&quot;item_domain&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_domain</span>
+        <span class="n">config</span><span class="p">[</span><span class="s2">&quot;query_name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">query_name</span>
+        <span class="n">config</span><span class="p">[</span><span class="s2">&quot;item_name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_name</span>
+        <span class="n">config</span><span class="p">[</span><span class="s2">&quot;cache_query&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cache_query</span>
+        <span class="n">config</span><span class="p">[</span><span class="s2">&quot;sampled_softmax_mode&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampled_softmax_mode</span>
+        <span class="n">config</span><span class="p">[</span><span class="s2">&quot;store_negative_ids&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">store_negative_ids</span>
+
+        <span class="k">return</span> <span class="n">config</span></div>
+
+<div class="viewcode-block" id="ItemRetrievalScorer.from_config"><a class="viewcode-back" href="../../../../../../generated/merlin.models.tf.ItemRetrievalScorer.html#merlin.models.tf.ItemRetrievalScorer.from_config">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_config</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">config</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Creates a new instance of the class from its config.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        config: dict</span>
+<span class="sd">            A dictionary, typically the output of get_config.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        A new instance of the `ItemRetrievalScorer` class.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="n">maybe_deserialize_keras_objects</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;samplers&quot;</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">from_config</span><span class="p">(</span><span class="n">config</span><span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, NVIDIA.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-NVJ1Y1YJHK"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-NVJ1Y1YJHK', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

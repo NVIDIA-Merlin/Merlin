@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>merlin.models.tf.outputs.base &mdash; Merlin  documentation</title><link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/mystnb.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/togglebutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/css/custom.css" type="text/css" />
+    <link rel="canonical" href="https://nvidia-merlin.github.io/Merlin/stable/_modules/merlin/models/tf/outputs/base.html" />
+  <!--[if lt IE 9]>
+    <script src="../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../../../../../" src="../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../_static/jquery.js"></script>
+        <script src="../../../../../_static/underscore.js"></script>
+        <script src="../../../../../_static/doctools.js"></script>
+        <script >let toggleHintShow = 'Click to show';</script>
+        <script >let toggleHintHide = 'Click to hide';</script>
+        <script >let toggleOpenOnPrint = 'true';</script>
+        <script src="../../../../../_static/togglebutton.js"></script>
+        <script >var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="banner">
+    <p class="banner">
+      Beginning in January 2023, versions for all NVIDIA Merlin projects
+      will change from semantic versioning like <code>4.0</code>
+      to calendar versioning like <code>23.01</code>.</p>
+  </div>
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../../index.html" class="icon icon-home">
+            Merlin
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../README.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../guide/recommender_system_guide.html">Recommender System Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../examples/index.html">Example Notebooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../api_overview.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../containers.html">Merlin Containers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../support_matrix/index.html">Merlin Support Matrix</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">Merlin</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">merlin.models.tf.outputs.base</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for merlin.models.tf.outputs.base</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># Copyright (c) 2021, NVIDIA CORPORATION.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+<span class="c1">#</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">types</span> <span class="k">as</span> <span class="nn">python_types</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
+<span class="kn">from</span> <span class="nn">keras.utils</span> <span class="kn">import</span> <span class="n">generic_utils</span>
+<span class="kn">from</span> <span class="nn">keras.utils.generic_utils</span> <span class="kn">import</span> <span class="n">to_snake_case</span>
+<span class="kn">from</span> <span class="nn">tensorflow.keras.layers</span> <span class="kn">import</span> <span class="n">Layer</span>
+
+<span class="kn">from</span> <span class="nn">merlin.models.tf.core.base</span> <span class="kn">import</span> <span class="n">name_fn</span>
+<span class="kn">from</span> <span class="nn">merlin.models.tf.core.combinators</span> <span class="kn">import</span> <span class="n">ParallelBlock</span>
+<span class="kn">from</span> <span class="nn">merlin.models.tf.core.prediction</span> <span class="kn">import</span> <span class="n">Prediction</span>
+<span class="kn">from</span> <span class="nn">merlin.models.tf.transforms.bias</span> <span class="kn">import</span> <span class="n">LogitsTemperatureScaler</span>
+<span class="kn">from</span> <span class="nn">merlin.models.tf.utils</span> <span class="kn">import</span> <span class="n">tf_utils</span>
+
+<span class="n">MetricsFn</span> <span class="o">=</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">Metric</span><span class="p">]]</span>
+
+<span class="n">ModelOutputType</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="s2">&quot;ModelOutput&quot;</span><span class="p">,</span> <span class="n">ParallelBlock</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="ModelOutput"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.ModelOutput.html#merlin.models.tf.ModelOutput">[docs]</a><span class="nd">@tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">register_keras_serializable</span><span class="p">(</span><span class="n">package</span><span class="o">=</span><span class="s2">&quot;merlin.models&quot;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">ModelOutput</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base-class for prediction blocks.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    to_call : Layer</span>
+<span class="sd">        The layer to call in the forward-pass of the model</span>
+<span class="sd">    default_loss: Union[str, tf.keras.losses.Loss]</span>
+<span class="sd">        Default loss to set if the user does not specify one</span>
+<span class="sd">    default_metrics_fn: Callable</span>
+<span class="sd">        A function returning the list of default metrics to set</span>
+<span class="sd">        if the user does not specify any</span>
+<span class="sd">    name: Optional[Text], optional</span>
+<span class="sd">        Task name, by default None</span>
+<span class="sd">    target: Optional[str], optional</span>
+<span class="sd">        Label name, by default None</span>
+<span class="sd">    pre: Optional[Block], optional</span>
+<span class="sd">        Optional block to transform predictions before applying the prediction layer,</span>
+<span class="sd">        by default None</span>
+<span class="sd">    post: Optional[Block], optional</span>
+<span class="sd">        Optional block to transform predictions after applying the prediction layer,</span>
+<span class="sd">        by default None</span>
+<span class="sd">    logits_temperature: float, optional</span>
+<span class="sd">        Parameter used to reduce model overconfidence, so that logits / T.</span>
+<span class="sd">        by default 1.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="ModelOutput.__init__"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.ModelOutput.html#merlin.models.tf.ModelOutput.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">to_call</span><span class="p">:</span> <span class="n">Layer</span><span class="p">,</span>
+        <span class="n">default_loss</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">losses</span><span class="o">.</span><span class="n">Loss</span><span class="p">],</span>
+        <span class="n">default_metrics_fn</span><span class="p">:</span> <span class="n">MetricsFn</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">target</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">pre</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Layer</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">post</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Layer</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">logits_temperature</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="n">logits_scaler</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;logits_scaler&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">target</span> <span class="o">=</span> <span class="n">target</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">full_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_task_name</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="p">)</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">full_name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">to_call</span> <span class="o">=</span> <span class="n">to_call</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">default_loss</span> <span class="o">=</span> <span class="n">default_loss</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">default_metrics_fn</span> <span class="o">=</span> <span class="n">default_metrics_fn</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pre</span> <span class="o">=</span> <span class="n">pre</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">post</span> <span class="o">=</span> <span class="n">post</span>
+        <span class="k">if</span> <span class="n">logits_scaler</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logits_scaler</span> <span class="o">=</span> <span class="n">logits_scaler</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logits_temperature</span> <span class="o">=</span> <span class="n">logits_scaler</span><span class="o">.</span><span class="n">temperature</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logits_temperature</span> <span class="o">=</span> <span class="n">logits_temperature</span>
+            <span class="k">if</span> <span class="n">logits_temperature</span> <span class="o">!=</span> <span class="mf">1.0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logits_scaler</span> <span class="o">=</span> <span class="n">LogitsTemperatureScaler</span><span class="p">(</span><span class="n">logits_temperature</span><span class="p">)</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">task_name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">full_name</span>
+
+<div class="viewcode-block" id="ModelOutput.build"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.ModelOutput.html#merlin.models.tf.ModelOutput.build">[docs]</a>    <span class="k">def</span> <span class="nf">build</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_shape</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Builds the PredictionBlock.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        input_shape : tf.TensorShape, optional</span>
+<span class="sd">            The input shape, by default None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pre</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pre</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">input_shape</span><span class="p">)</span>
+            <span class="n">input_shape</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pre</span><span class="o">.</span><span class="n">compute_output_shape</span><span class="p">(</span><span class="n">input_shape</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">to_call</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">input_shape</span><span class="p">)</span>
+        <span class="n">input_shape</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_call</span><span class="o">.</span><span class="n">compute_output_shape</span><span class="p">(</span><span class="n">input_shape</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">post</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">post</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">input_shape</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">built</span> <span class="o">=</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="ModelOutput.call"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.ModelOutput.html#merlin.models.tf.ModelOutput.call">[docs]</a>    <span class="k">def</span> <span class="nf">call</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">testing</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">tf_utils</span><span class="o">.</span><span class="n">call_layer</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">to_call</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="n">training</span><span class="p">,</span> <span class="n">testing</span><span class="o">=</span><span class="n">testing</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="ModelOutput.compute_output_shape"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.ModelOutput.html#merlin.models.tf.ModelOutput.compute_output_shape">[docs]</a>    <span class="k">def</span> <span class="nf">compute_output_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_shape</span><span class="p">):</span>
+        <span class="n">output_shape</span> <span class="o">=</span> <span class="n">input_shape</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pre</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">output_shape</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pre</span><span class="o">.</span><span class="n">compute_output_shape</span><span class="p">(</span><span class="n">output_shape</span><span class="p">)</span>
+
+        <span class="n">output_shape</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_call</span><span class="o">.</span><span class="n">compute_output_shape</span><span class="p">(</span><span class="n">output_shape</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">post</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">output_shape</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">post</span><span class="o">.</span><span class="n">compute_output_shape</span><span class="p">(</span><span class="n">output_shape</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">output_shape</span></div>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">training</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;training&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="n">testing</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;testing&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+
+        <span class="c1"># call pre</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pre</span><span class="p">:</span>
+            <span class="n">inputs</span> <span class="o">=</span> <span class="n">tf_utils</span><span class="o">.</span><span class="n">call_layer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pre</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="c1"># super call</span>
+        <span class="n">outputs</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">ModelOutput</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__call__</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">post</span><span class="p">:</span>
+            <span class="n">outputs</span> <span class="o">=</span> <span class="n">tf_utils</span><span class="o">.</span><span class="n">call_layer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">post</span><span class="p">,</span> <span class="n">outputs</span><span class="p">,</span> <span class="n">target_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;logits_scaler&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">outputs</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+                <span class="n">targets</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;targets&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">target</span> <span class="ow">in</span> <span class="n">targets</span><span class="p">:</span>
+                    <span class="n">targets</span> <span class="o">=</span> <span class="n">targets</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">training</span> <span class="ow">or</span> <span class="n">testing</span><span class="p">:</span>
+                    <span class="n">outputs</span> <span class="o">=</span> <span class="n">Prediction</span><span class="p">(</span><span class="n">outputs</span><span class="p">,</span> <span class="n">targets</span><span class="p">)</span>
+            <span class="n">outputs</span> <span class="o">=</span> <span class="n">tf_utils</span><span class="o">.</span><span class="n">call_layer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logits_scaler</span><span class="p">,</span> <span class="n">outputs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">outputs</span>
+
+<div class="viewcode-block" id="ModelOutput.create_default_metrics"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.ModelOutput.html#merlin.models.tf.ModelOutput.create_default_metrics">[docs]</a>    <span class="k">def</span> <span class="nf">create_default_metrics</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">metrics</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_default_metrics</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">metric</span> <span class="ow">in</span> <span class="n">metrics</span><span class="p">:</span>
+            <span class="n">metric</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">full_name</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span> <span class="n">to_snake_case</span><span class="p">(</span><span class="n">metric</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">metrics</span></div>
+
+    <span class="k">def</span> <span class="nf">_serialize_function_to_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;function to serialize a callable function,</span>
+
+<span class="sd">        Note: This code is adapted from Keras source code of</span>
+<span class="sd">        the [Lambda layer]</span>
+<span class="sd">        (https://github.com/keras-team/keras/blob/master/keras/layers/core/lambda_layer.py#L300)</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">python_types</span><span class="o">.</span><span class="n">LambdaType</span><span class="p">):</span>
+            <span class="n">output</span> <span class="o">=</span> <span class="n">generic_utils</span><span class="o">.</span><span class="n">func_dump</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+            <span class="n">output_type</span> <span class="o">=</span> <span class="s2">&quot;lambda&quot;</span>
+            <span class="n">module</span> <span class="o">=</span> <span class="n">inputs</span><span class="o">.</span><span class="vm">__module__</span>
+        <span class="k">elif</span> <span class="nb">callable</span><span class="p">(</span><span class="n">inputs</span><span class="p">):</span>
+            <span class="n">output</span> <span class="o">=</span> <span class="n">inputs</span><span class="o">.</span><span class="vm">__name__</span>
+            <span class="n">output_type</span> <span class="o">=</span> <span class="s2">&quot;function&quot;</span>
+            <span class="n">module</span> <span class="o">=</span> <span class="n">inputs</span><span class="o">.</span><span class="vm">__module__</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid input for serialization, type: </span><span class="si">%s</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="nb">type</span><span class="p">(</span><span class="n">inputs</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">output</span><span class="p">,</span> <span class="n">output_type</span><span class="p">,</span> <span class="n">module</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_parse_function_from_config</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">func_attr_name</span><span class="p">,</span> <span class="n">module_attr_name</span><span class="p">,</span> <span class="n">func_type_attr_name</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; &quot;function to de-serialize a callable function,</span>
+
+<span class="sd">        Note: This code is adapted from Keras source code of</span>
+<span class="sd">        the [Lambda layer]</span>
+<span class="sd">        (https://github.com/keras-team/keras/blob/master/keras/layers/core/lambda_layer.py#L350)</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">globs</span> <span class="o">=</span> <span class="nb">globals</span><span class="p">()</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">module</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">module_attr_name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">module</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">:</span>
+            <span class="n">globs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="n">module</span><span class="p">]</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">module</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Note: we don&#39;t know the name of the function if it&#39;s a lambda.</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> is not loaded, but a Lambda layer uses it. &quot;</span>
+                <span class="s2">&quot;It may cause errors.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">module</span><span class="p">),</span>
+                <span class="ne">UserWarning</span><span class="p">,</span>
+                <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="n">function_type</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">func_type_attr_name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">function_type</span> <span class="o">==</span> <span class="s2">&quot;function&quot;</span><span class="p">:</span>
+            <span class="n">function</span> <span class="o">=</span> <span class="n">generic_utils</span><span class="o">.</span><span class="n">deserialize_keras_object</span><span class="p">(</span>
+                <span class="n">config</span><span class="p">[</span><span class="n">func_attr_name</span><span class="p">],</span> <span class="n">printable_module_name</span><span class="o">=</span><span class="s2">&quot;default metrics function&quot;</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="n">function_type</span> <span class="o">==</span> <span class="s2">&quot;lambda&quot;</span><span class="p">:</span>
+            <span class="c1"># Unsafe deserialization from bytecode</span>
+            <span class="n">function</span> <span class="o">=</span> <span class="n">generic_utils</span><span class="o">.</span><span class="n">func_load</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="n">func_attr_name</span><span class="p">],</span> <span class="n">globs</span><span class="o">=</span><span class="n">globs</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">supported_types</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;function&quot;</span><span class="p">,</span> <span class="s2">&quot;lambda&quot;</span><span class="p">]</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Unsupported value for `function_type` argument. Received: &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;function_type=</span><span class="si">{</span><span class="n">function_type</span><span class="si">}</span><span class="s2">. Expected one of </span><span class="si">{</span><span class="n">supported_types</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">function</span>
+
+<div class="viewcode-block" id="ModelOutput.get_config"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.ModelOutput.html#merlin.models.tf.ModelOutput.get_config">[docs]</a>    <span class="k">def</span> <span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">ModelOutput</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span>
+        <span class="n">function_config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_serialize_function_to_config</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">default_metrics_fn</span><span class="p">)</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;default_metrics_fn&quot;</span><span class="p">:</span> <span class="n">function_config</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                <span class="s2">&quot;function_type&quot;</span><span class="p">:</span> <span class="n">function_config</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                <span class="s2">&quot;module&quot;</span><span class="p">:</span> <span class="n">function_config</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
+                <span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+
+        <span class="n">objects</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s2">&quot;to_call&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;pre&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;post&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;logits_scaler&quot;</span><span class="p">,</span>
+        <span class="p">]</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">default_loss</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">config</span><span class="p">[</span><span class="s2">&quot;default_loss&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_loss</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">objects</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;default_loss&quot;</span><span class="p">)</span>
+
+        <span class="n">config</span> <span class="o">=</span> <span class="n">tf_utils</span><span class="o">.</span><span class="n">maybe_serialize_keras_objects</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">objects</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">config</span></div>
+
+<div class="viewcode-block" id="ModelOutput.get_task_name"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.ModelOutput.html#merlin.models.tf.ModelOutput.get_task_name">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">get_task_name</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">target_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the name of the task</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        target_name : str</span>
+<span class="sd">            Name of the target</span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        str</span>
+<span class="sd">            Returns the task name, which includes the target name</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">base_name</span> <span class="o">=</span> <span class="n">to_snake_case</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">name_fn</span><span class="p">(</span><span class="n">target_name</span><span class="p">,</span> <span class="n">base_name</span><span class="p">)</span> <span class="k">if</span> <span class="n">target_name</span> <span class="k">else</span> <span class="n">base_name</span></div>
+
+<div class="viewcode-block" id="ModelOutput.from_config"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.ModelOutput.html#merlin.models.tf.ModelOutput.from_config">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_config</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">config</span><span class="p">):</span>
+        <span class="n">config</span><span class="p">[</span><span class="s2">&quot;default_metrics_fn&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_parse_function_from_config</span><span class="p">(</span>
+            <span class="n">config</span><span class="p">,</span> <span class="s2">&quot;default_metrics_fn&quot;</span><span class="p">,</span> <span class="s2">&quot;module&quot;</span><span class="p">,</span> <span class="s2">&quot;function_type&quot;</span>
+        <span class="p">)</span>
+
+        <span class="n">config</span> <span class="o">=</span> <span class="n">tf_utils</span><span class="o">.</span><span class="n">maybe_deserialize_keras_objects</span><span class="p">(</span>
+            <span class="n">config</span><span class="p">,</span>
+            <span class="p">{</span>
+                <span class="s2">&quot;default_loss&quot;</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">losses</span><span class="o">.</span><span class="n">deserialize</span><span class="p">,</span>
+                <span class="s2">&quot;to_call&quot;</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">deserialize</span><span class="p">,</span>
+                <span class="s2">&quot;pre&quot;</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">deserialize</span><span class="p">,</span>
+                <span class="s2">&quot;post&quot;</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">deserialize</span><span class="p">,</span>
+                <span class="s2">&quot;logits_scaler&quot;</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">deserialize</span><span class="p">,</span>
+            <span class="p">},</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">from_config</span><span class="p">(</span><span class="n">config</span><span class="p">)</span></div></div>
+
+
+<span class="nd">@tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">register_keras_serializable</span><span class="p">(</span><span class="n">package</span><span class="o">=</span><span class="s2">&quot;merlin_models&quot;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">DotProduct</span><span class="p">(</span><span class="n">Layer</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Dot-product between queries &amp; items.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">    -----------</span>
+<span class="sd">    query_name : str, optional</span>
+<span class="sd">        Identify query tower for query/user embeddings, by default &#39;query&#39;</span>
+<span class="sd">    item_name : str, optional</span>
+<span class="sd">        Identify item tower for item embeddings, by default &#39;item&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;query&quot;</span><span class="p">,</span> <span class="n">item_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;candidate&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">query_name</span> <span class="o">=</span> <span class="n">query_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">item_name</span> <span class="o">=</span> <span class="n">item_name</span>
+
+    <span class="k">def</span> <span class="nf">call</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">reduce_sum</span><span class="p">(</span>
+            <span class="n">tf</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">inputs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">query_name</span><span class="p">],</span> <span class="n">inputs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">item_name</span><span class="p">]),</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">compute_output_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_shape</span><span class="p">):</span>
+        <span class="n">batch_size</span> <span class="o">=</span> <span class="n">tf_utils</span><span class="o">.</span><span class="n">calculate_batch_size_from_input_shapes</span><span class="p">(</span><span class="n">input_shape</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">batch_size</span><span class="p">,</span> <span class="mi">1</span>
+
+    <span class="k">def</span> <span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="o">**</span><span class="nb">super</span><span class="p">(</span><span class="n">DotProduct</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_config</span><span class="p">(),</span>
+            <span class="s2">&quot;query_name&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">query_name</span><span class="p">,</span>
+            <span class="s2">&quot;item_name&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">item_name</span><span class="p">,</span>
+        <span class="p">}</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, NVIDIA.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-NVJ1Y1YJHK"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-NVJ1Y1YJHK', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

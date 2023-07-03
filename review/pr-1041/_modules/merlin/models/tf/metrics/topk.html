@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>merlin.models.tf.metrics.topk &mdash; Merlin  documentation</title><link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/mystnb.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/togglebutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/css/custom.css" type="text/css" />
+    <link rel="canonical" href="https://nvidia-merlin.github.io/Merlin/stable/_modules/merlin/models/tf/metrics/topk.html" />
+  <!--[if lt IE 9]>
+    <script src="../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../../../../../" src="../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../_static/jquery.js"></script>
+        <script src="../../../../../_static/underscore.js"></script>
+        <script src="../../../../../_static/doctools.js"></script>
+        <script >let toggleHintShow = 'Click to show';</script>
+        <script >let toggleHintHide = 'Click to hide';</script>
+        <script >let toggleOpenOnPrint = 'true';</script>
+        <script src="../../../../../_static/togglebutton.js"></script>
+        <script >var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="banner">
+    <p class="banner">
+      Beginning in January 2023, versions for all NVIDIA Merlin projects
+      will change from semantic versioning like <code>4.0</code>
+      to calendar versioning like <code>23.01</code>.</p>
+  </div>
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../../index.html" class="icon icon-home">
+            Merlin
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../README.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../guide/recommender_system_guide.html">Recommender System Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../examples/index.html">Example Notebooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../api_overview.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../containers.html">Merlin Containers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../support_matrix/index.html">Merlin Support Matrix</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">Merlin</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">merlin.models.tf.metrics.topk</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for merlin.models.tf.metrics.topk</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># Copyright (c) 2021, NVIDIA CORPORATION.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+<span class="c1">#</span>
+
+<span class="c1"># Adapted from source code: https://github.com/karlhigley/ranking-metrics-torch</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
+<span class="kn">from</span> <span class="nn">keras.utils</span> <span class="kn">import</span> <span class="n">losses_utils</span><span class="p">,</span> <span class="n">metrics_utils</span>
+<span class="kn">from</span> <span class="nn">tensorflow.keras</span> <span class="kn">import</span> <span class="n">backend</span>
+<span class="kn">from</span> <span class="nn">tensorflow.keras.metrics</span> <span class="kn">import</span> <span class="n">Mean</span><span class="p">,</span> <span class="n">Metric</span>
+<span class="kn">from</span> <span class="nn">tensorflow.keras.metrics</span> <span class="kn">import</span> <span class="n">get</span> <span class="k">as</span> <span class="n">get_metric</span>
+
+<span class="kn">from</span> <span class="nn">merlin.models.tf.metrics</span> <span class="kn">import</span> <span class="n">metrics_registry</span>
+<span class="kn">from</span> <span class="nn">merlin.models.tf.utils.tf_utils</span> <span class="kn">import</span> <span class="n">extract_topk</span>
+
+<span class="n">METRIC_PARAMETERS_DOCSTRING</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    y_true : tf.Tensor</span>
+<span class="s2">        A tensor with shape (batch_size, n_items) corresponding to</span>
+<span class="s2">        the multi-hot representation of true labels.</span>
+<span class="s2">    y_pred : tf.Tensor</span>
+<span class="s2">        A tensor with shape (batch_size, n_items) corresponding to</span>
+<span class="s2">        the prediction scores.</span>
+<span class="s2">    label_relevant_counts: tf.Tensor</span>
+<span class="s2">        A 1D tensor (batch size) which contains the total number of relevant items</span>
+<span class="s2">        for the example. This is necessary when setting `pre_sorting=True` on the</span>
+<span class="s2">        ranking metrics classes (e.g. RecallAt(5, pre_sorted=True)), as extract_topk</span>
+<span class="s2">        is used to extract only the top-k predictions and corresponding labels,</span>
+<span class="s2">        potentially losing other relevant items not among top-k. In such cases,</span>
+<span class="s2">        the label_relevant_counts will contain the total relevant counts per example.</span>
+<span class="s2">    k : int</span>
+<span class="s2">        The cut-off for ranking metrics</span>
+<span class="s2">&quot;&quot;&quot;</span>
+
+
+<span class="k">def</span> <span class="nf">recall_at</span><span class="p">(</span>
+    <span class="n">y_true</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">y_pred</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">label_relevant_counts</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Computes Recall@K metric</span>
+<span class="sd">    ----------</span>
+<span class="sd">    {METRIC_PARAMETERS_DOCSTRING}</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">rel_count</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">clip_by_value</span><span class="p">(</span><span class="n">label_relevant_counts</span><span class="p">,</span> <span class="n">clip_value_min</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">clip_value_max</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">k</span><span class="p">))</span>
+
+    <span class="n">rel_labels</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">reduce_sum</span><span class="p">(</span><span class="n">y_true</span><span class="p">[:,</span> <span class="p">:</span><span class="n">k</span><span class="p">],</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span>
+        <span class="n">tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">divide_no_nan</span><span class="p">(</span><span class="n">rel_labels</span><span class="p">,</span> <span class="n">rel_count</span><span class="p">),</span>
+        <span class="n">backend</span><span class="o">.</span><span class="n">floatx</span><span class="p">(),</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">results</span>
+
+
+<span class="k">def</span> <span class="nf">precision_at</span><span class="p">(</span>
+    <span class="n">y_true</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">y_pred</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">label_relevant_counts</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Computes Precision@K metric</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    {METRIC_PARAMETERS_DOCSTRING}</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">reduce_mean</span><span class="p">(</span><span class="n">y_true</span><span class="p">[:,</span> <span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">k</span><span class="p">)],</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">),</span> <span class="n">backend</span><span class="o">.</span><span class="n">floatx</span><span class="p">())</span>
+    <span class="k">return</span> <span class="n">results</span>
+
+
+<span class="k">def</span> <span class="nf">average_precision_at</span><span class="p">(</span>
+    <span class="n">y_true</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">y_pred</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">label_relevant_counts</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Computes Mean Average Precision (MAP) @K</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    {METRIC_PARAMETERS_DOCSTRING}</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Computing the precision from 1 to k range</span>
+    <span class="n">precisions</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">precision_at</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">_k</span><span class="p">)</span> <span class="k">for</span> <span class="n">_k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">k</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)],</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="c1"># Keeping only the precision at the position of relevant items</span>
+    <span class="n">rel_precisions</span> <span class="o">=</span> <span class="n">precisions</span> <span class="o">*</span> <span class="n">y_true</span><span class="p">[:,</span> <span class="p">:</span><span class="n">k</span><span class="p">]</span>
+
+    <span class="n">total_prec</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">reduce_sum</span><span class="p">(</span><span class="n">rel_precisions</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">total_relevant_topk</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">clip_by_value</span><span class="p">(</span>
+        <span class="n">label_relevant_counts</span><span class="p">,</span> <span class="n">clip_value_min</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">clip_value_max</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="n">results</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">divide_no_nan</span><span class="p">(</span><span class="n">total_prec</span><span class="p">,</span> <span class="n">total_relevant_topk</span><span class="p">),</span> <span class="n">backend</span><span class="o">.</span><span class="n">floatx</span><span class="p">())</span>
+
+    <span class="k">return</span> <span class="n">results</span>
+
+
+<span class="k">def</span> <span class="nf">dcg_at</span><span class="p">(</span>
+    <span class="n">y_true</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">y_pred</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">label_relevant_counts</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
+    <span class="n">log_base</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute discounted cumulative gain @K (ignoring ties)</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    {METRIC_PARAMETERS_DOCSTRING}</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Compute discounts</span>
+    <span class="n">discount_positions</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">range</span><span class="p">(</span><span class="n">k</span><span class="p">),</span> <span class="n">backend</span><span class="o">.</span><span class="n">floatx</span><span class="p">())</span>
+    <span class="n">discount_log_base</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">convert_to_tensor</span><span class="p">([</span><span class="n">log_base</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">backend</span><span class="o">.</span><span class="n">floatx</span><span class="p">()))</span>
+
+    <span class="n">discounts</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">discount_positions</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">discount_log_base</span><span class="p">)</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">y_true</span><span class="p">[:,</span> <span class="p">:</span><span class="n">k</span><span class="p">]</span> <span class="o">*</span> <span class="n">tf</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">discounts</span><span class="p">[:</span><span class="n">k</span><span class="p">],</span> <span class="mi">0</span><span class="p">),</span> <span class="n">tf</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">y_true</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="n">results</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">reduce_sum</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">),</span> <span class="n">backend</span><span class="o">.</span><span class="n">floatx</span><span class="p">())</span>
+    <span class="k">return</span> <span class="n">results</span>
+
+
+<span class="k">def</span> <span class="nf">ndcg_at</span><span class="p">(</span>
+    <span class="n">y_true</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">y_pred</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">label_relevant_counts</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
+    <span class="n">log_base</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute normalized discounted cumulative gain @K (ignoring ties)</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    {METRIC_PARAMETERS_DOCSTRING}</span>
+<span class="sd">    log_base : int</span>
+<span class="sd">        Base of the log discount where relevant items are rankied. Defaults to 2</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">gains</span> <span class="o">=</span> <span class="n">dcg_at</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="n">log_base</span><span class="o">=</span><span class="n">log_base</span><span class="p">)</span>
+    <span class="n">perfect_labels_sorting</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span>
+        <span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">range</span><span class="p">(</span><span class="n">k</span><span class="p">),</span> <span class="mi">0</span><span class="p">),</span> <span class="n">label_relevant_counts</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+        <span class="o">&lt;</span> <span class="n">tf</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">label_relevant_counts</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span>
+        <span class="n">backend</span><span class="o">.</span><span class="n">floatx</span><span class="p">(),</span>
+    <span class="p">)</span>
+    <span class="n">ideal_gains</span> <span class="o">=</span> <span class="n">dcg_at</span><span class="p">(</span><span class="n">perfect_labels_sorting</span><span class="p">,</span> <span class="n">perfect_labels_sorting</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="n">log_base</span><span class="o">=</span><span class="n">log_base</span><span class="p">)</span>
+
+    <span class="n">results</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">divide_no_nan</span><span class="p">(</span><span class="n">gains</span><span class="p">,</span> <span class="n">ideal_gains</span><span class="p">),</span> <span class="n">backend</span><span class="o">.</span><span class="n">floatx</span><span class="p">())</span>
+    <span class="k">return</span> <span class="n">results</span>
+
+
+<span class="k">def</span> <span class="nf">mrr_at</span><span class="p">(</span>
+    <span class="n">y_true</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">y_pred</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">label_relevant_counts</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute MRR</span>
+<span class="sd">    ----------</span>
+<span class="sd">    {METRIC_PARAMETERS_DOCSTRING}</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">first_rel_position</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">backend</span><span class="o">.</span><span class="n">floatx</span><span class="p">())</span>
+    <span class="n">relevant_mask</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">reduce_max</span><span class="p">(</span><span class="n">y_true</span><span class="p">[:,</span> <span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">k</span><span class="p">)],</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">rel_position</span> <span class="o">=</span> <span class="n">first_rel_position</span> <span class="o">*</span> <span class="n">relevant_mask</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">divide_no_nan</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">rel_position</span><span class="p">),</span> <span class="n">backend</span><span class="o">.</span><span class="n">floatx</span><span class="p">())</span>
+
+    <span class="k">return</span> <span class="n">results</span>
+
+
+<span class="k">class</span> <span class="nc">TopkMetricWithLabelRelevantCountsMixin</span><span class="p">:</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">label_relevant_counts</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_label_relevant_counts</span>
+
+    <span class="nd">@label_relevant_counts</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">label_relevant_counts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_value</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_label_relevant_counts</span> <span class="o">=</span> <span class="n">new_value</span>
+
+    <span class="k">def</span> <span class="nf">_reshape_tensors</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">y_pred</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">y_true</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">label_relevant_counts</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
+        <span class="n">new_shape</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">TensorShape</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">,</span> <span class="nb">list</span><span class="p">],</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Reshapes the predictions, targets and label_relevant_counts&quot;&quot;&quot;</span>
+        <span class="n">y_pred</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">y_pred</span><span class="p">,</span> <span class="n">new_shape</span><span class="p">)</span>
+        <span class="n">y_true</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">new_shape</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">label_relevant_counts</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">label_relevant_counts</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">label_relevant_counts</span><span class="p">,</span> <span class="n">new_shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">,</span> <span class="n">label_relevant_counts</span>
+
+
+<span class="nd">@tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">register_keras_serializable</span><span class="p">(</span><span class="n">package</span><span class="o">=</span><span class="s2">&quot;merlin.models&quot;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">TopkMetric</span><span class="p">(</span><span class="n">Mean</span><span class="p">,</span> <span class="n">TopkMetricWithLabelRelevantCountsMixin</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fn</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">pre_sorted</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">log_base</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create instance of a TopKMetric.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        fn : function</span>
+<span class="sd">            Aggregtation function to use to compute metric passed y_true, y_pred</span>
+<span class="sd">        k : int, optional</span>
+<span class="sd">            Top k to compute metrics for, by default 5</span>
+<span class="sd">        pre_sorted : bool, optional</span>
+<span class="sd">            Whether or not the data passed to the metric is already sorted, by default True</span>
+<span class="sd">        name : str, optional</span>
+<span class="sd">            Name of the metric, by default None</span>
+<span class="sd">        log_base : int, optional</span>
+<span class="sd">            Base of the log discount where relevant items are ranked, by default None</span>
+<span class="sd">        seed : int, optional</span>
+<span class="sd">            Random seed to use for the shuffling in case of ties, by default None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name_orig</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fn</span> <span class="o">=</span> <span class="n">fn</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">k</span> <span class="o">=</span> <span class="n">k</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">seed</span> <span class="o">=</span> <span class="n">seed</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pre_sorted</span> <span class="o">=</span> <span class="n">pre_sorted</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fn_kwargs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="n">log_base</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_fn_kwargs</span><span class="p">[</span><span class="s2">&quot;log_base&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">log_base</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">label_relevant_counts</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mask</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">pre_sorted</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pre_sorted</span>
+
+    <span class="nd">@pre_sorted</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">pre_sorted</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pre_sorted</span> <span class="o">=</span> <span class="n">new_value</span>
+
+    <span class="k">def</span> <span class="nf">update_state</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">y_true</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">y_pred</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">sample_weight</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">y_true</span><span class="p">),</span> <span class="n">tf</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">y_pred</span><span class="p">)</span>
+        <span class="n">tf</span><span class="o">.</span><span class="n">debugging</span><span class="o">.</span><span class="n">assert_greater_equal</span><span class="p">(</span>
+            <span class="n">tf</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">y_true</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">k</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">&quot;The TopkMetric </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> cutoff (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">k</span><span class="si">}</span><span class="s2">) cannot be bigger than &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;the number of predictions per example&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_cast_inputs</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">)</span>
+
+        <span class="p">(</span>
+            <span class="p">[</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">],</span>
+            <span class="n">sample_weight</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">=</span> <span class="n">metrics_utils</span><span class="o">.</span><span class="n">ragged_assert_compatible_and_get_flat_values</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">],</span> <span class="n">sample_weight</span>
+        <span class="p">)</span>
+        <span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span> <span class="o">=</span> <span class="n">losses_utils</span><span class="o">.</span><span class="n">squeeze_or_expand_dimensions</span><span class="p">(</span><span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">)</span>
+        <span class="n">label_relevant_counts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">label_relevant_counts</span>
+
+        <span class="c1"># For prediction tensor with rank &gt; 2 (e.g. sequences)</span>
+        <span class="c1"># reshapes the predictions, targets and label_relevant_counts</span>
+        <span class="c1"># so that they are 2D and metrics work properly</span>
+        <span class="n">original_shape</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">y_pred</span><span class="p">)</span>
+        <span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">,</span> <span class="n">label_relevant_counts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reshape_tensors</span><span class="p">(</span>
+            <span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">,</span> <span class="n">label_relevant_counts</span><span class="p">,</span> <span class="n">new_shape</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">original_shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span>
+        <span class="p">)</span>
+
+        <span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">,</span> <span class="n">label_relevant_counts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_maybe_sort_top_k</span><span class="p">(</span>
+            <span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">,</span> <span class="n">label_relevant_counts</span>
+        <span class="p">)</span>
+
+        <span class="n">ag_fn</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">__internal__</span><span class="o">.</span><span class="n">autograph</span><span class="o">.</span><span class="n">tf_convert</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_fn</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">__internal__</span><span class="o">.</span><span class="n">autograph</span><span class="o">.</span><span class="n">control_status_ctx</span><span class="p">()</span>
+        <span class="p">)</span>
+
+        <span class="n">matches</span> <span class="o">=</span> <span class="n">ag_fn</span><span class="p">(</span>
+            <span class="n">y_true</span><span class="p">,</span>
+            <span class="n">y_pred</span><span class="p">,</span>
+            <span class="n">label_relevant_counts</span><span class="o">=</span><span class="n">label_relevant_counts</span><span class="p">,</span>
+            <span class="n">k</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">k</span><span class="p">,</span>
+            <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_fn_kwargs</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Reshapes the metrics results so that they match the</span>
+        <span class="c1"># original shape of predictions/targets before combining</span>
+        <span class="c1"># with the sample weights</span>
+        <span class="n">matches</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">matches</span><span class="p">,</span> <span class="n">original_shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">update_state</span><span class="p">(</span><span class="n">matches</span><span class="p">,</span> <span class="n">sample_weight</span><span class="o">=</span><span class="n">sample_weight</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_maybe_sort_top_k</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">,</span> <span class="n">label_relevant_counts</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">pre_sorted</span><span class="p">:</span>
+            <span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">,</span> <span class="n">label_relevant_counts</span> <span class="o">=</span> <span class="n">extract_topk</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">,</span> <span class="n">shuffle_ties</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">seed</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">label_relevant_counts</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+                    <span class="s2">&quot;If y_true was pre-sorted (and truncated to top-k) you must &quot;</span>
+                    <span class="s2">&quot;provide label_relevant_counts argument.&quot;</span>
+                <span class="p">)</span>
+            <span class="n">label_relevant_counts</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">label_relevant_counts</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">,</span> <span class="n">label_relevant_counts</span>
+
+    <span class="k">def</span> <span class="nf">check_cast_inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">predictions</span><span class="p">):</span>
+        <span class="n">predictions</span><span class="o">.</span><span class="n">get_shape</span><span class="p">()</span><span class="o">.</span><span class="n">assert_is_compatible_with</span><span class="p">(</span><span class="n">labels</span><span class="o">.</span><span class="n">get_shape</span><span class="p">())</span>
+
+        <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="p">),</span> <span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">predictions</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name_orig</span><span class="p">,</span>
+            <span class="s2">&quot;k&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">k</span><span class="p">,</span>
+            <span class="s2">&quot;seed&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">seed</span><span class="p">,</span>
+            <span class="s2">&quot;pre_sorted&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pre_sorted</span><span class="p">,</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="ow">is</span> <span class="n">TopkMetric</span><span class="p">:</span>
+            <span class="c1"># Only include function argument when the object is a TopkMetric and not a subclass.</span>
+            <span class="n">config</span><span class="p">[</span><span class="s2">&quot;fn&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fn</span>
+
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fn_kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">config</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">backend</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">if</span> <span class="n">tf</span><span class="o">.</span><span class="n">is_tensor</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">Variable</span><span class="p">)</span> <span class="k">else</span> <span class="n">v</span>
+
+        <span class="n">base_config</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">TopkMetric</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">base_config</span><span class="o">.</span><span class="n">items</span><span class="p">())</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">items</span><span class="p">()))</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_config</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">config</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">cls</span> <span class="ow">is</span> <span class="n">TopkMetric</span><span class="p">:</span>
+            <span class="n">fn</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;fn&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="n">k</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;k&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="n">pre_sorted</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;pre_sorted&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="n">seed</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;seed&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">get_metric</span><span class="p">(</span><span class="n">fn</span><span class="p">),</span> <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="n">pre_sorted</span><span class="o">=</span><span class="n">pre_sorted</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span> <span class="o">**</span><span class="n">config</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">TopkMetric</span><span class="p">,</span> <span class="bp">cls</span><span class="p">)</span><span class="o">.</span><span class="n">from_config</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="RecallAt"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.RecallAt.html#merlin.models.tf.RecallAt">[docs]</a><span class="nd">@tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">register_keras_serializable</span><span class="p">(</span><span class="n">package</span><span class="o">=</span><span class="s2">&quot;merlin.models&quot;</span><span class="p">)</span>
+<span class="nd">@metrics_registry</span><span class="o">.</span><span class="n">register_with_multiple_names</span><span class="p">(</span><span class="s2">&quot;recall_at&quot;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">RecallAt</span><span class="p">(</span><span class="n">TopkMetric</span><span class="p">):</span>
+<div class="viewcode-block" id="RecallAt.__init__"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.RecallAt.html#merlin.models.tf.RecallAt.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">pre_sorted</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;recall_at&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">recall_at</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="n">pre_sorted</span><span class="o">=</span><span class="n">pre_sorted</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="PrecisionAt"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.PrecisionAt.html#merlin.models.tf.PrecisionAt">[docs]</a><span class="nd">@tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">register_keras_serializable</span><span class="p">(</span><span class="n">package</span><span class="o">=</span><span class="s2">&quot;merlin.models&quot;</span><span class="p">)</span>
+<span class="nd">@metrics_registry</span><span class="o">.</span><span class="n">register_with_multiple_names</span><span class="p">(</span><span class="s2">&quot;precision_at&quot;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">PrecisionAt</span><span class="p">(</span><span class="n">TopkMetric</span><span class="p">):</span>
+<div class="viewcode-block" id="PrecisionAt.__init__"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.PrecisionAt.html#merlin.models.tf.PrecisionAt.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">pre_sorted</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;precision_at&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">precision_at</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="n">pre_sorted</span><span class="o">=</span><span class="n">pre_sorted</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="AvgPrecisionAt"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.AvgPrecisionAt.html#merlin.models.tf.AvgPrecisionAt">[docs]</a><span class="nd">@tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">register_keras_serializable</span><span class="p">(</span><span class="n">package</span><span class="o">=</span><span class="s2">&quot;merlin.models&quot;</span><span class="p">)</span>
+<span class="nd">@metrics_registry</span><span class="o">.</span><span class="n">register_with_multiple_names</span><span class="p">(</span><span class="s2">&quot;map_at&quot;</span><span class="p">,</span> <span class="s2">&quot;map&quot;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">AvgPrecisionAt</span><span class="p">(</span><span class="n">TopkMetric</span><span class="p">):</span>
+<div class="viewcode-block" id="AvgPrecisionAt.__init__"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.AvgPrecisionAt.html#merlin.models.tf.AvgPrecisionAt.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">pre_sorted</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;map_at&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">average_precision_at</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="n">pre_sorted</span><span class="o">=</span><span class="n">pre_sorted</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="MRRAt"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.MRRAt.html#merlin.models.tf.MRRAt">[docs]</a><span class="nd">@tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">register_keras_serializable</span><span class="p">(</span><span class="n">package</span><span class="o">=</span><span class="s2">&quot;merlin.models&quot;</span><span class="p">)</span>
+<span class="nd">@metrics_registry</span><span class="o">.</span><span class="n">register_with_multiple_names</span><span class="p">(</span><span class="s2">&quot;mrr_at&quot;</span><span class="p">,</span> <span class="s2">&quot;mrr&quot;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">MRRAt</span><span class="p">(</span><span class="n">TopkMetric</span><span class="p">):</span>
+<div class="viewcode-block" id="MRRAt.__init__"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.MRRAt.html#merlin.models.tf.MRRAt.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">pre_sorted</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;mrr_at&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">mrr_at</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="n">pre_sorted</span><span class="o">=</span><span class="n">pre_sorted</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="NDCGAt"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.NDCGAt.html#merlin.models.tf.NDCGAt">[docs]</a><span class="nd">@tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">register_keras_serializable</span><span class="p">(</span><span class="n">package</span><span class="o">=</span><span class="s2">&quot;merlin.models&quot;</span><span class="p">)</span>
+<span class="nd">@metrics_registry</span><span class="o">.</span><span class="n">register_with_multiple_names</span><span class="p">(</span><span class="s2">&quot;ndcg_at&quot;</span><span class="p">,</span> <span class="s2">&quot;ndcg&quot;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">NDCGAt</span><span class="p">(</span><span class="n">TopkMetric</span><span class="p">):</span>
+<div class="viewcode-block" id="NDCGAt.__init__"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.NDCGAt.html#merlin.models.tf.NDCGAt.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">pre_sorted</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;ndcg_at&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">ndcg_at</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">,</span> <span class="n">pre_sorted</span><span class="o">=</span><span class="n">pre_sorted</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="TopKMetricsAggregator"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.TopKMetricsAggregator.html#merlin.models.tf.TopKMetricsAggregator">[docs]</a><span class="nd">@tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">register_keras_serializable</span><span class="p">(</span><span class="n">package</span><span class="o">=</span><span class="s2">&quot;merlin.models&quot;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">TopKMetricsAggregator</span><span class="p">(</span><span class="n">Metric</span><span class="p">,</span> <span class="n">TopkMetricWithLabelRelevantCountsMixin</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Aggregator for top-k metrics (TopkMetric) that is optimized</span>
+<span class="sd">    to sort top-k predictions only once for all metrics.</span>
+
+<span class="sd">    *topk_metrics : TopkMetric</span>
+<span class="sd">        Multiple arguments with TopkMetric instances</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="TopKMetricsAggregator.__init__"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.TopKMetricsAggregator.html#merlin.models.tf.TopKMetricsAggregator.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">topk_metrics</span><span class="p">:</span> <span class="n">TopkMetric</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">TopKMetricsAggregator</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">topk_metrics</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;At least one topk_metrics should be provided&quot;</span>
+        <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span>
+            <span class="nb">isinstance</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">TopkMetric</span><span class="p">)</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">topk_metrics</span>
+        <span class="p">),</span> <span class="s2">&quot;All provided metrics should inherit from TopkMetric&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">topk_metrics</span> <span class="o">=</span> <span class="n">topk_metrics</span>
+
+        <span class="c1"># Setting the `pre_sorted` of topk metrics so that</span>
+        <span class="c1"># prediction scores are not sorted again for each metric</span>
+        <span class="k">for</span> <span class="n">metric</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">topk_metrics</span><span class="p">:</span>
+            <span class="n">metric</span><span class="o">.</span><span class="n">pre_sorted</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">k</span> <span class="o">=</span> <span class="nb">max</span><span class="p">([</span><span class="n">m</span><span class="o">.</span><span class="n">k</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">topk_metrics</span><span class="p">])</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">label_relevant_counts</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="TopKMetricsAggregator.update_state"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.TopKMetricsAggregator.html#merlin.models.tf.TopKMetricsAggregator.update_state">[docs]</a>    <span class="k">def</span> <span class="nf">update_state</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">y_true</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">sample_weight</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">):</span>
+        <span class="c1"># squeeze dim=1</span>
+        <span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">y_true</span><span class="p">),</span> <span class="n">tf</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">y_pred</span><span class="p">)</span>
+        <span class="c1"># For prediction tensor with rank &gt; 2 (e.g. sequences)</span>
+        <span class="c1"># reshapes the predictions, targets and label_relevant_counts</span>
+        <span class="c1"># so that they are 2D and extract_topk() work properly</span>
+        <span class="n">original_shape</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">y_pred</span><span class="p">)</span>
+        <span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reshape_tensors</span><span class="p">(</span>
+            <span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">new_shape</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">original_shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Extracting sorted top-k prediction scores and labels only ONCE</span>
+        <span class="c1"># so that sorting does not need to happen for each individual metric</span>
+        <span class="c1"># (as the top-k metrics have been set with pre_sorted=True in this constructor</span>
+        <span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">,</span> <span class="n">label_relevant_counts_from_targets</span> <span class="o">=</span> <span class="n">extract_topk</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">,</span> <span class="n">shuffle_ties</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Reshaping tensors back to their original shape (expect for the last dim that</span>
+        <span class="c1"># equals to k)</span>
+        <span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">,</span> <span class="n">label_relevant_counts_from_targets</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reshape_tensors</span><span class="p">(</span>
+            <span class="n">y_pred</span><span class="p">,</span>
+            <span class="n">y_true</span><span class="p">,</span>
+            <span class="n">label_relevant_counts_from_targets</span><span class="p">,</span>
+            <span class="n">new_shape</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">original_shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]],</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">),</span>
+        <span class="p">)</span>
+
+        <span class="c1"># If label_relevant_counts is not set by a block (e.g. TopKIndexBlock) that</span>
+        <span class="c1"># has already extracted the top-k predictions, it is assumed that</span>
+        <span class="c1"># y_true contains all items</span>
+        <span class="n">label_relevant_counts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">label_relevant_counts</span>
+        <span class="k">if</span> <span class="n">label_relevant_counts</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">label_relevant_counts</span> <span class="o">=</span> <span class="n">label_relevant_counts_from_targets</span>
+
+        <span class="k">for</span> <span class="n">metric</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">topk_metrics</span><span class="p">:</span>
+            <span class="c1"># Sets the label_relevant_counts using a property,</span>
+            <span class="c1"># as metric.update_state() should have standard signature</span>
+            <span class="c1"># for better compatibility with Keras</span>
+            <span class="n">metric</span><span class="o">.</span><span class="n">label_relevant_counts</span> <span class="o">=</span> <span class="n">label_relevant_counts</span>
+            <span class="n">metric</span><span class="o">.</span><span class="n">update_state</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">sample_weight</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TopKMetricsAggregator.result"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.TopKMetricsAggregator.html#merlin.models.tf.TopKMetricsAggregator.result">[docs]</a>    <span class="k">def</span> <span class="nf">result</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">outputs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">weighted</span> <span class="o">=</span> <span class="s2">&quot;weighted_&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span>
+        <span class="k">for</span> <span class="n">metric</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">topk_metrics</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">metric</span><span class="o">.</span><span class="n">name</span>
+            <span class="k">if</span> <span class="n">weighted</span><span class="p">:</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;weighted_&quot;</span> <span class="o">+</span> <span class="n">name</span>
+            <span class="n">outputs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">metric</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">outputs</span></div>
+
+<div class="viewcode-block" id="TopKMetricsAggregator.default_metrics"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.TopKMetricsAggregator.html#merlin.models.tf.TopKMetricsAggregator.default_metrics">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">default_metrics</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">top_ks</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">TopkMetric</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns an TopKMetricsAggregator instance with the default top-k metrics</span>
+<span class="sd">        at the cut-offs defined in top_ks</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        top_ks : Sequence[int]</span>
+<span class="sd">            List with the cut-offs for top-k metrics (e.g. [5,10,50])</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Sequence[TopkMetric]</span>
+<span class="sd">            A TopKMetricsAggregator instance with the default top-k metrics at the predefined</span>
+<span class="sd">            cut-offs</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">metrics</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">TopkMetric</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">top_ks</span><span class="p">:</span>
+            <span class="n">metrics</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">RecallAt</span><span class="p">(</span><span class="n">k</span><span class="p">),</span> <span class="n">MRRAt</span><span class="p">(</span><span class="n">k</span><span class="p">),</span> <span class="n">NDCGAt</span><span class="p">(</span><span class="n">k</span><span class="p">),</span> <span class="n">AvgPrecisionAt</span><span class="p">(</span><span class="n">k</span><span class="p">),</span> <span class="n">PrecisionAt</span><span class="p">(</span><span class="n">k</span><span class="p">)])</span>
+        <span class="c1"># Using Top-k metrics aggregator provides better performance than having top-k</span>
+        <span class="c1"># metrics computed separately, as prediction scores are sorted only once for all metrics</span>
+        <span class="n">aggregator</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="o">*</span><span class="n">metrics</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">aggregator</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="TopKMetricsAggregator.get_config"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.TopKMetricsAggregator.html#merlin.models.tf.TopKMetricsAggregator.get_config">[docs]</a>    <span class="k">def</span> <span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">TopKMetricsAggregator</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span>
+        <span class="n">config</span><span class="p">[</span><span class="s2">&quot;topk_metrics&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">serialize</span><span class="p">(</span><span class="n">metric</span><span class="p">)</span> <span class="k">for</span> <span class="n">metric</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">topk_metrics</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">config</span></div>
+
+<div class="viewcode-block" id="TopKMetricsAggregator.from_config"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.TopKMetricsAggregator.html#merlin.models.tf.TopKMetricsAggregator.from_config">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_config</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">config</span><span class="p">):</span>
+        <span class="n">topk_metrics</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;topk_metrics&quot;</span><span class="p">)</span>
+        <span class="n">topk_metrics</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">deserialize</span><span class="p">(</span><span class="n">metric_config</span><span class="p">)</span> <span class="k">for</span> <span class="n">metric_config</span> <span class="ow">in</span> <span class="n">topk_metrics</span>
+        <span class="p">]</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="o">*</span><span class="n">topk_metrics</span><span class="p">,</span> <span class="o">**</span><span class="n">config</span><span class="p">)</span></div></div>
+
+
+<span class="k">def</span> <span class="nf">filter_topk_metrics</span><span class="p">(</span>
+    <span class="n">metrics</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Metric</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">TopkMetric</span><span class="p">,</span> <span class="n">TopKMetricsAggregator</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns only top-k metrics from the list of metrics</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    metrics : List[Metric]</span>
+<span class="sd">        List of metrics</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    List[Union[TopkMetric, TopKMetricsAggregator]]</span>
+<span class="sd">        List with the top-k metrics in the list of input metrics</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">topk_metrics</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+        <span class="p">[</span>
+            <span class="n">metric</span>
+            <span class="k">for</span> <span class="n">metric</span> <span class="ow">in</span> <span class="n">metrics</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">metric</span><span class="p">,</span> <span class="n">TopkMetric</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">metric</span><span class="p">,</span> <span class="n">TopKMetricsAggregator</span><span class="p">)</span>
+        <span class="p">]</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">topk_metrics</span>
+
+
+<span class="k">def</span> <span class="nf">split_metrics</span><span class="p">(</span>
+    <span class="n">metrics</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Metric</span><span class="p">],</span>
+    <span class="n">return_other_metrics</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">TopkMetric</span><span class="p">,</span> <span class="n">TopKMetricsAggregator</span><span class="p">,</span> <span class="n">Metric</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Split the list of metrics into top-k metrics, top-k aggregators and others</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    metrics : List[Metric]</span>
+<span class="sd">        List of metrics</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    List[TopkMetric, TopKMetricsAggregator, Metric]</span>
+<span class="sd">        List with the top-k metrics in the list of input metrics</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">topk_metrics</span><span class="p">,</span> <span class="n">topk_aggregators</span><span class="p">,</span> <span class="n">other_metrics</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">metric</span> <span class="ow">in</span> <span class="n">metrics</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">metric</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">metric</span> <span class="o">=</span> <span class="n">metrics_registry</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">metric</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">metric</span><span class="p">,</span> <span class="n">TopkMetric</span><span class="p">):</span>
+            <span class="n">topk_metrics</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">metric</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">metric</span><span class="p">,</span> <span class="n">TopKMetricsAggregator</span><span class="p">):</span>
+            <span class="n">topk_aggregators</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">metric</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">other_metrics</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">metric</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">topk_metrics</span><span class="p">,</span> <span class="n">topk_aggregators</span><span class="p">,</span> <span class="n">other_metrics</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, NVIDIA.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-NVJ1Y1YJHK"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-NVJ1Y1YJHK', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

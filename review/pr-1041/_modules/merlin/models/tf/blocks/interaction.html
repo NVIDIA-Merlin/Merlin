@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>merlin.models.tf.blocks.interaction &mdash; Merlin  documentation</title><link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/mystnb.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/togglebutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/css/custom.css" type="text/css" />
+    <link rel="canonical" href="https://nvidia-merlin.github.io/Merlin/stable/_modules/merlin/models/tf/blocks/interaction.html" />
+  <!--[if lt IE 9]>
+    <script src="../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../../../../../" src="../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../_static/jquery.js"></script>
+        <script src="../../../../../_static/underscore.js"></script>
+        <script src="../../../../../_static/doctools.js"></script>
+        <script >let toggleHintShow = 'Click to show';</script>
+        <script >let toggleHintHide = 'Click to hide';</script>
+        <script >let toggleOpenOnPrint = 'true';</script>
+        <script src="../../../../../_static/togglebutton.js"></script>
+        <script >var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="banner">
+    <p class="banner">
+      Beginning in January 2023, versions for all NVIDIA Merlin projects
+      will change from semantic versioning like <code>4.0</code>
+      to calendar versioning like <code>23.01</code>.</p>
+  </div>
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../../index.html" class="icon icon-home">
+            Merlin
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../README.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../guide/recommender_system_guide.html">Recommender System Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../examples/index.html">Example Notebooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../api_overview.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../containers.html">Merlin Containers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../support_matrix/index.html">Merlin Support Matrix</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">Merlin</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">merlin.models.tf.blocks.interaction</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for merlin.models.tf.blocks.interaction</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># Copyright (c) 2021, NVIDIA CORPORATION.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+<span class="c1">#</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
+
+<span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
+
+<span class="kn">from</span> <span class="nn">merlin.models.tf.blocks.mlp</span> <span class="kn">import</span> <span class="n">MLPBlock</span>
+<span class="kn">from</span> <span class="nn">merlin.models.tf.core.aggregation</span> <span class="kn">import</span> <span class="n">StackFeatures</span>
+<span class="kn">from</span> <span class="nn">merlin.models.tf.core.base</span> <span class="kn">import</span> <span class="n">Block</span>
+<span class="kn">from</span> <span class="nn">merlin.models.tf.core.combinators</span> <span class="kn">import</span> <span class="n">MapValues</span><span class="p">,</span> <span class="n">ParallelBlock</span><span class="p">,</span> <span class="n">SequentialBlock</span>
+<span class="kn">from</span> <span class="nn">merlin.models.tf.core.tabular</span> <span class="kn">import</span> <span class="n">Filter</span>
+<span class="kn">from</span> <span class="nn">merlin.models.tf.inputs.base</span> <span class="kn">import</span> <span class="n">InputBlockV2</span>
+<span class="kn">from</span> <span class="nn">merlin.models.tf.inputs.embedding</span> <span class="kn">import</span> <span class="n">Embeddings</span>
+<span class="kn">from</span> <span class="nn">merlin.models.tf.transforms.features</span> <span class="kn">import</span> <span class="n">CategoryEncoding</span><span class="p">,</span> <span class="n">ToSparse</span>
+<span class="kn">from</span> <span class="nn">merlin.schema</span> <span class="kn">import</span> <span class="n">Schema</span><span class="p">,</span> <span class="n">Tags</span>
+
+<span class="n">_INTERACTION_TYPES</span> <span class="o">=</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;field_all&quot;</span><span class="p">,</span> <span class="s2">&quot;field_each&quot;</span><span class="p">,</span> <span class="s2">&quot;field_interaction&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="DotProductInteraction"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.DotProductInteraction.html#merlin.models.tf.DotProductInteraction">[docs]</a><span class="nd">@tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">register_keras_serializable</span><span class="p">(</span><span class="n">package</span><span class="o">=</span><span class="s2">&quot;merlin_models&quot;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">DotProductInteraction</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Layer</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Layer implementing the factorization machine style feature</span>
+<span class="sd">    interaction layer suggested by the DLRM and DeepFM architectures,</span>
+<span class="sd">    generalized to include a dot-product version of the parameterized</span>
+<span class="sd">    interaction suggested by the FiBiNet architecture (which normally</span>
+<span class="sd">    uses element-wise multiplication instead of dot product). Maps from</span>
+<span class="sd">    tensors of shape `(batch_size, num_features, embedding_dim)` to</span>
+<span class="sd">    tensors of shape `(batch_size, (num_features - 1)*num_features // 2)`</span>
+<span class="sd">    if `self_interaction` is `False`, otherwise `(batch_size, num_features**2)`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ------------------------</span>
+<span class="sd">    interaction_type: {}</span>
+<span class="sd">        The type of feature interaction to use. `None` defaults to the</span>
+<span class="sd">        standard factorization machine style interaction, and the</span>
+<span class="sd">        alternatives use the implementation defined in the FiBiNet</span>
+<span class="sd">        architecture (with the element-wise multiplication replaced</span>
+<span class="sd">        with a dot product).</span>
+<span class="sd">    self_interaction: bool</span>
+<span class="sd">        Whether to calculate the interaction of a feature with itself.</span>
+<span class="sd">    &quot;&quot;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+        <span class="n">_INTERACTION_TYPES</span>
+    <span class="p">)</span>
+
+<div class="viewcode-block" id="DotProductInteraction.__init__"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.DotProductInteraction.html#merlin.models.tf.DotProductInteraction.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interaction_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">self_interaction</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">interaction_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_INTERACTION_TYPES</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Unknown interaction type </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">interaction_type</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">interaction_type</span> <span class="o">=</span> <span class="n">interaction_type</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">self_interaction</span> <span class="o">=</span> <span class="n">self_interaction</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">DotProductInteraction</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DotProductInteraction.build"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.DotProductInteraction.html#merlin.models.tf.DotProductInteraction.build">[docs]</a>    <span class="k">def</span> <span class="nf">build</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_shape</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">interaction_type</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">built</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">return</span>
+
+        <span class="n">kernel_shape</span> <span class="o">=</span> <span class="p">[</span><span class="n">input_shape</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">input_shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">interaction_type</span> <span class="ow">in</span> <span class="n">_INTERACTION_TYPES</span><span class="p">[</span><span class="mi">2</span><span class="p">:]:</span>
+            <span class="n">idx</span> <span class="o">=</span> <span class="n">_INTERACTION_TYPES</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">interaction_type</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">idx</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+                <span class="n">kernel_shape</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">input_shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_weight</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;bilinear_interaction_kernel&quot;</span><span class="p">,</span>
+            <span class="n">shape</span><span class="o">=</span><span class="n">kernel_shape</span><span class="p">,</span>
+            <span class="n">initializer</span><span class="o">=</span><span class="s2">&quot;glorot_normal&quot;</span><span class="p">,</span>
+            <span class="n">trainable</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">built</span> <span class="o">=</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="DotProductInteraction.call"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.DotProductInteraction.html#merlin.models.tf.DotProductInteraction.call">[docs]</a>    <span class="k">def</span> <span class="nf">call</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">):</span>
+        <span class="n">right</span> <span class="o">=</span> <span class="n">inputs</span>
+
+        <span class="c1"># first transform v_i depending on the interaction type</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">interaction_type</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">left</span> <span class="o">=</span> <span class="n">inputs</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">interaction_type</span> <span class="o">==</span> <span class="s2">&quot;field_all&quot;</span><span class="p">:</span>
+            <span class="n">left</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">interaction_type</span> <span class="o">==</span> <span class="s2">&quot;field_each&quot;</span><span class="p">:</span>
+            <span class="n">left</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;b...k,...jk-&gt;b...j&quot;</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">left</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;b...k,f...jk-&gt;bf...j&quot;</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="p">)</span>
+
+        <span class="c1"># do the interaction between v_i and v_j</span>
+        <span class="c1"># output shape will be (batch_size, num_features, num_features)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">interaction_type</span> <span class="o">!=</span> <span class="s2">&quot;field_interaction&quot;</span><span class="p">:</span>
+            <span class="n">interactions</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">transpose_b</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">interactions</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s2">&quot;b...jk,b...k-&gt;b...j&quot;</span><span class="p">,</span> <span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">)</span>
+
+        <span class="c1"># mask out the appropriate area</span>
+        <span class="n">ones</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">reduce_sum</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">interactions</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">band_part</span><span class="p">(</span><span class="n">ones</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># set lower diagonal to zero</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">self_interaction</span><span class="p">:</span>
+            <span class="n">mask</span> <span class="o">=</span> <span class="n">mask</span> <span class="o">-</span> <span class="n">tf</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">band_part</span><span class="p">(</span><span class="n">ones</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>  <span class="c1"># get rid of diagonal</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">bool</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">boolean_mask</span><span class="p">(</span><span class="n">interactions</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># masking destroys shape information, set explicitly</span>
+        <span class="n">x</span><span class="o">.</span><span class="n">set_shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">compute_output_shape</span><span class="p">(</span><span class="n">inputs</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">x</span></div>
+
+<div class="viewcode-block" id="DotProductInteraction.compute_output_shape"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.DotProductInteraction.html#merlin.models.tf.DotProductInteraction.compute_output_shape">[docs]</a>    <span class="k">def</span> <span class="nf">compute_output_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_shape</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">self_interaction</span><span class="p">:</span>
+            <span class="n">output_dim</span> <span class="o">=</span> <span class="n">input_shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">output_dim</span> <span class="o">=</span> <span class="n">input_shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">input_shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span>
+
+        <span class="k">return</span> <span class="n">input_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">output_dim</span></div>
+
+<div class="viewcode-block" id="DotProductInteraction.get_config"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.DotProductInteraction.html#merlin.models.tf.DotProductInteraction.get_config">[docs]</a>    <span class="k">def</span> <span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;interaction_type&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">interaction_type</span><span class="p">,</span>
+            <span class="s2">&quot;self_interaction&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">self_interaction</span><span class="p">,</span>
+        <span class="p">}</span></div></div>
+
+
+<span class="k">class</span> <span class="nc">XDeepFmOuterProduct</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Layer</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Layer implementing the outer product transformation used in</span>
+<span class="sd">    the Compressed Interaction Network (CIN) proposed in</span>
+<span class="sd">    in https://arxiv.org/abs/1803.05170. Treats the feature dimension</span>
+<span class="sd">    H_k of a B x H_k x D feature embedding tensor as a feature map</span>
+<span class="sd">    of the D embedding elements, and computes element-wise multiplication</span>
+<span class="sd">    interaction between these maps and those from an initial input tensor</span>
+<span class="sd">    x_0 before taking the inner product with a parameter matrix.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ------------</span>
+<span class="sd">    dim : int</span>
+<span class="sd">      Feature dimension of the layer. Output will be of shape</span>
+<span class="sd">      (batch_size, dim, embedding_dim)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dim</span> <span class="o">=</span> <span class="n">dim</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">build</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_shapes</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">input_shapes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">(</span><span class="nb">tuple</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">TensorShape</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Should be called on a list of inputs.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">input_shapes</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Should only have two inputs, found </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">input_shapes</span><span class="p">)))</span>
+        <span class="k">for</span> <span class="n">shape</span> <span class="ow">in</span> <span class="n">input_shapes</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">3</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Found shape </span><span class="si">{}</span><span class="s2"> without 3 dimensions&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">shape</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">input_shapes</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="n">input_shapes</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Last dimension should match, found dimensions </span><span class="si">{}</span><span class="s2"> and </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">input_shapes</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">input_shapes</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="c1"># H_k x H_{k-1} x m</span>
+        <span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">,</span> <span class="n">input_shapes</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">input_shapes</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_weight</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;kernel&quot;</span><span class="p">,</span> <span class="n">initializer</span><span class="o">=</span><span class="s2">&quot;glorot_uniform&quot;</span><span class="p">,</span> <span class="n">trainable</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">shape</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">built</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="k">def</span> <span class="nf">call</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ------------</span>
+<span class="sd">        inputs : array-like(tf.Tensor)</span>
+<span class="sd">          The two input tensors, the first of which should be the</span>
+<span class="sd">          output of the previous layer, and the second of which</span>
+<span class="sd">          should be the input to the CIN.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">x_k_minus_1</span><span class="p">,</span> <span class="n">x_0</span> <span class="o">=</span> <span class="n">inputs</span>
+
+        <span class="c1"># need to do shape manipulations so that we</span>
+        <span class="c1"># can do element-wise multiply</span>
+        <span class="n">x_k_minus_1</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">x_k_minus_1</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>  <span class="c1"># B x H_{k-1} x 1 x D</span>
+        <span class="n">x_k_minus_1</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">x_k_minus_1</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">x_0</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">1</span><span class="p">])</span>  <span class="c1"># B x H_{k-1} x m x D</span>
+        <span class="n">x_k_minus_1</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">x_k_minus_1</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>  <span class="c1"># H_{k-1} x B x m x D</span>
+        <span class="n">z_k</span> <span class="o">=</span> <span class="n">x_k_minus_1</span> <span class="o">*</span> <span class="n">x_0</span>  <span class="c1"># H_{k-1} x B x m x D</span>
+        <span class="n">z_k</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">z_k</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>  <span class="c1"># B x H_{k-1} x m x D</span>
+
+        <span class="c1"># now we need to map to B x H_k x D</span>
+        <span class="n">x_k</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">tensordot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="p">,</span> <span class="n">z_k</span><span class="p">,</span> <span class="n">axes</span><span class="o">=</span><span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]])</span>
+        <span class="n">x_k</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">x_k</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">x_k</span>
+
+    <span class="k">def</span> <span class="nf">compute_output_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_shapes</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">input_shapes</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">,</span> <span class="n">input_shapes</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">2</span><span class="p">])</span>
+
+
+<div class="viewcode-block" id="FMPairwiseInteraction"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.FMPairwiseInteraction.html#merlin.models.tf.FMPairwiseInteraction">[docs]</a><span class="nd">@tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">register_keras_serializable</span><span class="p">(</span><span class="n">package</span><span class="o">=</span><span class="s2">&quot;merlin.models&quot;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">FMPairwiseInteraction</span><span class="p">(</span><span class="n">Block</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute pairwise (2nd-order) feature interactions like defined in</span>
+<span class="sd">    Factorized Machine [1].</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    [1] Steffen, Rendle, &quot;Factorization Machines&quot; IEEE International</span>
+<span class="sd">    Conference on Data Mining, 2010. https://ieeexplore.ieee.org/document/5694074</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="FMPairwiseInteraction.call"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.FMPairwiseInteraction.html#merlin.models.tf.FMPairwiseInteraction.call">[docs]</a>    <span class="k">def</span> <span class="nf">call</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        inputs : array-like(tf.Tensor)</span>
+<span class="sd">          A 3-D tensor of shape (bs, n_features, embedding_dim)</span>
+<span class="sd">          containing the stacked embeddings of input features.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        A 2-D tensor of shape (bs, K) containing pairwise interactions</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">inputs</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;inputs should be a 3-D tensor&quot;</span>
+
+        <span class="c1"># sum_square part</span>
+        <span class="n">summed_square</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">reduce_sum</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+
+        <span class="c1"># square_sum part</span>
+        <span class="n">squared_sum</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">reduce_sum</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">inputs</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># second order</span>
+        <span class="k">return</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">tf</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">summed_square</span><span class="p">,</span> <span class="n">squared_sum</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FMPairwiseInteraction.compute_output_shape"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.FMPairwiseInteraction.html#merlin.models.tf.FMPairwiseInteraction.compute_output_shape">[docs]</a>    <span class="k">def</span> <span class="nf">compute_output_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_shapes</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Computes the output shape based on the input shapes</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        input_shapes : tf.TensorShape</span>
+<span class="sd">            The input shapes</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        tf.TensorShape</span>
+<span class="sd">            The output shape</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">input_shapes</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Found shape </span><span class="si">{}</span><span class="s2"> without 3 dimensions&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">input_shapes</span><span class="p">))</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">input_shapes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">input_shapes</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span></div></div>
+
+
+<div class="viewcode-block" id="FMBlock"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.FMBlock.html#merlin.models.tf.FMBlock">[docs]</a><span class="k">def</span> <span class="nf">FMBlock</span><span class="p">(</span>
+    <span class="n">schema</span><span class="p">:</span> <span class="n">Schema</span><span class="p">,</span>
+    <span class="n">fm_input_block</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Block</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">wide_input_block</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Block</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">wide_logit_block</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Block</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">factors_dim</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Implements the Factorization Machine, as introduced in [1].</span>
+<span class="sd">    It consists in the sum of a wide component that weights each</span>
+<span class="sd">    feature individually and a 2nd-level feature interaction using</span>
+<span class="sd">    factors.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    [1] Steffen, Rendle, &quot;Factorization Machines&quot; IEEE International</span>
+<span class="sd">    Conference on Data Mining, 2010. https://ieeexplore.ieee.org/document/5694074</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    schema : Schema</span>
+<span class="sd">        The schema of input features</span>
+<span class="sd">    fm_input_block : Optional[Block], by default None</span>
+<span class="sd">        The input block for the 2nd-order feature interaction in Factorization Machine.</span>
+<span class="sd">        Only categorical features will be used by this block, as it computes</span>
+<span class="sd">        dot product between all paired combinations of embedding values.</span>
+<span class="sd">        If not provided, an InputBlockV2 is instantiated based on schema.</span>
+<span class="sd">        Note: All features (including continuous) are considered in the</span>
+<span class="sd">        1st-order (wide) part which uses another input block.</span>
+<span class="sd">    wide_input_block: Optional[Block], by default None</span>
+<span class="sd">        The input for the wide block. If not provided,</span>
+<span class="sd">        creates a default block that encodes categorical features</span>
+<span class="sd">        with one-hot / multi-hot representation and also includes the continuous features.</span>
+<span class="sd">    wide_logit_block: Optional[Block], by default None</span>
+<span class="sd">        The output layer of the wide input. The last dimension needs to be 1.</span>
+<span class="sd">        You might want to provide your own output logit block if you want to add</span>
+<span class="sd">        dropout or kernel regularization to the wide block.</span>
+<span class="sd">    factors_dim : Optional[int], optional</span>
+<span class="sd">        If fm_input_block is not provided, the factors_dim is used to define the</span>
+<span class="sd">        embeddings dim to instantiate InputBlockV2, by default None</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    tf.Tensor</span>
+<span class="sd">        Returns a 2D tensor (batch size, 1) with the sum of the wide component</span>
+<span class="sd">        and 2nd-order interaction component of FM</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">cat_schema</span> <span class="o">=</span> <span class="n">schema</span><span class="o">.</span><span class="n">select_by_tag</span><span class="p">(</span><span class="n">Tags</span><span class="o">.</span><span class="n">CATEGORICAL</span><span class="p">)</span>
+    <span class="n">cont_schema</span> <span class="o">=</span> <span class="n">schema</span><span class="o">.</span><span class="n">select_by_tag</span><span class="p">(</span><span class="n">Tags</span><span class="o">.</span><span class="n">CONTINUOUS</span><span class="p">)</span>
+
+    <span class="n">wide_input_block</span> <span class="o">=</span> <span class="n">wide_input_block</span> <span class="ow">or</span> <span class="n">ParallelBlock</span><span class="p">(</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;categorical&quot;</span><span class="p">:</span> <span class="n">CategoryEncoding</span><span class="p">(</span><span class="n">cat_schema</span><span class="p">,</span> <span class="n">output_mode</span><span class="o">=</span><span class="s2">&quot;multi_hot&quot;</span><span class="p">,</span> <span class="n">sparse</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+            <span class="s2">&quot;continuous&quot;</span><span class="p">:</span> <span class="n">Filter</span><span class="p">(</span><span class="n">cont_schema</span><span class="p">)</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">ToSparse</span><span class="p">()),</span>
+        <span class="p">},</span>
+        <span class="n">aggregation</span><span class="o">=</span><span class="s2">&quot;concat&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">wide_logit_block</span> <span class="o">=</span> <span class="n">wide_logit_block</span> <span class="ow">or</span> <span class="n">MLPBlock</span><span class="p">([</span><span class="mi">1</span><span class="p">],</span> <span class="n">activation</span><span class="o">=</span><span class="s2">&quot;linear&quot;</span><span class="p">,</span> <span class="n">use_bias</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">first_order</span> <span class="o">=</span> <span class="n">wide_input_block</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">wide_logit_block</span><span class="p">)</span>
+
+    <span class="n">fm_input_block</span> <span class="o">=</span> <span class="n">fm_input_block</span> <span class="ow">or</span> <span class="n">InputBlockV2</span><span class="p">(</span>
+        <span class="n">cat_schema</span><span class="p">,</span>
+        <span class="n">categorical</span><span class="o">=</span><span class="n">Embeddings</span><span class="p">(</span><span class="n">cat_schema</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="n">factors_dim</span><span class="p">),</span>
+        <span class="n">aggregation</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">pairwise_interaction</span> <span class="o">=</span> <span class="n">SequentialBlock</span><span class="p">(</span>
+        <span class="n">Filter</span><span class="p">(</span><span class="n">cat_schema</span><span class="p">),</span>
+        <span class="n">fm_input_block</span><span class="p">,</span>
+        <span class="n">FMPairwiseInteraction</span><span class="p">()</span><span class="o">.</span><span class="n">prepare</span><span class="p">(</span><span class="n">aggregation</span><span class="o">=</span><span class="n">StackFeatures</span><span class="p">(</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)),</span>
+        <span class="n">MapValues</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Lambda</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">reduce_sum</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">))),</span>
+    <span class="p">)</span>
+
+    <span class="n">fm_block</span> <span class="o">=</span> <span class="n">ParallelBlock</span><span class="p">([</span><span class="n">first_order</span><span class="p">,</span> <span class="n">pairwise_interaction</span><span class="p">],</span> <span class="n">aggregation</span><span class="o">=</span><span class="s2">&quot;element-wise-sum&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">fm_block</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, NVIDIA.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-NVJ1Y1YJHK"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-NVJ1Y1YJHK', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

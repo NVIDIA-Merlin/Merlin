@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>merlin.models.tf.blocks.experts &mdash; Merlin  documentation</title><link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/mystnb.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/togglebutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/css/custom.css" type="text/css" />
+    <link rel="canonical" href="https://nvidia-merlin.github.io/Merlin/stable/_modules/merlin/models/tf/blocks/experts.html" />
+  <!--[if lt IE 9]>
+    <script src="../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../../../../../" src="../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../_static/jquery.js"></script>
+        <script src="../../../../../_static/underscore.js"></script>
+        <script src="../../../../../_static/doctools.js"></script>
+        <script >let toggleHintShow = 'Click to show';</script>
+        <script >let toggleHintHide = 'Click to hide';</script>
+        <script >let toggleOpenOnPrint = 'true';</script>
+        <script src="../../../../../_static/togglebutton.js"></script>
+        <script >var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="banner">
+    <p class="banner">
+      Beginning in January 2023, versions for all NVIDIA Merlin projects
+      will change from semantic versioning like <code>4.0</code>
+      to calendar versioning like <code>23.01</code>.</p>
+  </div>
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../../index.html" class="icon icon-home">
+            Merlin
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../README.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../guide/recommender_system_guide.html">Recommender System Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../examples/index.html">Example Notebooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../api_overview.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../containers.html">Merlin Containers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../support_matrix/index.html">Merlin Support Matrix</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">Merlin</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">merlin.models.tf.blocks.experts</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for merlin.models.tf.blocks.experts</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># Copyright (c) 2021, NVIDIA CORPORATION.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+<span class="c1">#</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
+
+<span class="kn">from</span> <span class="nn">merlin.models.tf.core.aggregation</span> <span class="kn">import</span> <span class="n">StackFeatures</span>
+<span class="kn">from</span> <span class="nn">merlin.models.tf.core.base</span> <span class="kn">import</span> <span class="n">Block</span>
+<span class="kn">from</span> <span class="nn">merlin.models.tf.core.combinators</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">ParallelBlock</span><span class="p">,</span>
+    <span class="n">SequentialBlock</span><span class="p">,</span>
+    <span class="n">TabularBlock</span><span class="p">,</span>
+    <span class="n">WithShortcut</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">merlin.models.tf.models.base</span> <span class="kn">import</span> <span class="n">get_task_names_from_outputs</span>
+<span class="kn">from</span> <span class="nn">merlin.models.tf.prediction_tasks.base</span> <span class="kn">import</span> <span class="n">ParallelPredictionBlock</span><span class="p">,</span> <span class="n">PredictionTask</span>
+<span class="kn">from</span> <span class="nn">merlin.models.tf.typing</span> <span class="kn">import</span> <span class="n">TabularData</span>
+<span class="kn">from</span> <span class="nn">merlin.models.tf.utils.tf_utils</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">maybe_deserialize_keras_objects</span><span class="p">,</span>
+    <span class="n">maybe_serialize_keras_objects</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<span class="nd">@tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">register_keras_serializable</span><span class="p">(</span><span class="n">package</span><span class="o">=</span><span class="s2">&quot;merlin_models&quot;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">ExpertsGate</span><span class="p">(</span><span class="n">Block</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;MMoE Gate, which uses input features to generate softmax weights</span>
+<span class="sd">    in a weighted sum of expert outputs.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    num_experts : int</span>
+<span class="sd">        Number of experts, so that there is a weight for each expert</span>
+<span class="sd">    gate_block : Block, optional</span>
+<span class="sd">        Allows for having a Block (e.g. MLPBlock([32])) to combine the inputs</span>
+<span class="sd">        before the final projection layer (created automatically)</span>
+<span class="sd">        that outputs a softmax distribution over the number of experts.</span>
+<span class="sd">        This might give more capacity to the gates to decide from the inputs</span>
+<span class="sd">        how to better combine the experts.</span>
+<span class="sd">    softmax_temperature : float, optional</span>
+<span class="sd">        The temperature of the softmax that is used for weighting the experts outputs,</span>
+<span class="sd">        by default 1.0</span>
+<span class="sd">    enable_gate_weights_metric : bool, optional</span>
+<span class="sd">        Enables logging the average gate weights on experts</span>
+<span class="sd">    name : str, optional</span>
+<span class="sd">        Name of the block, by default None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">num_experts</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">gate_block</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Block</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">softmax_temperature</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">enable_gate_weights_metrics</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_experts</span> <span class="o">=</span> <span class="n">num_experts</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">softmax_temperature</span> <span class="o">=</span> <span class="n">softmax_temperature</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">enable_gate_weights_metrics</span> <span class="o">=</span> <span class="n">enable_gate_weights_metrics</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gate_name</span> <span class="o">=</span> <span class="n">name</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">gate_block</span> <span class="o">=</span> <span class="n">gate_block</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gate_final</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span>
+            <span class="n">num_experts</span><span class="p">,</span> <span class="n">use_bias</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;gate_final_</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">call</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">TabularData</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;MMOE call</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        inputs : TabularData</span>
+<span class="sd">            Expects a dict/TabularData with &quot;shortcut&quot; (inputs) and &quot;experts&quot; blocks</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        tf.Tensor</span>
+<span class="sd">            The experts outputs weighted by the gate</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">inputs</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">!=</span> <span class="nb">set</span><span class="p">([</span><span class="s2">&quot;shortcut&quot;</span><span class="p">,</span> <span class="s2">&quot;experts&quot;</span><span class="p">]):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;MMoE gate expects a dict with &#39;shortcut&#39; and &#39;experts&#39; keys.&quot;</span><span class="p">)</span>
+
+        <span class="n">inputs_shortcut</span><span class="p">,</span> <span class="n">expert_outputs</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;shortcut&quot;</span><span class="p">],</span> <span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;experts&quot;</span><span class="p">]</span>
+
+        <span class="n">inputs_gate</span> <span class="o">=</span> <span class="n">inputs_shortcut</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">gate_block</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">inputs_gate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gate_block</span><span class="p">(</span><span class="n">inputs_gate</span><span class="p">)</span>
+        <span class="n">gate_weights</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span>
+            <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gate_final</span><span class="p">(</span><span class="n">inputs_gate</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">softmax_temperature</span><span class="p">),</span>
+            <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;gate_softmax&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">reduce_sum</span><span class="p">(</span><span class="n">expert_outputs</span> <span class="o">*</span> <span class="n">gate_weights</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">enable_gate_weights_metrics</span><span class="p">:</span>
+            <span class="n">gate_weights_batch_mean</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">reduce_mean</span><span class="p">(</span><span class="n">gate_weights</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">gate_weights</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">add_metric</span><span class="p">(</span><span class="n">gate_weights_batch_mean</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">gate_name</span><span class="si">}</span><span class="s2">_weight_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">out</span>
+
+    <span class="k">def</span> <span class="nf">compute_output_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_shape</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">TensorShape</span><span class="p">([</span><span class="n">input_shape</span><span class="p">[</span><span class="s2">&quot;experts&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">input_shape</span><span class="p">[</span><span class="s2">&quot;experts&quot;</span><span class="p">][</span><span class="mi">2</span><span class="p">]])</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_config</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="n">maybe_deserialize_keras_objects</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;gate_block&quot;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="o">**</span><span class="n">config</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="n">maybe_serialize_keras_objects</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;gate_block&quot;</span><span class="p">])</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="n">num_experts</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_experts</span><span class="p">,</span>
+            <span class="n">softmax_temperature</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">softmax_temperature</span><span class="p">,</span>
+            <span class="n">enable_gate_weights_metrics</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">enable_gate_weights_metrics</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gate_name</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">config</span>
+
+
+<div class="viewcode-block" id="MMOEBlock"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.MMOEBlock.html#merlin.models.tf.MMOEBlock">[docs]</a><span class="k">def</span> <span class="nf">MMOEBlock</span><span class="p">(</span>
+    <span class="n">outputs</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">PredictionTask</span><span class="p">],</span> <span class="n">ParallelPredictionBlock</span><span class="p">,</span> <span class="n">ParallelBlock</span><span class="p">],</span>
+    <span class="n">expert_block</span><span class="p">:</span> <span class="n">Block</span><span class="p">,</span>
+    <span class="n">num_experts</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">gate_block</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Block</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">gate_softmax_temperature</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">gate_kwargs</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SequentialBlock</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Implements the Multi-gate Mixture-of-Experts (MMoE) introduced in [1].</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    [1] Ma, Jiaqi, et al. &quot;Modeling task relationships in multi-task learning with</span>
+<span class="sd">    multi-gate mixture-of-experts.&quot; Proceedings of the 24th ACM SIGKDD international</span>
+<span class="sd">    conference on knowledge discovery &amp; data mining. 2018.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    outputs : Union[List[str], List[PredictionTask], ParallelPredictionBlock, ParallelBlock]</span>
+<span class="sd">        Names of the tasks or PredictionTask/ParallelPredictionBlock objects from</span>
+<span class="sd">        which we can extract the task names. A gate is created for each task.</span>
+<span class="sd">    expert_block : Block</span>
+<span class="sd">        Expert block to be replicated, e.g. MLPBlock([64])</span>
+<span class="sd">    num_experts : int</span>
+<span class="sd">        Number of experts to be replicated</span>
+<span class="sd">    gate_block : Block, optional</span>
+<span class="sd">        Allows for having a Block (e.g. MLPBlock([32])) to combine the inputs</span>
+<span class="sd">        before the final projection layer (created automatically)</span>
+<span class="sd">        that outputs a softmax distribution over the number of experts.</span>
+<span class="sd">        This might give more capacity to the gates to decide from the inputs</span>
+<span class="sd">        how to better combine the experts.</span>
+<span class="sd">    gate_softmax_temperature : float, optional</span>
+<span class="sd">        The temperature used by the gates, by default 1.0.</span>
+<span class="sd">        It can be used to smooth the weights distribution over experts outputs.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    SequentialBlock</span>
+<span class="sd">        Outputs the sequence of blocks that implement MMOE</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">outputs</span><span class="p">,</span> <span class="p">(</span><span class="nb">tuple</span><span class="p">,</span> <span class="nb">list</span><span class="p">))</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">outputs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">output_names</span> <span class="o">=</span> <span class="n">outputs</span>  <span class="c1"># type: ignore</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">output_names</span> <span class="o">=</span> <span class="n">get_task_names_from_outputs</span><span class="p">(</span><span class="n">outputs</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expert_block</span><span class="p">,</span> <span class="n">Block</span><span class="p">):</span>
+        <span class="n">expert_block</span> <span class="o">=</span> <span class="n">Block</span><span class="o">.</span><span class="n">from_layer</span><span class="p">(</span><span class="n">expert_block</span><span class="p">)</span>
+
+    <span class="n">experts</span> <span class="o">=</span> <span class="n">expert_block</span><span class="o">.</span><span class="n">repeat_in_parallel</span><span class="p">(</span>
+        <span class="n">num_experts</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;expert_&quot;</span><span class="p">,</span> <span class="n">aggregation</span><span class="o">=</span><span class="n">StackFeatures</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="n">gates</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">output_name</span><span class="p">:</span> <span class="n">ExpertsGate</span><span class="p">(</span>
+            <span class="n">num_experts</span><span class="p">,</span>
+            <span class="n">gate_block</span><span class="o">=</span><span class="n">gate_block</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span> <span class="k">if</span> <span class="n">gate_block</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">softmax_temperature</span><span class="o">=</span><span class="n">gate_softmax_temperature</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;gate_</span><span class="si">{</span><span class="n">output_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">gate_kwargs</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">output_name</span> <span class="ow">in</span> <span class="n">output_names</span>
+    <span class="p">}</span>
+    <span class="n">gates</span> <span class="o">=</span> <span class="n">ParallelBlock</span><span class="p">(</span><span class="n">gates</span><span class="p">)</span>
+
+    <span class="n">mmoe</span> <span class="o">=</span> <span class="n">WithShortcut</span><span class="p">(</span>
+        <span class="n">experts</span><span class="p">,</span>
+        <span class="n">block_outputs_name</span><span class="o">=</span><span class="s2">&quot;experts&quot;</span><span class="p">,</span>
+        <span class="n">automatic_pruning</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">mmoe</span> <span class="o">=</span> <span class="n">mmoe</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">gates</span><span class="p">,</span> <span class="n">block_name</span><span class="o">=</span><span class="s2">&quot;mmoe&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">mmoe</span></div>
+
+
+<span class="nd">@tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">register_keras_serializable</span><span class="p">(</span><span class="n">package</span><span class="o">=</span><span class="s2">&quot;merlin_models&quot;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">CGCGateTransformation</span><span class="p">(</span><span class="n">TabularBlock</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Use the tasks (and shared) gates to aggregate</span>
+<span class="sd">    the outputs of the experts.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    task_names : List[str]</span>
+<span class="sd">        List with the task names</span>
+<span class="sd">    num_task_experts : int, optional</span>
+<span class="sd">        Number of task-specific experts, by default 1</span>
+<span class="sd">    num_task_experts : int, optional</span>
+<span class="sd">        Number of task-specific experts, by default 1</span>
+<span class="sd">    num_shared_experts : int, optional</span>
+<span class="sd">        Number of shared experts for tasks, by default 1</span>
+<span class="sd">    add_shared_gate : bool, optional</span>
+<span class="sd">        Whether to add a shared gate for this CGC block, by default False.</span>
+<span class="sd">        Useful when multiple CGC blocks are stacked (e.g. in PLEBlock)</span>
+<span class="sd">        As all CGC blocks except the last one should include the shared gate.</span>
+<span class="sd">    gate_block : Optional[Block], optional</span>
+<span class="sd">        Optional block than can make the Gate mode powerful in converting</span>
+<span class="sd">        the inputs into expert weights for averaging, by default None</span>
+<span class="sd">    gate_softmax_temperature : float, optional</span>
+<span class="sd">        Temperature of the softmax used by the Gates for getting</span>
+<span class="sd">        weights for the average. Temperature can be used to smooth</span>
+<span class="sd">        the weights distribution, and is by default 1.0.</span>
+<span class="sd">    enable_gate_weights_metrics : bool, optional</span>
+<span class="sd">        Enables logging the average gate weights on experts</span>
+<span class="sd">    gate_dict : Dict[str, ExpertsGate], optional</span>
+<span class="sd">        Used by the deserializer to rebuild the dict of gates, by default None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">task_names</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">num_task_experts</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">num_shared_experts</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">add_shared_gate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">gate_block</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Block</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">gate_softmax_temperature</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">enable_gate_weights_metrics</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">gate_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ExpertsGate</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">num_total_experts</span> <span class="o">=</span> <span class="n">num_task_experts</span> <span class="o">+</span> <span class="n">num_shared_experts</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">task_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">task_names</span><span class="p">)</span>  <span class="c1"># Creates another list</span>
+        <span class="k">if</span> <span class="n">add_shared_gate</span> <span class="ow">and</span> <span class="s2">&quot;shared&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_names</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">task_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;shared&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stack</span> <span class="o">=</span> <span class="n">StackFeatures</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">gate_dict</span> <span class="o">=</span> <span class="n">gate_dict</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">gate_dict</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gate_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ExpertsGate</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="n">name</span><span class="p">:</span> <span class="n">ExpertsGate</span><span class="p">(</span>
+                    <span class="n">num_total_experts</span><span class="p">,</span>
+                    <span class="n">gate_block</span><span class="o">=</span><span class="n">gate_block</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span> <span class="k">if</span> <span class="n">gate_block</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                    <span class="n">softmax_temperature</span><span class="o">=</span><span class="n">gate_softmax_temperature</span><span class="p">,</span>
+                    <span class="n">enable_gate_weights_metrics</span><span class="o">=</span><span class="n">enable_gate_weights_metrics</span><span class="p">,</span>
+                    <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;gate_</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">task_names</span>
+            <span class="p">}</span>
+
+            <span class="k">if</span> <span class="n">add_shared_gate</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">gate_dict</span><span class="p">[</span><span class="s2">&quot;shared&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ExpertsGate</span><span class="p">(</span>
+                    <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">task_names</span><span class="p">)</span> <span class="o">*</span> <span class="n">num_task_experts</span><span class="p">)</span> <span class="o">+</span> <span class="n">num_shared_experts</span><span class="p">,</span>
+                    <span class="n">gate_block</span><span class="o">=</span><span class="n">gate_block</span><span class="p">,</span>
+                    <span class="n">softmax_temperature</span><span class="o">=</span><span class="n">gate_softmax_temperature</span><span class="p">,</span>
+                    <span class="n">enable_gate_weights_metrics</span><span class="o">=</span><span class="n">enable_gate_weights_metrics</span><span class="p">,</span>
+                    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;shared_gate&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">call</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">expert_outputs</span><span class="p">:</span> <span class="n">TabularData</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TabularData</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
+        <span class="n">outputs</span><span class="p">:</span> <span class="n">TabularData</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="n">expert_outputs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">expert_outputs</span><span class="p">)</span>  <span class="c1"># Copying the dict</span>
+        <span class="n">shortcut</span> <span class="o">=</span> <span class="n">expert_outputs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;shortcut&quot;</span><span class="p">)</span>
+        <span class="n">outputs</span><span class="p">[</span><span class="s2">&quot;shortcut&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">shortcut</span>
+
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_names</span><span class="p">:</span>
+            <span class="n">experts</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+                <span class="n">experts</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filter_expert_outputs</span><span class="p">(</span><span class="n">expert_outputs</span><span class="p">,</span> <span class="n">name</span><span class="p">)),</span>
+                <span class="n">shortcut</span><span class="o">=</span><span class="n">shortcut</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">outputs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gate_dict</span><span class="p">[</span><span class="n">name</span><span class="p">](</span><span class="n">experts</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">outputs</span>
+
+    <span class="k">def</span> <span class="nf">filter_expert_outputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">expert_outputs</span><span class="p">:</span> <span class="n">TabularData</span><span class="p">,</span> <span class="n">task_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TabularData</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">task_name</span> <span class="o">==</span> <span class="s2">&quot;shared&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">expert_outputs</span>
+
+        <span class="n">filtered_experts</span><span class="p">:</span> <span class="n">TabularData</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">expert_outputs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">((</span><span class="n">task_name</span><span class="p">,</span> <span class="s2">&quot;shared&quot;</span><span class="p">)):</span>
+                <span class="n">filtered_experts</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+
+        <span class="k">return</span> <span class="n">filtered_experts</span>
+
+    <span class="k">def</span> <span class="nf">compute_output_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_shape</span><span class="p">):</span>
+        <span class="n">tensor_output_shape</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">input_shape</span><span class="o">.</span><span class="n">values</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="n">output_shapes</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">tensor_output_shape</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_names</span><span class="p">}</span>
+        <span class="k">return</span> <span class="n">output_shapes</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_config</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">custom_objects</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">gate_dict</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;gate_dict&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">gate_dict</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">gate_dict</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="n">name</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">deserialize</span><span class="p">(</span><span class="n">conf</span><span class="p">,</span> <span class="n">custom_objects</span><span class="o">=</span><span class="n">custom_objects</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">conf</span> <span class="ow">in</span> <span class="n">gate_dict</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+            <span class="p">}</span>
+
+        <span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">gate_dict</span><span class="o">=</span><span class="n">gate_dict</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="o">**</span><span class="n">config</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="n">maybe_serialize_keras_objects</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;gate_dict&quot;</span><span class="p">])</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="n">task_names</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">task_names</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">config</span>
+
+
+<div class="viewcode-block" id="CGCBlock"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.CGCBlock.html#merlin.models.tf.CGCBlock">[docs]</a><span class="nd">@tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">register_keras_serializable</span><span class="p">(</span><span class="n">package</span><span class="o">=</span><span class="s2">&quot;merlin_models&quot;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">CGCBlock</span><span class="p">(</span><span class="n">ParallelBlock</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Implements the Customized Gate Control (CGC) proposed in [1].</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    [1] Tang, Hongyan, et al. &quot;Progressive layered extraction (ple): A novel multi-task</span>
+<span class="sd">    learning (mtl) model for personalized recommendations.&quot;</span>
+<span class="sd">    Fourteenth ACM Conference on Recommender Systems. 2020.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    outputs : Union[List[str], List[PredictionTask], ParallelPredictionBlock, ParallelBlock]</span>
+<span class="sd">       Names of the tasks or PredictionTask/ParallelPredictionBlock objects from</span>
+<span class="sd">        which we can extract the task names</span>
+<span class="sd">    expert_block : Union[Block, tf.keras.layers.Layer]</span>
+<span class="sd">        Block that will be used for the experts</span>
+<span class="sd">    num_task_experts : int, optional</span>
+<span class="sd">        Number of task-specific experts, by default 1</span>
+<span class="sd">    num_shared_experts : int, optional</span>
+<span class="sd">        Number of shared experts for tasks, by default 1</span>
+<span class="sd">    add_shared_gate : bool, optional</span>
+<span class="sd">        Whether to add a shared gate for this CGC block, by default False.</span>
+<span class="sd">        Useful when multiple CGC blocks are stacked (e.g. in PLEBlock)</span>
+<span class="sd">        As all CGC blocks except the last one should include the shared gate.</span>
+<span class="sd">    gate_block : Optional[Block], optional</span>
+<span class="sd">        Optional block than can make the Gate mode powerful in converting</span>
+<span class="sd">        the inputs into expert weights for averaging, by default None</span>
+<span class="sd">    gate_softmax_temperature : float, optional</span>
+<span class="sd">        Temperature of the softmax used by the Gates for getting</span>
+<span class="sd">        weights for the average. Temperature can be used to smooth</span>
+<span class="sd">        the weights distribution, and is by default 1.0.</span>
+<span class="sd">    enable_gate_weights_metrics : bool, optional</span>
+<span class="sd">        Enables logging the average gate weights on experts</span>
+<span class="sd">    name : Optional[str], optional</span>
+<span class="sd">        Name of the CGC block, by default None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="CGCBlock.__init__"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.CGCBlock.html#merlin.models.tf.CGCBlock.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">outputs</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">PredictionTask</span><span class="p">],</span> <span class="n">ParallelPredictionBlock</span><span class="p">,</span> <span class="n">ParallelBlock</span><span class="p">],</span>
+        <span class="n">expert_block</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Block</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Layer</span><span class="p">],</span>
+        <span class="n">num_task_experts</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">num_shared_experts</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">add_shared_gate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">gate_block</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Block</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">gate_softmax_temperature</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">enable_gate_weights_metrics</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expert_block</span><span class="p">,</span> <span class="n">Block</span><span class="p">):</span>
+            <span class="n">expert_block</span> <span class="o">=</span> <span class="n">Block</span><span class="o">.</span><span class="n">from_layer</span><span class="p">(</span><span class="n">expert_block</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">outputs</span><span class="p">,</span> <span class="p">(</span><span class="nb">tuple</span><span class="p">,</span> <span class="nb">list</span><span class="p">))</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">outputs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">output_names</span> <span class="o">=</span> <span class="n">outputs</span>  <span class="c1"># type: ignore</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">output_names</span> <span class="o">=</span> <span class="n">get_task_names_from_outputs</span><span class="p">(</span><span class="n">outputs</span><span class="p">)</span>
+
+        <span class="n">output_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">output_names</span><span class="p">)</span>
+        <span class="n">task_experts</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="n">create_expert</span><span class="p">(</span><span class="n">expert_block</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">task</span><span class="si">}</span><span class="s2">/expert_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">task</span> <span class="ow">in</span> <span class="n">output_names</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_task_experts</span><span class="p">)</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="n">shared_experts</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">create_expert</span><span class="p">(</span><span class="n">expert_block</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;shared/expert_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_shared_experts</span><span class="p">)]</span>
+        <span class="p">)</span>
+
+        <span class="n">experts</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="n">task_experts</span><span class="p">,</span> <span class="o">**</span><span class="n">shared_experts</span><span class="p">}</span>
+
+        <span class="n">post</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;post&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">post</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">post</span> <span class="o">=</span> <span class="n">CGCGateTransformation</span><span class="p">(</span>
+                <span class="n">output_names</span><span class="p">,</span>
+                <span class="n">num_task_experts</span><span class="p">,</span>
+                <span class="n">num_shared_experts</span><span class="p">,</span>
+                <span class="n">add_shared_gate</span><span class="o">=</span><span class="n">add_shared_gate</span><span class="p">,</span>
+                <span class="n">gate_block</span><span class="o">=</span><span class="n">gate_block</span><span class="p">,</span>
+                <span class="n">gate_softmax_temperature</span><span class="o">=</span><span class="n">gate_softmax_temperature</span><span class="p">,</span>
+                <span class="n">enable_gate_weights_metrics</span><span class="o">=</span><span class="n">enable_gate_weights_metrics</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">experts</span><span class="p">,</span>
+            <span class="n">post</span><span class="o">=</span><span class="n">post</span><span class="p">,</span>
+            <span class="n">aggregation</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="CGCBlock.call"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.CGCBlock.html#merlin.models.tf.CGCBlock.call">[docs]</a>    <span class="k">def</span> <span class="nf">call</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">outputs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">shortcut</span><span class="o">=</span><span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;shortcut&quot;</span><span class="p">])</span>
+            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">layer</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parallel_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">input_name</span> <span class="o">=</span> <span class="s2">&quot;/&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+                <span class="n">outputs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">layer</span><span class="p">(</span><span class="n">inputs</span><span class="p">[</span><span class="n">input_name</span><span class="p">]))</span>
+
+            <span class="k">return</span> <span class="n">outputs</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">outputs</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="n">outputs</span><span class="p">[</span><span class="s2">&quot;shortcut&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">inputs</span>  <span class="c1"># type: ignore</span>
+
+        <span class="k">return</span> <span class="n">outputs</span></div>
+
+<div class="viewcode-block" id="CGCBlock.compute_call_output_shape"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.CGCBlock.html#merlin.models.tf.CGCBlock.compute_call_output_shape">[docs]</a>    <span class="k">def</span> <span class="nf">compute_call_output_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_shape</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">input_shape</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">output_shapes</span> <span class="o">=</span> <span class="p">{}</span>
+
+            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">layer</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parallel_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">input_name</span> <span class="o">=</span> <span class="s2">&quot;/&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+                <span class="n">output_shapes</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">compute_output_shape</span><span class="p">(</span><span class="n">input_shape</span><span class="p">[</span><span class="n">input_name</span><span class="p">]))</span>
+
+            <span class="k">return</span> <span class="n">output_shapes</span>
+
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">compute_call_output_shape</span><span class="p">(</span><span class="n">input_shape</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CGCBlock.from_config"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.CGCBlock.html#merlin.models.tf.CGCBlock.from_config">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_config</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="n">custom_objects</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">inputs</span><span class="p">,</span> <span class="n">config</span> <span class="o">=</span> <span class="n">ParallelBlock</span><span class="o">.</span><span class="n">parse_config</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">custom_objects</span><span class="p">)</span>
+        <span class="n">paralel_block</span> <span class="o">=</span> <span class="n">ParallelBlock</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="o">**</span><span class="n">config</span><span class="p">)</span>
+        <span class="n">paralel_block</span><span class="o">.</span><span class="vm">__class__</span> <span class="o">=</span> <span class="bp">cls</span>
+        <span class="k">return</span> <span class="n">paralel_block</span></div>
+
+<div class="viewcode-block" id="CGCBlock.get_config"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.CGCBlock.html#merlin.models.tf.CGCBlock.get_config">[docs]</a>    <span class="k">def</span> <span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">config</span></div></div>
+
+
+<span class="k">def</span> <span class="nf">create_expert</span><span class="p">(</span><span class="n">expert_block</span><span class="p">:</span> <span class="n">Block</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">TabularBlock</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Creates an expert from a block</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    expert_block : Block</span>
+<span class="sd">        Expert Block</span>
+<span class="sd">    name : str</span>
+<span class="sd">        Expert name</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Tuple[str, TabularBlock]</span>
+<span class="sd">        Tuple with the expert name and block</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">name</span><span class="p">,</span> <span class="n">expert_block</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span><span class="o">.</span><span class="n">as_tabular</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="PLEBlock"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.PLEBlock.html#merlin.models.tf.PLEBlock">[docs]</a><span class="k">def</span> <span class="nf">PLEBlock</span><span class="p">(</span>
+    <span class="n">num_layers</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">outputs</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">PredictionTask</span><span class="p">],</span> <span class="n">ParallelPredictionBlock</span><span class="p">,</span> <span class="n">ParallelBlock</span><span class="p">],</span>
+    <span class="n">expert_block</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Block</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Layer</span><span class="p">],</span>
+    <span class="n">num_task_experts</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="n">num_shared_experts</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="n">gate_block</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Block</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">gate_softmax_temperature</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+    <span class="n">enable_gate_weights_metrics</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Implements the Progressive Layered Extraction (PLE) model from [1],</span>
+<span class="sd">    by stacking CGC blocks (CGCBlock).</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    [1] Tang, Hongyan, et al. &quot;Progressive layered extraction (ple): A novel multi-task</span>
+<span class="sd">    learning (mtl) model for personalized recommendations.&quot;</span>
+<span class="sd">    Fourteenth ACM Conference on Recommender Systems. 2020.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    num_layers : int</span>
+<span class="sd">        Number of stacked CGC blocks</span>
+<span class="sd">    outputs : Union[List[str], List[PredictionTask], ParallelPredictionBlock, ParallelBlock]</span>
+<span class="sd">        Names of the tasks or PredictionTask/ParallelPredictionBlock objects from</span>
+<span class="sd">        which we can extract the task names</span>
+<span class="sd">    expert_block : Union[Block, tf.keras.layers.Layer]</span>
+<span class="sd">        Block that will be used for the experts</span>
+<span class="sd">    num_task_experts : int, optional</span>
+<span class="sd">        Number of task-specific experts, by default 1</span>
+<span class="sd">    num_shared_experts : int, optional</span>
+<span class="sd">        Number of shared experts for tasks, by default 1</span>
+<span class="sd">    gate_block : Optional[Block], optional</span>
+<span class="sd">        Optional block than can make the Gate mode powerful in converting</span>
+<span class="sd">        the inputs into expert weights for averaging, by default None</span>
+<span class="sd">    gate_softmax_temperature : float, optional</span>
+<span class="sd">        Temperature of the softmax used by the Gates for getting</span>
+<span class="sd">        weights for the average. Temperature can be used to smooth</span>
+<span class="sd">        the weights distribution, and is by default 1.0.</span>
+<span class="sd">    enable_gate_weights_metrics : bool, optional</span>
+<span class="sd">        Enables logging the average gate weights on experts</span>
+<span class="sd">    name : Optional[str], optional</span>
+<span class="sd">        Name of the PLE block, by default None</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    SequentialBlock</span>
+<span class="sd">        Returns the PLE block</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">cgc_blocks</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_layers</span><span class="p">):</span>
+        <span class="n">cgc_block</span> <span class="o">=</span> <span class="n">CGCBlock</span><span class="p">(</span>
+            <span class="n">outputs</span><span class="o">=</span><span class="n">outputs</span><span class="p">,</span>
+            <span class="n">expert_block</span><span class="o">=</span><span class="n">expert_block</span><span class="p">,</span>
+            <span class="n">num_task_experts</span><span class="o">=</span><span class="n">num_task_experts</span><span class="p">,</span>
+            <span class="n">num_shared_experts</span><span class="o">=</span><span class="n">num_shared_experts</span><span class="p">,</span>
+            <span class="n">add_shared_gate</span><span class="o">=</span><span class="p">(</span><span class="n">i</span> <span class="o">&lt;</span> <span class="n">num_layers</span> <span class="o">-</span> <span class="mi">1</span><span class="p">),</span>
+            <span class="n">gate_block</span><span class="o">=</span><span class="n">gate_block</span><span class="p">,</span>
+            <span class="n">gate_softmax_temperature</span><span class="o">=</span><span class="n">gate_softmax_temperature</span><span class="p">,</span>
+            <span class="n">enable_gate_weights_metrics</span><span class="o">=</span><span class="n">enable_gate_weights_metrics</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;cgc_block_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">cgc_blocks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cgc_block</span><span class="p">)</span>
+
+    <span class="n">cgc_blocks</span> <span class="o">=</span> <span class="n">SequentialBlock</span><span class="p">(</span><span class="o">*</span><span class="n">cgc_blocks</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">cgc_blocks</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, NVIDIA.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-NVJ1Y1YJHK"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-NVJ1Y1YJHK', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

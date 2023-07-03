@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>merlin.models.tf.core.tabular &mdash; Merlin  documentation</title><link rel="stylesheet" href="../../../../../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/mystnb.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/togglebutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../../_static/css/custom.css" type="text/css" />
+    <link rel="canonical" href="https://nvidia-merlin.github.io/Merlin/stable/_modules/merlin/models/tf/core/tabular.html" />
+  <!--[if lt IE 9]>
+    <script src="../../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../../../../../" src="../../../../../_static/documentation_options.js"></script>
+        <script src="../../../../../_static/jquery.js"></script>
+        <script src="../../../../../_static/underscore.js"></script>
+        <script src="../../../../../_static/doctools.js"></script>
+        <script >let toggleHintShow = 'Click to show';</script>
+        <script >let toggleHintHide = 'Click to hide';</script>
+        <script >let toggleOpenOnPrint = 'true';</script>
+        <script src="../../../../../_static/togglebutton.js"></script>
+        <script >var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+  <div class="banner">
+    <p class="banner">
+      Beginning in January 2023, versions for all NVIDIA Merlin projects
+      will change from semantic versioning like <code>4.0</code>
+      to calendar versioning like <code>23.01</code>.</p>
+  </div>
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../../index.html" class="icon icon-home">
+            Merlin
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../README.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../guide/recommender_system_guide.html">Recommender System Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../examples/index.html">Example Notebooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../api_overview.html">API Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../containers.html">Merlin Containers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../support_matrix/index.html">Merlin Support Matrix</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">Merlin</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">merlin.models.tf.core.tabular</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for merlin.models.tf.core.tabular</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">abc</span>
+<span class="kn">import</span> <span class="nn">collections.abc</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">overload</span>
+
+<span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
+
+<span class="kn">from</span> <span class="nn">merlin.models.config.schema</span> <span class="kn">import</span> <span class="n">SchemaMixin</span>
+<span class="kn">from</span> <span class="nn">merlin.models.tf.core.base</span> <span class="kn">import</span> <span class="n">Block</span><span class="p">,</span> <span class="n">BlockType</span><span class="p">,</span> <span class="n">right_shift_layer</span>
+<span class="kn">from</span> <span class="nn">merlin.models.tf.typing</span> <span class="kn">import</span> <span class="n">TabularData</span><span class="p">,</span> <span class="n">TensorOrTabularData</span>
+<span class="kn">from</span> <span class="nn">merlin.models.tf.utils</span> <span class="kn">import</span> <span class="n">tf_utils</span>
+<span class="kn">from</span> <span class="nn">merlin.models.utils</span> <span class="kn">import</span> <span class="n">schema_utils</span>
+<span class="kn">from</span> <span class="nn">merlin.models.utils.doc_utils</span> <span class="kn">import</span> <span class="n">docstring_parameter</span>
+<span class="kn">from</span> <span class="nn">merlin.models.utils.registry</span> <span class="kn">import</span> <span class="n">Registry</span><span class="p">,</span> <span class="n">RegistryMixin</span>
+<span class="kn">from</span> <span class="nn">merlin.schema</span> <span class="kn">import</span> <span class="n">Schema</span><span class="p">,</span> <span class="n">Tags</span>
+
+<span class="n">tabular_aggregation_registry</span><span class="p">:</span> <span class="n">Registry</span> <span class="o">=</span> <span class="n">Registry</span><span class="o">.</span><span class="n">class_registry</span><span class="p">(</span><span class="s2">&quot;tf.tabular_aggregations&quot;</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">TabularAggregation</span><span class="p">(</span>
+    <span class="n">SchemaMixin</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Layer</span><span class="p">,</span> <span class="n">RegistryMixin</span><span class="p">[</span><span class="s2">&quot;TabularAggregation&quot;</span><span class="p">],</span> <span class="n">abc</span><span class="o">.</span><span class="n">ABC</span>
+<span class="p">):</span>
+    <span class="n">registry</span> <span class="o">=</span> <span class="n">tabular_aggregation_registry</span>
+
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Aggregation of `TabularData` that outputs a single `Tensor`&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">call</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">TabularData</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_get_seq_features_shapes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs_sizes</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">TensorShape</span><span class="p">]):</span>
+        <span class="n">seq_features_shapes</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">fname</span><span class="p">,</span> <span class="n">fshape</span> <span class="ow">in</span> <span class="n">inputs_sizes</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="c1"># Saves the shapes of sequential features</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">fshape</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">3</span><span class="p">:</span>
+                <span class="n">seq_features_shapes</span><span class="p">[</span><span class="n">fname</span><span class="p">]</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">fshape</span><span class="p">[:</span><span class="mi">2</span><span class="p">])</span>
+
+        <span class="n">sequence_length</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">seq_features_shapes</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">seq_features_shapes</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;All sequential features must share the same shape in the first two dims &quot;</span>
+                    <span class="s2">&quot;(batch_size, seq_length): </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">seq_features_shapes</span><span class="p">)</span>
+                <span class="p">)</span>
+
+            <span class="n">sequence_length</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">seq_features_shapes</span><span class="o">.</span><span class="n">values</span><span class="p">())[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">seq_features_shapes</span><span class="p">,</span> <span class="n">sequence_length</span>
+
+    <span class="k">def</span> <span class="nf">_check_concat_shapes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">TabularData</span><span class="p">):</span>
+        <span class="n">input_sizes</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span><span class="o">.</span><span class="n">shape</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">inputs</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">([</span><span class="nb">tuple</span><span class="p">(</span><span class="n">v</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">input_sizes</span><span class="o">.</span><span class="n">values</span><span class="p">()]))</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+                <span class="s2">&quot;All features dimensions except the last one must match: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">input_sizes</span><span class="p">)</span>
+            <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get_agg_output_size</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_size</span><span class="p">,</span> <span class="n">agg_dim</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
+        <span class="n">batch_size</span> <span class="o">=</span> <span class="n">tf_utils</span><span class="o">.</span><span class="n">calculate_batch_size_from_input_shapes</span><span class="p">(</span><span class="n">input_size</span><span class="p">)</span>
+        <span class="n">seq_features_shapes</span><span class="p">,</span> <span class="n">sequence_length</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_seq_features_shapes</span><span class="p">(</span><span class="n">input_size</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">seq_features_shapes</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">sequence_length</span><span class="p">,</span> <span class="n">agg_dim</span>
+
+        <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">TensorShape</span><span class="p">((</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">agg_dim</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">get_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">TabularData</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">inputs</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">dict</span><span class="p">:</span>
+                <span class="n">values</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_values</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>  <span class="c1"># type: ignore</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">values</span>
+
+
+<span class="n">TabularAggregationType</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">TabularAggregation</span><span class="p">]</span>
+
+<span class="n">TABULAR_MODULE_PARAMS_DOCSTRING</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    pre: Union[str, TabularTransformation, List[str], List[TabularTransformation]], optional</span>
+<span class="s2">        Transformations to apply on the inputs when the module is called (so **before** `call`).</span>
+<span class="s2">    post: Union[str, TabularTransformation, List[str], List[TabularTransformation]], optional</span>
+<span class="s2">        Transformations to apply on the inputs after the module is called (so **after** `call`).</span>
+<span class="s2">    aggregation: Union[str, TabularAggregation], optional</span>
+<span class="s2">        Aggregation to apply after processing the `call`-method to output a single Tensor.</span>
+
+<span class="s2">        Next to providing a class that extends TabularAggregation, it&#39;s also possible to provide</span>
+<span class="s2">        the name that the class is registered in the `tabular_aggregation_registry`. Out of the box</span>
+<span class="s2">        this contains: &quot;concat&quot;, &quot;stack&quot;, &quot;element-wise-sum&quot; &amp;</span>
+<span class="s2">        &quot;element-wise-sum-item-multi&quot;.</span>
+<span class="s2">    schema: Optional[DatasetSchema]</span>
+<span class="s2">        DatasetSchema containing the columns used in this block.</span>
+<span class="s2">    name: Optional[str]</span>
+<span class="s2">        Name of the layer.</span>
+<span class="s2">&quot;&quot;&quot;</span>
+
+
+<div class="viewcode-block" id="TabularBlock"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.TabularBlock.html#merlin.models.tf.TabularBlock">[docs]</a><span class="nd">@docstring_parameter</span><span class="p">(</span><span class="n">tabular_module_parameters</span><span class="o">=</span><span class="n">TABULAR_MODULE_PARAMS_DOCSTRING</span><span class="p">)</span>
+<span class="nd">@tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">register_keras_serializable</span><span class="p">(</span><span class="n">package</span><span class="o">=</span><span class="s2">&quot;merlin.models&quot;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">TabularBlock</span><span class="p">(</span><span class="n">Block</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Layer that&#39;s specialized for tabular-data by integrating many often used operations.</span>
+
+<span class="sd">    Note, when extending this class, typically you want to overwrite the `compute_call_output_shape`</span>
+<span class="sd">    method instead of the normal `compute_output_shape`. This because a Block can contain pre- and</span>
+<span class="sd">    post-processing and the output-shapes are handled automatically in `compute_output_shape`. The</span>
+<span class="sd">    output of `compute_call_output_shape` should be the shape that&#39;s outputted by the `call`-method.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    {tabular_module_parameters}</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="TabularBlock.__init__"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.TabularBlock.html#merlin.models.tf.TabularBlock.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">pre</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">BlockType</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">post</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">BlockType</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">aggregation</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TabularAggregationType</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">schema</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Schema</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">is_input</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">input_size</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_pre</span><span class="p">(</span><span class="n">pre</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_post</span><span class="p">(</span><span class="n">post</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_aggregation</span><span class="p">(</span><span class="n">aggregation</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_is_input</span> <span class="o">=</span> <span class="n">is_input</span>
+
+        <span class="k">if</span> <span class="n">schema</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_schema</span><span class="p">(</span><span class="n">schema</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TabularBlock.select_by_tag"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.TabularBlock.html#merlin.models.tf.TabularBlock.select_by_tag">[docs]</a>    <span class="k">def</span> <span class="nf">select_by_tag</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tags</span><span class="p">:</span> <span class="n">Tags</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;TabularBlock&quot;</span><span class="p">]:</span>
+        <span class="n">selected_schema</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">select_by_tag</span><span class="p">(</span><span class="n">tags</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">selected_schema</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">TabularBlock</span><span class="p">(</span><span class="n">schema</span><span class="o">=</span><span class="n">selected_schema</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">is_input</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_input</span>
+
+<div class="viewcode-block" id="TabularBlock.from_schema"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.TabularBlock.html#merlin.models.tf.TabularBlock.from_schema">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_schema</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span> <span class="n">schema</span><span class="p">:</span> <span class="n">Schema</span><span class="p">,</span> <span class="n">tags</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;TabularBlock&quot;</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Instantiate a TabularLayer instance from a DatasetSchema.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        schema</span>
+<span class="sd">        tags</span>
+<span class="sd">        kwargs</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Optional[TabularModule]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">schema_copy</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">schema</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">tags</span><span class="p">:</span>
+            <span class="n">schema_copy</span> <span class="o">=</span> <span class="n">schema_copy</span><span class="o">.</span><span class="n">select_by_tag</span><span class="p">(</span><span class="n">tags</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">schema_copy</span><span class="o">.</span><span class="n">column_names</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">allow_none</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No features with tags: </span><span class="si">{</span><span class="n">tags</span><span class="si">}</span><span class="s2"> found&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">schema_copy</span><span class="o">.</span><span class="n">column_names</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">from_features</span><span class="p">(</span><span class="n">schema_copy</span><span class="o">.</span><span class="n">column_names</span><span class="p">,</span> <span class="n">schema</span><span class="o">=</span><span class="n">schema_copy</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TabularBlock.from_features"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.TabularBlock.html#merlin.models.tf.TabularBlock.from_features">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="nd">@docstring_parameter</span><span class="p">(</span><span class="n">tabular_module_parameters</span><span class="o">=</span><span class="n">TABULAR_MODULE_PARAMS_DOCSTRING</span><span class="p">,</span> <span class="n">extra_padding</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">from_features</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">features</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">pre</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">BlockType</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">post</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">BlockType</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">aggregation</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TabularAggregationType</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;TabularBlock&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initializes a TabularLayer instance where the contents of features will be filtered out</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        features: List[str]</span>
+<span class="sd">            A list of feature-names that will be used as the first pre-processing op to filter out</span>
+<span class="sd">            all other features not in this list.</span>
+<span class="sd">        {tabular_module_parameters}</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        TabularModule</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">pre</span> <span class="o">=</span> <span class="p">[</span><span class="n">Filter</span><span class="p">(</span><span class="n">features</span><span class="p">),</span> <span class="n">pre</span><span class="p">]</span> <span class="k">if</span> <span class="n">pre</span> <span class="k">else</span> <span class="n">Filter</span><span class="p">(</span><span class="n">features</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">pre</span><span class="o">=</span><span class="n">pre</span><span class="p">,</span> <span class="n">post</span><span class="o">=</span><span class="n">post</span><span class="p">,</span> <span class="n">aggregation</span><span class="o">=</span><span class="n">aggregation</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TabularBlock.pre_call"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.TabularBlock.html#merlin.models.tf.TabularBlock.pre_call">[docs]</a>    <span class="k">def</span> <span class="nf">pre_call</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">TabularData</span><span class="p">,</span> <span class="n">transformations</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">BlockType</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TabularData</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Method that&#39;s typically called before the forward method for pre-processing.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        inputs: TabularData</span>
+<span class="sd">             input-data, typically the output of the forward method.</span>
+<span class="sd">        transformations: TabularTransformationsType, optional</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        TabularData</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_maybe_apply_transformations</span><span class="p">(</span>
+            <span class="n">inputs</span><span class="p">,</span> <span class="n">transformations</span><span class="o">=</span><span class="n">transformations</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">pre</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="TabularBlock.call"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.TabularBlock.html#merlin.models.tf.TabularBlock.call">[docs]</a>    <span class="k">def</span> <span class="nf">call</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">TabularData</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TabularData</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">inputs</span></div>
+
+<div class="viewcode-block" id="TabularBlock.post_call"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.TabularBlock.html#merlin.models.tf.TabularBlock.post_call">[docs]</a>    <span class="k">def</span> <span class="nf">post_call</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">inputs</span><span class="p">:</span> <span class="n">TabularData</span><span class="p">,</span>
+        <span class="n">transformations</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">BlockType</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">merge_with</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="s2">&quot;TabularBlock&quot;</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="s2">&quot;TabularBlock&quot;</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">aggregation</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TabularAggregationType</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TensorOrTabularData</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Method that&#39;s typically called after the forward method for post-processing.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        inputs: TabularData</span>
+<span class="sd">            input-data, typically the output of the forward method.</span>
+<span class="sd">        transformations: TabularTransformationType, optional</span>
+<span class="sd">            Transformations to apply on the input data.</span>
+<span class="sd">        merge_with: Union[TabularModule, List[TabularModule]], optional</span>
+<span class="sd">            Other TabularModule&#39;s to call and merge the outputs with.</span>
+<span class="sd">        aggregation: TabularAggregationType, optional</span>
+<span class="sd">            Aggregation to aggregate the output to a single Tensor.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        TensorOrTabularData (Tensor when aggregation is set, else TabularData)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">_aggregation</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TabularAggregation</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">aggregation</span><span class="p">:</span>
+            <span class="n">_aggregation</span> <span class="o">=</span> <span class="n">TabularAggregation</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">aggregation</span><span class="p">)</span>
+        <span class="n">_aggregation</span> <span class="o">=</span> <span class="n">_aggregation</span> <span class="ow">or</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;aggregation&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="n">outputs</span> <span class="o">=</span> <span class="n">inputs</span>
+        <span class="k">if</span> <span class="n">merge_with</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">merge_with</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="n">merge_with</span> <span class="o">=</span> <span class="p">[</span><span class="n">merge_with</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">layer_or_tensor</span> <span class="ow">in</span> <span class="n">merge_with</span><span class="p">:</span>
+                <span class="n">to_add</span> <span class="o">=</span> <span class="n">layer_or_tensor</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span> <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">layer_or_tensor</span><span class="p">)</span> <span class="k">else</span> <span class="n">layer_or_tensor</span>
+                <span class="n">outputs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">to_add</span><span class="p">)</span>
+
+        <span class="n">outputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_maybe_apply_transformations</span><span class="p">(</span>
+            <span class="n">outputs</span><span class="p">,</span> <span class="n">transformations</span><span class="o">=</span><span class="n">transformations</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">post</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">_aggregation</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_schema</span><span class="p">:</span>
+                <span class="n">_aggregation</span><span class="o">.</span><span class="n">set_schema</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">schema</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">_aggregation</span><span class="p">(</span><span class="n">outputs</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">outputs</span></div>
+
+    <span class="k">def</span> <span class="nf">_maybe_apply_transformations</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">inputs</span><span class="p">:</span> <span class="n">TabularData</span><span class="p">,</span>
+        <span class="n">transformations</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">BlockType</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TabularData</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Apply transformations to the inputs if these are defined.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        inputs</span>
+<span class="sd">        transformations</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">transformations</span><span class="p">:</span>
+            <span class="n">_transformations</span> <span class="o">=</span> <span class="n">Block</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">transformations</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">_transformations</span><span class="p">(</span><span class="n">inputs</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">inputs</span>
+
+<div class="viewcode-block" id="TabularBlock.compute_call_output_shape"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.TabularBlock.html#merlin.models.tf.TabularBlock.compute_call_output_shape">[docs]</a>    <span class="k">def</span> <span class="nf">compute_call_output_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_shapes</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">input_shapes</span></div>
+
+<div class="viewcode-block" id="TabularBlock.compute_output_shape"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.TabularBlock.html#merlin.models.tf.TabularBlock.compute_output_shape">[docs]</a>    <span class="k">def</span> <span class="nf">compute_output_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_shapes</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pre</span><span class="p">:</span>
+            <span class="n">input_shapes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pre</span><span class="o">.</span><span class="n">compute_output_shape</span><span class="p">(</span><span class="n">input_shapes</span><span class="p">)</span>
+
+        <span class="n">output_shapes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_post_output_size</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">compute_call_output_shape</span><span class="p">(</span><span class="n">input_shapes</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">output_shapes</span></div>
+
+<div class="viewcode-block" id="TabularBlock.build"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.TabularBlock.html#merlin.models.tf.TabularBlock.build">[docs]</a>    <span class="k">def</span> <span class="nf">build</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_shapes</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">input_shapes</span><span class="p">)</span>
+        <span class="n">output_shapes</span> <span class="o">=</span> <span class="n">input_shapes</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pre</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pre</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">input_shapes</span><span class="p">)</span>
+            <span class="n">output_shapes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pre</span><span class="o">.</span><span class="n">compute_output_shape</span><span class="p">(</span><span class="n">input_shapes</span><span class="p">)</span>
+
+        <span class="n">output_shapes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_call_output_shape</span><span class="p">(</span><span class="n">output_shapes</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">output_shapes</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">post</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">post</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">output_shapes</span><span class="p">)</span>
+                <span class="n">output_shapes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">post</span><span class="o">.</span><span class="n">compute_output_shape</span><span class="p">(</span><span class="n">output_shapes</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">aggregation</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_schema</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">aggregation</span><span class="o">.</span><span class="n">set_schema</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">schema</span><span class="p">)</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">aggregation</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">output_shapes</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TabularBlock.get_config"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.TabularBlock.html#merlin.models.tf.TabularBlock.get_config">[docs]</a>    <span class="k">def</span> <span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">TabularBlock</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="n">tf_utils</span><span class="o">.</span><span class="n">maybe_serialize_keras_objects</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;pre&quot;</span><span class="p">,</span> <span class="s2">&quot;post&quot;</span><span class="p">,</span> <span class="s2">&quot;aggregation&quot;</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="n">config</span><span class="p">[</span><span class="s2">&quot;is_input&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_input</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_schema</span><span class="p">:</span>
+            <span class="n">config</span><span class="p">[</span><span class="s2">&quot;schema&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">schema_utils</span><span class="o">.</span><span class="n">schema_to_tensorflow_metadata_json</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">schema</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">config</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">is_tabular</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="k">def</span> <span class="fm">__add__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="kn">from</span> <span class="nn">models.tf.core.combinators</span> <span class="kn">import</span> <span class="n">ParallelBlock</span>
+
+        <span class="k">return</span> <span class="n">ParallelBlock</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span>
+
+<div class="viewcode-block" id="TabularBlock.from_config"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.TabularBlock.html#merlin.models.tf.TabularBlock.from_config">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_config</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">config</span><span class="p">):</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="n">tf_utils</span><span class="o">.</span><span class="n">maybe_deserialize_keras_objects</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;pre&quot;</span><span class="p">,</span> <span class="s2">&quot;post&quot;</span><span class="p">,</span> <span class="s2">&quot;aggregation&quot;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="s2">&quot;schema&quot;</span> <span class="ow">in</span> <span class="n">config</span><span class="p">:</span>
+            <span class="n">config</span><span class="p">[</span><span class="s2">&quot;schema&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">schema_utils</span><span class="o">.</span><span class="n">tensorflow_metadata_json_to_schema</span><span class="p">(</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;schema&quot;</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">from_config</span><span class="p">(</span><span class="n">config</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_check_post_output_size</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_shapes</span><span class="p">):</span>
+        <span class="n">output_shapes</span> <span class="o">=</span> <span class="n">input_shapes</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">output_shapes</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">post</span><span class="p">:</span>
+                <span class="n">output_shapes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">post</span><span class="o">.</span><span class="n">compute_output_shape</span><span class="p">(</span><span class="n">output_shapes</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">aggregation</span><span class="p">:</span>
+                <span class="n">schema</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_schema&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">aggregation</span><span class="o">.</span><span class="n">set_schema</span><span class="p">(</span><span class="n">schema</span><span class="p">)</span>
+                <span class="n">output_shapes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">aggregation</span><span class="o">.</span><span class="n">compute_output_shape</span><span class="p">(</span><span class="n">output_shapes</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">output_shapes</span>
+
+<div class="viewcode-block" id="TabularBlock.apply_to_all"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.TabularBlock.html#merlin.models.tf.TabularBlock.apply_to_all">[docs]</a>    <span class="k">def</span> <span class="nf">apply_to_all</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">columns_to_filter</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">columns_to_filter</span><span class="p">:</span>
+            <span class="n">inputs</span> <span class="o">=</span> <span class="n">Filter</span><span class="p">(</span><span class="n">columns_to_filter</span><span class="p">)(</span><span class="n">inputs</span><span class="p">)</span>
+        <span class="n">outputs</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">nest</span><span class="o">.</span><span class="n">map_structure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">outputs</span></div>
+
+<div class="viewcode-block" id="TabularBlock.set_schema"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.TabularBlock.html#merlin.models.tf.TabularBlock.set_schema">[docs]</a>    <span class="k">def</span> <span class="nf">set_schema</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">schema</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_maybe_set_schema</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pre</span><span class="p">,</span> <span class="n">schema</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_maybe_set_schema</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">post</span><span class="p">,</span> <span class="n">schema</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_maybe_set_schema</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">aggregation</span><span class="p">,</span> <span class="n">schema</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">set_schema</span><span class="p">(</span><span class="n">schema</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TabularBlock.set_pre"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.TabularBlock.html#merlin.models.tf.TabularBlock.set_pre">[docs]</a>    <span class="k">def</span> <span class="nf">set_pre</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">BlockType</span><span class="p">]):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pre</span> <span class="o">=</span> <span class="n">Block</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="k">if</span> <span class="n">value</span> <span class="k">else</span> <span class="kc">None</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">pre</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Block</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        SequentialTabularTransformations, optional</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pre</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">post</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Block</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        SequentialTabularTransformations, optional</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_post</span>
+
+<div class="viewcode-block" id="TabularBlock.set_post"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.TabularBlock.html#merlin.models.tf.TabularBlock.set_post">[docs]</a>    <span class="k">def</span> <span class="nf">set_post</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">BlockType</span><span class="p">]):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_post</span> <span class="o">=</span> <span class="n">Block</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="k">if</span> <span class="n">value</span> <span class="k">else</span> <span class="kc">None</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">aggregation</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TabularAggregation</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        TabularAggregation, optional</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_aggregation</span>
+
+<div class="viewcode-block" id="TabularBlock.set_aggregation"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.TabularBlock.html#merlin.models.tf.TabularBlock.set_aggregation">[docs]</a>    <span class="k">def</span> <span class="nf">set_aggregation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">TabularAggregation</span><span class="p">]]):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        value</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">value</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_aggregation</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TabularAggregation</span><span class="p">]</span> <span class="o">=</span> <span class="n">TabularAggregation</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_aggregation</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="TabularBlock.repr_ignore"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.TabularBlock.html#merlin.models.tf.TabularBlock.repr_ignore">[docs]</a>    <span class="k">def</span> <span class="nf">repr_ignore</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[]</span></div>
+
+<div class="viewcode-block" id="TabularBlock.repr_extra"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.TabularBlock.html#merlin.models.tf.TabularBlock.repr_extra">[docs]</a>    <span class="k">def</span> <span class="nf">repr_extra</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[]</span></div>
+
+<div class="viewcode-block" id="TabularBlock.repr_add"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.TabularBlock.html#merlin.models.tf.TabularBlock.repr_add">[docs]</a>    <span class="k">def</span> <span class="nf">repr_add</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[]</span></div>
+
+<div class="viewcode-block" id="TabularBlock.calculate_batch_size_from_input_shapes"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.TabularBlock.html#merlin.models.tf.TabularBlock.calculate_batch_size_from_input_shapes">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">calculate_batch_size_from_input_shapes</span><span class="p">(</span><span class="n">input_shapes</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">tf_utils</span><span class="o">.</span><span class="n">calculate_batch_size_from_input_shapes</span><span class="p">(</span><span class="n">input_shapes</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="fm">__rrshift__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">right_shift_layer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span>
+
+<div class="viewcode-block" id="TabularBlock.super"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.TabularBlock.html#merlin.models.tf.TabularBlock.super">[docs]</a>    <span class="k">def</span> <span class="nf">super</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span></div></div>
+
+
+<span class="c1"># This is done like this to avoid mypy crashing.</span>
+<span class="k">def</span> <span class="nf">_tabular_call</span><span class="p">(</span>  <span class="c1"># type: ignore</span>
+    <span class="bp">self</span><span class="p">,</span>
+    <span class="n">inputs</span><span class="p">:</span> <span class="n">TabularData</span><span class="p">,</span>
+    <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+    <span class="n">pre</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">BlockType</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">post</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">BlockType</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">merge_with</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="s2">&quot;TabularBlock&quot;</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="s2">&quot;TabularBlock&quot;</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">aggregation</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TabularAggregationType</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TensorOrTabularData</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;We overwrite the call method in order to be able to do pre- and post-processing.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    inputs: TabularData</span>
+<span class="sd">        Input TabularData.</span>
+<span class="sd">    pre: TabularTransformationsType, optional</span>
+<span class="sd">        Transformations to apply before calling the forward method. If pre is None, this method</span>
+<span class="sd">        will check if `self.pre` is set.</span>
+<span class="sd">    post: TabularTransformationsType, optional</span>
+<span class="sd">        Transformations to apply after calling the forward method. If post is None, this method</span>
+<span class="sd">        will check if `self.post` is set.</span>
+<span class="sd">    merge_with: Union[TabularModule, List[TabularModule]]</span>
+<span class="sd">        Other TabularModule&#39;s to call and merge the outputs with.</span>
+<span class="sd">    aggregation: TabularAggregationType, optional</span>
+<span class="sd">        Aggregation to aggregate the output to a single Tensor.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    TensorOrTabularData (Tensor when aggregation is set, else TabularData)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">inputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pre_call</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">transformations</span><span class="o">=</span><span class="n">pre</span><span class="p">)</span>
+
+    <span class="c1"># This will call the `call` method implemented by the super class.</span>
+    <span class="n">outputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__call__</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">outputs</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="n">outputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">post_call</span><span class="p">(</span>
+            <span class="n">outputs</span><span class="p">,</span> <span class="n">transformations</span><span class="o">=</span><span class="n">post</span><span class="p">,</span> <span class="n">merge_with</span><span class="o">=</span><span class="n">merge_with</span><span class="p">,</span> <span class="n">aggregation</span><span class="o">=</span><span class="n">aggregation</span>
+        <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">outputs</span>
+
+
+<span class="n">TabularBlock</span><span class="o">.</span><span class="fm">__call__</span> <span class="o">=</span> <span class="n">_tabular_call</span>  <span class="c1"># type: ignore</span>
+
+
+<div class="viewcode-block" id="Filter"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.Filter.html#merlin.models.tf.Filter">[docs]</a><span class="nd">@tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">register_keras_serializable</span><span class="p">(</span><span class="n">package</span><span class="o">=</span><span class="s2">&quot;merlin.models&quot;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">Filter</span><span class="p">(</span><span class="n">TabularBlock</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Transformation that filters out certain features from `TabularData`.&quot;</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    to_include: List[str]</span>
+<span class="sd">        List of features to include in the result of calling the module</span>
+<span class="sd">    pop: bool</span>
+<span class="sd">        Boolean indicating whether to pop the features to exclude from the inputs dictionary.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="nd">@overload</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">inputs</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">pop</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">exclude</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">add_to_context</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="o">...</span>
+
+    <span class="nd">@overload</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">inputs</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Schema</span><span class="p">,</span> <span class="n">Tags</span><span class="p">],</span>
+        <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">pop</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">exclude</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">add_to_context</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="o">...</span>
+
+<div class="viewcode-block" id="Filter.__init__"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.Filter.html#merlin.models.tf.Filter.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pop</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">exclude</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">add_to_context</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">Tags</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">feature_names</span> <span class="o">=</span> <span class="n">inputs</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">feature_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">inputs</span><span class="o">.</span><span class="n">column_names</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">Schema</span><span class="p">)</span> <span class="k">else</span> <span class="n">inputs</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exclude</span> <span class="o">=</span> <span class="n">exclude</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pop</span> <span class="o">=</span> <span class="n">pop</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_to_context</span> <span class="o">=</span> <span class="n">add_to_context</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">Schema</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_schema</span><span class="p">(</span><span class="n">schema</span><span class="o">=</span><span class="n">inputs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Filter.set_schema"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.Filter.html#merlin.models.tf.Filter.set_schema">[docs]</a>    <span class="k">def</span> <span class="nf">set_schema</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">schema</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">set_schema</span><span class="p">(</span><span class="n">schema</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">feature_names</span><span class="p">,</span> <span class="n">Tags</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">feature_names</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">select_by_tag</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">feature_names</span><span class="p">)</span><span class="o">.</span><span class="n">column_names</span>
+
+        <span class="k">return</span> <span class="n">out</span></div>
+
+<div class="viewcode-block" id="Filter.call"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.Filter.html#merlin.models.tf.Filter.call">[docs]</a>    <span class="k">def</span> <span class="nf">call</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">TabularData</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TabularData</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Filter out features from inputs.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        inputs: TabularData</span>
+<span class="sd">            Input dictionary containing features to filter.</span>
+
+<span class="sd">        Returns Filtered TabularData that only contains the feature-names in `self.to_include`.</span>
+<span class="sd">        -------</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="nb">dict</span><span class="p">),</span> <span class="s2">&quot;Inputs needs to be a dict&quot;</span>
+
+        <span class="n">outputs</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">inputs</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_feature</span><span class="p">(</span><span class="n">k</span><span class="p">)}</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pop</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">outputs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">inputs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_to_context</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">tensors</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">outputs</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="p">{}</span>
+
+        <span class="k">return</span> <span class="n">outputs</span></div>
+
+<div class="viewcode-block" id="Filter.compute_call_output_shape"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.Filter.html#merlin.models.tf.Filter.compute_call_output_shape">[docs]</a>    <span class="k">def</span> <span class="nf">compute_call_output_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_shape</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_to_context</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{}</span>
+
+        <span class="n">outputs</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">input_shape</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_feature</span><span class="p">(</span><span class="n">k</span><span class="p">)}</span>
+
+        <span class="k">return</span> <span class="n">outputs</span></div>
+
+<div class="viewcode-block" id="Filter.check_feature"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.Filter.html#merlin.models.tf.Filter.check_feature">[docs]</a>    <span class="k">def</span> <span class="nf">check_feature</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feature_name</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">exclude</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">feature_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">feature_names</span>
+
+        <span class="k">return</span> <span class="n">feature_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">feature_names</span></div>
+
+<div class="viewcode-block" id="Filter.get_config"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.Filter.html#merlin.models.tf.Filter.get_config">[docs]</a>    <span class="k">def</span> <span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span>
+        <span class="n">config</span><span class="p">[</span><span class="s2">&quot;inputs&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">feature_names</span>
+        <span class="n">config</span><span class="p">[</span><span class="s2">&quot;exclude&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exclude</span>
+        <span class="n">config</span><span class="p">[</span><span class="s2">&quot;pop&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pop</span>
+
+        <span class="k">return</span> <span class="n">config</span></div>
+
+<div class="viewcode-block" id="Filter.select_by_tag"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.Filter.html#merlin.models.tf.Filter.select_by_tag">[docs]</a>    <span class="k">def</span> <span class="nf">select_by_tag</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tags</span><span class="p">:</span> <span class="n">Tags</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;Filter&quot;</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">feature_names</span><span class="p">,</span> <span class="n">Tags</span><span class="p">):</span>
+            <span class="n">schema</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">select_by_tag</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">feature_names</span><span class="p">)</span><span class="o">.</span><span class="n">select_by_tag</span><span class="p">(</span><span class="n">tags</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">feature_names</span><span class="p">,</span> <span class="n">collections</span><span class="o">.</span><span class="n">abc</span><span class="o">.</span><span class="n">Sequence</span><span class="p">):</span>
+            <span class="n">schema</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">select_by_name</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">feature_names</span><span class="p">)</span><span class="o">.</span><span class="n">select_by_tag</span><span class="p">(</span><span class="n">tags</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Unexpected type </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">feature_names</span><span class="p">)</span><span class="si">}</span><span class="s2"> encountered in &#39;Filter.feature_names&#39;.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">schema</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="k">return</span> <span class="n">Filter</span><span class="p">(</span><span class="n">schema</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="AsTabular"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.AsTabular.html#merlin.models.tf.AsTabular">[docs]</a><span class="nd">@tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">register_keras_serializable</span><span class="p">(</span><span class="n">package</span><span class="o">=</span><span class="s2">&quot;merlin.models&quot;</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">AsTabular</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Layer</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Converts a Tensor to TabularData by converting it to a dictionary.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    output_name: str</span>
+<span class="sd">        Name that should be used as the key in the output dictionary.</span>
+<span class="sd">    name: str</span>
+<span class="sd">        Name of the layer.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="AsTabular.__init__"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.AsTabular.html#merlin.models.tf.AsTabular.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_name</span> <span class="o">=</span> <span class="n">output_name</span></div>
+
+<div class="viewcode-block" id="AsTabular.call"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.AsTabular.html#merlin.models.tf.AsTabular.call">[docs]</a>    <span class="k">def</span> <span class="nf">call</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">output_name</span><span class="p">:</span> <span class="n">inputs</span><span class="p">}</span></div>
+
+<div class="viewcode-block" id="AsTabular.compute_output_shape"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.AsTabular.html#merlin.models.tf.AsTabular.compute_output_shape">[docs]</a>    <span class="k">def</span> <span class="nf">compute_output_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_shape</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">output_name</span><span class="p">:</span> <span class="n">input_shape</span><span class="p">}</span></div>
+
+<div class="viewcode-block" id="AsTabular.get_config"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.AsTabular.html#merlin.models.tf.AsTabular.get_config">[docs]</a>    <span class="k">def</span> <span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">AsTabular</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span>
+        <span class="n">config</span><span class="p">[</span><span class="s2">&quot;output_name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_name</span>
+
+        <span class="k">return</span> <span class="n">config</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">is_tabular</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, NVIDIA.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-NVJ1Y1YJHK"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-NVJ1Y1YJHK', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>
