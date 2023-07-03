@@ -10,7 +10,6 @@ pytest.importorskip("faiss")
 # flake8: noqa
 
 
-@pytest.mark.skip(reason="Temporarily disabled test which is freezing CI")
 def test_func(tmpdir):
     with testbook(
         REPO_ROOT
