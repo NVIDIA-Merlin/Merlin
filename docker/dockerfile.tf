@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.2
-ARG MERLIN_VERSION=22.12
-ARG TRITON_VERSION=22.11
-ARG TENSORFLOW_VERSION=22.11
+ARG MERLIN_VERSION=23.05
+ARG TRITON_VERSION=23.05
+ARG TENSORFLOW_VERSION=23.05
 
 ARG DLFW_IMAGE=nvcr.io/nvidia/tensorflow:${TENSORFLOW_VERSION}-tf2-py3
 ARG FULL_IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-py3
@@ -20,15 +20,16 @@ COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/tensorflow backe
 RUN pip install --no-cache-dir tensorflow protobuf==3.20.3 wrapt==1.14.0 \
     && pip uninstall tensorflow keras -y
 
+ENV PYTHON_VERSION=3.10
 # DLFW Tensorflow packages
-COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python3.8/dist-packages/tensorflow /usr/local/lib/python3.8/dist-packages/tensorflow/
-COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python3.8/dist-packages/tensorflow-*.dist-info /usr/local/lib/python3.8/dist-packages/tensorflow.dist-info/
-COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python3.8/dist-packages/keras /usr/local/lib/python3.8/dist-packages/keras/
-COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python3.8/dist-packages/keras-*.dist-info /usr/local/lib/python3.8/dist-packages/keras.dist-info/
+COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/tensorflow /usr/local/lib/python${PYTHON_VERSION}/dist-packages/tensorflow/
+COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/tensorflow-*.dist-info /usr/local/lib/python${PYTHON_VERSION}/dist-packages/tensorflow.dist-info/
+COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/keras /usr/local/lib/python${PYTHON_VERSION}/dist-packages/keras/
+COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/keras-*.dist-info /usr/local/lib/python${PYTHON_VERSION}/dist-packages/keras.dist-info/
 COPY --chown=1000:1000 --from=dlfw /usr/local/bin/saved_model_cli /usr/local/bin/saved_model_cli
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/tensorflow/ /usr/local/lib/tensorflow/
-COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python3.8/dist-packages/horovod /usr/local/lib/python3.8/dist-packages/horovod/
-COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python3.8/dist-packages/horovod-*.dist-info /usr/local/lib/python3.8/dist-packages/horovod.dist-info/
+COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/horovod /usr/local/lib/python${PYTHON_VERSION}/dist-packages/horovod/
+COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/horovod-*.dist-info /usr/local/lib/python${PYTHON_VERSION}/dist-packages/horovod.dist-info/
 COPY --chown=1000:1000 --from=dlfw /usr/local/bin/horovodrun /usr/local/bin/horovodrun
 
 # Need to install transformers after tensorflow has been pulled in, so it builds artifacts correctly.
@@ -42,7 +43,7 @@ ARG _CI_JOB_TOKEN=""
 ARG HUGECTR_VER=main
 
 ENV CPATH=$CPATH:${HUGECTR_HOME}/include \
-    LD_LIBRARY_PATH=${HUGECTR_HOME}/lib:/usr/local/lib/python3.8/dist-packages/tensorflow:$LD_LIBRARY_PATH \
+    LD_LIBRARY_PATH=${HUGECTR_HOME}/lib:/usr/local/lib/python${PYTHON_VERSION}/dist-packages/tensorflow:$LD_LIBRARY_PATH \
     LIBRARY_PATH=${HUGECTR_HOME}/lib:$LIBRARY_PATH \
     SOK_COMPILE_UNIT_TEST=ON
 
@@ -69,7 +70,7 @@ RUN if [ "$HUGECTR_DEV_MODE" == "false" ]; then \
 	mv /hugectr/ci ~/hugectr-ci && mv /hugectr/sparse_operation_kit ~/hugectr-sparse_operation_kit && \
     	rm -rf /hugectr && mkdir -p /hugectr && \
         mv ~/hugectr-ci /hugectr/ci && mv ~/hugectr-sparse_operation_kit /hugectr/sparse_operation_kit; \
-    fi; \
+    fi && \
     if [ "$INSTALL_DISTRIBUTED_EMBEDDINGS" == "true" ]; then \
         git clone --branch ${TFDE_VER} --depth 1 https://github.com/NVIDIA-Merlin/distributed-embeddings.git /distributed_embeddings/ && \
         cd /distributed_embeddings && git submodule update --init --recursive && \
