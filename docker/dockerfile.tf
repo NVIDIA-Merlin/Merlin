@@ -20,7 +20,6 @@ COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/tensorflow backe
 RUN pip install --no-cache-dir tensorflow protobuf==3.20.3 wrapt==1.14.0 \
     && pip uninstall tensorflow keras -y
 
-ENV PYTHON_VERSION=3.10
 # DLFW Tensorflow packages
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/tensorflow /usr/local/lib/python${PYTHON_VERSION}/dist-packages/tensorflow/
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/tensorflow-*.dist-info /usr/local/lib/python${PYTHON_VERSION}/dist-packages/tensorflow.dist-info/
