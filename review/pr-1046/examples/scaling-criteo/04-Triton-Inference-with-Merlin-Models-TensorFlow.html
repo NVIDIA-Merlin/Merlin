@@ -1,0 +1,709 @@
+
+
+<!DOCTYPE html>
+
+
+<html lang="en" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+    <title>Scaling Criteo: Triton Inference with Merlin Models TensorFlow &#8212; NVIDIA Merlin</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=e353d410970836974a52" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=e353d410970836974a52" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=e353d410970836974a52" rel="stylesheet" />
+
+  
+  <link href="../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=e353d410970836974a52" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" href="../../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/css/custom.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/css/versions.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=e353d410970836974a52" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52" />
+
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script src="../../_static/js/rtd-version-switcher.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'examples/scaling-criteo/04-Triton-Inference-with-Merlin-Models-TensorFlow';</script>
+    <link rel="canonical" href="https://nvidia-merlin.github.io/Merlin/stable/examples/scaling-criteo/04-Triton-Inference-with-Merlin-Models-TensorFlow.html" />
+    <link rel="shortcut icon" href="../../_static/favicon.png"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Merlin Containers" href="../../containers.html" />
+    <link rel="prev" title="Scaling Criteo: Triton Inference with HugeCTR" href="04-Triton-Inference-with-HugeCTR.html" />
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-NVJ1Y1YJHK"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-NVJ1Y1YJHK', {
+        'anonymize_ip': false,
+    });
+  </script>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,400;0,700;1,300&display=swap" rel="stylesheet">
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+    <p class="title logo__title">NVIDIA Merlin</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../README.html">Introduction</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../guide/recommender_system_guide.html">Recommender System Guide</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../guide/recommender_models.html">Recommender Models</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../index.html">Example Notebooks</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
+<li class="toctree-l2 has-children"><a class="reference internal" href="../getting-started-movielens/index.html">Getting Started using the MovieLens Dataset</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../getting-started-movielens/01-Download-Convert.html">MovieLens Download and Convert</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../getting-started-movielens/02-ETL-with-NVTabular.html">Feature Engineering with NVTabular</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../getting-started-movielens/03-Training-with-HugeCTR.html">Training with HugeCTR</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../getting-started-movielens/03-Training-with-TF.html">Getting Started MovieLens: Training with TensorFlow</a></li>
+
+
+<li class="toctree-l3"><a class="reference internal" href="../getting-started-movielens/03-Training-with-PyTorch.html">Training with PyTorch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../getting-started-movielens/04-Triton-Inference-with-HugeCTR.html">Serving the HugeCTR Model with Triton</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../getting-started-movielens/04-Triton-Inference-with-TF.html">Serve Recommendations from the TensorFlow Model</a></li>
+
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../Building-and-deploying-multi-stage-RecSys/index.html">Deploying a Multi-Stage Recommender System</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-4"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../Building-and-deploying-multi-stage-RecSys/01-Building-Recommender-Systems-with-Merlin.html">Building the Recommender System</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Building-and-deploying-multi-stage-RecSys/02-Deploying-multi-stage-RecSys-with-Merlin-Systems.html">Deploying the Recommender System with Triton</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../sagemaker-tensorflow/index.html">Merlin and AWS SageMaker</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-5"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../sagemaker-tensorflow/sagemaker-merlin-tensorflow.html">Training and Serving Merlin on AWS SageMaker</a></li>
+</ul>
+</li>
+<li class="toctree-l2 current active has-children"><a class="reference internal" href="index.html">Scaling Large Datasets with Criteo</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-6"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="01-Download-Convert.html">Criteo Download and Convert</a></li>
+<li class="toctree-l3"><a class="reference internal" href="02-ETL-with-NVTabular.html">Feature Engineering with NVTabular</a></li>
+<li class="toctree-l3"><a class="reference internal" href="03-Training-with-HugeCTR.html">Training with HugeCTR</a></li>
+<li class="toctree-l3"><a class="reference internal" href="03-Training-with-Merlin-Models-TensorFlow.html">Training with Merlin Models and TensorFlow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="04-Triton-Inference-with-HugeCTR.html">Deploy the HugeCTR Model with Triton</a></li>
+<li class="toctree-l3 current active"><a class="current reference internal" href="#">Deploy the TensorFlow Model with Triton</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../containers.html">Merlin Containers</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../support_matrix/index.html">Merlin Support Matrix</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-7"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../support_matrix/support_matrix_merlin_hugectr.html">Merlin HugeCTR Support Matrix</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../support_matrix/support_matrix_merlin_tensorflow.html">Merlin TensorFlow Support Matrix</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../support_matrix/support_matrix_merlin_pytorch.html">Merlin PyTorch Support Matrix</a></li>
+</ul>
+</li>
+</ul>
+
+    </div>
+</nav></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-merlin-ecosystem-nav" aria-label="Merlin Ecosystem Nav">
+  <div class="bd-toc-item navbar-nav">
+    <p aria-level="2" class="caption" role="heading"><span class="caption-text">Ecosystem</span></p>
+    <ul class="nav bd-sidenav">
+      <li class="toctree-l1"><a class="reference external" href="/core/">Core</a></li>
+      <li class="toctree-l1"><a class="reference external" href="/models/">Models</a></li>
+      <li class="toctree-l1"><a class="reference external" href="/systems/">Systems</a></li>
+      <li class="toctree-l1"><a class="reference external" href="/NVTabular/">NVTabular</a></li>
+      <li class="toctree-l1"><a class="reference external" href="/Transformers4Rec/">Transformers4Rec</a></li>
+      <li class="toctree-l1"><a class="reference external" href="/dataloader/">Dataloader</a></li>
+      <li class="toctree-l1"><a class="reference external" href="/HugetCTR/">HugeCTR</a></li>
+    </ul>
+  </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+<a href="https://github.com/NVIDIA-Merlin/Merlin" target="_blank"
+   class="btn btn-sm btn-source-repository-button"
+   title="Source repository"
+   data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+
+</a>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../../_sources/" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.ipynb</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+<script>
+document.write(`
+  <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+  </button>
+`);
+</script>
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+  </button>
+`);
+</script>
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Scaling Criteo: Triton Inference with Merlin Models TensorFlow</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#overview">Overview</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#learning-objectives">Learning objectives</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#saved-nvtabular-workflow-and-merlin-models">Saved NVTabular workflow and Merlin Models</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#deploying-ensemble-to-triton-inference-server">Deploying Ensemble to Triton Inference Server</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#get-prediction-from-triton-inference-server">Get prediction from Triton Inference Server</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#summary">Summary</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#next-steps">Next steps</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Copyright 2022 NVIDIA Corporation. All Rights Reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+<span class="c1"># ==============================================================================</span>
+
+<span class="c1"># Each user is responsible for checking the content of datasets and the</span>
+<span class="c1"># applicable licenses and determining if suitable for the intended use.</span>
+</pre></div>
+</div>
+</div>
+</div>
+<img alt="https://developer.download.nvidia.com/notebooks/dlsw-notebooks/merlin_merlin_scaling-criteo-04-triton-inference-with-merlin-models-tensorflow/nvidia_logo.png" src="https://developer.download.nvidia.com/notebooks/dlsw-notebooks/merlin_merlin_scaling-criteo-04-triton-inference-with-merlin-models-tensorflow/nvidia_logo.png" />
+<section id="scaling-criteo-triton-inference-with-merlin-models-tensorflow">
+<h1>Scaling Criteo: Triton Inference with Merlin Models TensorFlow<a class="headerlink" href="#scaling-criteo-triton-inference-with-merlin-models-tensorflow" title="Permalink to this heading">#</a></h1>
+<p>This notebook is created using the latest stable <a class="reference external" href="https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-tensorflow/tags">merlin-tensorflow</a> container.</p>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this heading">#</a></h2>
+<p>In the previous notebook, we processed the <a class="reference internal" href="02-ETL-with-NVTabular.html"><span class="doc std std-doc">criteo dataset with NVTabular</span></a> and <a class="reference internal" href="#"><span class="doc std std-doc">trained a DLRM model with Merlin Model Tensorflow</span></a>. Finally, we want to deploy our pipeline to <a class="reference external" href="https://github.com/triton-inference-server/server">Triton Inference Server (TIS)</a>, which can serve our model in a production environment.</p>
+<p>We can send raw data to the API endpoint. TIS will execute the same NVTabular workflow for feature engineering and predict the processed data with Merlin Models TensorFlow. We deploy the pipeline as an ensemble and receive the predict scores. This notebook is based on the Example, <a class="reference external" href="https://github.com/NVIDIA-Merlin/systems/blob/stable/examples/Serving-Ranking-Models-With-Merlin-Systems.ipynb">Serving Ranking Models With Merlin Systems</a>, in Merlin systems. If you are interested in more details, we recommend to go through the example, first.</p>
+</section>
+<section id="learning-objectives">
+<h2>Learning objectives<a class="headerlink" href="#learning-objectives" title="Permalink to this heading">#</a></h2>
+<ul class="simple">
+<li><p>Deploy an ensemble pipeline of NVTabular and Merlin Models TensorFlow to Triton Inference Server</p></li>
+<li><p>Get prediction from Triton Inference Server</p></li>
+</ul>
+</section>
+<section id="saved-nvtabular-workflow-and-merlin-models">
+<h2>Saved NVTabular workflow and Merlin Models<a class="headerlink" href="#saved-nvtabular-workflow-and-merlin-models" title="Permalink to this heading">#</a></h2>
+<p>We load the required libraries.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">glob</span>
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;TF_GPU_ALLOCATOR&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;cuda_malloc_async&quot;</span>
+
+<span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
+
+<span class="kn">import</span> <span class="nn">tritonclient.grpc</span> <span class="k">as</span> <span class="nn">grpcclient</span>
+<span class="kn">from</span> <span class="nn">nvtabular.workflow</span> <span class="kn">import</span> <span class="n">Workflow</span>
+<span class="c1"># The following import is required even though it is not referenced in the program.</span>
+<span class="c1"># It loads artifacts that affect the schema and how the model is saved on disk.</span>
+<span class="kn">import</span> <span class="nn">merlin.models.tf</span> <span class="k">as</span> <span class="nn">mm</span>  <span class="c1"># noqa: F401</span>
+<span class="kn">from</span> <span class="nn">merlin.schema.tags</span> <span class="kn">import</span> <span class="n">Tags</span>
+<span class="kn">from</span> <span class="nn">merlin.systems.dag.ops.workflow</span> <span class="kn">import</span> <span class="n">TransformWorkflow</span>
+<span class="kn">from</span> <span class="nn">merlin.systems.dag.ops.tensorflow</span> <span class="kn">import</span> <span class="n">PredictTensorflow</span>
+<span class="kn">from</span> <span class="nn">merlin.systems.dag.ensemble</span> <span class="kn">import</span> <span class="n">Ensemble</span>
+<span class="kn">from</span> <span class="nn">merlin.systems.triton</span> <span class="kn">import</span> <span class="n">convert_df_to_triton_input</span>
+<span class="kn">from</span> <span class="nn">merlin.core.dispatch</span> <span class="kn">import</span> <span class="n">get_lib</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>We define the path for the saved workflow and model.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">BASE_DIR</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;BASE_DIR&quot;</span><span class="p">,</span> <span class="s1">&#39;/raid/data/criteo/test_dask/output/&#39;</span><span class="p">)</span>
+<span class="n">original_data_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;INPUT_FOLDER&quot;</span><span class="p">,</span> <span class="s2">&quot;/raid/data/criteo/converted/criteo&quot;</span><span class="p">)</span>
+<span class="n">input_path</span> <span class="o">=</span> <span class="n">BASE_DIR</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>We load the NVTabular workflow.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">workflow</span> <span class="o">=</span> <span class="n">Workflow</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">input_path</span><span class="p">,</span> <span class="s2">&quot;workflow&quot;</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>We need to remove the target columns from the workflow. The target columns are required to train our model. However, we do not know the targets during inference in the production environment.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">label_columns</span> <span class="o">=</span> <span class="n">workflow</span><span class="o">.</span><span class="n">output_schema</span><span class="o">.</span><span class="n">select_by_tag</span><span class="p">(</span><span class="n">Tags</span><span class="o">.</span><span class="n">TARGET</span><span class="p">)</span><span class="o">.</span><span class="n">column_names</span>
+<span class="n">workflow</span><span class="o">.</span><span class="n">remove_inputs</span><span class="p">(</span><span class="n">label_columns</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>We load the saved Merlin Models TensorFlow model.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">input_path</span><span class="p">,</span> <span class="s2">&quot;dlrm&quot;</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="deploying-ensemble-to-triton-inference-server">
+<h2>Deploying Ensemble to Triton Inference Server<a class="headerlink" href="#deploying-ensemble-to-triton-inference-server" title="Permalink to this heading">#</a></h2>
+<p>We create our prediction pipeline:</p>
+<ul class="simple">
+<li><p>the NVTabular workflow is executed via TransformWorkflow()</p></li>
+<li><p>the TensorFlow model predict the output of the NVTabular workflow</p></li>
+</ul>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">serving_operators</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">workflow</span><span class="o">.</span><span class="n">input_schema</span><span class="o">.</span><span class="n">column_names</span> <span class="o">&gt;&gt;</span>
+    <span class="n">TransformWorkflow</span><span class="p">(</span><span class="n">workflow</span><span class="p">)</span> <span class="o">&gt;&gt;</span>
+    <span class="n">PredictTensorflow</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>We create the Ensemble graph.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ensemble</span> <span class="o">=</span> <span class="n">Ensemble</span><span class="p">(</span><span class="n">serving_operators</span><span class="p">,</span> <span class="n">workflow</span><span class="o">.</span><span class="n">input_schema</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>We generate the Triton Inference Server artifacts and export them in the <code class="docutils literal notranslate"><span class="pre">export_path</span></code> directory.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">export_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">input_path</span><span class="p">,</span> <span class="s2">&quot;ensemble&quot;</span><span class="p">)</span>
+<span class="n">ens_conf</span><span class="p">,</span> <span class="n">node_confs</span> <span class="o">=</span> <span class="n">ensemble</span><span class="o">.</span><span class="n">export</span><span class="p">(</span><span class="n">export_path</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>After we export the ensemble, we are ready to start the Triton Inference Server. The server is installed in the merlin-tensorflow-container. If you are not using one of our containers, then ensure it is installed in your environment. For more information, see the Triton Inference Server <a class="reference external" href="https://github.com/triton-inference-server/server/blob/r22.03/README.md#documentation">documentation</a>.</p>
+<p>You can start the server by running the following command:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>tritonserver<span class="w"> </span>--model-repository<span class="o">=</span>/raid/data/criteo/test_dask/output/ensemble<span class="w"> </span>--backend-config<span class="o">=</span>tensorflow,version<span class="o">=</span><span class="m">2</span>
+</pre></div>
+</div>
+<p>For the <code class="docutils literal notranslate"><span class="pre">--model-repository</span></code> argument, specify the same value as the <code class="docutils literal notranslate"><span class="pre">export_path</span></code> that you specified previously in the <code class="docutils literal notranslate"><span class="pre">ensemble.export</span></code> method.</p>
+</section>
+<section id="get-prediction-from-triton-inference-server">
+<h2>Get prediction from Triton Inference Server<a class="headerlink" href="#get-prediction-from-triton-inference-server" title="Permalink to this heading">#</a></h2>
+<p>After we started Triton Inference Server and it loaded all models, we will send raw data as a request and receive the predictions.</p>
+<p>We read 3 example rows from the last parquet file from the raw data.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df_lib</span> <span class="o">=</span> <span class="n">get_lib</span><span class="p">()</span>
+<span class="n">input_cols</span> <span class="o">=</span> <span class="n">workflow</span><span class="o">.</span><span class="n">input_schema</span><span class="o">.</span><span class="n">column_names</span>
+<span class="c1"># read in data for request</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">df_lib</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">original_data_path</span> <span class="o">+</span> <span class="s2">&quot;/*.parquet&quot;</span><span class="p">))[</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span>
+    <span class="n">columns</span><span class="o">=</span><span class="n">input_cols</span>
+<span class="p">)</span>
+<span class="n">batch</span> <span class="o">=</span> <span class="n">data</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span>
+<span class="n">batch</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>We generate a Triton Inference Server request object.</p>
+<p>Currently, NA/None values are not supported for <code class="docutils literal notranslate"><span class="pre">int32</span></code> columns. As a workaround, we will NA values with 0. This will be updated in the future.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># create inputs and outputs</span>
+<span class="n">inputs</span> <span class="o">=</span> <span class="n">convert_df_to_triton_input</span><span class="p">(</span><span class="n">workflow</span><span class="o">.</span><span class="n">input_schema</span><span class="p">,</span> <span class="n">batch</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">grpcclient</span><span class="o">.</span><span class="n">InferInput</span><span class="p">)</span>
+<span class="n">output_cols</span> <span class="o">=</span> <span class="n">ensemble</span><span class="o">.</span><span class="n">output_schema</span><span class="o">.</span><span class="n">column_names</span>
+<span class="n">outputs</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">grpcclient</span><span class="o">.</span><span class="n">InferRequestedOutput</span><span class="p">(</span><span class="n">col</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">output_cols</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>We send the request to Triton Inference Server.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># send request to tritonserver</span>
+<span class="k">with</span> <span class="n">grpcclient</span><span class="o">.</span><span class="n">InferenceServerClient</span><span class="p">(</span><span class="s2">&quot;localhost:8001&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">client</span><span class="p">:</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">infer</span><span class="p">(</span><span class="s2">&quot;executor_model&quot;</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">request_id</span><span class="o">=</span><span class="s2">&quot;1&quot;</span><span class="p">,</span> <span class="n">outputs</span><span class="o">=</span><span class="n">outputs</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>We print out the predictions.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">ensemble</span><span class="o">.</span><span class="n">output_schema</span><span class="o">.</span><span class="n">column_names</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">col</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">as_numpy</span><span class="p">(</span><span class="n">col</span><span class="p">),</span> <span class="n">response</span><span class="o">.</span><span class="n">as_numpy</span><span class="p">(</span><span class="n">col</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="summary">
+<h2>Summary<a class="headerlink" href="#summary" title="Permalink to this heading">#</a></h2>
+<p>In this example, we deployed a recommender system pipeline as an ensemble. First, NVTabular created features and afterwards, Merlin Models TensorFlow predicted the processed data. The DLRM architecture was used as a model. This process ensures that the training and production environments use the same feature engineering.</p>
+</section>
+<section id="next-steps">
+<h2>Next steps<a class="headerlink" href="#next-steps" title="Permalink to this heading">#</a></h2>
+<p>If you are interested in more details of the pipeline, we recommend to try out the <a class="reference external" href="https://github.com/NVIDIA-Merlin/systems/blob/stable/examples/Serving-Ranking-Models-With-Merlin-Systems.ipynb">Merlin System example</a>.</p>
+<p>In our Merlin repository, we provide <a class="reference internal" href="../Building-and-deploying-multi-stage-RecSys/index.html"><span class="xref myst">another end-to-end example</span></a> using a candidate retrieval and ranking model. In addition, we use approximate nearest neighbor and a feature store.</p>
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+                <footer class="bd-footer-article">
+                  
+<div class="footer-article-items footer-article__inner">
+  
+    <div class="footer-article-item"><!-- Previous / next buttons -->
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="04-Triton-Inference-with-HugeCTR.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Scaling Criteo: Triton Inference with HugeCTR</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="../../containers.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Merlin Containers</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div></div>
+  
+</div>
+
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#overview">Overview</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#learning-objectives">Learning objectives</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#saved-nvtabular-workflow-and-merlin-models">Saved NVTabular workflow and Merlin Models</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#deploying-ensemble-to-triton-inference-server">Deploying Ensemble to Triton Inference Server</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#get-prediction-from-triton-inference-server">Get prediction from Triton Inference Server</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#summary">Summary</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#next-steps">Next steps</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+  <p class="copyright">
+    
+      © Copyright 2023, NVIDIA.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../_static/scripts/bootstrap.js?digest=e353d410970836974a52"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
