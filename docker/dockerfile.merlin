@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.2
-ARG TRITON_VERSION=23.05
-ARG DLFW_VERSION=23.05
+ARG TRITON_VERSION=23.06
+ARG DLFW_VERSION=23.06
 
 ARG FULL_IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-py3
 ARG BASE_IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-py3-min
@@ -88,14 +88,12 @@ RUN ln -s /usr/bin/python3 /usr/bin/python
 # A fix has already been merged but not yet released:
 # https://gitlab.kitware.com/cmake/cmake/-/merge_requests/7859
 # 2023-02-22: pynvml==11.5.0 is currently incompatible with our version of dask/distributed
-# tritonclient[all]==2.29.0: latest tritonclient removes the perf_* binaries, so specified to version 2.29.0
-#cupy-cuda12x 
 
 RUN pip install --no-cache-dir --upgrade pip; pip install --no-cache-dir "cmake<3.25.0" ninja scikit-build pandas==1.5.2 \
                 fastrlock nvidia-pyindex pybind11 pytest \ 
                 transformers tensorflow-metadata betterproto \
                 cachetools graphviz nvtx scipy "scikit-learn<1.2" \
-                tritonclient[all]==2.29.0 grpcio-channelz fiddle wandb npy-append-array \
+                tritonclient[all] grpcio-channelz fiddle wandb npy-append-array \
                 git+https://github.com/rapidsai/asvdb.git@main \
                 xgboost==1.6.2 lightgbm treelite==2.4.0 treelite_runtime==2.4.0 \
                 lightfm implicit \
