@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>merlin.systems.triton.convert_df_to_triton_input &mdash; Merlin  documentation</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/mystnb.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/togglebutton.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
+    <link rel="canonical" href="https://nvidia-merlin.github.io/Merlin/stable/generated/merlin.systems.triton.convert_df_to_triton_input.html" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script >let toggleHintShow = 'Click to show';</script>
+        <script >let toggleHintHide = 'Click to hide';</script>
+        <script >let toggleOpenOnPrint = 'true';</script>
+        <script src="../_static/togglebutton.js"></script>
+        <script >var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="merlin.systems.triton.convert_triton_output_to_df" href="merlin.systems.triton.convert_triton_output_to_df.html" />
+    <link rel="prev" title="merlin.systems.dag.ops.unroll_features.UnrollFeatures" href="merlin.systems.dag.ops.unroll_features.UnrollFeatures.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Merlin
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../README.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/recommender_system_guide.html">Recommender System Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/index.html">Example Notebooks</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../api_overview.html">API Documentation</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../api_core/merlin.dag.html">merlin.dag</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api_dataloader.html">merlin.loader</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api_core/merlin.io.html">merlin.io</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api_models.html">merlin.models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api_core/merlin.schema.html">merlin.schema</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../api_systems.html">merlin.systems</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="merlin.systems.dag.Ensemble.html">merlin.systems.dag.Ensemble</a></li>
+<li class="toctree-l3"><a class="reference internal" href="merlin.systems.dag.ops.workflow.TransformWorkflow.html">merlin.systems.dag.ops.workflow.TransformWorkflow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="merlin.systems.dag.ops.tensorflow.PredictTensorflow.html">merlin.systems.dag.ops.tensorflow.PredictTensorflow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="merlin.systems.dag.ops.fil.PredictForest.html">merlin.systems.dag.ops.fil.PredictForest</a></li>
+<li class="toctree-l3"><a class="reference internal" href="merlin.systems.dag.ops.implicit.PredictImplicit.html">merlin.systems.dag.ops.implicit.PredictImplicit</a></li>
+<li class="toctree-l3"><a class="reference internal" href="merlin.systems.dag.ops.softmax_sampling.SoftmaxSampling.html">merlin.systems.dag.ops.softmax_sampling.SoftmaxSampling</a></li>
+<li class="toctree-l3"><a class="reference internal" href="merlin.systems.dag.ops.session_filter.FilterCandidates.html">merlin.systems.dag.ops.session_filter.FilterCandidates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="merlin.systems.dag.ops.unroll_features.UnrollFeatures.html">merlin.systems.dag.ops.unroll_features.UnrollFeatures</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">merlin.systems.triton.convert_df_to_triton_input</a></li>
+<li class="toctree-l3"><a class="reference internal" href="merlin.systems.triton.convert_triton_output_to_df.html">merlin.systems.triton.convert_triton_output_to_df</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../api_nvtabular.html">nvtabular</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../containers.html">Merlin Containers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../support_matrix/index.html">Merlin Support Matrix</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Merlin</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../api_overview.html">API Documentation</a></li>
+          <li class="breadcrumb-item"><a href="../api_systems.html">API Documentation</a></li>
+      <li class="breadcrumb-item active">merlin.systems.triton.convert_df_to_triton_input</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="merlin-systems-triton-convert-df-to-triton-input">
+<h1>merlin.systems.triton.convert_df_to_triton_input<a class="headerlink" href="#merlin-systems-triton-convert-df-to-triton-input" title="Permalink to this headline"></a></h1>
+<dl class="py function">
+<dt id="merlin.systems.triton.convert_df_to_triton_input">
+<code class="sig-prename descclassname"><span class="pre">merlin.systems.triton.</span></code><code class="sig-name descname"><span class="pre">convert_df_to_triton_input</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">schema</span></em>, <em class="sig-param"><span class="pre">batch</span></em>, <em class="sig-param"><span class="pre">input_class=&lt;class</span> <span class="pre">'tritonclient.grpc._infer_input.InferInput'&gt;</span></em>, <em class="sig-param"><span class="pre">dtype='int32'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/merlin/systems/triton.html#convert_df_to_triton_input"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#merlin.systems.triton.convert_df_to_triton_input" title="Permalink to this definition"></a></dt>
+<dd><p>Convert a dataframe to a set of Triton inputs</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>schema</strong> (<a class="reference internal" href="../api_core/merlin.schema.html#merlin.schema.Schema" title="merlin.schema.Schema"><em>Schema</em></a>) – Schema of the input data</p></li>
+<li><p><strong>batch</strong> (<em>DataFrame</em>) – The input data itself</p></li>
+<li><p><strong>input_class</strong> (<em>Triton input class</em><em>, </em><em>optional</em>) – The Triton input class to use, by default grpcclient.InferInput</p></li>
+<li><p><strong>dtype</strong> (<em>str</em><em>, </em><em>optional</em>) – The dtype for lengths/offsets values, by default “int32”</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A list of Triton inputs of the requested input class</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>List[input_class]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="merlin.systems.dag.ops.unroll_features.UnrollFeatures.html" class="btn btn-neutral float-left" title="merlin.systems.dag.ops.unroll_features.UnrollFeatures" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="merlin.systems.triton.convert_triton_output_to_df.html" class="btn btn-neutral float-right" title="merlin.systems.triton.convert_triton_output_to_df" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, NVIDIA.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-NVJ1Y1YJHK"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-NVJ1Y1YJHK', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>

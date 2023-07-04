@@ -24,18 +24,11 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="API Documentation" href="api_nvtabular.html" />
+    <link rel="next" title="merlin.systems.dag.Ensemble" href="generated/merlin.systems.dag.Ensemble.html" />
     <link rel="prev" title="merlin.schema package" href="api_core/merlin.schema.html" /> 
 </head>
 
-<body class="wy-body-for-nav">
-  <div class="banner">
-    <p class="banner">
-      Beginning in January 2023, versions for all NVIDIA Merlin projects
-      will change from semantic versioning like <code>4.0</code>
-      to calendar versioning like <code>23.01</code>.</p>
-  </div>
-
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
@@ -65,7 +58,19 @@
 <li class="toctree-l2"><a class="reference internal" href="api_core/merlin.io.html">merlin.io</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api_models.html">merlin.models</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api_core/merlin.schema.html">merlin.schema</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">merlin.systems</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">merlin.systems</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="generated/merlin.systems.dag.Ensemble.html">merlin.systems.dag.Ensemble</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/merlin.systems.dag.ops.workflow.TransformWorkflow.html">merlin.systems.dag.ops.workflow.TransformWorkflow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/merlin.systems.dag.ops.tensorflow.PredictTensorflow.html">merlin.systems.dag.ops.tensorflow.PredictTensorflow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/merlin.systems.dag.ops.fil.PredictForest.html">merlin.systems.dag.ops.fil.PredictForest</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/merlin.systems.dag.ops.implicit.PredictImplicit.html">merlin.systems.dag.ops.implicit.PredictImplicit</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/merlin.systems.dag.ops.softmax_sampling.SoftmaxSampling.html">merlin.systems.dag.ops.softmax_sampling.SoftmaxSampling</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/merlin.systems.dag.ops.session_filter.FilterCandidates.html">merlin.systems.dag.ops.session_filter.FilterCandidates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/merlin.systems.dag.ops.unroll_features.UnrollFeatures.html">merlin.systems.dag.ops.unroll_features.UnrollFeatures</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/merlin.systems.triton.convert_df_to_triton_input.html">merlin.systems.triton.convert_df_to_triton_input</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/merlin.systems.triton.convert_triton_output_to_df.html">merlin.systems.triton.convert_triton_output_to_df</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="api_nvtabular.html">nvtabular</a></li>
 </ul>
 </li>
@@ -107,6 +112,9 @@
 <col style="width: 90%" />
 </colgroup>
 <tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/merlin.systems.dag.Ensemble.html#merlin.systems.dag.Ensemble" title="merlin.systems.dag.Ensemble"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Ensemble</span></code></a>(ops, schema[, label_columns])</p></td>
+<td><p>Class that represents an entire ensemble consisting of multiple models that run sequentially in tritonserver initiated by an inference request.</p></td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -118,6 +126,27 @@
 <col style="width: 90%" />
 </colgroup>
 <tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/merlin.systems.dag.ops.workflow.TransformWorkflow.html#merlin.systems.dag.ops.workflow.TransformWorkflow" title="merlin.systems.dag.ops.workflow.TransformWorkflow"><code class="xref py py-obj docutils literal notranslate"><span class="pre">workflow.TransformWorkflow</span></code></a>([workflow])</p></td>
+<td><p>This operator takes a workflow and turns it into a ensemble operator so that we can execute feature engineering during ensemble on tritonserver.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/merlin.systems.dag.ops.tensorflow.PredictTensorflow.html#merlin.systems.dag.ops.tensorflow.PredictTensorflow" title="merlin.systems.dag.ops.tensorflow.PredictTensorflow"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tensorflow.PredictTensorflow</span></code></a>(model_or_path, …)</p></td>
+<td><p>TensorFlow Model Prediction Operator.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/merlin.systems.dag.ops.fil.PredictForest.html#merlin.systems.dag.ops.fil.PredictForest" title="merlin.systems.dag.ops.fil.PredictForest"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fil.PredictForest</span></code></a>(model, input_schema, *[, …])</p></td>
+<td><p>Operator for running inference on Forest models.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/merlin.systems.dag.ops.implicit.PredictImplicit.html#merlin.systems.dag.ops.implicit.PredictImplicit" title="merlin.systems.dag.ops.implicit.PredictImplicit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">implicit.PredictImplicit</span></code></a>(model, …)</p></td>
+<td><p>Operator for running inference on Implicit models..</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/merlin.systems.dag.ops.softmax_sampling.SoftmaxSampling.html#merlin.systems.dag.ops.softmax_sampling.SoftmaxSampling" title="merlin.systems.dag.ops.softmax_sampling.SoftmaxSampling"><code class="xref py py-obj docutils literal notranslate"><span class="pre">softmax_sampling.SoftmaxSampling</span></code></a>(relevance_col)</p></td>
+<td><p>Given inputs of ID and prediction, this operator will sort all inputs in descending order.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/merlin.systems.dag.ops.session_filter.FilterCandidates.html#merlin.systems.dag.ops.session_filter.FilterCandidates" title="merlin.systems.dag.ops.session_filter.FilterCandidates"><code class="xref py py-obj docutils literal notranslate"><span class="pre">session_filter.FilterCandidates</span></code></a>(filter_out, …)</p></td>
+<td><p>This operator takes the input column and filters out elements of that column based on the supplied criteria.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/merlin.systems.dag.ops.unroll_features.UnrollFeatures.html#merlin.systems.dag.ops.unroll_features.UnrollFeatures" title="merlin.systems.dag.ops.unroll_features.UnrollFeatures"><code class="xref py py-obj docutils literal notranslate"><span class="pre">unroll_features.UnrollFeatures</span></code></a>(item_id_col, …)</p></td>
+<td><p>This operator takes a target column and joins the “unroll” columns to the target.</p></td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -129,6 +158,12 @@
 <col style="width: 90%" />
 </colgroup>
 <tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/merlin.systems.triton.convert_df_to_triton_input.html#merlin.systems.triton.convert_df_to_triton_input" title="merlin.systems.triton.convert_df_to_triton_input"><code class="xref py py-obj docutils literal notranslate"><span class="pre">convert_df_to_triton_input</span></code></a>(schema, batch[, …])</p></td>
+<td><p>Convert a dataframe to a set of Triton inputs</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/merlin.systems.triton.convert_triton_output_to_df.html#merlin.systems.triton.convert_triton_output_to_df" title="merlin.systems.triton.convert_triton_output_to_df"><code class="xref py py-obj docutils literal notranslate"><span class="pre">convert_triton_output_to_df</span></code></a>(columns, response)</p></td>
+<td><p>Convert a Triton response to a dataframe</p></td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -139,7 +174,7 @@
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="api_core/merlin.schema.html" class="btn btn-neutral float-left" title="merlin.schema package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="api_nvtabular.html" class="btn btn-neutral float-right" title="API Documentation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="generated/merlin.systems.dag.Ensemble.html" class="btn btn-neutral float-right" title="merlin.systems.dag.Ensemble" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
