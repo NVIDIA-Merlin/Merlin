@@ -1,7 +1,7 @@
 import merlin.models.tf as mm
 from tensorflow.keras import regularizers
 
-from args_parsing import MtlArgsPrefix, Task
+from .args_parsing import MtlArgsPrefix, Task
 
 
 def get_task_sample_weights(

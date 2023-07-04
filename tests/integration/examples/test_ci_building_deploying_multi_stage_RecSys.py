@@ -24,7 +24,7 @@ def test_func(tmpdir):
             import os
             os.system("mkdir -p {tmpdir / 'examples/'}")
             os.system("mkdir -p {tmpdir / 'data/'}")
-            os.system("mkdir -p {tmpdir / 'feast/feature_repo/data/'}")
+            os.system("mkdir -p {tmpdir / 'feast_repo/feature_repo/data/'}")
             os.environ["DATA_FOLDER"] = "{tmpdir / 'data/'}"
             os.environ["BASE_DIR"] = "{tmpdir / 'examples/'}"
             """
@@ -45,14 +45,14 @@ def test_func(tmpdir):
         )
         tb1.execute_cell(list(range(28, NUM_OF_CELLS)))
         assert os.path.isdir(f"{tmpdir / 'examples/dlrm'}")
-        assert os.path.isdir(f"{tmpdir / 'examples/feast/feature_repo'}")
+        assert os.path.isdir(f"{tmpdir / 'examples/feast_repo/feature_repo'}")
         assert os.path.isdir(f"{tmpdir / 'examples/query_tower'}")
         assert os.path.isfile(f"{tmpdir / 'examples/item_embeddings.parquet'}")
         assert os.path.isfile(
-            f"{tmpdir / 'examples/feast/feature_repo/user_features.py'}"
+            f"{tmpdir / 'examples/feast_repo/feature_repo/user_features.py'}"
         )
         assert os.path.isfile(
-            f"{tmpdir / 'examples/feast/feature_repo/item_features.py'}"
+            f"{tmpdir / 'examples/feast_repo/feature_repo/item_features.py'}"
         )
 
     with testbook(
@@ -81,7 +81,7 @@ def test_func(tmpdir):
             from merlin.systems.triton.utils import run_ensemble_on_tritonserver
             import pandas as pd
             configure_tensorflow()
-            user_features = pd.read_parquet("{tmpdir / 'examples/feast/feature_repo/data/user_features.parquet'}")
+            user_features = pd.read_parquet("{tmpdir / 'examples/feast_repo/feature_repo/data/user_features.parquet'}")
             request = user_features[["user_id_raw"]].sample(1)
             request["user_id_raw"] = request["user_id_raw"].astype(np.int32)
             response = run_ensemble_on_tritonserver(
