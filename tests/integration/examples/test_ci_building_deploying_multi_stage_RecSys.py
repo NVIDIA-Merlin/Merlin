@@ -2,7 +2,6 @@ import os
 
 import pytest
 from testbook import testbook
-
 from tests.conftest import REPO_ROOT
 
 pytest.importorskip("tensorflow")

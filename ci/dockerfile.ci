@@ -162,11 +162,11 @@ ENV PATH=${CUDA_HOME}/lib64/:${PATH}:${CUDA_HOME}/bin
 
 # Set up NVIDIA package repository
 RUN apt update -y --fix-missing && \
-    apt install -y --no-install-recommends software-properties-common && \
-    wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-ubuntu2004.pin && \
-    mv cuda-ubuntu2004.pin /etc/apt/preferences.d/cuda-repository-pin-600 && \
-    apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/3bf863cc.pub && \
-    add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/ /" && \
+    apt install -y --no-install-recommends software-properties-common
+RUN wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-ubuntu2204.pin && \
+    mv cuda-ubuntu2204.pin /etc/apt/preferences.d/cuda-repository-pin-600 && \
+    apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/3bf863cc.pub && \
+    add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/ /" && \
     apt install -y --no-install-recommends \
         ca-certificates \
         clang-format \
@@ -268,7 +268,7 @@ COPY --chown=1000:1000 --from=dlfw /usr/include/rmm /usr/include/rmm/
 # ptx compiler required by cubinlinker
 COPY --chown=1000:1000 --from=dlfw /usr/local/cuda-12.1/targets/x86_64-linux/lib/libnvptxcompiler_static.a /usr/local/cuda-12.1/targets/x86_64-linux/lib/libnvptxcompiler_static.a
 COPY --chown=1000:1000 --from=dlfw /usr/local/cuda-12.1/targets/x86_64-linux/include/nvPTXCompiler.h /usr/local/cuda-12.1/targets/x86_64-linux/include/nvPTXCompiler.h
-RUN git clone https://github.com/rapidsai/ptxcompiler.git /ptx && cd /ptx/ && python setup.py develop;
+RUN git clone https://github.com/rapidsai/ptxcompiler.git /ptx && cd /ptx/ && pip install .;
 
 ARG PYTHON_VERSION=3.10
 # Python Packages
