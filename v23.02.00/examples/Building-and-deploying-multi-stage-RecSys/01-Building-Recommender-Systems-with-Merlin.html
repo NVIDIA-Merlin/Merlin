@@ -1,102 +1,435 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Building Intelligent Recommender Systems with Merlin &mdash; Merlin  documentation</title><link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../../_static/mystnb.css" type="text/css" />
-      <link rel="stylesheet" href="../../_static/togglebutton.css" type="text/css" />
-      <link rel="stylesheet" href="../../_static/css/custom.css" type="text/css" />
+
+
+<html lang="en" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+    <title>Building Intelligent Recommender Systems with Merlin &#8212; NVIDIA Merlin</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=e353d410970836974a52" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=e353d410970836974a52" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=e353d410970836974a52" rel="stylesheet" />
+
+  
+  <link href="../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=e353d410970836974a52" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" href="../../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/css/custom.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/css/versions.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=e353d410970836974a52" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52" />
+
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script src="../../_static/js/rtd-version-switcher.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'examples/Building-and-deploying-multi-stage-RecSys/01-Building-Recommender-Systems-with-Merlin';</script>
     <link rel="canonical" href="https://nvidia-merlin.github.io/Merlin/stable/examples/Building-and-deploying-multi-stage-RecSys/01-Building-Recommender-Systems-with-Merlin.html" />
-  <!--[if lt IE 9]>
-    <script src="../../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
-        <script src="../../_static/jquery.js"></script>
-        <script src="../../_static/underscore.js"></script>
-        <script src="../../_static/doctools.js"></script>
-        <script >let toggleHintShow = 'Click to show';</script>
-        <script >let toggleHintHide = 'Click to hide';</script>
-        <script >let toggleOpenOnPrint = 'true';</script>
-        <script src="../../_static/togglebutton.js"></script>
-        <script >var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
-    <script src="../../_static/js/theme.js"></script>
+    <link rel="shortcut icon" href="../../_static/favicon.png"/>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Deploying a Multi-Stage RecSys into Production with Merlin Systems and Triton Inference Server" href="02-Deploying-multi-stage-RecSys-with-Merlin-Systems.html" />
-    <link rel="prev" title="Deploying a Multi-Stage Recommender System" href="index.html" /> 
-</head>
+    <link rel="prev" title="Deploying a Multi-Stage Recommender System" href="index.html" />
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-NVJ1Y1YJHK"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
 
-<body class="wy-body-for-nav">
-  <div class="banner">
-    <p class="banner">
-      Beginning in January 2023, versions for all NVIDIA Merlin projects
-      will change from semantic versioning like <code>4.0</code>
-      to calendar versioning like <code>23.01</code>.</p>
+    gtag('config', 'G-NVJ1Y1YJHK', {
+        'anonymize_ip': false,
+    });
+  </script>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,400;0,700;1,300&display=swap" rel="stylesheet">
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
   </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
 
-  <div class="wy-grid-for-nav">
-    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
-      <div class="wy-side-scroll">
-        <div class="wy-side-nav-search" >
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+  
 
-          
-          
-          <a href="../../index.html" class="icon icon-home">
-            Merlin
-          </a>
-<div role="search">
-  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
-    <input type="hidden" name="check_keywords" value="yes" />
-    <input type="hidden" name="area" value="default" />
-  </form>
-</div>
-        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption"><span class="caption-text">Contents</span></p>
-<ul class="current">
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+    <p class="title logo__title">NVIDIA Merlin</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../../README.html">Introduction</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="../index.html">Example Notebooks</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="../getting-started-movielens/index.html">Getting Started using the MovieLens Dataset</a></li>
-<li class="toctree-l2 current"><a class="reference internal" href="index.html">Deploying a Multi-Stage Recommender System</a><ul class="current">
-<li class="toctree-l3 current"><a class="current reference internal" href="#">Building the Recommender System</a></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../index.html">Example Notebooks</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
+<li class="toctree-l2 has-children"><a class="reference internal" href="../getting-started-movielens/index.html">Getting Started using the MovieLens Dataset</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../getting-started-movielens/01-Download-Convert.html">MovieLens Download and Convert</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../getting-started-movielens/02-ETL-with-NVTabular.html">Feature Engineering with NVTabular</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../getting-started-movielens/03-Training-with-HugeCTR.html">Training with HugeCTR</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../getting-started-movielens/03-Training-with-TF.html">Getting Started MovieLens: Training with TensorFlow</a></li>
+
+
+<li class="toctree-l3"><a class="reference internal" href="../getting-started-movielens/03-Training-with-PyTorch.html">Training with PyTorch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../getting-started-movielens/04-Triton-Inference-with-HugeCTR.html">Serving the HugeCTR Model with Triton</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../getting-started-movielens/04-Triton-Inference-with-TF.html">Serve Recommendations from the TensorFlow Model</a></li>
+
+</ul>
+</li>
+<li class="toctree-l2 current active has-children"><a class="reference internal" href="index.html">Deploying a Multi-Stage Recommender System</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
+<li class="toctree-l3 current active"><a class="current reference internal" href="#">Building the Recommender System</a></li>
 <li class="toctree-l3"><a class="reference internal" href="02-Deploying-multi-stage-RecSys-with-Merlin-Systems.html">Deploying the Recommender System with Triton</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../sagemaker-tensorflow/index.html">Merlin and AWS SageMaker</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../scaling-criteo/index.html">Scaling Large Datasets with Criteo</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../sagemaker-tensorflow/index.html">Merlin and AWS SageMaker</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-4"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../sagemaker-tensorflow/sagemaker-merlin-tensorflow.html">Training and Serving Merlin on AWS SageMaker</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../scaling-criteo/index.html">Scaling Large Datasets with Criteo</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-5"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../scaling-criteo/01-Download-Convert.html">Criteo Download and Convert</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../scaling-criteo/02-ETL-with-NVTabular.html">Feature Engineering with NVTabular</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../scaling-criteo/03-Training-with-HugeCTR.html">Training with HugeCTR</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../scaling-criteo/03-Training-with-Merlin-Models-TensorFlow.html">Training with Merlin Models and TensorFlow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../scaling-criteo/04-Triton-Inference-with-HugeCTR.html">Deploy the HugeCTR Model with Triton</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../scaling-criteo/04-Triton-Inference-with-Merlin-Models-TensorFlow.html">Deploy the TensorFlow Model with Triton</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../containers.html">Merlin Containers</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../support_matrix/index.html">Merlin Support Matrix</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../support_matrix/index.html">Merlin Support Matrix</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-6"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../support_matrix/support_matrix_merlin_hugectr.html">Merlin HugeCTR Support Matrix</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../support_matrix/support_matrix_merlin_tensorflow.html">Merlin TensorFlow Support Matrix</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../support_matrix/support_matrix_merlin_pytorch.html">Merlin PyTorch Support Matrix</a></li>
+</ul>
+</li>
 </ul>
 
-        </div>
+    </div>
+</nav></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-merlin-ecosystem-nav" aria-label="Merlin Ecosystem Nav">
+  <div class="bd-toc-item navbar-nav">
+    <p aria-level="2" class="caption" role="heading"><span class="caption-text">Ecosystem</span></p>
+    <ul class="nav bd-sidenav">
+      <li class="toctree-l1"><a class="reference external" href="/core/v23.02.00">Core</a></li>
+      <li class="toctree-l1"><a class="reference external" href="/models/v23.02.00">Models</a></li>
+      <li class="toctree-l1"><a class="reference external" href="/systems/v23.02.00">Systems</a></li>
+      <li class="toctree-l1"><a class="reference external" href="/NVTabular/v23.02.00">NVTabular</a></li>
+      <li class="toctree-l1"><a class="reference external" href="/Transformers4Rec/v23.02.00">Transformers4Rec</a></li>
+      <li class="toctree-l1"><a class="reference external" href="/dataloader/v23.02.00">Dataloader</a></li>
+      <li class="toctree-l1"><a class="reference external" href="/HugetCTR/v23.02.00">HugeCTR</a></li>
+    </ul>
+  </div>
+</nav></div>
+        <div class="sidebar-primary-item">
+<div class="rst-versions" data-toggle="rst-versions" role="note" aria-label="versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    <span class="fa fa-book"></span>
+    v: v23.02.00
+    <span class="fa fa-caret-down"></span>
+  </span>
+  <div class="rst-other-versions">
+    <dl>
+      <dt>Tags</dt>
+      <dd><a href="../../../v22.11.00/index.html">v22.11.00</a></dd>
+      <dd><a href="../../../v22.12.00/index.html">v22.12.00</a></dd>
+      <dd><a href="01-Building-Recommender-Systems-with-Merlin.html">v23.02.00</a></dd>
+      <dd><a href="../../../v23.04.00/index.html">v23.04.00</a></dd>
+      <dd><a href="../../../v23.05.00/index.html">v23.05.00</a></dd>
+      <dd><a href="../../../v23.06.00/index.html">v23.06.00</a></dd>
+    </dl>
+    <dl>
+      <dt>Branches</dt>
+      <dd><a href="../../../main/index.html">main</a></dd>
+      <dd><a href="../../../stable/index.html">stable</a></dd>
+    </dl>
+  </div>
+</div></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
       </div>
-    </nav>
+      
+      <main id="main-content" class="bd-main">
+        
+        
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
-          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../../index.html">Merlin</a>
-      </nav>
+<div class="sbt-scroll-pixel-helper"></div>
 
-      <div class="wy-nav-content">
-        <div class="rst-content">
-          <div role="navigation" aria-label="Page navigation">
-  <ul class="wy-breadcrumbs">
-      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
-          <li class="breadcrumb-item"><a href="../index.html">NVIDIA Merlin Example Notebooks</a></li>
-          <li class="breadcrumb-item"><a href="index.html">Deploying a Multi-Stage Recommender System</a></li>
-      <li class="breadcrumb-item active">Building Intelligent Recommender Systems with Merlin</li>
-      <li class="wy-breadcrumbs-aside">
-      </li>
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+<a href="https://github.com/NVIDIA-Merlin/Merlin" target="_blank"
+   class="btn btn-sm btn-source-repository-button"
+   title="Source repository"
+   data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+
+</a>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../../_sources/" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.ipynb</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
   </ul>
-  <hr/>
 </div>
-          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
-           <div itemprop="articleBody">
-             
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+<script>
+document.write(`
+  <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+  </button>
+`);
+</script>
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+  </button>
+`);
+</script>
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Building Intelligent Recommender Systems with Merlin</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#overview">Overview</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#learning-objectives">Learning objectives</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#import-required-libraries-and-functions">Import required libraries and functions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#feature-engineering-with-nvtabular">Feature Engineering with NVTabular</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#training-a-retrieval-model-with-two-tower-model">Training a Retrieval Model with Two-Tower Model</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">Feature Engineering with NVTabular</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#exporting-query-user-model">Exporting query (user) model</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#training-a-ranking-model-with-dlrm">Training a Ranking Model with DLRM</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#set-up-a-feature-store-with-feast">Set up a feature store with Feast</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#exporting-user-and-item-features">Exporting user and item features</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#extract-and-save-item-embeddings">Extract and save Item embeddings</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#create-feature-definitions">Create feature definitions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#next-steps">Next Steps</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
   <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Copyright 2021 NVIDIA Corporation. All Rights Reserved.</span>
@@ -121,11 +454,11 @@
 </div>
 </div>
 <img alt="https://developer.download.nvidia.com/notebooks/dlsw-notebooks/merlin_merlin_01-building-recommender-systems-with-merlin/nvidia_logo.png" src="https://developer.download.nvidia.com/notebooks/dlsw-notebooks/merlin_merlin_01-building-recommender-systems-with-merlin/nvidia_logo.png" />
-<div class="section" id="building-intelligent-recommender-systems-with-merlin">
-<h1>Building Intelligent Recommender Systems with Merlin<a class="headerlink" href="#building-intelligent-recommender-systems-with-merlin" title="Permalink to this headline"></a></h1>
+<section id="building-intelligent-recommender-systems-with-merlin">
+<h1>Building Intelligent Recommender Systems with Merlin<a class="headerlink" href="#building-intelligent-recommender-systems-with-merlin" title="Permalink to this heading">#</a></h1>
 <p>This notebook is created using the latest stable <a class="reference external" href="https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-tensorflow/tags">merlin-tensorflow</a> container.</p>
-<div class="section" id="overview">
-<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline"></a></h2>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this heading">#</a></h2>
 <p>Recommender Systems (RecSys) are the engine of the modern internet and the catalyst for human decisions. Building a recommendation system is challenging because it requires multiple stages (data preprocessing, offline training, item retrieval, filtering, ranking, ordering, etc.) to work together seamlessly and efficiently. The biggest challenges for new practitioners are the lack of understanding around what RecSys look like in the real world, and the gap between examples of simple models and a production-ready end-to-end recommender systems.</p>
 <p>The figure below represents a four-stage recommender systems. This is a more complex process than only training a single model and deploying it, and it is much more realistic and closer to what’s happening in the real-world recommender production systems.</p>
 <p><img alt="fourstage" src="../../_images/fourstages.png" /></p>
@@ -137,9 +470,9 @@
 <li><p><strong>Ordering:</strong> At this stage, we can order the final set of items that we want to recommend to the user. Here, we’re able to align the output of the model with business needs, constraints, or criteria.</p></li>
 </ul>
 <p>To learn more about the four-stage recommender systems, you can listen to Even Oldridge’s <a class="reference external" href="https://www.youtube.com/watch?v=5qjiY-kLwFY&amp;list=PL65MqKWg6XcrdN4TJV0K1PdLhF_Uq-b43&amp;index=7">Moving Beyond Recommender Models talk</a> at KDD’21 and read more <a class="reference external" href="https://eugeneyan.com/writing/system-design-for-discovery/">in this blog post</a>.</p>
-</div>
-<div class="section" id="learning-objectives">
-<h2>Learning objectives<a class="headerlink" href="#learning-objectives" title="Permalink to this headline"></a></h2>
+</section>
+<section id="learning-objectives">
+<h2>Learning objectives<a class="headerlink" href="#learning-objectives" title="Permalink to this heading">#</a></h2>
 <ul class="simple">
 <li><p>Understanding four stages of recommender systems</p></li>
 <li><p>Training retrieval and ranking models with Merlin Models</p></li>
@@ -152,9 +485,9 @@
 <li><p><a class="reference external" href="https://github.com/facebookresearch/faiss">Faiss</a>: a library for efficient similarity search and clustering of dense vectors</p></li>
 </ul>
 <p>You can find more information about <code class="docutils literal notranslate"><span class="pre">Feast</span> <span class="pre">feature</span> <span class="pre">store</span></code> and <code class="docutils literal notranslate"><span class="pre">Faiss</span></code> libraries in the next notebook.</p>
-</div>
-<div class="section" id="import-required-libraries-and-functions">
-<h2>Import required libraries and functions<a class="headerlink" href="#import-required-libraries-and-functions" title="Permalink to this headline"></a></h2>
+</section>
+<section id="import-required-libraries-and-functions">
+<h2>Import required libraries and functions<a class="headerlink" href="#import-required-libraries-and-functions" title="Permalink to this heading">#</a></h2>
 <p><strong>Compatibility:</strong></p>
 <p>This notebook is developed and tested using the latest <code class="docutils literal notranslate"><span class="pre">merlin-tensorflow</span></code> container from the NVIDIA NGC catalog. To find the tag for the most recently-released container, refer to the <a class="reference external" href="https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-tensorflow">Merlin TensorFlow</a> page.</p>
 <div class="cell docutils container">
@@ -239,9 +572,9 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 </div>
 </div>
 <p>If you would like to use the real ALI-CCP dataset, you can use <a class="reference external" href="https://github.com/NVIDIA-Merlin/models/blob/main/merlin/datasets/ecommerce/aliccp/dataset.py">get_aliccp()</a> function instead. This function takes the raw csv files, and generate parquet files that can be directly fed to NVTabular workflow above.</p>
-</div>
-<div class="section" id="feature-engineering-with-nvtabular">
-<h2>Feature Engineering with NVTabular<a class="headerlink" href="#feature-engineering-with-nvtabular" title="Permalink to this headline"></a></h2>
+</section>
+<section id="feature-engineering-with-nvtabular">
+<h2>Feature Engineering with NVTabular<a class="headerlink" href="#feature-engineering-with-nvtabular" title="Permalink to this heading">#</a></h2>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">output_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">DATA_FOLDER</span><span class="p">,</span> <span class="s2">&quot;processed_nvt&quot;</span><span class="p">)</span>
@@ -304,12 +637,12 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 </div>
 </div>
 </div>
-</div>
-<div class="section" id="training-a-retrieval-model-with-two-tower-model">
-<h2>Training a Retrieval Model with Two-Tower Model<a class="headerlink" href="#training-a-retrieval-model-with-two-tower-model" title="Permalink to this headline"></a></h2>
+</section>
+<section id="training-a-retrieval-model-with-two-tower-model">
+<h2>Training a Retrieval Model with Two-Tower Model<a class="headerlink" href="#training-a-retrieval-model-with-two-tower-model" title="Permalink to this heading">#</a></h2>
 <p>We start with the offline candidate retrieval stage. We are going to train a Two-Tower model for item retrieval. To learn more about the Two-tower model you can visit <a class="reference external" href="https://github.com/NVIDIA-Merlin/models/blob/main/examples/05-Retrieval-Model.ipynb">05-Retrieval-Model.ipynb</a>.</p>
-<div class="section" id="id1">
-<h3>Feature Engineering with NVTabular<a class="headerlink" href="#id1" title="Permalink to this headline"></a></h3>
+<section id="id1">
+<h3>Feature Engineering with NVTabular<a class="headerlink" href="#id1" title="Permalink to this heading">#</a></h3>
 <p>We are going to process our raw categorical features by encoding them using <code class="docutils literal notranslate"><span class="pre">Categorify()</span></code> operator and tag the features with <code class="docutils literal notranslate"><span class="pre">user</span></code> or <code class="docutils literal notranslate"><span class="pre">item</span></code> tags in the schema file. To learn more about <a class="reference external" href="https://github.com/NVIDIA-Merlin/NVTabular">NVTabular</a> and the schema object visit this example <a class="reference external" href="https://github.com/NVIDIA-Merlin/models/blob/main/examples/02-Merlin-Models-and-NVTabular-integration.ipynb">notebook</a> in the Merlin Models repo.</p>
 <p>Define a new output path to store the filtered datasets and schema files.</p>
 <div class="cell docutils container">
@@ -400,10 +733,10 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 </div>
 </div>
 </div>
-</div>
-</div>
-<div class="section" id="exporting-query-user-model">
-<h2>Exporting query (user) model<a class="headerlink" href="#exporting-query-user-model" title="Permalink to this headline"></a></h2>
+</section>
+</section>
+<section id="exporting-query-user-model">
+<h2>Exporting query (user) model<a class="headerlink" href="#exporting-query-user-model" title="Permalink to this heading">#</a></h2>
 <p>We export the query tower to use it later during the model deployment stage with Merlin Systems.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -413,9 +746,9 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 </div>
 </div>
 </div>
-</div>
-<div class="section" id="training-a-ranking-model-with-dlrm">
-<h2>Training a Ranking Model with DLRM<a class="headerlink" href="#training-a-ranking-model-with-dlrm" title="Permalink to this headline"></a></h2>
+</section>
+<section id="training-a-ranking-model-with-dlrm">
+<h2>Training a Ranking Model with DLRM<a class="headerlink" href="#training-a-ranking-model-with-dlrm" title="Permalink to this heading">#</a></h2>
 <p>Now we will move onto training an offline ranking model. This ranking model will be used for scoring our retrieved items.</p>
 <p>Read processed parquet files. We use the <code class="docutils literal notranslate"><span class="pre">schema</span></code> object to define our model.</p>
 <div class="cell docutils container">
@@ -492,9 +825,9 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 </div>
 </div>
 <p>In the following cells we are going to export the required user and item features files, and save the query (user) tower model and item embeddings to disk. If you want to read more about exporting retrieval models, please visit <a class="reference external" href="https://github.com/NVIDIA-Merlin/models/blob/main/examples/05-Retrieval-Model.ipynb">05-Retrieval-Model.ipynb</a> notebook in Merlin Models library repo.</p>
-</div>
-<div class="section" id="set-up-a-feature-store-with-feast">
-<h2>Set up a feature store with Feast<a class="headerlink" href="#set-up-a-feature-store-with-feast" title="Permalink to this headline"></a></h2>
+</section>
+<section id="set-up-a-feature-store-with-feast">
+<h2>Set up a feature store with Feast<a class="headerlink" href="#set-up-a-feature-store-with-feast" title="Permalink to this heading">#</a></h2>
 <p>Before we move onto the next step, we need to create a Feast feature repository. <a class="reference external" href="https://feast.dev/">Feast</a> is an end-to-end open source feature store for machine learning. Feast (Feature Store) is a customizable operational data system that re-uses existing infrastructure to manage and serve machine learning features to real-time models.</p>
 <p>We will create the feature repo in the current working directory, which is <code class="docutils literal notranslate"><span class="pre">BASE_DIR</span></code> for us.</p>
 <div class="cell docutils container">
@@ -522,9 +855,9 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 </div>
 </div>
 </div>
-</div>
-<div class="section" id="exporting-user-and-item-features">
-<h2>Exporting user and item features<a class="headerlink" href="#exporting-user-and-item-features" title="Permalink to this headline"></a></h2>
+</section>
+<section id="exporting-user-and-item-features">
+<h2>Exporting user and item features<a class="headerlink" href="#exporting-user-and-item-features" title="Permalink to this heading">#</a></h2>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">merlin.models.utils.dataset</span> <span class="kn">import</span> <span class="n">unique_rows_by_features</span>
@@ -942,9 +1275,9 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 </div>
 </div>
 </div>
-</div>
-<div class="section" id="extract-and-save-item-embeddings">
-<h2>Extract and save Item embeddings<a class="headerlink" href="#extract-and-save-item-embeddings" title="Permalink to this headline"></a></h2>
+</section>
+<section id="extract-and-save-item-embeddings">
+<h2>Extract and save Item embeddings<a class="headerlink" href="#extract-and-save-item-embeddings" title="Permalink to this heading">#</a></h2>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">item_embs</span> <span class="o">=</span> <span class="n">model_tt</span><span class="o">.</span><span class="n">item_embeddings</span><span class="p">(</span>
@@ -1153,9 +1486,9 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 </div>
 </div>
 </div>
-</div>
-<div class="section" id="create-feature-definitions">
-<h2>Create feature definitions<a class="headerlink" href="#create-feature-definitions" title="Permalink to this headline"></a></h2>
+</section>
+<section id="create-feature-definitions">
+<h2>Create feature definitions<a class="headerlink" href="#create-feature-definitions" title="Permalink to this heading">#</a></h2>
 <p>Now we will create our user and item features definitions in the user_features.py and item_features.py files and save these files in the feature_repo.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
@@ -1292,77 +1625,116 @@ Requirement already satisfied: emoji in /usr/local/lib/python3.8/dist-packages (
 </div>
 </div>
 </div>
-</div>
-<div class="section" id="next-steps">
-<h2>Next Steps<a class="headerlink" href="#next-steps" title="Permalink to this headline"></a></h2>
+</section>
+<section id="next-steps">
+<h2>Next Steps<a class="headerlink" href="#next-steps" title="Permalink to this heading">#</a></h2>
 <p>We trained and exported our ranking and retrieval models and NVTabular workflows. In the next step, we will learn how to deploy our trained models into <a class="reference external" href="https://github.com/triton-inference-server/server">Triton Inference Server (TIS)</a> with Merlin Systems library.</p>
 <p>For the next step, move on to the <code class="docutils literal notranslate"><span class="pre">02-Deploying-multi-stage-Recsys-with-Merlin-Systems.ipynb</span></code> notebook to deploy our saved models as an ensemble to TIS and obtain prediction results for a given request.</p>
-</div>
-</div>
+</section>
+</section>
 
 
-           </div>
-          </div>
-          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="index.html" class="btn btn-neutral float-left" title="Deploying a Multi-Stage Recommender System" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="02-Deploying-multi-stage-RecSys-with-Merlin-Systems.html" class="btn btn-neutral float-right" title="Deploying a Multi-Stage RecSys into Production with Merlin Systems and Triton Inference Server" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-    </div>
+                </article>
+              
 
-  <hr/>
-
-  <div role="contentinfo">
-    <p>&#169; Copyright 2022, NVIDIA.</p>
-  </div>
-
-  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    provided by <a href="https://readthedocs.org">Read the Docs</a>.
-   
-
-</footer>
-        </div>
+              
+              
+                <footer class="bd-footer-article">
+                  
+<div class="footer-article-items footer-article__inner">
+  
+    <div class="footer-article-item"><!-- Previous / next buttons -->
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="index.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Deploying a Multi-Stage Recommender System</p>
       </div>
-    </section>
+    </a>
+    <a class="right-next"
+       href="02-Deploying-multi-stage-RecSys-with-Merlin-Systems.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Deploying a Multi-Stage RecSys into Production with Merlin Systems and Triton Inference Server</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div></div>
+  
+</div>
+
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#overview">Overview</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#learning-objectives">Learning objectives</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#import-required-libraries-and-functions">Import required libraries and functions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#feature-engineering-with-nvtabular">Feature Engineering with NVTabular</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#training-a-retrieval-model-with-two-tower-model">Training a Retrieval Model with Two-Tower Model</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">Feature Engineering with NVTabular</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#exporting-query-user-model">Exporting query (user) model</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#training-a-ranking-model-with-dlrm">Training a Ranking Model with DLRM</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#set-up-a-feature-store-with-feast">Set up a feature store with Feast</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#exporting-user-and-item-features">Exporting user and item features</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#extract-and-save-item-embeddings">Extract and save Item embeddings</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#create-feature-definitions">Create feature definitions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#next-steps">Next Steps</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+  <p class="copyright">
+    
+      © Copyright 2023, NVIDIA.
+      <br/>
+    
+  </p>
+
   </div>
   
-<div class="rst-versions" data-toggle="rst-versions" role="note" aria-label="versions">
-  <span class="rst-current-version" data-toggle="rst-current-version">
-    <span class="fa fa-book"> Other Versions</span>
-    v: v23.02.00
-    <span class="fa fa-caret-down"></span>
-  </span>
-  <div class="rst-other-versions">
-    <dl>
-      <dt>Tags</dt>
-      <dd><a href="../../../v22.11.00/index.html">v22.11.00</a></dd>
-      <dd><a href="../../../v22.12.00/index.html">v22.12.00</a></dd>
-      <dd><a href="01-Building-Recommender-Systems-with-Merlin.html">v23.02.00</a></dd>
-      <dd><a href="../../../v23.04.00/index.html">v23.04.00</a></dd>
-      <dd><a href="../../../v23.05.00/index.html">v23.05.00</a></dd>
-      <dd><a href="../../../v23.06.00/index.html">v23.06.00</a></dd>
-    </dl>
-    <dl>
-      <dt>Branches</dt>
-      <dd><a href="../../../main/index.html">main</a></dd>
-      <dd><a href="../../../stable/index.html">stable</a></dd>
-    </dl>
+  <div class="footer-item">
+    
   </div>
-</div><script>
-      jQuery(function () {
-          SphinxRtdTheme.Navigation.enable(true);
-      });
-  </script>
-    <!-- Theme Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-NVJ1Y1YJHK"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
+  
+</div>
+          </footer>
+        
 
-      gtag('config', 'G-NVJ1Y1YJHK', {
-          'anonymize_ip': false,
-      });
-    </script> 
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../_static/scripts/bootstrap.js?digest=e353d410970836974a52"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52"></script>
 
-</body>
+  <footer class="bd-footer">
+  </footer>
+  </body>
 </html>
