@@ -74,7 +74,7 @@ def test_func(tmpdir):
             df_lib = get_lib()
             train = df_lib.read_parquet(
                 os.path.join("{tmpdir / "data"}/processed_nvt/", "train", "part_0.parquet"),
-                columns=["user_id_raw"],
+                columns=["user_id"],
             )
             batch = train[:1]
             from merlin.systems.triton.utils import run_ensemble_on_tritonserver
