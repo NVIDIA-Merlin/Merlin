@@ -311,7 +311,8 @@ Created sqlite table <span class=" -Color -Color-Bold -Color-Bold-Green">feast_r
 <span class="n">item_embeddings</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span>
     <span class="n">pd</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s2">&quot;item_embeddings.parquet&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
 <span class="p">)</span>
-<span class="n">setup_faiss</span><span class="p">(</span><span class="n">item_embeddings</span><span class="p">,</span> <span class="n">faiss_index_path</span><span class="p">)</span>
+<span class="n">item_embeddings_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">&quot;item_id&quot;</span><span class="p">:</span> <span class="n">item_embeddings</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">),</span> <span class="s2">&quot;embedding&quot;</span><span class="p">:</span> <span class="n">item_embeddings</span><span class="p">[:,</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()})</span>
+<span class="n">setup_faiss</span><span class="p">(</span><span class="n">item_embeddings_df</span><span class="p">,</span> <span class="n">faiss_index_path</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
