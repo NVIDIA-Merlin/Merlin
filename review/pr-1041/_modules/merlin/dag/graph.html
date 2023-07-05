@@ -114,13 +114,13 @@
 <span class="n">LOG</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;merlin&quot;</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="Graph"><a class="viewcode-back" href="../../../api_core/merlin.dag.html#merlin.dag.Graph">[docs]</a><span class="k">class</span> <span class="nc">Graph</span><span class="p">:</span>
+<div class="viewcode-block" id="Graph"><a class="viewcode-back" href="../../../api_core/generated/merlin.dag.Graph.html#merlin.dag.Graph">[docs]</a><span class="k">class</span> <span class="nc">Graph</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Represents an DAG composed of Nodes, each of which contains an operator that</span>
 <span class="sd">    transforms dataframes or dataframe-like data</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_node</span><span class="p">:</span> <span class="n">Node</span><span class="p">):</span>
+<div class="viewcode-block" id="Graph.__init__"><a class="viewcode-back" href="../../../api_core/generated/merlin.dag.Graph.html#merlin.dag.Graph.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_node</span><span class="p">:</span> <span class="n">Node</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">output_node</span><span class="p">,</span> <span class="n">BaseOperator</span><span class="p">):</span>
             <span class="n">output_node</span> <span class="o">=</span> <span class="n">Node</span><span class="o">.</span><span class="n">construct_from</span><span class="p">(</span><span class="n">output_node</span><span class="p">)</span>
 
@@ -132,9 +132,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">subgraphs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="s2">&quot;Graph&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="n">_find_subgraphs</span><span class="p">(</span><span class="n">output_node</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">subgraphs</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">postorder_iter_nodes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_node</span><span class="p">,</span> <span class="n">flatten_subgraphs</span><span class="o">=</span><span class="kc">True</span><span class="p">)):</span>
-            <span class="n">node</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">load_artifacts</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="n">node</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">load_artifacts</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Graph.subgraph"><a class="viewcode-back" href="../../../api_core/merlin.dag.html#merlin.dag.Graph.subgraph">[docs]</a>    <span class="k">def</span> <span class="nf">subgraph</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Graph&quot;</span><span class="p">:</span>
+<div class="viewcode-block" id="Graph.subgraph"><a class="viewcode-back" href="../../../api_core/generated/merlin.dag.Graph.html#merlin.dag.Graph.subgraph">[docs]</a>    <span class="k">def</span> <span class="nf">subgraph</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Graph&quot;</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">subgraphs</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No subgraph named </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">. Options are: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">subgraphs</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">subgraphs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span></div>
@@ -173,7 +173,7 @@
 
         <span class="k">return</span> <span class="n">column_mapping</span>
 
-<div class="viewcode-block" id="Graph.construct_schema"><a class="viewcode-back" href="../../../api_core/merlin.dag.html#merlin.dag.Graph.construct_schema">[docs]</a>    <span class="k">def</span> <span class="nf">construct_schema</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">root_schema</span><span class="p">:</span> <span class="n">Schema</span><span class="p">,</span> <span class="n">preserve_dtypes</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Graph&quot;</span><span class="p">:</span>
+<div class="viewcode-block" id="Graph.construct_schema"><a class="viewcode-back" href="../../../api_core/generated/merlin.dag.Graph.html#merlin.dag.Graph.construct_schema">[docs]</a>    <span class="k">def</span> <span class="nf">construct_schema</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">root_schema</span><span class="p">:</span> <span class="n">Schema</span><span class="p">,</span> <span class="n">preserve_dtypes</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Graph&quot;</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Given the schema of a dataset to transform, determine the output schema of the graph</span>
 
@@ -231,7 +231,7 @@
 
         <span class="k">return</span> <span class="n">_get_unique</span><span class="p">(</span><span class="n">input_cols</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Graph.remove_inputs"><a class="viewcode-back" href="../../../api_core/merlin.dag.html#merlin.dag.Graph.remove_inputs">[docs]</a>    <span class="k">def</span> <span class="nf">remove_inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">to_remove</span><span class="p">):</span>
+<div class="viewcode-block" id="Graph.remove_inputs"><a class="viewcode-back" href="../../../api_core/generated/merlin.dag.Graph.html#merlin.dag.Graph.remove_inputs">[docs]</a>    <span class="k">def</span> <span class="nf">remove_inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">to_remove</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Removes columns from a Graph</span>
 
@@ -280,11 +280,11 @@
 
         <span class="k">return</span> <span class="bp">self</span></div>
 
-<div class="viewcode-block" id="Graph.get_nodes_by_op_type"><a class="viewcode-back" href="../../../api_core/merlin.dag.html#merlin.dag.Graph.get_nodes_by_op_type">[docs]</a>    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Graph.get_nodes_by_op_type"><a class="viewcode-back" href="../../../api_core/generated/merlin.dag.Graph.html#merlin.dag.Graph.get_nodes_by_op_type">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">get_nodes_by_op_type</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">nodes</span><span class="p">,</span> <span class="n">op_type</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">set</span><span class="p">(</span><span class="n">node</span> <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">iter_nodes</span><span class="p">(</span><span class="n">nodes</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">op</span><span class="p">,</span> <span class="n">op_type</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="Graph.clear_stats"><a class="viewcode-back" href="../../../api_core/merlin.dag.html#merlin.dag.Graph.clear_stats">[docs]</a>    <span class="k">def</span> <span class="nf">clear_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Graph.clear_stats"><a class="viewcode-back" href="../../../api_core/generated/merlin.dag.Graph.html#merlin.dag.Graph.clear_stats">[docs]</a>    <span class="k">def</span> <span class="nf">clear_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Removes calculated statistics from each node in the graph</span>
 
 <span class="sd">        See Also</span>

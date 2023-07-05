@@ -101,7 +101,7 @@
 <span class="kn">from</span> <span class="nn">merlin.schema</span> <span class="kn">import</span> <span class="n">Tags</span>
 
 
-<div class="viewcode-block" id="ColumnSelector"><a class="viewcode-back" href="../../../api_core/merlin.dag.html#merlin.dag.ColumnSelector">[docs]</a><span class="k">class</span> <span class="nc">ColumnSelector</span><span class="p">:</span>
+<div class="viewcode-block" id="ColumnSelector"><a class="viewcode-back" href="../../../api_core/generated/merlin.dag.ColumnSelector.html#merlin.dag.ColumnSelector">[docs]</a><span class="k">class</span> <span class="nc">ColumnSelector</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A ColumnSelector describes a group of columns to be transformed by Operators in a</span>
 <span class="sd">    Graph. Operators can be applied to the selected columns by shifting (&gt;&gt;) operators</span>
 <span class="sd">    on to the ColumnSelector, which returns a new Node with the transformations</span>
@@ -121,7 +121,7 @@
 <span class="sd">        at-least-one of the tags provided will be considered.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<div class="viewcode-block" id="ColumnSelector.__init__"><a class="viewcode-back" href="../../../api_core/generated/merlin.dag.ColumnSelector.html#merlin.dag.ColumnSelector.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">names</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">subgroups</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="s2">&quot;ColumnSelector&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -157,7 +157,7 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">subgroups</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ColumnSelector</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_names</span> <span class="o">=</span> <span class="n">plain_names</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_nested_check</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_nested_check</span><span class="p">()</span></div>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">all</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -240,7 +240,7 @@
     <span class="k">def</span> <span class="fm">__bool__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">all</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_names</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">subgroups</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">tags</span><span class="p">)</span>
 
-<div class="viewcode-block" id="ColumnSelector.resolve"><a class="viewcode-back" href="../../../api_core/merlin.dag.html#merlin.dag.ColumnSelector.resolve">[docs]</a>    <span class="k">def</span> <span class="nf">resolve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">schema</span><span class="p">):</span>
+<div class="viewcode-block" id="ColumnSelector.resolve"><a class="viewcode-back" href="../../../api_core/generated/merlin.dag.ColumnSelector.html#merlin.dag.ColumnSelector.resolve">[docs]</a>    <span class="k">def</span> <span class="nf">resolve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">schema</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Takes a schema and produces a new selector with selected column names</span>
 <span class="sd">        how selection occurs (tags, name) does not matter.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">all</span><span class="p">:</span>
@@ -254,7 +254,7 @@
             <span class="n">new_selector</span><span class="o">.</span><span class="n">subgroups</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">group</span><span class="o">.</span><span class="n">resolve</span><span class="p">(</span><span class="n">schema</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">new_selector</span></div>
 
-<div class="viewcode-block" id="ColumnSelector.filter_columns"><a class="viewcode-back" href="../../../api_core/merlin.dag.html#merlin.dag.ColumnSelector.filter_columns">[docs]</a>    <span class="k">def</span> <span class="nf">filter_columns</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other_selector</span><span class="p">:</span> <span class="s2">&quot;ColumnSelector&quot;</span><span class="p">):</span>
+<div class="viewcode-block" id="ColumnSelector.filter_columns"><a class="viewcode-back" href="../../../api_core/generated/merlin.dag.ColumnSelector.html#merlin.dag.ColumnSelector.filter_columns">[docs]</a>    <span class="k">def</span> <span class="nf">filter_columns</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other_selector</span><span class="p">:</span> <span class="s2">&quot;ColumnSelector&quot;</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Narrow the content of this selector to the columns that would be selected by another</span>
 

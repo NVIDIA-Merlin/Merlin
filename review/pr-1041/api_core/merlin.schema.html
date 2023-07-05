@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>merlin.schema package &mdash; Merlin  documentation</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <title>Merlin Schema &mdash; Merlin  documentation</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/mystnb.css" type="text/css" />
       <link rel="stylesheet" href="../_static/togglebutton.css" type="text/css" />
@@ -24,7 +24,7 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="API Documentation" href="../api_systems.html" />
+    <link rel="next" title="merlin.schema.Schema" href="generated/merlin.schema.Schema.html" />
     <link rel="prev" title="merlin.models.utils.registry.display_list_by_prefix" href="../generated/merlin.models.utils.registry.display_list_by_prefix.html" /> 
 </head>
 
@@ -57,7 +57,12 @@
 <li class="toctree-l2"><a class="reference internal" href="../api_dataloader.html">merlin.loader</a></li>
 <li class="toctree-l2"><a class="reference internal" href="merlin.io.html">merlin.io</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../api_models.html">merlin.models</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">merlin.schema</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">merlin.schema</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="generated/merlin.schema.Schema.html">merlin.schema.Schema</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/merlin.schema.ColumnSchema.html">merlin.schema.ColumnSchema</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/merlin.schema.Tags.html">merlin.schema.Tags</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="../api_systems.html">merlin.systems</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../api_nvtabular.html">nvtabular</a></li>
 </ul>
@@ -81,7 +86,7 @@
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="../api_overview.html">API Documentation</a></li>
-      <li class="breadcrumb-item active">merlin.schema package</li>
+      <li class="breadcrumb-item active">Merlin Schema</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -90,523 +95,25 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <div class="section" id="merlin-schema-package">
-<h1>merlin.schema package<a class="headerlink" href="#merlin-schema-package" title="Permalink to this headline"></a></h1>
-<dl class="py class">
-<dt id="merlin.schema.Schema">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">merlin.schema.</span></code><code class="sig-name descname"><span class="pre">Schema</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">column_schemas</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/merlin/schema/schema.html#Schema"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#merlin.schema.Schema" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>A collection of column schemas for a dataset.</p>
-<dl class="py method">
-<dt id="merlin.schema.Schema.column_names">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">column_names</span></code><a class="headerlink" href="#merlin.schema.Schema.column_names" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt id="merlin.schema.Schema.select">
-<code class="sig-name descname"><span class="pre">select</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">selector</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">merlin.schema.schema.Schema</span><a class="reference internal" href="../_modules/merlin/schema/schema.html#Schema.select"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#merlin.schema.Schema.select" title="Permalink to this definition"></a></dt>
-<dd><p>Select matching columns from this Schema object using a ColumnSelector</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>selector</strong> (<a class="reference internal" href="merlin.dag.html#merlin.dag.ColumnSelector" title="merlin.dag.ColumnSelector"><em>ColumnSelector</em></a>) – Selector that describes which columns match</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>New object containing only the ColumnSchemas of selected columns</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference internal" href="#merlin.schema.Schema" title="merlin.schema.Schema">Schema</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt id="merlin.schema.Schema.apply">
-<code class="sig-name descname"><span class="pre">apply</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">selector</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">merlin.schema.schema.Schema</span><a class="reference internal" href="../_modules/merlin/schema/schema.html#Schema.apply"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#merlin.schema.Schema.apply" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt id="merlin.schema.Schema.excluding">
-<code class="sig-name descname"><span class="pre">excluding</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">selector</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">merlin.schema.schema.Schema</span><a class="reference internal" href="../_modules/merlin/schema/schema.html#Schema.excluding"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#merlin.schema.Schema.excluding" title="Permalink to this definition"></a></dt>
-<dd><p>Select non-matching columns from this Schema object using a ColumnSelector</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>selector</strong> (<a class="reference internal" href="merlin.dag.html#merlin.dag.ColumnSelector" title="merlin.dag.ColumnSelector"><em>ColumnSelector</em></a>) – Selector that describes which columns match</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>New object containing only the ColumnSchemas of selected columns</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference internal" href="#merlin.schema.Schema" title="merlin.schema.Schema">Schema</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt id="merlin.schema.Schema.apply_inverse">
-<code class="sig-name descname"><span class="pre">apply_inverse</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">selector</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">merlin.schema.schema.Schema</span><a class="reference internal" href="../_modules/merlin/schema/schema.html#Schema.apply_inverse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#merlin.schema.Schema.apply_inverse" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt id="merlin.schema.Schema.select_by_tag">
-<code class="sig-name descname"><span class="pre">select_by_tag</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tags</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">merlin.schema.tags.Tags</span><span class="p"><span class="pre">,</span> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">merlin.schema.tags.Tags</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pred_fn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">merlin.schema.schema.Schema</span><a class="reference internal" href="../_modules/merlin/schema/schema.html#Schema.select_by_tag"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#merlin.schema.Schema.select_by_tag" title="Permalink to this definition"></a></dt>
-<dd><p>Select columns from this Schema that match ANY of the supplied tags.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>tags</strong> (<em>List</em><em>[</em><em>Union</em><em>[</em><em>str</em><em>, </em><a class="reference internal" href="#merlin.schema.Tags" title="merlin.schema.Tags"><em>Tags</em></a><em>]</em><em>] </em><em>:</em>) – List of tags that describes which columns match</p></li>
-<li><p><strong>pred_fn</strong> (<cite>any</cite> or <cite>all</cite>) – Predicate function that decides if the column should be selected.
-Receives iterable of bool values indicating whether each
-of the provided tags is present on a column schema.
-Returning True selects this column, False will not return that column.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>New object containing only the ColumnSchemas of selected columns</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference internal" href="#merlin.schema.Schema" title="merlin.schema.Schema">Schema</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt id="merlin.schema.Schema.excluding_by_tag">
-<code class="sig-name descname"><span class="pre">excluding_by_tag</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tags</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pred_fn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">merlin.schema.schema.Schema</span><a class="reference internal" href="../_modules/merlin/schema/schema.html#Schema.excluding_by_tag"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#merlin.schema.Schema.excluding_by_tag" title="Permalink to this definition"></a></dt>
-<dd><p>Remove columns from the schema that match ANY of the supplied tags.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>tags</strong> (<em>_type_</em>) – List of tags that describes which columns remove</p></li>
-<li><p><strong>pred_fn</strong> (<cite>any</cite> or <cite>all</cite>, optional, by default None (ANY)) – Predicate function that decides if a column should be selected.
-<cite>all</cite> can be provided to remove columns that contain ALL the tags provided</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>New Schema containing only the columns that don’t contain the provided tags</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference internal" href="#merlin.schema.Schema" title="merlin.schema.Schema">Schema</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt id="merlin.schema.Schema.remove_by_tag">
-<code class="sig-name descname"><span class="pre">remove_by_tag</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tags</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pred_fn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">merlin.schema.schema.Schema</span><a class="reference internal" href="../_modules/merlin/schema/schema.html#Schema.remove_by_tag"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#merlin.schema.Schema.remove_by_tag" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt id="merlin.schema.Schema.select_by_name">
-<code class="sig-name descname"><span class="pre">select_by_name</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">names</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">merlin.schema.schema.Schema</span><a class="reference internal" href="../_modules/merlin/schema/schema.html#Schema.select_by_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#merlin.schema.Schema.select_by_name" title="Permalink to this definition"></a></dt>
-<dd><p>Select matching columns from this Schema object using a list of column names</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>names</strong> (<em>List</em><em>[</em><em>str</em><em>] </em><em>:</em>) – List of column names that describes which columns match</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>New object containing only the ColumnSchemas of selected columns</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference internal" href="#merlin.schema.Schema" title="merlin.schema.Schema">Schema</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt id="merlin.schema.Schema.excluding_by_name">
-<code class="sig-name descname"><span class="pre">excluding_by_name</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">col_names</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/merlin/schema/schema.html#Schema.excluding_by_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#merlin.schema.Schema.excluding_by_name" title="Permalink to this definition"></a></dt>
-<dd><p>Remove columns from this Schema object by name</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>col_names</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) – Names of the column to remove</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>New Schema object after the columns are removed</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference internal" href="#merlin.schema.Schema" title="merlin.schema.Schema">Schema</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt id="merlin.schema.Schema.remove_col">
-<code class="sig-name descname"><span class="pre">remove_col</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">col_name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">merlin.schema.schema.Schema</span><a class="reference internal" href="../_modules/merlin/schema/schema.html#Schema.remove_col"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#merlin.schema.Schema.remove_col" title="Permalink to this definition"></a></dt>
-<dd><p>Remove a column from this Schema object by name</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>col_name</strong> (<em>str</em>) – Name of the column to remove</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>This Schema object after the column is removed</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference internal" href="#merlin.schema.Schema" title="merlin.schema.Schema">Schema</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt id="merlin.schema.Schema.without">
-<code class="sig-name descname"><span class="pre">without</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">col_names</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">merlin.schema.schema.Schema</span><a class="reference internal" href="../_modules/merlin/schema/schema.html#Schema.without"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#merlin.schema.Schema.without" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt id="merlin.schema.Schema.get">
-<code class="sig-name descname"><span class="pre">get</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">col_name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">merlin.schema.schema.ColumnSchema</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">merlin.schema.schema.ColumnSchema</span><a class="reference internal" href="../_modules/merlin/schema/schema.html#Schema.get"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#merlin.schema.Schema.get" title="Permalink to this definition"></a></dt>
-<dd><p>Get a ColumnSchema by name</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>col_name</strong> (<em>str</em>) – Name of the column to get</p></li>
-<li><p><strong>default</strong> (<em>ColumnSchema :</em>) – <dl class="simple">
-<dt>Default value to return if column is not found.</dt><dd><p>(Default value = None)</p>
-</dd>
-</dl>
-</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Retrieved column schema (or default value, if not found)</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference internal" href="#merlin.schema.ColumnSchema" title="merlin.schema.ColumnSchema">ColumnSchema</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt id="merlin.schema.Schema.first">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">first</span></code><a class="headerlink" href="#merlin.schema.Schema.first" title="Permalink to this definition"></a></dt>
-<dd><p>Returns the first ColumnSchema in the Schema. Useful for cases where you select down
-to a single column via select_by_name or select_by_tag, and just want the value</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>The first column schema present in this Schema object</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference internal" href="#merlin.schema.ColumnSchema" title="merlin.schema.ColumnSchema">ColumnSchema</a></p>
-</dd>
-<dt class="field-odd">Raises</dt>
-<dd class="field-odd"><p><strong>ValueError</strong> – If this Schema object contains no column schemas</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt id="merlin.schema.Schema.to_pandas">
-<code class="sig-name descname"><span class="pre">to_pandas</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">pandas.core.frame.DataFrame</span><a class="reference internal" href="../_modules/merlin/schema/schema.html#Schema.to_pandas"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#merlin.schema.Schema.to_pandas" title="Permalink to this definition"></a></dt>
-<dd><p>Convert this Schema object to a pandas DataFrame</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>DataFrame containing the column schemas in this Schema object</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>pd.DataFrame</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt id="merlin.schema.Schema.copy">
-<code class="sig-name descname"><span class="pre">copy</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <span class="pre">merlin.schema.schema.Schema</span><a class="reference internal" href="../_modules/merlin/schema/schema.html#Schema.copy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#merlin.schema.Schema.copy" title="Permalink to this definition"></a></dt>
-<dd><p>Return a copy of the schema</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt id="merlin.schema.ColumnSchema">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">merlin.schema.</span></code><code class="sig-name descname"><span class="pre">ColumnSchema</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="pre">name:</span> <span class="pre">str</span></em>, <em class="sig-param"><span class="pre">tags:</span> <span class="pre">Optional[Union[merlin.schema.tags.TagSet</span></em>, <em class="sig-param"><span class="pre">List[Union[str</span></em>, <em class="sig-param"><span class="pre">merlin.schema.tags.Tags]]]]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></em>, <em class="sig-param"><span class="pre">properties:</span> <span class="pre">Optional[Dict]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></em>, <em class="sig-param"><span class="pre">dtype:</span> <span class="pre">Optional[merlin.dtypes.base.DType]</span> <span class="pre">=</span> <span class="pre">None</span></em>, <em class="sig-param"><span class="pre">is_list:</span> <span class="pre">Optional[bool]</span> <span class="pre">=</span> <span class="pre">None</span></em>, <em class="sig-param"><span class="pre">is_ragged:</span> <span class="pre">Optional[bool]</span> <span class="pre">=</span> <span class="pre">None</span></em>, <em class="sig-param"><span class="pre">dims:</span> <span class="pre">dataclasses.InitVar[typing.Union[typing.Tuple</span></em>, <em class="sig-param"><span class="pre">merlin.dtypes.shape.Shape]]</span> <span class="pre">=</span> <span class="pre">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/merlin/schema/schema.html#ColumnSchema"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#merlin.schema.ColumnSchema" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>A schema containing metadata of a dataframe column.</p>
-<dl class="py attribute">
-<dt id="merlin.schema.ColumnSchema.name">
-<code class="sig-name descname"><span class="pre">name</span></code><em class="property"><span class="pre">:</span> <span class="pre">str</span></em><a class="headerlink" href="#merlin.schema.ColumnSchema.name" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt id="merlin.schema.ColumnSchema.tags">
-<code class="sig-name descname"><span class="pre">tags</span></code><em class="property"><span class="pre">:</span> <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">merlin.schema.tags.TagSet</span><span class="p"><span class="pre">,</span> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">merlin.schema.tags.Tags</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#merlin.schema.ColumnSchema.tags" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt id="merlin.schema.ColumnSchema.properties">
-<code class="sig-name descname"><span class="pre">properties</span></code><em class="property"><span class="pre">:</span> <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#merlin.schema.ColumnSchema.properties" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt id="merlin.schema.ColumnSchema.dtype">
-<code class="sig-name descname"><span class="pre">dtype</span></code><em class="property"><span class="pre">:</span> <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">merlin.dtypes.base.DType</span><span class="p"><span class="pre">]</span></span></em><em class="property"> <span class="pre">=</span> <span class="pre">None</span></em><a class="headerlink" href="#merlin.schema.ColumnSchema.dtype" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt id="merlin.schema.ColumnSchema.is_list">
-<code class="sig-name descname"><span class="pre">is_list</span></code><em class="property"><span class="pre">:</span> <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></em><em class="property"> <span class="pre">=</span> <span class="pre">None</span></em><a class="headerlink" href="#merlin.schema.ColumnSchema.is_list" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt id="merlin.schema.ColumnSchema.is_ragged">
-<code class="sig-name descname"><span class="pre">is_ragged</span></code><em class="property"><span class="pre">:</span> <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></em><em class="property"> <span class="pre">=</span> <span class="pre">None</span></em><a class="headerlink" href="#merlin.schema.ColumnSchema.is_ragged" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt id="merlin.schema.ColumnSchema.dims">
-<code class="sig-name descname"><span class="pre">dims</span></code><em class="property"><span class="pre">:</span> <span class="pre">dataclasses.InitVar</span><span class="p"><span class="pre">[</span></span><span class="pre">typing.Union</span><span class="p"><span class="pre">[</span></span><span class="pre">typing.Tuple</span><span class="p"><span class="pre">,</span> </span><span class="pre">merlin.dtypes.shape.Shape</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"> <span class="pre">=</span> <span class="pre">None</span></em><a class="headerlink" href="#merlin.schema.ColumnSchema.dims" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt id="merlin.schema.ColumnSchema.shape">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">shape</span></code><a class="headerlink" href="#merlin.schema.ColumnSchema.shape" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt id="merlin.schema.ColumnSchema.with_name">
-<code class="sig-name descname"><span class="pre">with_name</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">merlin.schema.schema.ColumnSchema</span><a class="reference internal" href="../_modules/merlin/schema/schema.html#ColumnSchema.with_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#merlin.schema.ColumnSchema.with_name" title="Permalink to this definition"></a></dt>
-<dd><p>Create a copy of this ColumnSchema object with a different column name</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>name</strong> (<em>str</em>) – New column name</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Copied object with new column name</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference internal" href="#merlin.schema.ColumnSchema" title="merlin.schema.ColumnSchema">ColumnSchema</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt id="merlin.schema.ColumnSchema.with_tags">
-<code class="sig-name descname"><span class="pre">with_tags</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tags</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span> </span><span class="pre">merlin.schema.tags.Tags</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">merlin.schema.schema.ColumnSchema</span><a class="reference internal" href="../_modules/merlin/schema/schema.html#ColumnSchema.with_tags"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#merlin.schema.ColumnSchema.with_tags" title="Permalink to this definition"></a></dt>
-<dd><p>Create a copy of this ColumnSchema object with different column tags</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>tags</strong> (<em>Union</em><em>[</em><em>str</em><em>, </em><a class="reference internal" href="#merlin.schema.Tags" title="merlin.schema.Tags"><em>Tags</em></a><em>]</em>) – New column tags</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Copied object with new column tags</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference internal" href="#merlin.schema.ColumnSchema" title="merlin.schema.ColumnSchema">ColumnSchema</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt id="merlin.schema.ColumnSchema.with_properties">
-<code class="sig-name descname"><span class="pre">with_properties</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">properties</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">merlin.schema.schema.ColumnSchema</span><a class="reference internal" href="../_modules/merlin/schema/schema.html#ColumnSchema.with_properties"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#merlin.schema.ColumnSchema.with_properties" title="Permalink to this definition"></a></dt>
-<dd><p>Create a copy of this ColumnSchema object with different column properties</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>properties</strong> (<em>dict</em>) – New column properties</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Copied object with new column properties</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference internal" href="#merlin.schema.ColumnSchema" title="merlin.schema.ColumnSchema">ColumnSchema</a></p>
-</dd>
-<dt class="field-even">Raises</dt>
-<dd class="field-even"><p><strong>TypeError</strong> – If properties are not a dict</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt id="merlin.schema.ColumnSchema.with_dtype">
-<code class="sig-name descname"><span class="pre">with_dtype</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dtype</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_list</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_ragged</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">merlin.schema.schema.ColumnSchema</span><a class="reference internal" href="../_modules/merlin/schema/schema.html#ColumnSchema.with_dtype"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#merlin.schema.ColumnSchema.with_dtype" title="Permalink to this definition"></a></dt>
-<dd><p>Create a copy of this ColumnSchema object with different column dtype</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>dtype</strong> (<em>np.dtype</em>) – New column dtype</p></li>
-<li><p><strong>is_list</strong> (<em>bool :</em>) – <dl class="simple">
-<dt>Whether rows in this column contain lists.</dt><dd><p>(Default value = None)</p>
-</dd>
-</dl>
-</p></li>
-<li><p><strong>is_ragged</strong> (<em>bool :</em>) – <dl class="simple">
-<dt>Whether lists in this column have varying lengths.</dt><dd><p>(Default value = None)</p>
-</dd>
-</dl>
-</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Copied object with new column dtype</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference internal" href="#merlin.schema.ColumnSchema" title="merlin.schema.ColumnSchema">ColumnSchema</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt id="merlin.schema.ColumnSchema.with_shape">
-<code class="sig-name descname"><span class="pre">with_shape</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shape</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">,</span> </span><span class="pre">merlin.dtypes.shape.Shape</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> &#x2192; <span class="pre">merlin.schema.schema.ColumnSchema</span><a class="reference internal" href="../_modules/merlin/schema/schema.html#ColumnSchema.with_shape"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#merlin.schema.ColumnSchema.with_shape" title="Permalink to this definition"></a></dt>
-<dd><p>Create a copy of this object with a new shape</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>shape</strong> (<em>Union</em><em>[</em><em>Tuple</em><em>, </em><em>Shape</em><em>]</em>) – Object to set as shape, must be either a tuple or Shape.</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>A copy of this object containing the provided shape value</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference internal" href="#merlin.schema.ColumnSchema" title="merlin.schema.ColumnSchema">ColumnSchema</a></p>
-</dd>
-<dt class="field-even">Raises</dt>
-<dd class="field-even"><p><strong>TypeError</strong> – If value is not either a tuple or a Shape</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt id="merlin.schema.ColumnSchema.int_domain">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">int_domain</span></code><a class="headerlink" href="#merlin.schema.ColumnSchema.int_domain" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt id="merlin.schema.ColumnSchema.float_domain">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">float_domain</span></code><a class="headerlink" href="#merlin.schema.ColumnSchema.float_domain" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt id="merlin.schema.ColumnSchema.value_count">
-<em class="property"><span class="pre">property</span> </em><code class="sig-name descname"><span class="pre">value_count</span></code><a class="headerlink" href="#merlin.schema.ColumnSchema.value_count" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt id="merlin.schema.Tags">
-<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">merlin.schema.</span></code><code class="sig-name descname"><span class="pre">Tags</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/merlin/schema/tags.html#Tags"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#merlin.schema.Tags" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">enum.Enum</span></code></p>
-<p>Standard tags used in the Merlin ecosystem</p>
-<dl class="py attribute">
-<dt id="merlin.schema.Tags.CATEGORICAL">
-<code class="sig-name descname"><span class="pre">CATEGORICAL</span></code><em class="property"> <span class="pre">=</span> <span class="pre">'categorical'</span></em><a class="headerlink" href="#merlin.schema.Tags.CATEGORICAL" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt id="merlin.schema.Tags.CONTINUOUS">
-<code class="sig-name descname"><span class="pre">CONTINUOUS</span></code><em class="property"> <span class="pre">=</span> <span class="pre">'continuous'</span></em><a class="headerlink" href="#merlin.schema.Tags.CONTINUOUS" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt id="merlin.schema.Tags.LIST">
-<code class="sig-name descname"><span class="pre">LIST</span></code><em class="property"> <span class="pre">=</span> <span class="pre">'list'</span></em><a class="headerlink" href="#merlin.schema.Tags.LIST" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt id="merlin.schema.Tags.SEQUENCE">
-<code class="sig-name descname"><span class="pre">SEQUENCE</span></code><em class="property"> <span class="pre">=</span> <span class="pre">'sequence'</span></em><a class="headerlink" href="#merlin.schema.Tags.SEQUENCE" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt id="merlin.schema.Tags.TEXT">
-<code class="sig-name descname"><span class="pre">TEXT</span></code><em class="property"> <span class="pre">=</span> <span class="pre">'text'</span></em><a class="headerlink" href="#merlin.schema.Tags.TEXT" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt id="merlin.schema.Tags.TOKENIZED">
-<code class="sig-name descname"><span class="pre">TOKENIZED</span></code><em class="property"> <span class="pre">=</span> <span class="pre">'tokenized'</span></em><a class="headerlink" href="#merlin.schema.Tags.TOKENIZED" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt id="merlin.schema.Tags.TIME">
-<code class="sig-name descname"><span class="pre">TIME</span></code><em class="property"> <span class="pre">=</span> <span class="pre">'time'</span></em><a class="headerlink" href="#merlin.schema.Tags.TIME" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt id="merlin.schema.Tags.EMBEDDING">
-<code class="sig-name descname"><span class="pre">EMBEDDING</span></code><em class="property"> <span class="pre">=</span> <span class="pre">'embedding'</span></em><a class="headerlink" href="#merlin.schema.Tags.EMBEDDING" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt id="merlin.schema.Tags.ID">
-<code class="sig-name descname"><span class="pre">ID</span></code><em class="property"> <span class="pre">=</span> <span class="pre">'id'</span></em><a class="headerlink" href="#merlin.schema.Tags.ID" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt id="merlin.schema.Tags.USER">
-<code class="sig-name descname"><span class="pre">USER</span></code><em class="property"> <span class="pre">=</span> <span class="pre">'user'</span></em><a class="headerlink" href="#merlin.schema.Tags.USER" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt id="merlin.schema.Tags.ITEM">
-<code class="sig-name descname"><span class="pre">ITEM</span></code><em class="property"> <span class="pre">=</span> <span class="pre">'item'</span></em><a class="headerlink" href="#merlin.schema.Tags.ITEM" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt id="merlin.schema.Tags.SESSION">
-<code class="sig-name descname"><span class="pre">SESSION</span></code><em class="property"> <span class="pre">=</span> <span class="pre">'session'</span></em><a class="headerlink" href="#merlin.schema.Tags.SESSION" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt id="merlin.schema.Tags.CONTEXT">
-<code class="sig-name descname"><span class="pre">CONTEXT</span></code><em class="property"> <span class="pre">=</span> <span class="pre">'context'</span></em><a class="headerlink" href="#merlin.schema.Tags.CONTEXT" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt id="merlin.schema.Tags.TARGET">
-<code class="sig-name descname"><span class="pre">TARGET</span></code><em class="property"> <span class="pre">=</span> <span class="pre">'target'</span></em><a class="headerlink" href="#merlin.schema.Tags.TARGET" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt id="merlin.schema.Tags.REGRESSION">
-<code class="sig-name descname"><span class="pre">REGRESSION</span></code><em class="property"> <span class="pre">=</span> <span class="pre">'regression'</span></em><a class="headerlink" href="#merlin.schema.Tags.REGRESSION" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt id="merlin.schema.Tags.CLASSIFICATION">
-<code class="sig-name descname"><span class="pre">CLASSIFICATION</span></code><em class="property"> <span class="pre">=</span> <span class="pre">'classification'</span></em><a class="headerlink" href="#merlin.schema.Tags.CLASSIFICATION" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt id="merlin.schema.Tags.BINARY">
-<code class="sig-name descname"><span class="pre">BINARY</span></code><em class="property"> <span class="pre">=</span> <span class="pre">'binary'</span></em><a class="headerlink" href="#merlin.schema.Tags.BINARY" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt id="merlin.schema.Tags.MULTI_CLASS">
-<code class="sig-name descname"><span class="pre">MULTI_CLASS</span></code><em class="property"> <span class="pre">=</span> <span class="pre">'multi_class'</span></em><a class="headerlink" href="#merlin.schema.Tags.MULTI_CLASS" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt id="merlin.schema.Tags.USER_ID">
-<code class="sig-name descname"><span class="pre">USER_ID</span></code><em class="property"> <span class="pre">=</span> <span class="pre">'user_id'</span></em><a class="headerlink" href="#merlin.schema.Tags.USER_ID" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt id="merlin.schema.Tags.ITEM_ID">
-<code class="sig-name descname"><span class="pre">ITEM_ID</span></code><em class="property"> <span class="pre">=</span> <span class="pre">'item_id'</span></em><a class="headerlink" href="#merlin.schema.Tags.ITEM_ID" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt id="merlin.schema.Tags.SESSION_ID">
-<code class="sig-name descname"><span class="pre">SESSION_ID</span></code><em class="property"> <span class="pre">=</span> <span class="pre">'session_id'</span></em><a class="headerlink" href="#merlin.schema.Tags.SESSION_ID" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt id="merlin.schema.Tags.TEXT_TOKENIZED">
-<code class="sig-name descname"><span class="pre">TEXT_TOKENIZED</span></code><em class="property"> <span class="pre">=</span> <span class="pre">'text_tokenized'</span></em><a class="headerlink" href="#merlin.schema.Tags.TEXT_TOKENIZED" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt id="merlin.schema.Tags.BINARY_CLASSIFICATION">
-<code class="sig-name descname"><span class="pre">BINARY_CLASSIFICATION</span></code><em class="property"> <span class="pre">=</span> <span class="pre">'binary_classification'</span></em><a class="headerlink" href="#merlin.schema.Tags.BINARY_CLASSIFICATION" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt id="merlin.schema.Tags.MULTI_CLASS_CLASSIFICATION">
-<code class="sig-name descname"><span class="pre">MULTI_CLASS_CLASSIFICATION</span></code><em class="property"> <span class="pre">=</span> <span class="pre">'multi_class_classification'</span></em><a class="headerlink" href="#merlin.schema.Tags.MULTI_CLASS_CLASSIFICATION" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
+  <div class="section" id="merlin-schema">
+<h1>Merlin Schema<a class="headerlink" href="#merlin-schema" title="Permalink to this headline"></a></h1>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/merlin.schema.Schema.html#merlin.schema.Schema" title="merlin.schema.Schema"><code class="xref py py-obj docutils literal notranslate"><span class="pre">merlin.schema.Schema</span></code></a>([column_schemas])</p></td>
+<td><p>A collection of column schemas for a dataset.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/merlin.schema.ColumnSchema.html#merlin.schema.ColumnSchema" title="merlin.schema.ColumnSchema"><code class="xref py py-obj docutils literal notranslate"><span class="pre">merlin.schema.ColumnSchema</span></code></a>(name, tags, …)</p></td>
+<td><p>A schema containing metadata of a dataframe column.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/merlin.schema.Tags.html#merlin.schema.Tags" title="merlin.schema.Tags"><code class="xref py py-obj docutils literal notranslate"><span class="pre">merlin.schema.Tags</span></code></a>(value)</p></td>
+<td><p>Standard tags used in the Merlin ecosystem</p></td>
+</tr>
+</tbody>
+</table>
 </div>
 
 
@@ -614,7 +121,7 @@ to a single column via select_by_name or select_by_tag, and just want the value<
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="../generated/merlin.models.utils.registry.display_list_by_prefix.html" class="btn btn-neutral float-left" title="merlin.models.utils.registry.display_list_by_prefix" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="../api_systems.html" class="btn btn-neutral float-right" title="API Documentation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="generated/merlin.schema.Schema.html" class="btn btn-neutral float-right" title="merlin.schema.Schema" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

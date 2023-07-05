@@ -1661,7 +1661,13 @@
         <span class="kn">from</span> <span class="nn">merlin.models.tf.utils.batch_utils</span> <span class="kn">import</span> <span class="n">TFModelEncode</span>
 
         <span class="n">model_encode</span> <span class="o">=</span> <span class="n">TFModelEncode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="n">predictions</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">map_partitions</span><span class="p">(</span><span class="n">model_encode</span><span class="p">)</span>
+
+        <span class="c1"># Processing a sample of the dataset with the model encoder</span>
+        <span class="c1"># to get the output dataframe dtypes</span>
+        <span class="n">sample_output</span> <span class="o">=</span> <span class="n">model_encode</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
+        <span class="n">output_dtypes</span> <span class="o">=</span> <span class="n">sample_output</span><span class="o">.</span><span class="n">dtypes</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+
+        <span class="n">predictions</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">map_partitions</span><span class="p">(</span><span class="n">model_encode</span><span class="p">,</span> <span class="n">meta</span><span class="o">=</span><span class="n">output_dtypes</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">merlin</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">predictions</span><span class="p">)</span>
 
@@ -2436,7 +2442,13 @@
         <span class="n">get_user_emb</span> <span class="o">=</span> <span class="n">QueryEmbeddings</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">)</span>
 
         <span class="n">dataset</span> <span class="o">=</span> <span class="n">unique_rows_by_features</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">query_tag</span><span class="p">,</span> <span class="n">query_id_tag</span><span class="p">)</span><span class="o">.</span><span class="n">to_ddf</span><span class="p">()</span>
-        <span class="n">embeddings</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">map_partitions</span><span class="p">(</span><span class="n">get_user_emb</span><span class="p">)</span>
+
+        <span class="c1"># Processing a sample of the dataset with the model encoder</span>
+        <span class="c1"># to get the output dataframe dtypes</span>
+        <span class="n">sample_output</span> <span class="o">=</span> <span class="n">get_user_emb</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
+        <span class="n">output_dtypes</span> <span class="o">=</span> <span class="n">sample_output</span><span class="o">.</span><span class="n">dtypes</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+
+        <span class="n">embeddings</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">map_partitions</span><span class="p">(</span><span class="n">get_user_emb</span><span class="p">,</span> <span class="n">meta</span><span class="o">=</span><span class="n">output_dtypes</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">merlin</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">embeddings</span><span class="p">)</span>
 
@@ -2471,7 +2483,13 @@
         <span class="n">get_item_emb</span> <span class="o">=</span> <span class="n">ItemEmbeddings</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">)</span>
 
         <span class="n">dataset</span> <span class="o">=</span> <span class="n">unique_rows_by_features</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">item_tag</span><span class="p">,</span> <span class="n">item_id_tag</span><span class="p">)</span><span class="o">.</span><span class="n">to_ddf</span><span class="p">()</span>
-        <span class="n">embeddings</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">map_partitions</span><span class="p">(</span><span class="n">get_item_emb</span><span class="p">)</span>
+
+        <span class="c1"># Processing a sample of the dataset with the model encoder</span>
+        <span class="c1"># to get the output dataframe dtypes</span>
+        <span class="n">sample_output</span> <span class="o">=</span> <span class="n">get_item_emb</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
+        <span class="n">output_dtypes</span> <span class="o">=</span> <span class="n">sample_output</span><span class="o">.</span><span class="n">dtypes</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+
+        <span class="n">embeddings</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">map_partitions</span><span class="p">(</span><span class="n">get_item_emb</span><span class="p">,</span> <span class="n">meta</span><span class="o">=</span><span class="n">output_dtypes</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">merlin</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">embeddings</span><span class="p">)</span>
 
