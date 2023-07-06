@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.2
-ARG MERLIN_VERSION=22.12
-ARG TRITON_VERSION=22.11
-ARG TORCH_VERSION=22.11
+ARG MERLIN_VERSION=23.06
+ARG TRITON_VERSION=23.06
+ARG TORCH_VERSION=23.06
 
 ARG DLFW_IMAGE=nvcr.io/nvidia/pytorch:${TORCH_VERSION}-py3
 ARG FULL_IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-py3
@@ -23,20 +23,20 @@ RUN apt update -y --fix-missing && \
 RUN pip install --no-cache-dir --no-deps torch torchmetrics pytorch-lightning lightning-utilities \
         && pip install --no-cache-dir --upgrade pip \
         && pip install sympy \
-        && rm -rf /usr/local/lib/python3.8/dist-packages/torch \
-        && rm -rf /usr/local/lib/python3.8/dist-packages/caffe2
+        && rm -rf /usr/local/lib/python${PYTHON_VERSION}/dist-packages/torch \
+        && rm -rf /usr/local/lib/python${PYTHON_VERSION}/dist-packages/caffe2
 
 # Triton Torch backend
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/pytorch backends/pytorch
 
 # DLFW Python packages
-COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python3.8/dist-packages/numba /usr/local/lib/python3.8/dist-packages/numba
-COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python3.8/dist-packages/numpy /usr/local/lib/python3.8/dist-packages/numpy
-COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python3.8/dist-packages/torch /usr/local/lib/python3.8/dist-packages/torch
+COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/numba /usr/local/lib/python${PYTHON_VERSION}/dist-packages/numba
+COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/numpy /usr/local/lib/python${PYTHON_VERSION}/dist-packages/numpy
+COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/torch /usr/local/lib/python${PYTHON_VERSION}/dist-packages/torch
 
-COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python3.8/dist-packages/numba-*.dist-info /usr/local/lib/python3.8/dist-packages/numba.dist-info/
-COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python3.8/dist-packages/numpy-*.dist-info /usr/local/lib/python3.8/dist-packages/numpy.dist-info/
-COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python3.8/dist-packages/torch-*.egg-info /usr/local/lib/python3.8/dist-packages/torch.egg-info/
+COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/numba-*.dist-info /usr/local/lib/python${PYTHON_VERSION}/dist-packages/numba.dist-info/
+COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/numpy-*.dist-info /usr/local/lib/python${PYTHON_VERSION}/dist-packages/numpy.dist-info/
+COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/torch-*.egg-info /usr/local/lib/python${PYTHON_VERSION}/dist-packages/torch.egg-info/
 
 
 # Add all torch libraries to /usr/local
