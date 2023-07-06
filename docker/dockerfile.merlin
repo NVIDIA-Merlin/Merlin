@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.2
-ARG TRITON_VERSION=23.03
-ARG DLFW_VERSION=23.03
+ARG TRITON_VERSION=23.06
+ARG DLFW_VERSION=23.06
 
 ARG FULL_IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-py3
 ARG BASE_IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-py3-min
@@ -40,10 +40,10 @@ ENV PATH=${CUDA_HOME}/lib64/:${PATH}:${CUDA_HOME}/bin
 # Set up NVIDIA package repository
 RUN apt clean && apt update -y --fix-missing && \
     apt install -y --no-install-recommends software-properties-common && \
-    wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-ubuntu2004.pin && \
-    mv cuda-ubuntu2004.pin /etc/apt/preferences.d/cuda-repository-pin-600 && \
-    apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/3bf863cc.pub && \
-    add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/ /" && \
+    wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-ubuntu2204.pin && \
+    mv cuda-ubuntu2204.pin /etc/apt/preferences.d/cuda-repository-pin-600 && \
+    apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/3bf863cc.pub && \
+    add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/ /" && \
     apt install -y --no-install-recommends \
         autoconf \
         automake \
@@ -88,20 +88,18 @@ RUN ln -s /usr/bin/python3 /usr/bin/python
 # A fix has already been merged but not yet released:
 # https://gitlab.kitware.com/cmake/cmake/-/merge_requests/7859
 # 2023-02-22: pynvml==11.5.0 is currently incompatible with our version of dask/distributed
-# tritonclient[all]==2.29.0: latest tritonclient removes the perf_* binaries, so specified to version 2.29.0
-#cupy-cuda12x 
 
 RUN pip install --no-cache-dir --upgrade pip; pip install --no-cache-dir "cmake<3.25.0" ninja scikit-build pandas==1.5.2 \
                 fastrlock nvidia-pyindex pybind11 pytest \ 
-                transformers==4.12 tensorflow-metadata betterproto \
+                transformers tensorflow-metadata betterproto \
                 cachetools graphviz nvtx scipy "scikit-learn<1.2" \
-                tritonclient[all]==2.29.0 grpcio-channelz fiddle wandb npy-append-array \
+                tritonclient[all] grpcio-channelz fiddle wandb npy-append-array \
                 git+https://github.com/rapidsai/asvdb.git@main \
                 xgboost==1.6.2 lightgbm treelite==2.4.0 treelite_runtime==2.4.0 \
                 lightfm implicit \
                 numba "cuda-python>=11.5,<12.0" fsspec==2022.5.0 llvmlite \
                 pynvml==11.4.1
-RUN pip install --no-cache-dir numpy==1.22.4 protobuf==3.20.3 onnx onnxruntime==1.11.1 pycuda
+RUN pip install --no-cache-dir numpy==1.22.4 protobuf==3.20.3 onnx onnxruntime pycuda
 RUN pip install --no-cache-dir dask==${DASK_VER} distributed==${DASK_VER} dask[dataframe]==${DASK_VER} 
 RUN pip install --no-cache-dir onnx_graphsurgeon --index-url https://pypi.ngc.nvidia.com
 
@@ -125,18 +123,11 @@ ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/tritonserver/lib
 # don't include it https://github.com/kyamagu/faiss-wheels/issues/54)
 RUN git clone --branch v1.7.2 https://github.com/facebookresearch/faiss.git build-env && \
     pushd build-env && \
-    cmake -B build . -DFAISS_ENABLE_GPU=ON -DFAISS_ENABLE_PYTHON=ON -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_ARCHITECTURES="60;70;80" && \
+    cmake -B build . -DFAISS_ENABLE_GPU=ON -DFAISS_ENABLE_PYTHON=ON -DBUILD_TESTING=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_ARCHITECTURES="60;70;80;90" && \
     make -C build -j $(nproc) faiss swigfaiss && \
     pushd build/faiss/python && \
     python setup.py install && \
     popd && \
-    popd && \
-    rm -rf build-env
-
-# Install spdlog
-RUN git clone --branch v1.9.2 https://github.com/gabime/spdlog.git build-env && \
-    pushd build-env && \
-    mkdir build && cd build && cmake .. && make -j && make install && \
     popd && \
     rm -rf build-env
 
@@ -159,10 +150,10 @@ ENV PATH=${CUDA_HOME}/lib64/:${PATH}:${CUDA_HOME}/bin
 # Set up NVIDIA package repository
 RUN apt update -y --fix-missing && \
     apt install -y --no-install-recommends software-properties-common && \
-    wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-ubuntu2004.pin && \
-    mv cuda-ubuntu2004.pin /etc/apt/preferences.d/cuda-repository-pin-600 && \
-    apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/3bf863cc.pub && \
-    add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/ /" && \
+    wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-ubuntu2204.pin && \
+    mv cuda-ubuntu2204.pin /etc/apt/preferences.d/cuda-repository-pin-600 && \
+    apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/3bf863cc.pub && \
+    add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/ /" && \
     apt install -y --no-install-recommends \
         ca-certificates \
         clang-format \
@@ -217,9 +208,6 @@ RUN ln -s /usr/bin/python3 /usr/bin/python
 ENV JAVA_HOME=/usr/lib/jvm/default-java
 ENV LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${JAVA_HOME}/lib:${JAVA_HOME}/lib/server
 
-# Includes
-COPY --chown=1000:1000 --from=build /usr/local/include/spdlog/ /usr/local/include/spdlog/
-
 # Binaries
 COPY --chown=1000:1000 --from=build /usr/local/bin/cmake /usr/local/bin/
 COPY --chown=1000:1000 --from=build /usr/local/bin/pytest /usr/local/bin/
@@ -245,9 +233,11 @@ COPY --chown=1000:1000 --from=triton /usr/local/cuda-12.1/targets/x86_64-linux/l
 ENV PATH=/opt/tritonserver/bin:${PATH}:
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/tritonserver/lib
 
+ENV PYTHON_VERSION=3.10
+
 # Python Packages
-COPY --chown=1000:1000 --from=build /usr/local/lib/python3.8/dist-packages /usr/local/lib/python3.8/dist-packages/
-ENV PYTHONPATH=$PYTHONPATH:/usr/local/lib/python3.8/dist-packages/
+COPY --chown=1000:1000 --from=build /usr/local/lib/python${PYTHON_VERSION}/dist-packages /usr/local/lib/python${PYTHON_VERSION}/dist-packages/
+ENV PYTHONPATH=$PYTHONPATH:/usr/local/lib/python${PYTHON_VERSION}/dist-packages/
 
 
 # rapids components from the DLFW image
@@ -257,16 +247,19 @@ COPY --chown=1000:1000 --from=dlfw /usr/lib/libparquet* /usr/lib/
 COPY --chown=1000:1000 --from=dlfw /usr/lib/cmake/Arrow /usr/lib/cmake/Arrow/
 COPY --chown=1000:1000 --from=dlfw /usr/lib/cmake/Parquet /usr/lib/cmake/Parquet/
 COPY --chown=1000:1000 --from=dlfw /usr/lib/libnvcomp* /usr/lib/
+
+COPY --chown=1000:1000 --from=dlfw /usr/include/fmt /usr/include/fmt/
+COPY --chown=1000:1000 --from=dlfw /usr/include/spdlog /usr/include/spdlog/
+COPY --chown=1000:1000 --from=dlfw /usr/include/rmm /usr/include/rmm/
 COPY --chown=1000:1000 --from=dlfw /usr/include/parquet /usr/include/parquet/
 COPY --chown=1000:1000 --from=dlfw /usr/include/arrow /usr/include/arrow/
 COPY --chown=1000:1000 --from=dlfw /usr/include/cudf /usr/include/cudf/
-COPY --chown=1000:1000 --from=dlfw /usr/include/rmm /usr/include/rmm/
+
 # ptx compiler required by cubinlinker
 COPY --chown=1000:1000 --from=dlfw /usr/local/cuda-12.1/targets/x86_64-linux/lib/libnvptxcompiler_static.a /usr/local/cuda-12.1/targets/x86_64-linux/lib/libnvptxcompiler_static.a
 COPY --chown=1000:1000 --from=dlfw /usr/local/cuda-12.1/targets/x86_64-linux/include/nvPTXCompiler.h /usr/local/cuda-12.1/targets/x86_64-linux/include/nvPTXCompiler.h
 RUN git clone https://github.com/rapidsai/ptxcompiler.git /ptx && cd /ptx/ && python setup.py develop;
 
-ARG PYTHON_VERSION=3.8
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/rmm /usr/local/lib/python${PYTHON_VERSION}/dist-packages/rmm
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cuda /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cuda
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/pyarrow /usr/local/lib/python${PYTHON_VERSION}/dist-packages/pyarrow
