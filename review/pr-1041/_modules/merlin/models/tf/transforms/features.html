@@ -297,6 +297,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../../../../generated/merlin.models.tf.split_embeddings_on_size.html">merlin.models.tf.split_embeddings_on_size</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../../generated/merlin.models.tf.CategoryEncoding.html">merlin.models.tf.CategoryEncoding</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../../generated/merlin.models.tf.MapValues.html">merlin.models.tf.MapValues</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../../generated/merlin.models.tf.PrepareListFeatures.html">merlin.models.tf.PrepareListFeatures</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../../generated/merlin.models.tf.PrepareFeatures.html">merlin.models.tf.PrepareFeatures</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../../generated/merlin.models.tf.ToSparse.html">merlin.models.tf.ToSparse</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../../generated/merlin.models.tf.ToDense.html">merlin.models.tf.ToDense</a></li>
@@ -714,7 +715,7 @@ document.write(`
         <span class="k">return</span> <span class="n">outputs</span></div></div>
 
 
-<span class="nd">@Block</span><span class="o">.</span><span class="n">registry</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="s2">&quot;prepare_lists&quot;</span><span class="p">)</span>
+<div class="viewcode-block" id="PrepareListFeatures"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.PrepareListFeatures.html#merlin.models.tf.PrepareListFeatures">[docs]</a><span class="nd">@Block</span><span class="o">.</span><span class="n">registry</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="s2">&quot;prepare_lists&quot;</span><span class="p">)</span>
 <span class="nd">@tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">register_keras_serializable</span><span class="p">(</span><span class="n">package</span><span class="o">=</span><span class="s2">&quot;merlin.models&quot;</span><span class="p">)</span>
 <span class="k">class</span> <span class="nc">PrepareListFeatures</span><span class="p">(</span><span class="n">TabularBlock</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Prepares all list (multi-hot/sequential) features,</span>
@@ -737,11 +738,11 @@ document.write(`
 <span class="sd">        the ragged ones), by default False</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">schema</span><span class="p">:</span> <span class="n">Schema</span><span class="p">,</span> <span class="n">list_as_dense</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="PrepareListFeatures.__init__"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.PrepareListFeatures.html#merlin.models.tf.PrepareListFeatures.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">schema</span><span class="p">:</span> <span class="n">Schema</span><span class="p">,</span> <span class="n">list_as_dense</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">schema</span><span class="o">=</span><span class="n">schema</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">list_as_dense</span> <span class="o">=</span> <span class="n">list_as_dense</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">list_as_dense</span> <span class="o">=</span> <span class="n">list_as_dense</span></div>
 
-    <span class="k">def</span> <span class="nf">call</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">TabularData</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TabularData</span><span class="p">:</span>
+<div class="viewcode-block" id="PrepareListFeatures.call"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.PrepareListFeatures.html#merlin.models.tf.PrepareListFeatures.call">[docs]</a>    <span class="k">def</span> <span class="nf">call</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">TabularData</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">TabularData</span><span class="p">:</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">inputs</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">inputs</span>
 
@@ -807,9 +808,9 @@ document.write(`
             <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">outputs</span><span class="p">:</span>
                 <span class="n">outputs</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
 
-        <span class="k">return</span> <span class="n">outputs</span>
+        <span class="k">return</span> <span class="n">outputs</span></div>
 
-    <span class="k">def</span> <span class="nf">compute_output_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_shapes</span><span class="p">):</span>
+<div class="viewcode-block" id="PrepareListFeatures.compute_output_shape"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.PrepareListFeatures.html#merlin.models.tf.PrepareListFeatures.compute_output_shape">[docs]</a>    <span class="k">def</span> <span class="nf">compute_output_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_shapes</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">input_shapes</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">input_shapes</span>
 
@@ -854,16 +855,16 @@ document.write(`
             <span class="k">if</span> <span class="n">k</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;__values&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;__offsets&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">output_shapes</span><span class="p">:</span>
                 <span class="n">output_shapes</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
 
-        <span class="k">return</span> <span class="n">output_shapes</span>
+        <span class="k">return</span> <span class="n">output_shapes</span></div>
 
-    <span class="k">def</span> <span class="nf">compute_call_output_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_shapes</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_output_shape</span><span class="p">(</span><span class="n">input_shapes</span><span class="p">)</span>
+<div class="viewcode-block" id="PrepareListFeatures.compute_call_output_shape"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.PrepareListFeatures.html#merlin.models.tf.PrepareListFeatures.compute_call_output_shape">[docs]</a>    <span class="k">def</span> <span class="nf">compute_call_output_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_shapes</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_output_shape</span><span class="p">(</span><span class="n">input_shapes</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="PrepareListFeatures.get_config"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.PrepareListFeatures.html#merlin.models.tf.PrepareListFeatures.get_config">[docs]</a>    <span class="k">def</span> <span class="nf">get_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">config</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">get_config</span><span class="p">()</span>
         <span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;list_as_dense&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">list_as_dense</span><span class="p">})</span>
 
-        <span class="k">return</span> <span class="n">config</span>
+        <span class="k">return</span> <span class="n">config</span></div></div>
 
 
 <div class="viewcode-block" id="PrepareFeatures"><a class="viewcode-back" href="../../../../../generated/merlin.models.tf.PrepareFeatures.html#merlin.models.tf.PrepareFeatures">[docs]</a><span class="nd">@Block</span><span class="o">.</span><span class="n">registry</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="s2">&quot;prepare_features&quot;</span><span class="p">)</span>
