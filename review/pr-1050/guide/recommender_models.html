@@ -1,114 +1,431 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Recommender Models &mdash; Merlin  documentation</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/mystnb.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/togglebutton.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/css/custom.css" type="text/css" />
+
+
+<html lang="en" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+    <title>Recommender Models &#8212; NVIDIA Merlin</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=e353d410970836974a52" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=e353d410970836974a52" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=e353d410970836974a52" rel="stylesheet" />
+
+  
+  <link href="../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=e353d410970836974a52" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" href="../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/css/custom.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/css/versions.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=e353d410970836974a52" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52" />
+
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script src="../_static/js/rtd-version-switcher.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'guide/recommender_models';</script>
     <link rel="canonical" href="https://nvidia-merlin.github.io/Merlin/stable/guide/recommender_models.html" />
-  <!--[if lt IE 9]>
-    <script src="../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
-        <script src="../_static/doctools.js"></script>
-        <script >let toggleHintShow = 'Click to show';</script>
-        <script >let toggleHintHide = 'Click to hide';</script>
-        <script >let toggleOpenOnPrint = 'true';</script>
-        <script src="../_static/togglebutton.js"></script>
-        <script >var togglebuttonSelector = '.toggle, .admonition.dropdown, .tag_hide_input div.cell_input, .tag_hide-input div.cell_input, .tag_hide_output div.cell_output, .tag_hide-output div.cell_output, .tag_hide_cell.cell, .tag_hide-cell.cell';</script>
-    <script src="../_static/js/theme.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.png"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="NVIDIA Merlin Example Notebooks" href="../examples/index.html" />
-    <link rel="prev" title="Recommender Systems Guide" href="recommender_system_guide.html" /> 
-</head>
+    <link rel="prev" title="Recommender Systems Guide" href="recommender_system_guide.html" />
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-NVJ1Y1YJHK"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
 
-<body class="wy-body-for-nav">
-  <div class="banner">
-    <p class="banner">
-      Beginning in January 2023, versions for all NVIDIA Merlin projects
-      will change from semantic versioning like <code>4.0</code>
-      to calendar versioning like <code>23.01</code>.</p>
+    gtag('config', 'G-NVJ1Y1YJHK', {
+        'anonymize_ip': false,
+    });
+  </script>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,400;0,700;1,300&display=swap" rel="stylesheet">
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
   </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
 
-  <div class="wy-grid-for-nav">
-    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
-      <div class="wy-side-scroll">
-        <div class="wy-side-nav-search" >
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+  
 
-          
-          
-          <a href="../index.html" class="icon icon-home">
-            Merlin
-          </a>
-<div role="search">
-  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
-    <input type="hidden" name="check_keywords" value="yes" />
-    <input type="hidden" name="area" value="default" />
-  </form>
-</div>
-        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption"><span class="caption-text">Contents</span></p>
-<ul class="current">
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    <p class="title logo__title">NVIDIA Merlin</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../README.html">Introduction</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="recommender_system_guide.html">Recommender System Guide</a><ul class="current">
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Recommender Models</a></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="recommender_system_guide.html">Recommender System Guide</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Recommender Models</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../examples/index.html">Example Notebooks</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../examples/index.html">Example Notebooks</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../examples/getting-started-movielens/index.html">Getting Started using the MovieLens Dataset</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../examples/getting-started-movielens/01-Download-Convert.html">MovieLens Download and Convert</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../examples/getting-started-movielens/02-ETL-with-NVTabular.html">Feature Engineering with NVTabular</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../examples/getting-started-movielens/03-Training-with-HugeCTR.html">Training with HugeCTR</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../examples/getting-started-movielens/03-Training-with-TF.html">Getting Started MovieLens: Training with TensorFlow</a></li>
+
+
+<li class="toctree-l3"><a class="reference internal" href="../examples/getting-started-movielens/03-Training-with-PyTorch.html">Training with PyTorch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../examples/getting-started-movielens/04-Triton-Inference-with-HugeCTR.html">Serving the HugeCTR Model with Triton</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../examples/getting-started-movielens/04-Triton-Inference-with-TF.html">Serve Recommendations from the TensorFlow Model</a></li>
+
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../examples/Building-and-deploying-multi-stage-RecSys/index.html">Deploying a Multi-Stage Recommender System</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-4"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../examples/Building-and-deploying-multi-stage-RecSys/01-Building-Recommender-Systems-with-Merlin.html">Building the Recommender System</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../examples/Building-and-deploying-multi-stage-RecSys/02-Deploying-multi-stage-RecSys-with-Merlin-Systems.html">Deploying the Recommender System with Triton</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../examples/sagemaker-tensorflow/index.html">Merlin and AWS SageMaker</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-5"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../examples/sagemaker-tensorflow/sagemaker-merlin-tensorflow.html">Training and Serving Merlin on AWS SageMaker</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../examples/scaling-criteo/index.html">Scaling Large Datasets with Criteo</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-6"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../examples/scaling-criteo/01-Download-Convert.html">Criteo Download and Convert</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../examples/scaling-criteo/02-ETL-with-NVTabular.html">Feature Engineering with NVTabular</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../examples/scaling-criteo/03-Training-with-HugeCTR.html">Training with HugeCTR</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../examples/scaling-criteo/03-Training-with-Merlin-Models-TensorFlow.html">Training with Merlin Models and TensorFlow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../examples/scaling-criteo/04-Triton-Inference-with-HugeCTR.html">Deploy the HugeCTR Model with Triton</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../examples/scaling-criteo/04-Triton-Inference-with-Merlin-Models-TensorFlow.html">Deploy the TensorFlow Model with Triton</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="../containers.html">Merlin Containers</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../support_matrix/index.html">Merlin Support Matrix</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../support_matrix/index.html">Merlin Support Matrix</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-7"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../support_matrix/support_matrix_merlin_hugectr.html">Merlin HugeCTR Support Matrix</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../support_matrix/support_matrix_merlin_tensorflow.html">Merlin TensorFlow Support Matrix</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../support_matrix/support_matrix_merlin_pytorch.html">Merlin PyTorch Support Matrix</a></li>
+</ul>
+</li>
 </ul>
 
-        </div>
+    </div>
+</nav></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-merlin-ecosystem-nav" aria-label="Merlin Ecosystem Nav">
+  <div class="bd-toc-item navbar-nav">
+    <p aria-level="2" class="caption" role="heading"><span class="caption-text">Ecosystem</span></p>
+    <ul class="nav bd-sidenav">
+      <li class="toctree-l1"><a class="reference external" href="/core/">Core</a></li>
+      <li class="toctree-l1"><a class="reference external" href="/models/">Models</a></li>
+      <li class="toctree-l1"><a class="reference external" href="/systems/">Systems</a></li>
+      <li class="toctree-l1"><a class="reference external" href="/NVTabular/">NVTabular</a></li>
+      <li class="toctree-l1"><a class="reference external" href="/Transformers4Rec/">Transformers4Rec</a></li>
+      <li class="toctree-l1"><a class="reference external" href="/dataloader/">Dataloader</a></li>
+      <li class="toctree-l1"><a class="reference external" href="/HugetCTR/">HugeCTR</a></li>
+    </ul>
+  </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
       </div>
-    </nav>
+      
+      <main id="main-content" class="bd-main">
+        
+        
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
-          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../index.html">Merlin</a>
-      </nav>
+<div class="sbt-scroll-pixel-helper"></div>
 
-      <div class="wy-nav-content">
-        <div class="rst-content">
-          <div role="navigation" aria-label="Page navigation">
-  <ul class="wy-breadcrumbs">
-      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
-          <li class="breadcrumb-item"><a href="recommender_system_guide.html">Recommender Systems Guide</a></li>
-      <li class="breadcrumb-item active">Recommender Models</li>
-      <li class="wy-breadcrumbs-aside">
-      </li>
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+<a href="https://github.com/NVIDIA-Merlin/Merlin" target="_blank"
+   class="btn btn-sm btn-source-repository-button"
+   title="Source repository"
+   data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+
+</a>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../_sources/" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.rst</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
   </ul>
-  <hr/>
 </div>
-          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
-           <div itemprop="articleBody">
-             
-  <div class="section" id="recommender-models">
-<h1>Recommender Models<a class="headerlink" href="#recommender-models" title="Permalink to this headline"></a></h1>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+<script>
+document.write(`
+  <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+  </button>
+`);
+</script>
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+  </button>
+`);
+</script>
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Recommender Models</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ranking-models">Ranking Models</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#resources-for-ranking-models">Resources for Ranking Models:</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#retrieval-models">Retrieval Models</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#resources-for-retrieval-models">Resources for Retrieval Models:</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#sequential-and-session-based-models">Sequential and Session-Based Models</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#resources-for-session-based-models">Resources for Session-Based Models:</a></li>
+</ul>
+</li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section id="recommender-models">
+<h1>Recommender Models<a class="headerlink" href="#recommender-models" title="Permalink to this heading">#</a></h1>
 <p>This guide explains the different type of recommender models with a focus on deep-learning based ones.</p>
-<div class="contents local topic" id="contents">
+<nav class="contents local" id="contents">
 <ul class="simple">
 <li><p><a class="reference internal" href="#ranking-models" id="id3">Ranking Models</a></p></li>
 <li><p><a class="reference internal" href="#retrieval-models" id="id4">Retrieval Models</a></p></li>
 <li><p><a class="reference internal" href="#sequential-and-session-based-models" id="id5">Sequential and Session-Based Models</a></p></li>
 </ul>
-</div>
+</nav>
 <p>A <code class="docutils literal notranslate"><span class="pre">recommender</span> <span class="pre">model</span></code> is a single model, e.g. rule-based or trained one, which outputs a score or set of candidates. Generating final recommendations often requires multiple steps, called <code class="docutils literal notranslate"><span class="pre">recommender</span> <span class="pre">systems</span></code>.</p>
-<div class="section" id="ranking-models">
-<h2>Ranking Models<a class="headerlink" href="#ranking-models" title="Permalink to this headline"></a></h2>
+<section id="ranking-models">
+<h2>Ranking Models<a class="headerlink" href="#ranking-models" title="Permalink to this heading">#</a></h2>
 <img alt="../_images/models_ranking.png" src="../_images/models_ranking.png" />
 <p><strong>Ranking models</strong> are probably the most common use case in recommender systems. When the community talks about recommender models, they probably mean ranking models.</p>
 <p>The ranking model predicts a specific target. For example, the target could be the review a customer would give an item or could be the likelihood a user will click on an item. Click-through-rate prediction is a typical use case for that. The Figure 1a above provides a simple example of a dataset. The dataset has different input features (<code class="docutils literal notranslate"><span class="pre">user_id</span></code>, <code class="docutils literal notranslate"><span class="pre">user_age</span></code>, etc.) and the target (<code class="docutils literal notranslate"><span class="pre">click</span></code>). The dataset contains both the positive (<code class="docutils literal notranslate"><span class="pre">click=1</span></code>) and negative (<code class="docutils literal notranslate"><span class="pre">click=0</span></code>) interaction data. If negative examples are not available, then negative sampling strategies are required. An example architecture is visualized by Figure 1b. The inputs are concatenated and fed through an Multi-Layer Perceptron (MLP) Block (multiple fully connected layers).</p>
 <p>Merlin Models provides implementation of popular architectures, such as MLP, NCF, Facebook’s DLRM, Google’s DCN and Google’s Wide&amp;Deep networks with TensorFlow backend. Classical machine learning models, such as implicit or XGBoost can be used in Merlin Models, as well.</p>
-<div class="section" id="resources-for-ranking-models">
-<h3>Resources for Ranking Models:<a class="headerlink" href="#resources-for-ranking-models" title="Permalink to this headline"></a></h3>
+<section id="resources-for-ranking-models">
+<h3>Resources for Ranking Models:<a class="headerlink" href="#resources-for-ranking-models" title="Permalink to this heading">#</a></h3>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/NVIDIA-Merlin/models/blob/stable/examples/03-Exploring-different-models.ipynb">Exploring Different Models</a> demonstrates how to build and train the popular deep learning architectures with <strong>Merlin Models in TensorFlow</strong> on an example dataset.</p></li>
 <li><p><a class="reference external" href="https://github.com/NVIDIA-Merlin/Merlin/tree/stable/examples/quick_start">Getting Started Guide - Ranking Models</a> provides a detailed view on applying the ranking models to a dataset and how to use it for a new dataset.</p></li>
@@ -117,27 +434,27 @@
 <li><p><a class="reference external" href="https://github.com/NVIDIA-Merlin/Merlin/tree/stable/examples/quick_start">Getting Started Movielens</a> is one end-to-end example for feature engineering, training and deployment with different frameworks (TensorFlow, PyTorch and HugeCTR) on a small scale.</p></li>
 <li><p><a class="reference external" href="https://github.com/NVIDIA-Merlin/Merlin/tree/stable/examples/scaling-criteo">Scaling Criteo</a> is similar to the MovieLens example, but on a large scale of ~4 billion rows. The example provides some guidance on multi-GPU scaling.</p></li>
 </ul>
-</div>
-</div>
-<div class="section" id="retrieval-models">
-<h2>Retrieval Models<a class="headerlink" href="#retrieval-models" title="Permalink to this headline"></a></h2>
+</section>
+</section>
+<section id="retrieval-models">
+<h2>Retrieval Models<a class="headerlink" href="#retrieval-models" title="Permalink to this heading">#</a></h2>
 <img alt="../_images/models_retrieval.png" src="../_images/models_retrieval.png" />
 <p>The goal of <strong>retrieval models</strong> are to retrieve hundreds of candidates from large item catalogs. The models have a special neural network architecture to be scalable: The neural network usually processes the input data into two fully separated towers as visualized above Figure 2b.</p>
 <p>One tower is the user tower (query tower, yellow) and one tower is the item tower (candidate tower, blue). The input features for each tower are only relevant to their context. The user tower has access only to the user features and the item tower has access only to the item features. The output of the towers are the user embedding (user representation) and item embedding (item representation). At the last step, we calculate the final score by applying the dot-product (cosine similarity) of the two embedding vectors.</p>
 <p>The advantage of retrieval models is that the user and item features interact only at the last step. In the deployment stage, the item embeddings can be pre-computed and stored in an approximate nearest neighbor (ANN) index. A recommendation request can be served by calculating the user embedding and then retrieving the TopK items from the ANN index. This approach can significantly reduce latency, infrastructure cost and improve throughput.</p>
 <p>The dataset for retrieval models (Figure 2a) looks similar than in the ranking use case with multiple user and item features. It is important to separate the features into user and item feature as input to the model. Similar than ranking models, retrieval models can be trained with negative sampling strategies when there are no negatives provided in the dataset.</p>
 <p>Merlin Models provides implementations for Matrix Factorization (MF) and Two-Tower architectures.</p>
-<div class="section" id="resources-for-retrieval-models">
-<h3>Resources for Retrieval Models:<a class="headerlink" href="#resources-for-retrieval-models" title="Permalink to this headline"></a></h3>
+<section id="resources-for-retrieval-models">
+<h3>Resources for Retrieval Models:<a class="headerlink" href="#resources-for-retrieval-models" title="Permalink to this heading">#</a></h3>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/NVIDIA-Merlin/models/blob/stable/examples/05-Retrieval-Model.ipynb">Retrieval Models</a> is an example to build matrix factorization and two-tower models using negative sampling with <strong>Merlin Models in TensorFlow</strong>.</p></li>
 <li><p><a class="reference external" href="https://medium.com/nvidia-merlin/scale-faster-with-less-code-using-two-tower-with-merlin-c16f32aafa9f?source=friends_link&amp;sk=be70da36948c883b4f15a745470146ee">Scale faster with less code using Two Tower with Merlin</a> is our blog post providing more details on Two-Tower models.</p></li>
 <li><p><a class="reference external" href="https://medium.com/nvidia-merlin/solving-the-cold-start-problem-using-two-tower-neural-networks-for-nvidias-e-mail-recommender-2d5b30a071a4?source=friends_link&amp;sk=b06b93495fa017162875a8917e3aa975">Solving the Cold-Start Problem using Two-Tower Neural Networks for NVIDIA’s E-Mail Recommender Systems</a> is our blog post sharing our experience in applying Two-Tower models to our e-mail use case.</p></li>
 </ul>
-</div>
-</div>
-<div class="section" id="sequential-and-session-based-models">
-<h2>Sequential and Session-Based Models<a class="headerlink" href="#sequential-and-session-based-models" title="Permalink to this headline"></a></h2>
+</section>
+</section>
+<section id="sequential-and-session-based-models">
+<h2>Sequential and Session-Based Models<a class="headerlink" href="#sequential-and-session-based-models" title="Permalink to this heading">#</a></h2>
 <img alt="../_images/models_sequentialinteactions.png" src="../_images/models_sequentialinteactions.png" />
 <p>Users often interact with items in a sequential order (see Figure 3). One way to use the sequential nature in ranking or retrieval models is to sort the training data and train the models without shuffling the data. In that way the model was updated with the latest information per user. However, there will be a delay between retraining a model and receiving new information from a user.</p>
 <img alt="../_images/models_sessionbased.png" src="../_images/models_sessionbased.png" />
@@ -146,8 +463,8 @@
 <p>The dataset for sequential and session-based models contains a grouping column (e.g. <code class="docutils literal notranslate"><span class="pre">session_id</span></code>), order column (e.g. <code class="docutils literal notranslate"><span class="pre">timestamp</span></code>) and interaction column (e.g. <code class="docutils literal notranslate"><span class="pre">viewed_item_id</span></code>) as visualized in Figure 4a left. The dataset will be transformed by sorting the dataset by the <cite>timestamp</cite> and group the data by <code class="docutils literal notranslate"><span class="pre">session_id</span></code>. As a result, the dataset contains per <code class="docutils literal notranslate"><span class="pre">session_id</span></code> the sorted interactions (<code class="docutils literal notranslate"><span class="pre">viewed_item_id</span></code>) as a list. The goal is to predict the next item given an input sequence.</p>
 <p>There are multiple options to process sequence inputs. The domain has similarities with natural language processing (NLP) and many techniques can be used for training a sequential recommender model. Popular choices are RNN-based (GRU or LSTM) or transformer-based architectures. The Figure 4b above visualized a transformer-based session-based model. If the dataset contains othersequential input features (side information) in addition to the item-ids, the input can be processed by a MLP Block before applying a Transformer Block. Models can be trained with casual language modeling (CLM) or masked language modeling (MLM). Session-based models can be used for retrieval or ranking problems.</p>
 <p><strong>Merlin Models</strong> provides high-quality implementation for RNN-based and Transformer-based architectures (backed by HuggingFace) with different sampling strategies in <strong>TensorFlow</strong>. <strong>Transformers4Rec</strong> provides similar functionality for <strong>PyTorch</strong>. GRU4Rec, LSTM4Rec, GPT, BERT, Transformer-XL, XLNet or ELECTRA based sequence blocks can be used with Merlin.</p>
-<div class="section" id="resources-for-session-based-models">
-<h3>Resources for Session-Based Models:<a class="headerlink" href="#resources-for-session-based-models" title="Permalink to this headline"></a></h3>
+<section id="resources-for-session-based-models">
+<h3>Resources for Session-Based Models:<a class="headerlink" href="#resources-for-session-based-models" title="Permalink to this heading">#</a></h3>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/NVIDIA-Merlin/models/blob/stable/examples/usecases/transformers-next-item-prediction.ipynb">Transformer-based architecture for next-item prediction task</a> provides an introduction to train transformer-based architecture and deploy them with <strong>Merlin Models in TensorFlow</strong>.</p></li>
 <li><p><a class="reference external" href="https://github.com/NVIDIA-Merlin/models/blob/stable/examples/usecases/ecommerce-session-based-next-item-prediction-for-fashion.ipynb">Session-Based Next Item Prediction for Fashion E-Commerce</a> is a detailed session-based example from MLP and Bi-LSTM to transformer-based architectures with <strong>Merlin Models in TensorFlow</strong>.</p></li>
@@ -155,50 +472,109 @@
 <li><p><a class="reference external" href="https://github.com/NVIDIA-Merlin/Transformers4Rec/tree/stable/examples/end-to-end-session-based">End-to-end session-based recommendation</a> is an example using a public available dataset for session-based, transformer-based models with <strong>Transformers4Rec in PyTorch</strong>.</p></li>
 <li><p><a class="reference external" href="https://medium.com/nvidia-merlin/transformers4rec-4523cc7d8fa8?source=friends_link&amp;sk=390245e60c10211c381f7a26ce12cfc6">Transformers4Rec: A flexible library for Sequential and Session-based recommendation</a> is a blog post summarizing our research paper with <strong>Transformers4Rec</strong>.</p></li>
 </ul>
-</div>
-</div>
-</div>
+</section>
+</section>
+</section>
 
 
-           </div>
-          </div>
-          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="recommender_system_guide.html" class="btn btn-neutral float-left" title="Recommender Systems Guide" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="../examples/index.html" class="btn btn-neutral float-right" title="NVIDIA Merlin Example Notebooks" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-    </div>
+                </article>
+              
 
-  <hr/>
-
-  <div role="contentinfo">
-    <p>&#169; Copyright 2022, NVIDIA.</p>
-  </div>
-
-  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    provided by <a href="https://readthedocs.org">Read the Docs</a>.
-   
-
-</footer>
-        </div>
+              
+              
+                <footer class="bd-footer-article">
+                  
+<div class="footer-article-items footer-article__inner">
+  
+    <div class="footer-article-item"><!-- Previous / next buttons -->
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="recommender_system_guide.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Recommender Systems Guide</p>
       </div>
-    </section>
+    </a>
+    <a class="right-next"
+       href="../examples/index.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">NVIDIA Merlin Example Notebooks</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div></div>
+  
+</div>
+
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
   </div>
-  <script>
-      jQuery(function () {
-          SphinxRtdTheme.Navigation.enable(true);
-      });
-  </script>
-    <!-- Theme Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-NVJ1Y1YJHK"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ranking-models">Ranking Models</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#resources-for-ranking-models">Resources for Ranking Models:</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#retrieval-models">Retrieval Models</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#resources-for-retrieval-models">Resources for Retrieval Models:</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#sequential-and-session-based-models">Sequential and Session-Based Models</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#resources-for-session-based-models">Resources for Session-Based Models:</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
 
-      gtag('config', 'G-NVJ1Y1YJHK', {
-          'anonymize_ip': false,
-      });
-    </script> 
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+  <p class="copyright">
+    
+      © Copyright 2023, NVIDIA.
+      <br/>
+    
+  </p>
 
-</body>
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=e353d410970836974a52"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
 </html>
