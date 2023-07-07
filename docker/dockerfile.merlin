@@ -236,10 +236,10 @@ COPY --chown=1000:1000 --from=triton /opt/tritonserver/bin bin/
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/lib lib/
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/include include/
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/repoagents/ repoagents/
-COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/python backends/
+COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/python backends/python/
 # NOTE 2023-07: fil-backend is not available on ARM.
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/fil* backends/
-COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/tensorrt backends/
+COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/tensorrt backends/tensorrt/
 COPY --chown=1000:1000 --from=triton /usr/bin/serve /usr/bin/.
 COPY --chown=1000:1000 --from=triton /usr/lib/*-linux-gnu/libdcgm.so.2 /tmp
 RUN ARCH=$([ "${TARGETARCH}" = "arm64" ] && echo "aarch64" || echo "x86_64") && \
