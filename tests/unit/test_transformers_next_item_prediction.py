@@ -5,6 +5,7 @@ from testbook import testbook
 
 from tests.conftest import REPO_ROOT
 
+pytest.importorskip("tensorflow")
 pytest.importorskip("transformers")
 utils = pytest.importorskip("merlin.systems.triton.utils")
 
@@ -13,7 +14,8 @@ TRITON_SERVER_PATH = shutil.which("tritonserver")
 
 @pytest.mark.skipif(not TRITON_SERVER_PATH, reason="triton server not found")
 @testbook(
-    REPO_ROOT / "examples/Next-Item-Prediction-with-Transformers/tf/transformers-next-item-prediction.ipynb",
+    REPO_ROOT
+    / "examples/Next-Item-Prediction-with-Transformers/tf/transformers-next-item-prediction.ipynb",
     timeout=720,
     execute=False,
 )
