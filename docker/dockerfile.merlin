@@ -11,6 +11,9 @@ FROM ${DLFW_IMAGE} as dlfw
 FROM ${BASE_IMAGE} as build
 
 # Args
+ARG TARGETOS
+ARG TARGETARCH
+
 ARG DASK_VER=2023.1.1
 ARG MERLIN_VER=main
 ARG CORE_VER=main
@@ -38,12 +41,13 @@ ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/cuda/extra
 ENV PATH=${CUDA_HOME}/lib64/:${PATH}:${CUDA_HOME}/bin
 
 # Set up NVIDIA package repository
-RUN apt clean && apt update -y --fix-missing && \
+RUN ARCH=$([ "${TARGETARCH}" = "arm64" ] && echo "sbsa" || echo "x86_64") && \
+    apt clean && apt update -y --fix-missing && \
     apt install -y --no-install-recommends software-properties-common && \
-    wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-ubuntu2204.pin && \
+    wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/${ARCH}/cuda-ubuntu2204.pin && \
     mv cuda-ubuntu2204.pin /etc/apt/preferences.d/cuda-repository-pin-600 && \
-    apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/3bf863cc.pub && \
-    add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/ /" && \
+    apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/${ARCH}/3bf863cc.pub && \
+    add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/${ARCH}/ /" && \
     apt install -y --no-install-recommends \
         autoconf \
         automake \
@@ -95,10 +99,11 @@ RUN pip install --no-cache-dir --upgrade pip; pip install --no-cache-dir "cmake<
                 cachetools graphviz nvtx scipy "scikit-learn<1.2" \
                 tritonclient[all] grpcio-channelz fiddle wandb npy-append-array \
                 git+https://github.com/rapidsai/asvdb.git@main \
-                xgboost==1.6.2 lightgbm treelite==2.4.0 treelite_runtime==2.4.0 \
+                xgboost==1.6.2 lightgbm \
                 lightfm implicit \
                 numba "cuda-python>=11.5,<12.0" fsspec==2022.5.0 llvmlite \
                 pynvml==11.4.1
+RUN pip install --no-cache-dir treelite==2.4.0 treelite_runtime==2.4.0
 RUN pip install --no-cache-dir numpy==1.22.4 protobuf==3.20.3 onnx onnxruntime pycuda
 RUN pip install --no-cache-dir dask==${DASK_VER} distributed==${DASK_VER} dask[dataframe]==${DASK_VER} 
 RUN pip install --no-cache-dir onnx_graphsurgeon --index-url https://pypi.ngc.nvidia.com
@@ -113,7 +118,8 @@ COPY --chown=1000:1000 --from=triton /opt/tritonserver/lib lib/
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/include include/
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/repoagents/ repoagents/
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/python backends/
-COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/fil backends/fil/
+# NOTE 2023-07: fil-backend is not available on ARM.
+COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/fil* backends/
 COPY --chown=1000:1000 --from=triton /usr/bin/serve /usr/bin/.
 
 ENV PATH=/opt/tritonserver/bin:${PATH}:
@@ -139,6 +145,10 @@ CMD ["/bin/bash"]
 
 FROM ${BASE_IMAGE} as base
 
+# Args
+ARG TARGETOS
+ARG TARGETARCH
+
 # Envs
 ENV CUDA_HOME=/usr/local/cuda
 ENV CUDA_PATH=$CUDA_HOME
@@ -148,12 +158,13 @@ ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/cuda/extra
 ENV PATH=${CUDA_HOME}/lib64/:${PATH}:${CUDA_HOME}/bin
 
 # Set up NVIDIA package repository
-RUN apt update -y --fix-missing && \
+RUN ARCH=$([ "${TARGETARCH}" = "arm64" ] && echo "sbsa" || echo "x86_64") && \
+    apt update -y --fix-missing && \
     apt install -y --no-install-recommends software-properties-common && \
-    wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-ubuntu2204.pin && \
+    wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/${ARCH}/cuda-ubuntu2204.pin && \
     mv cuda-ubuntu2204.pin /etc/apt/preferences.d/cuda-repository-pin-600 && \
-    apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/3bf863cc.pub && \
-    add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/ /" && \
+    apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/${ARCH}/3bf863cc.pub && \
+    add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/${ARCH}/ /" && \
     apt install -y --no-install-recommends \
         ca-certificates \
         clang-format \
@@ -196,9 +207,12 @@ RUN apt update -y --fix-missing && \
         #   Required to run Hadoop.
         openssh-server \
         # [ HugeCTR ]
-        libaio-dev \
+        libaio-dev && \
+        # NOTE: libnvinfer is installed anyway, just Python bindings are missing on ARM.
+    if [[ "$TARGETARCH" != "arm64" ]]; then \
         # TensorRT dependencies
-        python3-libnvinfer && \
+        apt install -y --no-install-recommends python3-libnvinfer \
+    ; fi && \
     apt autoremove -y && \
     apt clean && \
     rm -rf /var/lib/apt/lists/*
@@ -223,16 +237,21 @@ COPY --chown=1000:1000 --from=triton /opt/tritonserver/lib lib/
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/include include/
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/repoagents/ repoagents/
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/python backends/python/
-COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/fil backends/fil/
+# NOTE 2023-07: fil-backend is not available on ARM.
+COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/fil* backends/
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/tensorrt backends/tensorrt/
 COPY --chown=1000:1000 --from=triton /usr/bin/serve /usr/bin/.
-COPY --chown=1000:1000 --from=triton /usr/lib/x86_64-linux-gnu/libdcgm.so.2 /usr/lib/x86_64-linux-gnu/libdcgm.so.2
-COPY --chown=1000:1000 --from=triton /usr/local/cuda-12.1/targets/x86_64-linux/lib/libcupti.so.12 /usr/local/cuda-12.1/targets/x86_64-linux/lib/libcupti.so.12
+COPY --chown=1000:1000 --from=triton /usr/lib/*-linux-gnu/libdcgm.so.2 /tmp
+RUN ARCH=$([ "${TARGETARCH}" = "arm64" ] && echo "aarch64" || echo "x86_64") && \
+    mv /tmp/libdcgm.so.2 /usr/lib/${ARCH}-linux-gnu/libdcgm.so.2 && \
+    chmod 644 /usr/lib/${ARCH}-linux-gnu/libdcgm.so.2 && \
+    ln -s libdcgm.so.2 /usr/lib/${ARCH}-linux-gnu/libdcgm.so
 
 
 ENV PATH=/opt/tritonserver/bin:${PATH}:
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/tritonserver/lib
 
+# python --version | sed -e 's/[A-Za-z ]*//g' | awk -F'.' '{print $1"."$2}'
 ENV PYTHON_VERSION=3.10
 
 # Python Packages
@@ -256,8 +275,6 @@ COPY --chown=1000:1000 --from=dlfw /usr/include/arrow /usr/include/arrow/
 COPY --chown=1000:1000 --from=dlfw /usr/include/cudf /usr/include/cudf/
 
 # ptx compiler required by cubinlinker
-COPY --chown=1000:1000 --from=dlfw /usr/local/cuda-12.1/targets/x86_64-linux/lib/libnvptxcompiler_static.a /usr/local/cuda-12.1/targets/x86_64-linux/lib/libnvptxcompiler_static.a
-COPY --chown=1000:1000 --from=dlfw /usr/local/cuda-12.1/targets/x86_64-linux/include/nvPTXCompiler.h /usr/local/cuda-12.1/targets/x86_64-linux/include/nvPTXCompiler.h
 RUN git clone https://github.com/rapidsai/ptxcompiler.git /ptx && cd /ptx/ && python setup.py develop;
 
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/rmm /usr/local/lib/python${PYTHON_VERSION}/dist-packages/rmm
