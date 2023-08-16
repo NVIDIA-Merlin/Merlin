@@ -95,7 +95,7 @@ RUN ln -s /usr/bin/python3 /usr/bin/python
 
 RUN pip install --no-cache-dir --upgrade pip; pip install --no-cache-dir "cmake<3.25.0" ninja scikit-build pandas==1.5.2 \
                 fastrlock nvidia-pyindex pybind11 pytest \ 
-                transformers tensorflow-metadata betterproto \
+                transformers==4.27.1 tensorflow-metadata betterproto \
                 cachetools graphviz nvtx scipy "scikit-learn<1.2" \
                 tritonclient[all] grpcio-channelz fiddle wandb npy-append-array \
                 git+https://github.com/rapidsai/asvdb.git@main \
@@ -119,7 +119,7 @@ COPY --chown=1000:1000 --from=triton /opt/tritonserver/include include/
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/repoagents/ repoagents/
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/python backends/
 # NOTE 2023-07: fil-backend is not available on ARM.
-COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/fil* backends/
+COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/fil* backends/fil/
 COPY --chown=1000:1000 --from=triton /usr/bin/serve /usr/bin/.
 
 ENV PATH=/opt/tritonserver/bin:${PATH}:
