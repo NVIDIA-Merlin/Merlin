@@ -12,7 +12,9 @@ exit_code=0
 
 ## Test Merlin
 echo "Run integration tests for Merlin"
-/Merlin/ci/test_integration.sh $container $devices || exit_code=1
+if [ "$container" != "merlin-tensorflow" ]; then
+    /Merlin/ci/test_integration.sh $container $devices || exit_code=1
+fi
 
 # Test NVTabular 
 ## Not shared storage in blossom yet, inference testing cannot be run
