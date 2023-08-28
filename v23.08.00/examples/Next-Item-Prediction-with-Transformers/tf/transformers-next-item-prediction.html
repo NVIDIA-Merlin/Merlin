@@ -1,0 +1,1524 @@
+
+
+<!DOCTYPE html>
+
+
+<html lang="en" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+    <title>Transformer-based architecture for next-item prediction task &#8212; NVIDIA Merlin</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=e353d410970836974a52" rel="stylesheet" />
+<link href="../../../_static/styles/bootstrap.css?digest=e353d410970836974a52" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=e353d410970836974a52" rel="stylesheet" />
+
+  
+  <link href="../../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=e353d410970836974a52" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" href="../../../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/css/versions.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=e353d410970836974a52" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52" />
+
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script src="../../../_static/js/rtd-version-switcher.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'examples/Next-Item-Prediction-with-Transformers/tf/transformers-next-item-prediction';</script>
+    <link rel="canonical" href="https://nvidia-merlin.github.io/Merlin/stable/examples/Next-Item-Prediction-with-Transformers/tf/transformers-next-item-prediction.html" />
+    <link rel="shortcut icon" href="../../../_static/favicon.png"/>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-NVJ1Y1YJHK"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-NVJ1Y1YJHK', {
+        'anonymize_ip': false,
+    });
+  </script>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,400;0,700;1,300&display=swap" rel="stylesheet">
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+    <p class="title logo__title">NVIDIA Merlin</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../README.html">Introduction</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../guide/recommender_system_guide.html">Recommender System Guide</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../guide/recommender_models.html">Recommender Models</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../index.html">Example Notebooks</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../getting-started-movielens/index.html">Getting Started using the MovieLens Dataset</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../getting-started-movielens/01-Download-Convert.html">MovieLens Download and Convert</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../getting-started-movielens/02-ETL-with-NVTabular.html">Feature Engineering with NVTabular</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../getting-started-movielens/03-Training-with-HugeCTR.html">Training with HugeCTR</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../getting-started-movielens/03-Training-with-TF.html">Getting Started MovieLens: Training with TensorFlow</a></li>
+
+
+<li class="toctree-l3"><a class="reference internal" href="../../getting-started-movielens/03-Training-with-PyTorch.html">Training with PyTorch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../getting-started-movielens/04-Triton-Inference-with-HugeCTR.html">Serving the HugeCTR Model with Triton</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../getting-started-movielens/04-Triton-Inference-with-TF.html">Serve Recommendations from the TensorFlow Model</a></li>
+
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../Building-and-deploying-multi-stage-RecSys/index.html">Deploying a Multi-Stage Recommender System</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-4"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../Building-and-deploying-multi-stage-RecSys/01-Building-Recommender-Systems-with-Merlin.html">Building the Recommender System</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../Building-and-deploying-multi-stage-RecSys/02-Deploying-multi-stage-RecSys-with-Merlin-Systems.html">Deploying the Recommender System with Triton</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../sagemaker-tensorflow/index.html">Merlin and AWS SageMaker</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-5"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../sagemaker-tensorflow/sagemaker-merlin-tensorflow.html">Training and Serving Merlin on AWS SageMaker</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../scaling-criteo/index.html">Scaling Large Datasets with Criteo</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-6"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../scaling-criteo/01-Download-Convert.html">Criteo Download and Convert</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../scaling-criteo/02-ETL-with-NVTabular.html">Feature Engineering with NVTabular</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../scaling-criteo/03-Training-with-HugeCTR.html">Training with HugeCTR</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../scaling-criteo/03-Training-with-Merlin-Models-TensorFlow.html">Training with Merlin Models and TensorFlow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../scaling-criteo/04-Triton-Inference-with-HugeCTR.html">Deploy the HugeCTR Model with Triton</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../scaling-criteo/04-Triton-Inference-with-Merlin-Models-TensorFlow.html">Deploy the TensorFlow Model with Triton</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../containers.html">Merlin Containers</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../support_matrix/index.html">Merlin Support Matrix</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-7"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../support_matrix/support_matrix_merlin_hugectr.html">Merlin HugeCTR Support Matrix</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../support_matrix/support_matrix_merlin_tensorflow.html">Merlin TensorFlow Support Matrix</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../support_matrix/support_matrix_merlin_pytorch.html">Merlin PyTorch Support Matrix</a></li>
+</ul>
+</li>
+</ul>
+
+    </div>
+</nav></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-merlin-ecosystem-nav" aria-label="Merlin Ecosystem Nav">
+  <div class="bd-toc-item navbar-nav">
+    <p aria-level="2" class="caption" role="heading"><span class="caption-text">Ecosystem</span></p>
+    <ul class="nav bd-sidenav">
+      <li class="toctree-l1"><a class="reference external" href="/core/v23.08.00">Core</a></li>
+      <li class="toctree-l1"><a class="reference external" href="/models/v23.08.00">Models</a></li>
+      <li class="toctree-l1"><a class="reference external" href="/systems/v23.08.00">Systems</a></li>
+      <li class="toctree-l1"><a class="reference external" href="/NVTabular/v23.08.00">NVTabular</a></li>
+      <li class="toctree-l1"><a class="reference external" href="/Transformers4Rec/v23.08.00">Transformers4Rec</a></li>
+      <li class="toctree-l1"><a class="reference external" href="/dataloader/v23.08.00">Dataloader</a></li>
+      <li class="toctree-l1"><a class="reference external" href="/HugetCTR/v23.08.00">HugeCTR</a></li>
+    </ul>
+  </div>
+</nav></div>
+        <div class="sidebar-primary-item">
+<div class="rst-versions" data-toggle="rst-versions" role="note" aria-label="versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    <span class="fa fa-book"></span>
+    v: v23.08.00
+    <span class="fa fa-caret-down"></span>
+  </span>
+  <div class="rst-other-versions">
+    <dl>
+      <dt>Tags</dt>
+      <dd><a href="../../../../v22.12.00/index.html">v22.12.00</a></dd>
+      <dd><a href="../../../../v23.02.00/index.html">v23.02.00</a></dd>
+      <dd><a href="../../../../v23.04.00/index.html">v23.04.00</a></dd>
+      <dd><a href="../../../../v23.05.00/index.html">v23.05.00</a></dd>
+      <dd><a href="../../../../v23.06.00/index.html">v23.06.00</a></dd>
+      <dd><a href="transformers-next-item-prediction.html">v23.08.00</a></dd>
+    </dl>
+    <dl>
+      <dt>Branches</dt>
+      <dd><a href="../../../../main/index.html">main</a></dd>
+      <dd><a href="../../../../stable/index.html">stable</a></dd>
+    </dl>
+  </div>
+</div></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+<a href="https://github.com/NVIDIA-Merlin/Merlin" target="_blank"
+   class="btn btn-sm btn-source-repository-button"
+   title="Source repository"
+   data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+
+</a>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../../../_sources/" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.ipynb</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+<script>
+document.write(`
+  <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+  </button>
+`);
+</script>
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+  </button>
+`);
+</script>
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Transformer-based architecture for next-item prediction task</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#overview">Overview</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#learning-objectives">Learning objectives</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#downloading-and-preparing-the-dataset">Downloading and preparing the dataset</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#preprocessing-with-nvtabular">Preprocessing with NVTabular</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#constructing-the-model">Constructing the model</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#model-training">Model training</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#model-evaluation">Model evaluation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#serving-predictions-using-the-triton-inference-server">Serving predictions using the Triton Inference Server</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#summary">Summary</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Copyright 2022 NVIDIA Corporation. All Rights Reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions anda</span>
+<span class="c1"># limitations under the License.</span>
+<span class="c1"># ==============================================================================</span>
+
+<span class="c1"># Each user is responsible for checking the content of datasets and the</span>
+<span class="c1"># applicable licenses and determining if suitable for the intended use.</span>
+</pre></div>
+</div>
+</div>
+</div>
+<img alt="https://developer.download.nvidia.com/notebooks/dlsw-notebooks/merlin_models-transformers-net-item-prediction/nvidia_logo.png" src="https://developer.download.nvidia.com/notebooks/dlsw-notebooks/merlin_models-transformers-net-item-prediction/nvidia_logo.png" />
+<section id="transformer-based-architecture-for-next-item-prediction-task">
+<h1>Transformer-based architecture for next-item prediction task<a class="headerlink" href="#transformer-based-architecture-for-next-item-prediction-task" title="Permalink to this heading">#</a></h1>
+<p>This notebook is created using the latest stable <a class="reference external" href="https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-tensorflow/tags">merlin-tensorflow</a> container.</p>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this heading">#</a></h2>
+<p>In this use case we will train a Transformer-based architecture for next-item prediction task.</p>
+<p><strong>Note, the data for this notebook will be automatically downloaded to the folder specified in the cells below.</strong></p>
+<p>We will use the <a class="reference external" href="https://github.com/bookingcom/ml-dataset-mdt">booking.com dataset</a> to train a session-based model. The dataset contains 1,166,835 of anonymized hotel reservations in the train set and 378,667 in the test set. Each reservation is a part of a customer’s trip (identified by <code class="docutils literal notranslate"><span class="pre">utrip_id</span></code>) which includes consecutive reservations.</p>
+<p>We will reshape the data to organize it into ‘sessions’. Each session will be a full customer itinerary in chronological order. The goal will be to predict the city_id of the final reservation of each trip.</p>
+<section id="learning-objectives">
+<h3>Learning objectives<a class="headerlink" href="#learning-objectives" title="Permalink to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Training a Transformer-based architecture for next-item prediction task</p></li>
+</ul>
+</section>
+</section>
+<section id="downloading-and-preparing-the-dataset">
+<h2>Downloading and preparing the dataset<a class="headerlink" href="#downloading-and-preparing-the-dataset" title="Permalink to this heading">#</a></h2>
+<p>We will download the dataset using a functionality provided by merlin models. The dataset can be found on GitHub <a class="reference external" href="https://github.com/bookingcom/ml-dataset-mdt">here</a>.</p>
+<p><strong>Read more about libraries used in the import statements below</strong></p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/NVIDIA-Merlin/core/blob/stable/merlin/core/dispatch.py">get_lib</a></p></li>
+<li><p><a class="reference external" href="https://github.com/NVIDIA-Merlin/models/tree/stable/merlin/datasets/ecommerce">get_booking</a></p></li>
+<li><p><a class="reference external" href="https://github.com/NVIDIA-Merlin/NVTabular/tree/stable/nvtabular">nvtabular</a></p></li>
+<li><p><a class="reference external" href="https://github.com/NVIDIA-Merlin/NVTabular/tree/stable/nvtabular/ops">nvtabular ops</a></p></li>
+<li><p><a class="reference external" href="https://github.com/NVIDIA-Merlin/core/blob/stable/merlin/schema/tags.py">schema tags</a></p></li>
+<li><p><a class="reference external" href="https://github.com/NVIDIA-Merlin/models/tree/stable/merlin/models/tf">merlin models tensorflow</a></p></li>
+<li><p><a class="reference external" href="https://github.com/NVIDIA-Merlin/models/blob/stable/merlin/datasets/ecommerce/booking/dataset.py">get_booking</a></p></li>
+</ul>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Resetting the TF memory allocation to not be 50% by default. </span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;TF_GPU_ALLOCATOR&quot;</span><span class="p">]</span><span class="o">=</span><span class="s2">&quot;cuda_malloc_async&quot;</span>
+
+<span class="kn">from</span> <span class="nn">merlin.core.dispatch</span> <span class="kn">import</span> <span class="n">get_lib</span>
+<span class="kn">from</span> <span class="nn">merlin.datasets.ecommerce</span> <span class="kn">import</span> <span class="n">get_booking</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">timeit</span>
+
+<span class="kn">from</span> <span class="nn">nvtabular</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">nvtabular</span> <span class="kn">import</span> <span class="n">ops</span>
+
+<span class="kn">from</span> <span class="nn">merlin.schema.tags</span> <span class="kn">import</span> <span class="n">Tags</span>
+<span class="kn">import</span> <span class="nn">merlin.models.tf</span> <span class="k">as</span> <span class="nn">mm</span>
+
+<span class="n">INPUT_DATA_DIR</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;INPUT_DATA_DIR&#39;</span><span class="p">,</span> <span class="s1">&#39;/workspace/data&#39;</span><span class="p">)</span>
+<span class="n">OUTPUT_DATA_DIR</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;OUTPUT_DATA_DIR&#39;</span><span class="p">,</span> <span class="s1">&#39;/workspace/data&#39;</span><span class="p">)</span>
+<span class="n">NUM_EPOCHS</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;NUM_EPOCHS&#39;</span><span class="p">,</span> <span class="s1">&#39;5&#39;</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2023-05-31 06:06:25.697025: I tensorflow/core/platform/cpu_feature_guard.cc:194] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  SSE3 SSE4.1 SSE4.2 AVX
+To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>WARNING:tensorflow:Please fix your imports. Module tensorflow.python.training.tracking.data_structures has been moved to tensorflow.python.trackable.data_structures. The old module will be deleted in version 2.11.
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/usr/local/lib/python3.8/dist-packages/merlin/dtypes/mappings/torch.py:43: UserWarning: PyTorch dtype mappings did not load successfully due to an error: No module named &#39;torch&#39;
+  warn(f&quot;PyTorch dtype mappings did not load successfully due to an error: {exc.msg}&quot;)
+2023-05-31 06:06:26.988036: I tensorflow/compiler/xla/stream_executor/cuda/cuda_gpu_executor.cc:998] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2023-05-31 06:06:26.988386: I tensorflow/compiler/xla/stream_executor/cuda/cuda_gpu_executor.cc:998] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2023-05-31 06:06:26.988518: I tensorflow/compiler/xla/stream_executor/cuda/cuda_gpu_executor.cc:998] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[INFO]: sparse_operation_kit is imported
+WARNING:tensorflow:Please fix your imports. Module tensorflow.python.training.tracking.base has been moved to tensorflow.python.trackable.base. The old module will be deleted in version 2.11.
+[SOK INFO] Import /usr/local/lib/python3.8/dist-packages/merlin_sok-1.1.4-py3.8-linux-x86_64.egg/sparse_operation_kit/lib/libsok_experiment.so
+[SOK INFO] Import /usr/local/lib/python3.8/dist-packages/merlin_sok-1.1.4-py3.8-linux-x86_64.egg/sparse_operation_kit/lib/libsok_experiment.so
+[SOK INFO] Initialize finished, communication tool: horovod
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2023-05-31 06:06:28.519868: I tensorflow/core/platform/cpu_feature_guard.cc:194] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  SSE3 SSE4.1 SSE4.2 AVX
+To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2023-05-31 06:06:28.520815: I tensorflow/compiler/xla/stream_executor/cuda/cuda_gpu_executor.cc:998] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2023-05-31 06:06:28.520999: I tensorflow/compiler/xla/stream_executor/cuda/cuda_gpu_executor.cc:998] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2023-05-31 06:06:28.521129: I tensorflow/compiler/xla/stream_executor/cuda/cuda_gpu_executor.cc:998] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2023-05-31 06:06:28.591345: I tensorflow/compiler/xla/stream_executor/cuda/cuda_gpu_executor.cc:998] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2023-05-31 06:06:28.591534: I tensorflow/compiler/xla/stream_executor/cuda/cuda_gpu_executor.cc:998] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2023-05-31 06:06:28.591665: I tensorflow/compiler/xla/stream_executor/cuda/cuda_gpu_executor.cc:998] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero
+2023-05-31 06:06:28.591770: W tensorflow/core/common_runtime/gpu/gpu_bfc_allocator.cc:42] Overriding orig_value setting because the TF_FORCE_GPU_ALLOW_GROWTH environment variable is set. Original config value was 0.
+2023-05-31 06:06:28.591778: I tensorflow/core/common_runtime/gpu/gpu_process_state.cc:222] Using CUDA malloc Async allocator for GPU: 0
+2023-05-31 06:06:28.591860: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1621] Created device /job:localhost/replica:0/task:0/device:GPU:0 with 24576 MB memory:  -&gt; device: 0, name: Quadro RTX 8000, pci bus id: 0000:08:00.0, compute capability: 7.5
+/usr/local/lib/python3.8/dist-packages/tqdm/auto.py:21: TqdmWarning: IProgress not found. Please update jupyter and ipywidgets. See https://ipywidgets.readthedocs.io/en/stable/user_install.html
+  from .autonotebook import tqdm as notebook_tqdm
+</pre></div>
+</div>
+</div>
+</div>
+<p>Let’s download the data.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">get_booking</span><span class="p">(</span><span class="n">INPUT_DATA_DIR</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/usr/local/lib/python3.8/dist-packages/merlin/schema/tags.py:149: UserWarning: Compound tags like Tags.USER_ID have been deprecated and will be removed in a future version. Please use the atomic versions of these tags, like [&lt;Tags.USER: &#39;user&#39;&gt;, &lt;Tags.ID: &#39;id&#39;&gt;].
+  warnings.warn(
+/usr/local/lib/python3.8/dist-packages/merlin/schema/tags.py:149: UserWarning: Compound tags like Tags.SESSION_ID have been deprecated and will be removed in a future version. Please use the atomic versions of these tags, like [&lt;Tags.SESSION: &#39;session&#39;&gt;, &lt;Tags.ID: &#39;id&#39;&gt;].
+  warnings.warn(
+/usr/local/lib/python3.8/dist-packages/merlin/schema/tags.py:149: UserWarning: Compound tags like Tags.ITEM_ID have been deprecated and will be removed in a future version. Please use the atomic versions of these tags, like [&lt;Tags.ITEM: &#39;item&#39;&gt;, &lt;Tags.ID: &#39;id&#39;&gt;].
+  warnings.warn(
+</pre></div>
+</div>
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(&lt;merlin.io.dataset.Dataset at 0x7fe90a7fce80&gt;,
+ &lt;merlin.io.dataset.Dataset at 0x7fe90a7f7820&gt;)
+</pre></div>
+</div>
+</div>
+</div>
+<p>Each reservation has a unique utrip_id. During each trip a customer vists several destinations.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># When displaying cudf dataframes use print() or display(), otherwise Jupyter creates hidden copies.</span>
+<span class="n">train</span> <span class="o">=</span> <span class="n">get_lib</span><span class="p">()</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">INPUT_DATA_DIR</span><span class="si">}</span><span class="s1">/train_set.csv&#39;</span><span class="p">,</span> <span class="n">parse_dates</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;checkin&#39;</span><span class="p">,</span> <span class="s1">&#39;checkout&#39;</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">train</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>   user_id    checkin   checkout  city_id device_class  affiliate_id  \
+0  1000027 2016-08-13 2016-08-14     8183      desktop          7168   
+1  1000027 2016-08-14 2016-08-16    15626      desktop          7168   
+2  1000027 2016-08-16 2016-08-18    60902      desktop          7168   
+3  1000027 2016-08-18 2016-08-21    30628      desktop           253   
+4  1000033 2016-04-09 2016-04-11    38677       mobile           359   
+
+  booker_country hotel_country   utrip_id  
+0        Elbonia        Gondal  1000027_1  
+1        Elbonia        Gondal  1000027_1  
+2        Elbonia        Gondal  1000027_1  
+3        Elbonia        Gondal  1000027_1  
+4         Gondal  Cobra Island  1000033_1  
+</pre></div>
+</div>
+</div>
+</div>
+<p>We will train on sequences of <code class="docutils literal notranslate"><span class="pre">city_id</span></code> and <code class="docutils literal notranslate"><span class="pre">booker_country</span></code> and based on this information, our model will attempt to predict the next <code class="docutils literal notranslate"><span class="pre">city_id</span></code> (the next hop in the journey).</p>
+<p>We will train a transformer model that can work with sequences of variable length within a batch. This functionality is provided to us out of the box and doesn’t require any changes to the architecture. Thanks to it we do not have to pad or trim our sequences to any particular length – our model can make effective use of all of the data!</p>
+<p><em>With one exception.</em> For a masked language model that we will be training, we need to discard sequences that are shorter than two hops. This makes sense as there is nothing our model could learn if it was only presented with an itinerary with a single destination on it!</p>
+<p>Let us begin by splitting the data into a train and validation set based on trip ID.</p>
+<p>Let’s see how many unique trips there are in the dataset. Also, let us shuffle the trips along the way so that our validation set consists of a random sample of our train set.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Unique trip ids.</span>
+<span class="n">utrip_ids</span> <span class="o">=</span> <span class="n">train</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">frac</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">utrip_id</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Number of unique trips is :&#39;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">utrip_ids</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Number of unique trips is : 217686
+</pre></div>
+</div>
+</div>
+</div>
+<p>Now let’s assign data to our train and validation sets. Furthermore, we sort the data by <code class="docutils literal notranslate"><span class="pre">utrip_id</span></code> and <code class="docutils literal notranslate"><span class="pre">checkin</span></code>. This way we ensure our sequences of visited <code class="docutils literal notranslate"><span class="pre">city_ids</span></code> will be in proper order!</p>
+<p>Also, let’s remove trips where only a single city was visited as they cannot be modeled as a sequence.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">train</span> <span class="o">=</span> <span class="n">get_lib</span><span class="p">()</span><span class="o">.</span><span class="n">from_pandas</span><span class="p">(</span>
+    <span class="n">train</span><span class="o">.</span><span class="n">to_pandas</span><span class="p">()</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">train</span><span class="o">.</span><span class="n">to_pandas</span><span class="p">()</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;utrip_id&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">size</span><span class="p">()</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="s1">&#39;num_examples&#39;</span><span class="p">),</span> <span class="n">on</span><span class="o">=</span><span class="s1">&#39;utrip_id&#39;</span><span class="p">)</span>
+<span class="p">)</span>
+<span class="n">train</span> <span class="o">=</span> <span class="n">train</span><span class="p">[</span><span class="n">train</span><span class="o">.</span><span class="n">num_examples</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">]</span>
+
+<span class="n">train</span><span class="o">.</span><span class="n">checkin</span> <span class="o">=</span> <span class="n">train</span><span class="o">.</span><span class="n">checkin</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;int&#39;</span><span class="p">)</span>
+<span class="n">train</span><span class="o">.</span><span class="n">checkout</span> <span class="o">=</span> <span class="n">train</span><span class="o">.</span><span class="n">checkout</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;int&#39;</span><span class="p">)</span>
+
+<span class="n">train_set_utrip_ids</span> <span class="o">=</span> <span class="n">utrip_ids</span><span class="p">[:</span><span class="nb">int</span><span class="p">(</span><span class="mf">0.8</span> <span class="o">*</span> <span class="n">utrip_ids</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])]</span>
+<span class="n">validation_set_utrip_ids</span> <span class="o">=</span> <span class="n">utrip_ids</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="mf">0.8</span> <span class="o">*</span> <span class="n">utrip_ids</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):]</span>
+
+<span class="n">train_set</span> <span class="o">=</span> <span class="n">train</span><span class="p">[</span><span class="n">train</span><span class="o">.</span><span class="n">utrip_id</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">train_set_utrip_ids</span><span class="p">)]</span><span class="o">.</span><span class="n">sort_values</span><span class="p">([</span><span class="s1">&#39;utrip_id&#39;</span><span class="p">,</span> <span class="s1">&#39;checkin&#39;</span><span class="p">])</span>
+<span class="n">validation_set</span> <span class="o">=</span> <span class="n">train</span><span class="p">[</span><span class="n">train</span><span class="o">.</span><span class="n">utrip_id</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">validation_set_utrip_ids</span><span class="p">)]</span><span class="o">.</span><span class="n">sort_values</span><span class="p">([</span><span class="s1">&#39;utrip_id&#39;</span><span class="p">,</span> <span class="s1">&#39;checkin&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="preprocessing-with-nvtabular">
+<h2>Preprocessing with NVTabular<a class="headerlink" href="#preprocessing-with-nvtabular" title="Permalink to this heading">#</a></h2>
+<p>We can now begin with data preprocessing.</p>
+<p>We will combine trips into “sessions”, discard trips that are too short and calculate total trip length.</p>
+<p>We will use NVTabular for this work. It offers optimized tabular data preprocessing operators that run on the GPU. If you would like to learn more about the NVTabular library, please take a look <a class="reference external" href="https://github.com/NVIDIA-Merlin/NVTabular">here</a>.</p>
+<p>Read more about the <a class="reference external" href="https://github.com/NVIDIA-Merlin/core/blob/stable/merlin/io/dataset.py">Merlin’s Dataset API</a><br />
+Read more about how <a class="reference external" href="https://github.com/NVIDIA-Merlin/core/blob/stable/merlin/io/parquet.py">parquet files are read in and processed by Merlin</a><br />
+Read more about <a class="reference external" href="https://github.com/NVIDIA-Merlin/core/blob/stable/merlin/schema/tags.py">Tags</a></p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/NVIDIA-Merlin/core/blob/stable/merlin/schema/schema.py">schema_select_by_tag</a></p></li>
+</ul>
+<p>Read more about <a class="reference external" href="https://github.com/NVIDIA-Merlin/NVTabular/blob/stable/nvtabular/workflow/workflow.py">NVTabular Workflows</a></p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/NVIDIA-Merlin/NVTabular/blob/stable/nvtabular/workflow/workflow.py">fit_transform</a></p></li>
+<li><p><a class="reference external" href="https://github.com/NVIDIA-Merlin/NVTabular/blob/stable/nvtabular/workflow/workflow.py">transform</a></p></li>
+</ul>
+<p>Read more about the <span class="xref myst">NVTabular Operators</span></p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/NVIDIA-Merlin/NVTabular/blob/stable/nvtabular/ops/categorify.py">Categorify</a></p></li>
+<li><p><a class="reference external" href="https://github.com/NVIDIA-Merlin/NVTabular/blob/stable/nvtabular/ops/add_metadata.py">AddTags</a></p></li>
+<li><p><a class="reference external" href="https://github.com/NVIDIA-Merlin/NVTabular/blob/stable/nvtabular/ops/lambdaop.py">LambdaOp</a></p></li>
+<li><p><a class="reference external" href="https://github.com/NVIDIA-Merlin/NVTabular/blob/stable/nvtabular/ops/rename.py">Rename</a></p></li>
+<li><p><a class="reference external" href="https://github.com/NVIDIA-Merlin/NVTabular/blob/stable/nvtabular/ops/filter.py">Filter</a></p></li>
+</ul>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">train_set_dataset</span> <span class="o">=</span> <span class="n">Dataset</span><span class="p">(</span><span class="n">train_set</span><span class="p">)</span>
+<span class="n">validation_set_dataset</span> <span class="o">=</span> <span class="n">Dataset</span><span class="p">(</span><span class="n">validation_set</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">weekday_checkin</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="p">[</span><span class="s2">&quot;checkin&quot;</span><span class="p">]</span>
+    <span class="o">&gt;&gt;</span> <span class="n">ops</span><span class="o">.</span><span class="n">LambdaOp</span><span class="p">(</span><span class="k">lambda</span> <span class="n">col</span><span class="p">:</span> <span class="n">get_lib</span><span class="p">()</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">col</span><span class="p">)</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">weekday</span><span class="p">)</span>
+    <span class="o">&gt;&gt;</span> <span class="n">ops</span><span class="o">.</span><span class="n">Rename</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;weekday_checkin&quot;</span><span class="p">)</span>
+<span class="p">)</span>
+
+<span class="n">weekday_checkout</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="p">[</span><span class="s2">&quot;checkout&quot;</span><span class="p">]</span>
+    <span class="o">&gt;&gt;</span> <span class="n">ops</span><span class="o">.</span><span class="n">LambdaOp</span><span class="p">(</span><span class="k">lambda</span> <span class="n">col</span><span class="p">:</span> <span class="n">get_lib</span><span class="p">()</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">col</span><span class="p">)</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">weekday</span><span class="p">)</span>
+    <span class="o">&gt;&gt;</span> <span class="n">ops</span><span class="o">.</span><span class="n">Rename</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;weekday_checkout&quot;</span><span class="p">)</span>
+<span class="p">)</span>
+
+<span class="n">categorical_features</span> <span class="o">=</span> <span class="p">([</span><span class="s1">&#39;city_id&#39;</span><span class="p">,</span> <span class="s1">&#39;booker_country&#39;</span><span class="p">,</span> <span class="s1">&#39;hotel_country&#39;</span><span class="p">]</span> <span class="o">+</span>
+                         <span class="n">weekday_checkin</span> <span class="o">+</span> <span class="n">weekday_checkout</span>
+                       <span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="n">ops</span><span class="o">.</span><span class="n">Categorify</span><span class="p">()</span>
+
+<span class="n">groupby_features</span> <span class="o">=</span> <span class="n">categorical_features</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;utrip_id&#39;</span><span class="p">,</span> <span class="s1">&#39;checkin&#39;</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">ops</span><span class="o">.</span><span class="n">Groupby</span><span class="p">(</span>
+    <span class="n">groupby_cols</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;utrip_id&#39;</span><span class="p">],</span>
+    <span class="n">aggs</span><span class="o">=</span><span class="p">{</span>
+        <span class="s1">&#39;city_id&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;list&#39;</span><span class="p">,</span> <span class="s1">&#39;count&#39;</span><span class="p">],</span>
+        <span class="s1">&#39;booker_country&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;list&#39;</span><span class="p">],</span>
+        <span class="s1">&#39;hotel_country&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;list&#39;</span><span class="p">],</span>
+        <span class="s1">&#39;weekday_checkin&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;list&#39;</span><span class="p">],</span>
+        <span class="s1">&#39;weekday_checkout&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;list&#39;</span><span class="p">]</span>
+    <span class="p">},</span>
+    <span class="n">sort_cols</span><span class="o">=</span><span class="s2">&quot;checkin&quot;</span>
+<span class="p">)</span>
+
+<span class="n">list_features</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">groupby_features</span><span class="p">[</span><span class="s1">&#39;city_id_list&#39;</span><span class="p">,</span> <span class="s1">&#39;booker_country_list&#39;</span><span class="p">,</span> <span class="s1">&#39;hotel_country_list&#39;</span><span class="p">,</span> 
+                 <span class="s1">&#39;weekday_checkin_list&#39;</span><span class="p">,</span> <span class="s1">&#39;weekday_checkout_list&#39;</span>
+            <span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">ops</span><span class="o">.</span><span class="n">AddTags</span><span class="p">([</span><span class="n">Tags</span><span class="o">.</span><span class="n">SEQUENCE</span><span class="p">])</span>
+<span class="p">)</span>
+
+<span class="c1"># Filter out sessions with less than 2 interactions </span>
+<span class="n">MINIMUM_SESSION_LENGTH</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">features</span> <span class="o">=</span> <span class="n">list_features</span> <span class="o">+</span> <span class="p">(</span><span class="n">groupby_features</span><span class="p">[</span><span class="s1">&#39;city_id_count&#39;</span><span class="p">]</span> <span class="o">&gt;&gt;</span>  <span class="n">ops</span><span class="o">.</span><span class="n">AddTags</span><span class="p">([</span><span class="n">Tags</span><span class="o">.</span><span class="n">CONTINUOUS</span><span class="p">]))</span>
+<span class="n">filtered_sessions</span> <span class="o">=</span> <span class="n">features</span> <span class="o">&gt;&gt;</span> <span class="n">ops</span><span class="o">.</span><span class="n">Filter</span><span class="p">(</span><span class="n">f</span><span class="o">=</span><span class="k">lambda</span> <span class="n">df</span><span class="p">:</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;city_id_count&quot;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">MINIMUM_SESSION_LENGTH</span><span class="p">)</span> 
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">wf</span> <span class="o">=</span> <span class="n">Workflow</span><span class="p">(</span><span class="n">filtered_sessions</span><span class="p">)</span>
+
+<span class="n">wf</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">train_set_dataset</span><span class="p">)</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">OUTPUT_DATA_DIR</span><span class="p">,</span> <span class="s1">&#39;train_processed.parquet&#39;</span><span class="p">))</span>
+<span class="n">wf</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">validation_set_dataset</span><span class="p">)</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">OUTPUT_DATA_DIR</span><span class="p">,</span> <span class="s1">&#39;validation_processed.parquet&#39;</span><span class="p">))</span>
+
+<span class="n">wf</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">OUTPUT_DATA_DIR</span><span class="p">,</span> <span class="s1">&#39;workflow&#39;</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Our data consists of a sequence of visited <code class="docutils literal notranslate"><span class="pre">city_ids</span></code>, a sequence of <code class="docutils literal notranslate"><span class="pre">booker_countries</span></code> (represented as integer categories) and a <code class="docutils literal notranslate"><span class="pre">city_id_count</span></code> column (which contains the count of visited cities in a trip).</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">Dataset</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">OUTPUT_DATA_DIR</span><span class="p">,</span> <span class="s1">&#39;train_processed.parquet&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>city_id_list</th>
+      <th>booker_country_list</th>
+      <th>hotel_country_list</th>
+      <th>weekday_checkin_list</th>
+      <th>weekday_checkout_list</th>
+      <th>city_id_count</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>[8238, 156, 2278, 2097]</td>
+      <td>[3, 3, 3, 3]</td>
+      <td>[3, 3, 3, 3]</td>
+      <td>[5, 7, 4, 3]</td>
+      <td>[7, 4, 2, 7]</td>
+      <td>4</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>[63, 1160, 87, 618, 63]</td>
+      <td>[1, 1, 1, 1, 1]</td>
+      <td>[1, 1, 1, 1, 1]</td>
+      <td>[5, 1, 4, 3, 5]</td>
+      <td>[6, 4, 2, 5, 4]</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>[7, 6, 24, 1050, 65, 52, 3]</td>
+      <td>[2, 2, 2, 2, 2, 2, 2]</td>
+      <td>[2, 2, 2, 16, 16, 3, 3]</td>
+      <td>[5, 1, 2, 6, 5, 7, 4]</td>
+      <td>[6, 3, 1, 5, 7, 4, 3]</td>
+      <td>7</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>[1032, 757, 140, 3]</td>
+      <td>[2, 2, 2, 2]</td>
+      <td>[19, 19, 19, 3]</td>
+      <td>[1, 4, 2, 3]</td>
+      <td>[4, 3, 2, 5]</td>
+      <td>4</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>[3603, 262, 662, 250, 359]</td>
+      <td>[1, 1, 1, 1, 1]</td>
+      <td>[30, 30, 30, 30, 30]</td>
+      <td>[1, 3, 6, 5, 1]</td>
+      <td>[2, 1, 5, 6, 3]</td>
+      <td>5</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+<p>We are now ready to train our model.</p>
+<p>Here is the schema of the data that our model will use.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">seq_schema</span> <span class="o">=</span> <span class="n">Workflow</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">OUTPUT_DATA_DIR</span><span class="p">,</span> <span class="s1">&#39;workflow&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">output_schema</span><span class="o">.</span><span class="n">select_by_tag</span><span class="p">(</span><span class="n">Tags</span><span class="o">.</span><span class="n">SEQUENCE</span><span class="p">)</span>
+<span class="n">seq_schema</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>name</th>
+      <th>tags</th>
+      <th>dtype</th>
+      <th>is_list</th>
+      <th>is_ragged</th>
+      <th>properties.num_buckets</th>
+      <th>properties.freq_threshold</th>
+      <th>properties.max_size</th>
+      <th>properties.start_index</th>
+      <th>properties.cat_path</th>
+      <th>properties.domain.min</th>
+      <th>properties.domain.max</th>
+      <th>properties.domain.name</th>
+      <th>properties.embedding_sizes.cardinality</th>
+      <th>properties.embedding_sizes.dimension</th>
+      <th>properties.value_count.min</th>
+      <th>properties.value_count.max</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>city_id_list</td>
+      <td>(Tags.SEQUENCE, Tags.CATEGORICAL)</td>
+      <td>DType(name='int64', element_type=&lt;ElementType....</td>
+      <td>True</td>
+      <td>True</td>
+      <td>None</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>.//categories/unique.city_id.parquet</td>
+      <td>0</td>
+      <td>37202</td>
+      <td>city_id</td>
+      <td>37203</td>
+      <td>512</td>
+      <td>0</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>booker_country_list</td>
+      <td>(Tags.SEQUENCE, Tags.CATEGORICAL)</td>
+      <td>DType(name='int64', element_type=&lt;ElementType....</td>
+      <td>True</td>
+      <td>True</td>
+      <td>None</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>.//categories/unique.booker_country.parquet</td>
+      <td>0</td>
+      <td>5</td>
+      <td>booker_country</td>
+      <td>6</td>
+      <td>16</td>
+      <td>0</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>hotel_country_list</td>
+      <td>(Tags.SEQUENCE, Tags.CATEGORICAL)</td>
+      <td>DType(name='int64', element_type=&lt;ElementType....</td>
+      <td>True</td>
+      <td>True</td>
+      <td>None</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>.//categories/unique.hotel_country.parquet</td>
+      <td>0</td>
+      <td>194</td>
+      <td>hotel_country</td>
+      <td>195</td>
+      <td>31</td>
+      <td>0</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>weekday_checkin_list</td>
+      <td>(Tags.SEQUENCE, Tags.CATEGORICAL)</td>
+      <td>DType(name='int64', element_type=&lt;ElementType....</td>
+      <td>True</td>
+      <td>True</td>
+      <td>None</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>.//categories/unique.weekday_checkin.parquet</td>
+      <td>0</td>
+      <td>7</td>
+      <td>weekday_checkin</td>
+      <td>8</td>
+      <td>16</td>
+      <td>0</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>weekday_checkout_list</td>
+      <td>(Tags.SEQUENCE, Tags.CATEGORICAL)</td>
+      <td>DType(name='int64', element_type=&lt;ElementType....</td>
+      <td>True</td>
+      <td>True</td>
+      <td>None</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>.//categories/unique.weekday_checkout.parquet</td>
+      <td>0</td>
+      <td>7</td>
+      <td>weekday_checkout</td>
+      <td>8</td>
+      <td>16</td>
+      <td>0</td>
+      <td>None</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+<p>Let’s also identify the target column.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">target</span> <span class="o">=</span> <span class="n">Workflow</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">OUTPUT_DATA_DIR</span><span class="p">,</span> <span class="s1">&#39;workflow&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">output_schema</span><span class="o">.</span><span class="n">select_by_tag</span><span class="p">(</span><span class="n">Tags</span><span class="o">.</span><span class="n">SEQUENCE</span><span class="p">)</span><span class="o">.</span><span class="n">column_names</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">target</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&#39;city_id_list&#39;
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="constructing-the-model">
+<h2>Constructing the model<a class="headerlink" href="#constructing-the-model" title="Permalink to this heading">#</a></h2>
+<p>Let’s construct our model.</p>
+<p>We can specify various hyperparameters, such as the number of heads and number of layers to use.</p>
+<p>For the transformer portion of our model, we will use the <code class="docutils literal notranslate"><span class="pre">XLNet</span></code> architecture.</p>
+<p>Later, when we run the <code class="docutils literal notranslate"><span class="pre">fit</span></code> method on our model, we will specify the <code class="docutils literal notranslate"><span class="pre">masking_probability</span></code> of <code class="docutils literal notranslate"><span class="pre">0.3</span></code> and link it to the transformer block defined in out model. Through the combination of these parameters, our model will train on sequences where any given timestep will be masked with a probability of 0.3 and it will be our model’s training task to infer the target value for that step!</p>
+<p>To summarize, Masked Language Modeling is implemented by:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">SequenceMaskRandom()</span></code> - Used as a pre for model.fit(), it randomly selects items from the sequence to be masked for prediction as targets, by using Keras masking. This block also adds the necessary configuration to the specified <code class="docutils literal notranslate"><span class="pre">transformer</span></code> block so as it
+is pre-configured with the necessary layers needed to prepare the inputs to the HuggingFace transformer layer and to post-process its outputs. For example, one pre-processing operation is to replace the input embeddings at masked positions for prediction by a dummy trainable embedding, to avoid leakage of the targets.</p></li>
+</ul>
+<p><strong>Read more about the apis used to construct models</strong></p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/NVIDIA-Merlin/models/tree/stable/merlin/models/tf/blocks">blocks</a></p></li>
+<li><p><a class="reference external" href="https://github.com/NVIDIA-Merlin/models/blob/stable/merlin/models/tf/blocks/mlp.py">MLPBlock</a></p></li>
+<li><p><a class="reference external" href="https://github.com/NVIDIA-Merlin/models/blob/stable/merlin/models/tf/inputs/base.py">InputBlockV2</a></p></li>
+<li><p><a class="reference external" href="https://github.com/NVIDIA-Merlin/models/blob/stable/merlin/models/tf/inputs/embedding.py">Embeddings</a></p></li>
+<li><p><a class="reference external" href="https://github.com/NVIDIA-Merlin/models/blob/stable/merlin/models/tf/transformers/block.py">XLNetBlock</a></p></li>
+<li><p><a class="reference external" href="https://github.com/NVIDIA-Merlin/models/blob/stable/merlin/models/tf/outputs/classification.py">CategoricalOutput</a></p></li>
+<li><p><a class="reference external" href="https://github.com/NVIDIA-Merlin/core/blob/stable/merlin/schema/schema.py">.schema.select_by_name</a></p></li>
+<li><p><a class="reference external" href="https://github.com/NVIDIA-Merlin/core/blob/stable/merlin/schema/schema.py">.schema.select_by_tag</a></p></li>
+<li><p><a class="reference external" href="https://github.com/NVIDIA-Merlin/models/blob/stable/merlin/models/tf/models/base.py">model.compile()</a></p></li>
+<li><p><a class="reference external" href="https://github.com/NVIDIA-Merlin/models/blob/stable/merlin/models/tf/models/base.py">model.fit()</a></p></li>
+<li><p><a class="reference external" href="https://github.com/NVIDIA-Merlin/models/blob/stable/merlin/models/tf/models/base.py">model.evaluate()</a></p></li>
+<li><p><a class="reference external" href="https://github.com/NVIDIA-Merlin/models/blob/stable/merlin/models/tf/transforms/sequence.py">mm.SequenceMaskRandom</a></p></li>
+<li><p><a class="reference external" href="https://github.com/NVIDIA-Merlin/models/blob/stable/merlin/models/tf/transforms/sequence.py">mm.SequenceMaskLast</a></p></li>
+</ul>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">dmodel</span><span class="o">=</span><span class="mi">48</span>
+<span class="n">mlp_block</span> <span class="o">=</span> <span class="n">mm</span><span class="o">.</span><span class="n">MLPBlock</span><span class="p">(</span>
+                <span class="p">[</span><span class="mi">128</span><span class="p">,</span><span class="n">dmodel</span><span class="p">],</span>
+                <span class="n">activation</span><span class="o">=</span><span class="s1">&#39;relu&#39;</span><span class="p">,</span>
+                <span class="n">no_activation_last_layer</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="p">)</span>
+<span class="n">transformer_block</span> <span class="o">=</span> <span class="n">mm</span><span class="o">.</span><span class="n">XLNetBlock</span><span class="p">(</span><span class="n">d_model</span><span class="o">=</span><span class="n">dmodel</span><span class="p">,</span> <span class="n">n_head</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">n_layer</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">mm</span><span class="o">.</span><span class="n">Model</span><span class="p">(</span>
+    <span class="n">mm</span><span class="o">.</span><span class="n">InputBlockV2</span><span class="p">(</span>
+        <span class="n">seq_schema</span><span class="p">,</span>
+        <span class="n">embeddings</span><span class="o">=</span><span class="n">mm</span><span class="o">.</span><span class="n">Embeddings</span><span class="p">(</span>
+            <span class="n">Workflow</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">OUTPUT_DATA_DIR</span><span class="p">,</span> <span class="s1">&#39;workflow&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">output_schema</span><span class="o">.</span><span class="n">select_by_tag</span><span class="p">(</span><span class="n">Tags</span><span class="o">.</span><span class="n">CATEGORICAL</span><span class="p">),</span> <span class="n">sequence_combiner</span><span class="o">=</span><span class="kc">None</span>
+        <span class="p">),</span>
+    <span class="p">),</span>
+    <span class="n">mlp_block</span><span class="p">,</span>
+    <span class="n">transformer_block</span><span class="p">,</span>
+    <span class="n">mm</span><span class="o">.</span><span class="n">CategoricalOutput</span><span class="p">(</span>
+        <span class="n">Workflow</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">OUTPUT_DATA_DIR</span><span class="p">,</span> <span class="s1">&#39;workflow&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">output_schema</span><span class="o">.</span><span class="n">select_by_name</span><span class="p">(</span><span class="n">target</span><span class="p">),</span>
+        <span class="n">default_loss</span><span class="o">=</span><span class="s2">&quot;categorical_crossentropy&quot;</span><span class="p">,</span>
+    <span class="p">),</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="model-training">
+<h2>Model training<a class="headerlink" href="#model-training" title="Permalink to this heading">#</a></h2>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">run_eagerly</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">=</span><span class="s1">&#39;adam&#39;</span><span class="p">,</span> <span class="n">loss</span><span class="o">=</span><span class="s2">&quot;categorical_crossentropy&quot;</span><span class="p">)</span>
+
+<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span>
+    <span class="n">Dataset</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">OUTPUT_DATA_DIR</span><span class="p">,</span> <span class="s1">&#39;train_processed.parquet&#39;</span><span class="p">)),</span>
+    <span class="n">batch_size</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span>
+    <span class="n">epochs</span><span class="o">=</span><span class="n">NUM_EPOCHS</span><span class="p">,</span>
+    <span class="n">pre</span><span class="o">=</span><span class="n">mm</span><span class="o">.</span><span class="n">SequenceMaskRandom</span><span class="p">(</span><span class="n">schema</span><span class="o">=</span><span class="n">seq_schema</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span> <span class="n">masking_prob</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">transformer</span><span class="o">=</span><span class="n">transformer_block</span><span class="p">)</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/usr/local/lib/python3.8/dist-packages/keras/initializers/initializers_v2.py:120: UserWarning: The initializer TruncatedNormal is unseeded and being called multiple times, which will return identical values  each time (even if the initializer is unseeded). Please update your code to provide a seed to the initializer, or avoid using the same initializer instance more than once.
+  warnings.warn(
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Epoch 1/5
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2023-05-31 06:06:44.034041: I tensorflow/compiler/xla/stream_executor/cuda/cuda_dnn.cc:428] Loaded cuDNN version 8700
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>WARNING:tensorflow:Gradients do not exist for variables [&#39;model/mask_emb:0&#39;, &#39;transformer/layer_._0/rel_attn/r_s_bias:0&#39;, &#39;transformer/layer_._0/rel_attn/seg_embed:0&#39;, &#39;transformer/layer_._1/rel_attn/r_s_bias:0&#39;, &#39;transformer/layer_._1/rel_attn/seg_embed:0&#39;] when minimizing the loss. If you&#39;re using `model.compile()`, did you forget to provide a `loss` argument?
+WARNING:tensorflow:Gradients do not exist for variables [&#39;model/mask_emb:0&#39;, &#39;transformer/layer_._0/rel_attn/r_s_bias:0&#39;, &#39;transformer/layer_._0/rel_attn/seg_embed:0&#39;, &#39;transformer/layer_._1/rel_attn/r_s_bias:0&#39;, &#39;transformer/layer_._1/rel_attn/seg_embed:0&#39;] when minimizing the loss. If you&#39;re using `model.compile()`, did you forget to provide a `loss` argument?
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2023-05-31 06:06:54.541024: W tensorflow/core/grappler/optimizers/loop_optimizer.cc:907] Skipping loop optimization for Merge node with control input: model/xl_net_block/sequential_block_5/replace_masked_embeddings/RaggedWhere/Assert/AssertGuard/branch_executed/_95
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2720/2720 [==============================] - 81s 25ms/step - loss: 7.3315 - recall_at_10: 0.1973 - mrr_at_10: 0.0863 - ndcg_at_10: 0.1123 - map_at_10: 0.0863 - precision_at_10: 0.0197 - regularization_loss: 0.0000e+00 - loss_batch: 7.3306
+Epoch 2/5
+2720/2720 [==============================] - 70s 25ms/step - loss: 6.0979 - recall_at_10: 0.3633 - mrr_at_10: 0.1707 - ndcg_at_10: 0.2161 - map_at_10: 0.1707 - precision_at_10: 0.0363 - regularization_loss: 0.0000e+00 - loss_batch: 6.0950
+Epoch 3/5
+2720/2720 [==============================] - 71s 26ms/step - loss: 5.5827 - recall_at_10: 0.4306 - mrr_at_10: 0.2056 - ndcg_at_10: 0.2588 - map_at_10: 0.2056 - precision_at_10: 0.0431 - regularization_loss: 0.0000e+00 - loss_batch: 5.5806
+Epoch 4/5
+2720/2720 [==============================] - 72s 26ms/step - loss: 5.3211 - recall_at_10: 0.4627 - mrr_at_10: 0.2213 - ndcg_at_10: 0.2784 - map_at_10: 0.2213 - precision_at_10: 0.0463 - regularization_loss: 0.0000e+00 - loss_batch: 5.3194
+Epoch 5/5
+2720/2720 [==============================] - 71s 26ms/step - loss: 5.1920 - recall_at_10: 0.4787 - mrr_at_10: 0.2306 - ndcg_at_10: 0.2892 - map_at_10: 0.2306 - precision_at_10: 0.0479 - regularization_loss: 0.0000e+00 - loss_batch: 5.1903
+</pre></div>
+</div>
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&lt;keras.callbacks.History at 0x7fe67105a7f0&gt;
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="model-evaluation">
+<h2>Model evaluation<a class="headerlink" href="#model-evaluation" title="Permalink to this heading">#</a></h2>
+<p>We have trained our model.</p>
+<p>But in training the metrics come from a masked language modelling task. A portion of steps in the sequence was masked for each example. The metrics were calculated on this task.</p>
+<p>In reality, we probably care how well our model does on the next item prediction task (as it mimics the scenario in which the model would be likely to be used).</p>
+<p>Let’s measure the performance of the model on a task where it attempts to predict the last item in a sequence.</p>
+<p>We will mask the last item using <code class="docutils literal notranslate"><span class="pre">SequenceMaskLast</span></code> and run inference.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">metrics</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span>
+    <span class="n">Dataset</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">OUTPUT_DATA_DIR</span><span class="p">,</span> <span class="s1">&#39;validation_processed.parquet&#39;</span><span class="p">)),</span>
+    <span class="n">batch_size</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span>
+    <span class="n">pre</span><span class="o">=</span><span class="n">mm</span><span class="o">.</span><span class="n">SequenceMaskLast</span><span class="p">(</span><span class="n">schema</span><span class="o">=</span><span class="n">seq_schema</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span> <span class="n">transformer</span><span class="o">=</span><span class="n">transformer_block</span><span class="p">),</span>
+    <span class="n">return_dict</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2023-05-31 06:12:51.968982: W tensorflow/core/grappler/optimizers/loop_optimizer.cc:907] Skipping loop optimization for Merge node with control input: model/xl_net_block/sequential_block_5/replace_masked_embeddings/RaggedWhere/Assert/AssertGuard/branch_executed/_74
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>340/340 [==============================] - 11s 20ms/step - loss: 4.7151 - recall_at_10: 0.5533 - mrr_at_10: 0.3083 - ndcg_at_10: 0.3665 - map_at_10: 0.3083 - precision_at_10: 0.0553 - regularization_loss: 0.0000e+00 - loss_batch: 4.7149
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">metrics</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>{&#39;loss&#39;: 4.715089797973633,
+ &#39;recall_at_10&#39;: 0.5533444881439209,
+ &#39;mrr_at_10&#39;: 0.30831339955329895,
+ &#39;ndcg_at_10&#39;: 0.36654922366142273,
+ &#39;map_at_10&#39;: 0.30831339955329895,
+ &#39;precision_at_10&#39;: 0.055334459990262985,
+ &#39;regularization_loss&#39;: 0.0,
+ &#39;loss_batch&#39;: 4.635858535766602}
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="serving-predictions-using-the-triton-inference-server">
+<h2>Serving predictions using the Triton Inference Server<a class="headerlink" href="#serving-predictions-using-the-triton-inference-server" title="Permalink to this heading">#</a></h2>
+<p>Now, we will serve our trained models on <a class="reference external" href="https://github.com/triton-inference-server/server">NVIDIA Triton Inference Server (TIS)</a>. TIS is an open-source inference serving software that helps standardize model deployment and execution and delivers fast and scalable AI in production. To serve recommender models on TIS easily, NVIDIA Merlin team designed and developed <a class="reference external" href="https://github.com/NVIDIA-Merlin/systems">the Merlin Systems library</a>. Merlin Systems provides tools and operators to be able to serve end-to-end recommender systems pipelines on TIS easily</p>
+<p>In order to perform inference on the Triton Inference Server, we need to output the inference operators to disk.</p>
+<p>The inference operators form an <code class="docutils literal notranslate"><span class="pre">Ensemble</span></code>, which is a pipeline that takes in raw data, processes it using NVTabular, and finally outputs predictions from the model that we trained.</p>
+<p>Let’s write the <code class="docutils literal notranslate"><span class="pre">Ensemble</span></code> to disk (we will later load it on Triton to perform inference).</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">merlin.systems.dag.ops.tensorflow</span> <span class="kn">import</span> <span class="n">PredictTensorflow</span>
+<span class="kn">from</span> <span class="nn">merlin.systems.dag.ensemble</span> <span class="kn">import</span> <span class="n">Ensemble</span>
+<span class="kn">from</span> <span class="nn">merlin.systems.dag.ops.workflow</span> <span class="kn">import</span> <span class="n">TransformWorkflow</span>
+
+<span class="n">inf_ops</span> <span class="o">=</span> <span class="n">wf</span><span class="o">.</span><span class="n">input_schema</span><span class="o">.</span><span class="n">column_names</span> <span class="o">&gt;&gt;</span> <span class="n">TransformWorkflow</span><span class="p">(</span><span class="n">wf</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="n">PredictTensorflow</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+
+<span class="n">ensemble</span> <span class="o">=</span> <span class="n">Ensemble</span><span class="p">(</span><span class="n">inf_ops</span><span class="p">,</span> <span class="n">wf</span><span class="o">.</span><span class="n">input_schema</span><span class="p">)</span>
+<span class="n">ensemble</span><span class="o">.</span><span class="n">export</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">OUTPUT_DATA_DIR</span><span class="p">,</span> <span class="s1">&#39;ensemble&#39;</span><span class="p">));</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>WARNING:tensorflow:Skipping full serialization of Keras layer TFSharedEmbeddings(
+  (_feature_shapes): Dict(
+    (city_id_list): TensorShape([64, None, 1])
+    (booker_country_list): TensorShape([64, None, 1])
+    (hotel_country_list): TensorShape([64, None, 1])
+    (weekday_checkin_list): TensorShape([64, None, 1])
+    (weekday_checkout_list): TensorShape([64, None, 1])
+  )
+  (_feature_dtypes): Dict(
+    (city_id_list): tf.int64
+    (booker_country_list): tf.int64
+    (hotel_country_list): tf.int64
+    (weekday_checkin_list): tf.int64
+    (weekday_checkout_list): tf.int64
+  )
+), because it is not built.
+WARNING:tensorflow:Skipping full serialization of Keras layer Dropout(
+  (_feature_shapes): Dict(
+    (city_id_list): TensorShape([64, None, 1])
+    (booker_country_list): TensorShape([64, None, 1])
+    (hotel_country_list): TensorShape([64, None, 1])
+    (weekday_checkin_list): TensorShape([64, None, 1])
+    (weekday_checkout_list): TensorShape([64, None, 1])
+  )
+  (_feature_dtypes): Dict(
+    (city_id_list): tf.int64
+    (booker_country_list): tf.int64
+    (hotel_country_list): tf.int64
+    (weekday_checkin_list): tf.int64
+    (weekday_checkout_list): tf.int64
+  )
+), because it is not built.
+WARNING:tensorflow:Skipping full serialization of Keras layer Dropout(
+  (_feature_shapes): Dict(
+    (city_id_list): TensorShape([64, None, 1])
+    (booker_country_list): TensorShape([64, None, 1])
+    (hotel_country_list): TensorShape([64, None, 1])
+    (weekday_checkin_list): TensorShape([64, None, 1])
+    (weekday_checkout_list): TensorShape([64, None, 1])
+  )
+  (_feature_dtypes): Dict(
+    (city_id_list): tf.int64
+    (booker_country_list): tf.int64
+    (hotel_country_list): tf.int64
+    (weekday_checkin_list): tf.int64
+    (weekday_checkout_list): tf.int64
+  )
+), because it is not built.
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>WARNING:absl:Found untraced functions such as model_context_layer_call_fn, model_context_layer_call_and_return_conditional_losses, sequence_mask_random_layer_call_fn, sequence_mask_random_layer_call_and_return_conditional_losses, sequence_mask_last_layer_call_fn while saving (showing 5 of 108). These functions will not be directly callable after loading.
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Assets written to: /tmp/tmp1sakw940/model.savedmodel/assets
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Assets written to: /tmp/tmp1sakw940/model.savedmodel/assets
+/usr/local/lib/python3.8/dist-packages/merlin/models/tf/utils/tf_utils.py:101: CustomMaskWarning: Custom mask layers require a config and must override get_config. When loading, the custom mask layer must be passed to the custom_objects argument.
+  config[key] = tf.keras.utils.serialize_keras_object(maybe_value)
+/usr/local/lib/python3.8/dist-packages/merlin/models/tf/core/combinators.py:288: CustomMaskWarning: Custom mask layers require a config and must override get_config. When loading, the custom mask layer must be passed to the custom_objects argument.
+  config[i] = tf.keras.utils.serialize_keras_object(layer)
+/usr/local/lib/python3.8/dist-packages/keras/saving/legacy/saved_model/layer_serialization.py:134: CustomMaskWarning: Custom mask layers require a config and must override get_config. When loading, the custom mask layer must be passed to the custom_objects argument.
+  return serialization.serialize_keras_object(obj)
+/usr/local/lib/python3.8/dist-packages/keras/initializers/initializers_v2.py:120: UserWarning: The initializer TruncatedNormal is unseeded and being called multiple times, which will return identical values  each time (even if the initializer is unseeded). Please update your code to provide a seed to the initializer, or avoid using the same initializer instance more than once.
+  warnings.warn(
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>WARNING:tensorflow:No training configuration found in save file, so the model was *not* compiled. Compile it manually.
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>WARNING:tensorflow:No training configuration found in save file, so the model was *not* compiled. Compile it manually.
+/usr/local/lib/python3.8/dist-packages/keras/initializers/initializers_v2.py:120: UserWarning: The initializer TruncatedNormal is unseeded and being called multiple times, which will return identical values  each time (even if the initializer is unseeded). Please update your code to provide a seed to the initializer, or avoid using the same initializer instance more than once.
+  warnings.warn(
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>WARNING:tensorflow:No training configuration found in save file, so the model was *not* compiled. Compile it manually.
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>WARNING:tensorflow:No training configuration found in save file, so the model was *not* compiled. Compile it manually.
+/usr/local/lib/python3.8/dist-packages/merlin/systems/dag/node.py:100: UserWarning: Operator &#39;TransformWorkflow&#39; is producing the output column &#39;city_id_count&#39;, which is not being used by any downstream operator in the ensemble graph.
+  warnings.warn(
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>WARNING:tensorflow:Skipping full serialization of Keras layer TFSharedEmbeddings(
+  (_feature_shapes): Dict(
+    (city_id_list): TensorShape([64, None, 1])
+    (booker_country_list): TensorShape([64, None, 1])
+    (hotel_country_list): TensorShape([64, None, 1])
+    (weekday_checkin_list): TensorShape([64, None, 1])
+    (weekday_checkout_list): TensorShape([64, None, 1])
+  )
+  (_feature_dtypes): Dict(
+    (city_id_list): tf.int64
+    (booker_country_list): tf.int64
+    (hotel_country_list): tf.int64
+    (weekday_checkin_list): tf.int64
+    (weekday_checkout_list): tf.int64
+  )
+), because it is not built.
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>WARNING:tensorflow:Skipping full serialization of Keras layer TFSharedEmbeddings(
+  (_feature_shapes): Dict(
+    (city_id_list): TensorShape([64, None, 1])
+    (booker_country_list): TensorShape([64, None, 1])
+    (hotel_country_list): TensorShape([64, None, 1])
+    (weekday_checkin_list): TensorShape([64, None, 1])
+    (weekday_checkout_list): TensorShape([64, None, 1])
+  )
+  (_feature_dtypes): Dict(
+    (city_id_list): tf.int64
+    (booker_country_list): tf.int64
+    (hotel_country_list): tf.int64
+    (weekday_checkin_list): tf.int64
+    (weekday_checkout_list): tf.int64
+  )
+), because it is not built.
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>WARNING:tensorflow:Skipping full serialization of Keras layer Dropout(
+  (_feature_shapes): Dict(
+    (city_id_list): TensorShape([64, None, 1])
+    (booker_country_list): TensorShape([64, None, 1])
+    (hotel_country_list): TensorShape([64, None, 1])
+    (weekday_checkin_list): TensorShape([64, None, 1])
+    (weekday_checkout_list): TensorShape([64, None, 1])
+  )
+  (_feature_dtypes): Dict(
+    (city_id_list): tf.int64
+    (booker_country_list): tf.int64
+    (hotel_country_list): tf.int64
+    (weekday_checkin_list): tf.int64
+    (weekday_checkout_list): tf.int64
+  )
+), because it is not built.
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>WARNING:tensorflow:Skipping full serialization of Keras layer Dropout(
+  (_feature_shapes): Dict(
+    (city_id_list): TensorShape([64, None, 1])
+    (booker_country_list): TensorShape([64, None, 1])
+    (hotel_country_list): TensorShape([64, None, 1])
+    (weekday_checkin_list): TensorShape([64, None, 1])
+    (weekday_checkout_list): TensorShape([64, None, 1])
+  )
+  (_feature_dtypes): Dict(
+    (city_id_list): tf.int64
+    (booker_country_list): tf.int64
+    (hotel_country_list): tf.int64
+    (weekday_checkin_list): tf.int64
+    (weekday_checkout_list): tf.int64
+  )
+), because it is not built.
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>WARNING:tensorflow:Skipping full serialization of Keras layer Dropout(
+  (_feature_shapes): Dict(
+    (city_id_list): TensorShape([64, None, 1])
+    (booker_country_list): TensorShape([64, None, 1])
+    (hotel_country_list): TensorShape([64, None, 1])
+    (weekday_checkin_list): TensorShape([64, None, 1])
+    (weekday_checkout_list): TensorShape([64, None, 1])
+  )
+  (_feature_dtypes): Dict(
+    (city_id_list): tf.int64
+    (booker_country_list): tf.int64
+    (hotel_country_list): tf.int64
+    (weekday_checkin_list): tf.int64
+    (weekday_checkout_list): tf.int64
+  )
+), because it is not built.
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>WARNING:tensorflow:Skipping full serialization of Keras layer Dropout(
+  (_feature_shapes): Dict(
+    (city_id_list): TensorShape([64, None, 1])
+    (booker_country_list): TensorShape([64, None, 1])
+    (hotel_country_list): TensorShape([64, None, 1])
+    (weekday_checkin_list): TensorShape([64, None, 1])
+    (weekday_checkout_list): TensorShape([64, None, 1])
+  )
+  (_feature_dtypes): Dict(
+    (city_id_list): tf.int64
+    (booker_country_list): tf.int64
+    (hotel_country_list): tf.int64
+    (weekday_checkin_list): tf.int64
+    (weekday_checkout_list): tf.int64
+  )
+), because it is not built.
+WARNING:absl:Found untraced functions such as model_context_layer_call_fn, model_context_layer_call_and_return_conditional_losses, sequence_mask_random_layer_call_fn, sequence_mask_random_layer_call_and_return_conditional_losses, sequence_mask_last_layer_call_fn while saving (showing 5 of 108). These functions will not be directly callable after loading.
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Assets written to: /workspace/data/ensemble/1_predicttensorflowtriton/1/model.savedmodel/assets
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Assets written to: /workspace/data/ensemble/1_predicttensorflowtriton/1/model.savedmodel/assets
+/usr/local/lib/python3.8/dist-packages/merlin/models/tf/utils/tf_utils.py:101: CustomMaskWarning: Custom mask layers require a config and must override get_config. When loading, the custom mask layer must be passed to the custom_objects argument.
+  config[key] = tf.keras.utils.serialize_keras_object(maybe_value)
+/usr/local/lib/python3.8/dist-packages/merlin/models/tf/core/combinators.py:288: CustomMaskWarning: Custom mask layers require a config and must override get_config. When loading, the custom mask layer must be passed to the custom_objects argument.
+  config[i] = tf.keras.utils.serialize_keras_object(layer)
+/usr/local/lib/python3.8/dist-packages/keras/saving/legacy/saved_model/layer_serialization.py:134: CustomMaskWarning: Custom mask layers require a config and must override get_config. When loading, the custom mask layer must be passed to the custom_objects argument.
+  return serialization.serialize_keras_object(obj)
+/usr/local/lib/python3.8/dist-packages/keras/initializers/initializers_v2.py:120: UserWarning: The initializer TruncatedNormal is unseeded and being called multiple times, which will return identical values  each time (even if the initializer is unseeded). Please update your code to provide a seed to the initializer, or avoid using the same initializer instance more than once.
+  warnings.warn(
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>WARNING:tensorflow:No training configuration found in save file, so the model was *not* compiled. Compile it manually.
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>WARNING:tensorflow:No training configuration found in save file, so the model was *not* compiled. Compile it manually.
+</pre></div>
+</div>
+</div>
+</div>
+<p>After we export the ensemble, we are ready to start the Triton Inference Server.</p>
+<p>The server is installed in Merlin Tensorflow and Merlin PyTorch containers. If you are not using one of our containers, then ensure it is installed in your environment. For more information, see the Triton Inference Server <a class="reference external" href="https://github.com/triton-inference-server/server/blob/r22.03/README.md#documentation">documentation</a>.</p>
+<p>You can start the server by running the following command:</p>
+<p><code class="docutils literal notranslate"><span class="pre">tritonserver</span> <span class="pre">--model-repository={OUTPUT_DATA_DIR}/ensemble/</span></code></p>
+<p>For the –model-repository argument, specify the same value as the <code class="docutils literal notranslate"><span class="pre">export_path</span></code> that you specified previously in the <code class="docutils literal notranslate"><span class="pre">ensemble.export</span></code> method.</p>
+<p>After you run the <code class="docutils literal notranslate"><span class="pre">tritonserver</span></code> command, wait until your terminal shows messages like the following example:</p>
+<p>I0414 18:29:50.741833 4067 grpc_server.cc:4421] Started GRPCInferenceService at 0.0.0.0:8001<br>
+I0414 18:29:50.742197 4067 http_server.cc:3113] Started HTTPService at 0.0.0.0:8000<br>
+I0414 18:29:50.783470 4067 http_server.cc:178] Started Metrics Service at 0.0.0.0:8002</p>
+<p>Let us now package our data for inference. We will send the first 4 rows of our validation data, which corresponds to a single trip. The data will be first processed by the <code class="docutils literal notranslate"><span class="pre">NVTabular</span></code> workflow and subsequentally passed to our transformer model for predicting.</p>
+<p>Let us send the first 4 rows of our validation data to Triton. This will correspond to a single trip (all rows have the same <code class="docutils literal notranslate"><span class="pre">utrip_id</span></code>) with four stops.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">merlin.systems.triton</span> <span class="kn">import</span> <span class="n">convert_df_to_triton_input</span>
+
+<span class="n">validation_data</span> <span class="o">=</span> <span class="n">validation_set_dataset</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+<span class="n">inputs</span> <span class="o">=</span> <span class="n">convert_df_to_triton_input</span><span class="p">(</span><span class="n">wf</span><span class="o">.</span><span class="n">input_schema</span><span class="p">,</span> <span class="n">validation_data</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:</span><span class="mi">4</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">tritonclient.grpc</span> <span class="k">as</span> <span class="nn">grpcclient</span>
+
+<span class="k">with</span> <span class="n">grpcclient</span><span class="o">.</span><span class="n">InferenceServerClient</span><span class="p">(</span><span class="s2">&quot;localhost:8001&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">client</span><span class="p">:</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">infer</span><span class="p">(</span><span class="s1">&#39;executor_model&#39;</span><span class="p">,</span> <span class="n">inputs</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>The response consists of logits coming from our model.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">response</span><span class="o">.</span><span class="n">as_numpy</span><span class="p">(</span><span class="s1">&#39;city_id_list/categorical_output&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>array([[-2.8206294 , -1.3849059 ,  1.9042726 , ...,  0.851537  ,
+        -2.4237087 , -0.73849726]], dtype=float32)
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">predictions</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">as_numpy</span><span class="p">(</span><span class="s1">&#39;city_id_list/categorical_output&#39;</span><span class="p">)</span>
+<span class="n">predictions</span><span class="o">.</span><span class="n">shape</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(1, 37203)
+</pre></div>
+</div>
+</div>
+</div>
+<p>The above values are logits output from the last layer of our model. They correspond in size to the cardinality of <code class="docutils literal notranslate"><span class="pre">city_id</span></code>, our target variable:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">cardinality</span> <span class="o">=</span> <span class="n">wf</span><span class="o">.</span><span class="n">output_schema</span><span class="p">[</span><span class="s1">&#39;city_id_list&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">properties</span><span class="p">[</span><span class="s1">&#39;embedding_sizes&#39;</span><span class="p">][</span><span class="s1">&#39;cardinality&#39;</span><span class="p">]</span>
+<span class="n">cardinality</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>37203
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="summary">
+<h2>Summary<a class="headerlink" href="#summary" title="Permalink to this heading">#</a></h2>
+<p>We have trained a transformer model for the next item prediction task using language model masking.</p>
+<p>For another session-based example that goes deeper into data preprocessing and that covers several advanced techniques (Weight Tying, Temperature Scaling) please see <a class="reference external" href="https://github.com/NVIDIA-Merlin/models/blob/t4rec_use_case/examples/usecases/ecommerce-session-based-next-item-prediction-for-fashion.ipynb">Session-Based Next Item Prediction for Fashion E-Commerce</a>.</p>
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+                <footer class="bd-footer-article">
+                  
+<div class="footer-article-items footer-article__inner">
+  
+    <div class="footer-article-item"><!-- Previous / next buttons -->
+<div class="prev-next-area">
+</div></div>
+  
+</div>
+
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#overview">Overview</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#learning-objectives">Learning objectives</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#downloading-and-preparing-the-dataset">Downloading and preparing the dataset</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#preprocessing-with-nvtabular">Preprocessing with NVTabular</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#constructing-the-model">Constructing the model</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#model-training">Model training</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#model-evaluation">Model evaluation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#serving-predictions-using-the-triton-inference-server">Serving predictions using the Triton Inference Server</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#summary">Summary</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+  <p class="copyright">
+    
+      © Copyright 2023, NVIDIA.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../_static/scripts/bootstrap.js?digest=e353d410970836974a52"></script>
+<script src="../../../_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
