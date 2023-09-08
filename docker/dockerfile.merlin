@@ -118,8 +118,10 @@ COPY --chown=1000:1000 --from=triton /opt/tritonserver/lib lib/
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/include include/
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/repoagents/ repoagents/
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/python backends/
-# NOTE 2023-07: fil-backend is not available on ARM.
-COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/fil* backends/fil/
+# NOTE 2023-09: fil-backend is not available on ARM. Some docker versions behave different if there
+#               is no source files to copy. To avoid this we add the LICENSE as dummy a dummy. This
+#               will make sure the copy operation always works.
+COPY --chown=1000:1000 --from=triton /opt/tritonserver/LICENSE /opt/tritonserver/backends/fil/* backends/fil/
 COPY --chown=1000:1000 --from=triton /usr/bin/serve /usr/bin/.
 
 ENV PATH=/opt/tritonserver/bin:${PATH}:
@@ -191,7 +193,7 @@ RUN ARCH=$([ "${TARGETARCH}" = "arm64" ] && echo "sbsa" || echo "x86_64") && \
         tree \
         wget \
         zlib1g-dev \
-        # Required to build RocksDB and RdKafka..
+        # Required to build RocksDB and RdKafka.
         libgflags-dev \
         libbz2-dev \
         libsnappy-dev \
@@ -225,7 +227,7 @@ ENV LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${JAVA_HOME}/lib:${JAVA_HOME}/lib/server
 # Binaries
 COPY --chown=1000:1000 --from=build /usr/local/bin/cmake /usr/local/bin/
 COPY --chown=1000:1000 --from=build /usr/local/bin/pytest /usr/local/bin/
-COPY --chown=1000:1000 --from=build /usr/local/bin/perf_* /usr/local/bin/
+COPY --chown=1000:1000 --from=build /usr/local/bin/*_perf_* /usr/local/bin/
 
 # Triton Server
 WORKDIR /opt/tritonserver
@@ -237,8 +239,10 @@ COPY --chown=1000:1000 --from=triton /opt/tritonserver/lib lib/
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/include include/
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/repoagents/ repoagents/
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/python backends/python/
-# NOTE 2023-07: fil-backend is not available on ARM.
-COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/fil* backends/fil/
+# NOTE 2023-09: fil-backend is not available on ARM. Some docker versions behave different if there
+#               is no source files to copy. To avoid this we add the LICENSE as dummy a dummy. This
+#               will make sure the copy operation always works.
+COPY --chown=1000:1000 --from=triton /opt/tritonserver/LICENSE /opt/tritonserver/backends/fil/* backends/fil/
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/tensorrt backends/tensorrt/
 COPY --chown=1000:1000 --from=triton /usr/bin/serve /usr/bin/.
 COPY --chown=1000:1000 --from=triton /usr/lib/*-linux-gnu/libdcgm.so.2 /tmp
@@ -362,7 +366,7 @@ ENV PATH=${PATH}:${HADOOP_HOME}/bin:${HADOOP_HOME}/sbin \
     YARN_NODEMANAGER_USER=root \
     # Tackles with ThreadReaper stack overflow issues: https://bugs.openjdk.java.net/browse/JDK-8153057
     LIBHDFS_OPTS='-Djdk.lang.processReaperUseDefaultStackSize=true' \
-    # Tackles with JVM setting error signals that UCX library will check (GitLab issue #425).
+    # Tackles with JVM setting error signals that the UCX library checks (GitLab issue #425).
     UCX_ERROR_SIGNALS='' \
     CLASSPATH=${CLASSPATH}:\
 ${HADOOP_HOME}/etc/hadoop/*:\
@@ -389,7 +393,7 @@ ENV PATH=$PATH:${HUGECTR_HOME}/bin \
     LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${HUGECTR_HOME}/lib
 
 RUN if [ "${HUGECTR_DEV_MODE}" == "false" ]; then \
-        # Install HugeCTR inference which is dependency for hps_backenc
+        # Install HugeCTR inference which is dependency for hps_backend
         git clone --branch ${HUGECTR_VER} --depth 1 https://${_CI_JOB_TOKEN}${_HUGECTR_REPO} /hugectr && \
         cd /hugectr && \
         git submodule update --init --recursive && \
