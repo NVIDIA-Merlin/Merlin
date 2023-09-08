@@ -118,9 +118,8 @@ COPY --chown=1000:1000 --from=triton /opt/tritonserver/lib lib/
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/include include/
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/repoagents/ repoagents/
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/python backends/
-# NOTE 2023-09: fil-backend is not available on ARM. Some docker versions behave different if there
-#               is no source files to copy. To avoid this we add the LICENSE as dummy a dummy. This
-#               will make sure the copy operation always works.
+# NOTE 2023-09: fil-backend is not available on ARM. Some docker versions flag an error if there is
+#               not a single source file to copy. To avoid this, we als specify a small dummy file.
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/LICENSE /opt/tritonserver/backends/fil/* backends/fil/
 COPY --chown=1000:1000 --from=triton /usr/bin/serve /usr/bin/.
 
@@ -227,6 +226,9 @@ ENV LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${JAVA_HOME}/lib:${JAVA_HOME}/lib/server
 # Binaries
 COPY --chown=1000:1000 --from=build /usr/local/bin/cmake /usr/local/bin/
 COPY --chown=1000:1000 --from=build /usr/local/bin/pytest /usr/local/bin/
+# NOTE 2023-09: fil-perf_analyzer is not available on ARM. Some docker versions flag an error if
+#               there is not a single source file to copy. To avoid this, we als specify a small
+#               dummy file.
 COPY --chown=1000:1000 --from=build /usr/local/bin/cudaCheck /usr/local/bin/perf_* /usr/local/bin/
 
 # Triton Server
@@ -239,9 +241,8 @@ COPY --chown=1000:1000 --from=triton /opt/tritonserver/lib lib/
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/include include/
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/repoagents/ repoagents/
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/python backends/python/
-# NOTE 2023-09: fil-backend is not available on ARM. Some docker versions behave different if there
-#               is no source files to copy. To avoid this we add the LICENSE as dummy a dummy. This
-#               will make sure the copy operation always works.
+# NOTE 2023-09: fil-backend is not available on ARM. Some docker versions flag an error if there is
+#               not a single source file to copy. To avoid this, we als specify a small dummy file.
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/LICENSE /opt/tritonserver/backends/fil/* backends/fil/
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/tensorrt backends/tensorrt/
 COPY --chown=1000:1000 --from=triton /usr/bin/serve /usr/bin/.
