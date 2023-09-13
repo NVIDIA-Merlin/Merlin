@@ -3,10 +3,12 @@ ARG TRITON_VERSION=23.06
 ARG DLFW_VERSION=23.06
 
 ARG FULL_IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-py3
+ARG SDK_IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-py3-sdk
 ARG BASE_IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-py3-min
 ARG DLFW_IMAGE=nvcr.io/nvidia/tensorflow:${TRITON_VERSION}-tf2-py3
 
 FROM ${FULL_IMAGE} as triton
+FROM ${SDK_IMAGE} as sdk
 FROM ${DLFW_IMAGE} as dlfw
 FROM ${BASE_IMAGE} as build
 
@@ -226,10 +228,7 @@ ENV LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${JAVA_HOME}/lib:${JAVA_HOME}/lib/server
 # Binaries
 COPY --chown=1000:1000 --from=build /usr/local/bin/cmake /usr/local/bin/
 COPY --chown=1000:1000 --from=build /usr/local/bin/pytest /usr/local/bin/
-# NOTE 2023-09: fil-perf_analyzer is not available on ARM. Some docker versions flag an error if
-#               there is not a single source file to copy. To avoid this, we als specify a small
-#               dummy file.
-COPY --chown=1000:1000 --from=build /usr/local/bin/cudaCheck /usr/local/bin/perf_* /usr/local/bin/
+COPY --chown=1000:1000 --from=sdk /usr/local/bin/perf_* /usr/local/bin/
 
 # Triton Server
 WORKDIR /opt/tritonserver
