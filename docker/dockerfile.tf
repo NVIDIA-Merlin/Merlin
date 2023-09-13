@@ -42,7 +42,6 @@ ARG _CI_JOB_TOKEN=""
 ARG HUGECTR_VER=main
 
 ENV LD_LIBRARY_PATH=/usr/local/lib/python${PYTHON_VERSION}/dist-packages/tensorflow:$LD_LIBRARY_PATH \
-    LIBRARY_PATH=${HUGECTR_HOME}/lib:$LIBRARY_PATH \
     SOK_COMPILE_UNIT_TEST=ON
 
 RUN mkdir -p /usr/local/nvidia/lib64 && \
@@ -55,6 +54,9 @@ ARG INSTALL_DISTRIBUTED_EMBEDDINGS=false
 ARG TFDE_VER=v23.03.00
 
 RUN if [ "$HUGECTR_DEV_MODE" == "false" ]; then \
+        export HUGECTR_HOME=/usr/local/hugectr && \
+        rm -rf ${HUGECTR_HOME}/lib/libgmock* ${HUGECTR_HOME}/lib/pkgconfig/gmock* ${HUGECTR_HOME}/include/gmock && \
+        rm -rf ${HUGECTR_HOME}/lib/libgtest* ${HUGECTR_HOME}/lib/pkgconfig/gtest* ${HUGECTR_HOME}/include/gtest && \
         git clone --branch ${HUGECTR_VER} --depth 1 --recurse-submodules --shallow-submodules https://${_CI_JOB_TOKEN}${_HUGECTR_REPO} /hugectr && \
         pushd /hugectr && \
         rm -rf .git/modules && \
