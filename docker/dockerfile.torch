@@ -38,6 +38,21 @@ COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-p
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/numpy-*.dist-info /usr/local/lib/python${PYTHON_VERSION}/dist-packages/numpy.dist-info/
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/torch-*.egg-info /usr/local/lib/python${PYTHON_VERSION}/dist-packages/torch.egg-info/
 
+# Argumeints "_XXXX" are only valid when $HUGECTR_DEV_MODE==false
+# Install hps_torch in merlin-pytorch
+ARG HUGECTR_DEV_MODE=false
+ARG _HUGECTR_REPO="github.com/NVIDIA-Merlin/HugeCTR.git"
+ARG _CI_JOB_TOKEN=""
+ARG HUGECTR_VER=main
+
+RUN if [ "$HUGECTR_DEV_MODE" == "false" ]; then \
+        git clone --branch ${HUGECTR_VER} --depth 1 --recurse-submodules --shallow-submodules https://${_CI_JOB_TOKEN}${_HUGECTR_REPO} /hugectr && \
+        pushd /hugectr/hps_torch/ && \
+        pip --no-cache-dir install ninja && \
+        TORCH_CUDA_ARCH_LIST="7.0 7.5 8.0 9.0" python setup.py install && \
+        popd && \
+        rm -rf /hugectr \
+    ; fi
 
 # Add all torch libraries to /usr/local
 RUN ln -s /opt/tritonserver/backends/pytorch/* /usr/local/lib/
