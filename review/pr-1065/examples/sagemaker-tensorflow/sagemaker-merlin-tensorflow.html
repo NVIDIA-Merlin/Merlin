@@ -1,0 +1,1721 @@
+
+
+<!DOCTYPE html>
+
+
+<html lang="en" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+    <title>Training and Serving Merlin on AWS SageMaker &#8212; NVIDIA Merlin</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=927b94d3fcb96560df09" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=927b94d3fcb96560df09" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=927b94d3fcb96560df09" rel="stylesheet" />
+
+  
+  <link href="../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=927b94d3fcb96560df09" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" href="../../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/css/custom.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/css/versions.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=927b94d3fcb96560df09" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=927b94d3fcb96560df09" />
+  <script src="../../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=927b94d3fcb96560df09"></script>
+
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script src="../../_static/js/rtd-version-switcher.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'examples/sagemaker-tensorflow/sagemaker-merlin-tensorflow';</script>
+    <link rel="canonical" href="https://nvidia-merlin.github.io/Merlin/stable/examples/sagemaker-tensorflow/sagemaker-merlin-tensorflow.html" />
+    <link rel="shortcut icon" href="../../_static/favicon.png"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Scaling Large Datasets with Criteo" href="../scaling-criteo/index.html" />
+    <link rel="prev" title="Training and Serving Merlin on AWS SageMaker" href="index.html" />
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-NVJ1Y1YJHK"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-NVJ1Y1YJHK', {
+        'anonymize_ip': false,
+    });
+  </script>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,400;0,700;1,300&display=swap" rel="stylesheet">
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+    <p class="title logo__title">NVIDIA Merlin</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../README.html">Introduction</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../guide/recommender_system_guide.html">Recommender System Guide</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../guide/recommender_models.html">Recommender Models</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../index.html">Example Notebooks</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
+<li class="toctree-l2 has-children"><a class="reference internal" href="../getting-started-movielens/index.html">Getting Started using the MovieLens Dataset</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../getting-started-movielens/01-Download-Convert.html">MovieLens Download and Convert</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../getting-started-movielens/02-ETL-with-NVTabular.html">Feature Engineering with NVTabular</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../getting-started-movielens/03-Training-with-HugeCTR.html">Training with HugeCTR</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../getting-started-movielens/03-Training-with-TF.html">Getting Started MovieLens: Training with TensorFlow</a></li>
+
+
+<li class="toctree-l3"><a class="reference internal" href="../getting-started-movielens/03-Training-with-PyTorch.html">Training with PyTorch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../getting-started-movielens/04-Triton-Inference-with-HugeCTR.html">Serving the HugeCTR Model with Triton</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../getting-started-movielens/04-Triton-Inference-with-TF.html">Serve Recommendations from the TensorFlow Model</a></li>
+
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../Building-and-deploying-multi-stage-RecSys/index.html">Deploying a Multi-Stage Recommender System</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-4"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../Building-and-deploying-multi-stage-RecSys/01-Building-Recommender-Systems-with-Merlin.html">Building the Recommender System</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../Building-and-deploying-multi-stage-RecSys/02-Deploying-multi-stage-RecSys-with-Merlin-Systems.html">Deploying the Recommender System with Triton</a></li>
+</ul>
+</li>
+<li class="toctree-l2 current active has-children"><a class="reference internal" href="index.html">Merlin and AWS SageMaker</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-5"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
+<li class="toctree-l3 current active"><a class="current reference internal" href="#">Training and Serving Merlin on AWS SageMaker</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../scaling-criteo/index.html">Scaling Large Datasets with Criteo</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-6"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../scaling-criteo/01-Download-Convert.html">Criteo Download and Convert</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../scaling-criteo/02-ETL-with-NVTabular.html">Feature Engineering with NVTabular</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../scaling-criteo/03-Training-with-HugeCTR.html">Training with HugeCTR</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../scaling-criteo/03-Training-with-Merlin-Models-TensorFlow.html">Training with Merlin Models and TensorFlow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../scaling-criteo/04-Triton-Inference-with-HugeCTR.html">Deploy the HugeCTR Model with Triton</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../scaling-criteo/04-Triton-Inference-with-Merlin-Models-TensorFlow.html">Deploy the TensorFlow Model with Triton</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../containers.html">Merlin Containers</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../support_matrix/index.html">Merlin Support Matrix</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-7"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../support_matrix/support_matrix_merlin_hugectr.html">Merlin HugeCTR Support Matrix</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../support_matrix/support_matrix_merlin_tensorflow.html">Merlin TensorFlow Support Matrix</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../support_matrix/support_matrix_merlin_pytorch.html">Merlin PyTorch Support Matrix</a></li>
+</ul>
+</li>
+</ul>
+
+    </div>
+</nav></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-merlin-ecosystem-nav" aria-label="Merlin Ecosystem Nav">
+  <div class="bd-toc-item navbar-nav">
+    <p aria-level="2" class="caption" role="heading"><span class="caption-text">Ecosystem</span></p>
+    <ul class="nav bd-sidenav">
+      <li class="toctree-l1"><a class="reference external" href="/core/">Core</a></li>
+      <li class="toctree-l1"><a class="reference external" href="/models/">Models</a></li>
+      <li class="toctree-l1"><a class="reference external" href="/systems/">Systems</a></li>
+      <li class="toctree-l1"><a class="reference external" href="/NVTabular/">NVTabular</a></li>
+      <li class="toctree-l1"><a class="reference external" href="/Transformers4Rec/">Transformers4Rec</a></li>
+      <li class="toctree-l1"><a class="reference external" href="/dataloader/">Dataloader</a></li>
+      <li class="toctree-l1"><a class="reference external" href="/HugetCTR/">HugeCTR</a></li>
+    </ul>
+  </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+<a href="https://github.com/NVIDIA-Merlin/Merlin" target="_blank"
+   class="btn btn-sm btn-source-repository-button"
+   title="Source repository"
+   data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+
+</a>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../../_sources/" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.ipynb</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script>
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Training and Serving Merlin on AWS SageMaker</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#part-1-generating-dataset-and-docker-image">Part 1: Generating Dataset and Docker image</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#generating-dataset">Generating Dataset</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#training-script">Training Script</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#create-the-dockerfile">Create the Dockerfile</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#building-and-registering-the-container">Building and registering the container</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#part-2-training-your-merlin-model-on-sagemaker">Part 2: Training your Merlin model on Sagemaker</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#training-on-sagemaker-using-the-python-sdk">Training on Sagemaker using the Python SDK</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#part-3-retrieving-recommendations-from-triton-inference-server">Part 3: Retrieving Recommendations from Triton Inference Server</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#send-a-request-to-triton-inference-server-to-transform-a-raw-dataset">Send a Request to Triton Inference Server to Transform a Raw Dataset</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#terminate-endpoint-and-clean-up-artifacts">Terminate endpoint and clean up artifacts</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Copyright (c) 2022, NVIDIA CORPORATION.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.# ======================================================================</span>
+
+<span class="c1"># Each user is responsible for checking the content of datasets and the</span>
+<span class="c1"># applicable licenses and determining if suitable for the intended use.</span>
+</pre></div>
+</div>
+</div>
+</div>
+<img alt="https://developer.download.nvidia.com/notebooks/dlsw-notebooks/merlin_merlin_getting-started-movielens-01-download-convert/nvidia_logo.png" src="https://developer.download.nvidia.com/notebooks/dlsw-notebooks/merlin_merlin_getting-started-movielens-01-download-convert/nvidia_logo.png" />
+<section id="training-and-serving-merlin-on-aws-sagemaker">
+<h1>Training and Serving Merlin on AWS SageMaker<a class="headerlink" href="#training-and-serving-merlin-on-aws-sagemaker" title="Permalink to this heading">#</a></h1>
+<p>This notebook is created using the latest stable <a class="reference external" href="https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-tensorflow/tags">merlin-tensorflow</a> container.
+Note that AWS libraries in this notebook require AWS credentials, and if you are running this notebook in a container, you might need to restart the container with the AWS credentials mounted, e.g., <code class="docutils literal notranslate"><span class="pre">-v</span> <span class="pre">$HOME/.aws:$HOME/.aws</span></code>.</p>
+<p>With AWS Sagemaker, you can package your own models that can then be trained and deployed in the SageMaker environment. This notebook shows you how to use Merlin for training and inference in the SageMaker environment.</p>
+<p>It assumes that readers are familiar wtth some basic concepts in NVIDIA Merlin,
+such as:</p>
+<ul class="simple">
+<li><p>Using NVTabular to GPU-accelerate preprocessing and feature engineering,</p></li>
+<li><p>Training a ranking model using Merlin Models, and</p></li>
+<li><p>Inference with the Triton Inference Server and Merlin Models for Tensorflow.</p></li>
+</ul>
+<p>To learn more about these concepts in NVIDIA Merlin, see for example
+<span class="xref myst">Deploying a Multi-Stage Recommender System</span>
+in this repository or example notebooks in
+<a class="reference external" href="https://github.com/NVIDIA-Merlin/models/tree/stable/examples">Merlin Models</a>.</p>
+<p>To run this notebook, you need to have <a class="reference external" href="https://sagemaker.readthedocs.io/en/stable/">Amazon SageMaker Python SDK</a> installed.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span><span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>sagemaker
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Collecting sagemaker
+  Downloading sagemaker-2.116.0.tar.gz (592 kB)
+     |████████████████████████████████| 592 kB 4.4 MB/s eta 0:00:01
+?25hRequirement already satisfied: attrs&lt;23,&gt;=20.3.0 in /usr/local/lib/python3.8/dist-packages (from sagemaker) (22.1.0)
+Requirement already satisfied: boto3&lt;2.0,&gt;=1.20.21 in /usr/local/lib/python3.8/dist-packages (from sagemaker) (1.25.2)
+Requirement already satisfied: google-pasta in /usr/local/lib/python3.8/dist-packages (from sagemaker) (0.2.0)
+Collecting importlib-metadata&lt;5.0,&gt;=1.4.0
+  Downloading importlib_metadata-4.13.0-py3-none-any.whl (23 kB)
+Requirement already satisfied: numpy&lt;2.0,&gt;=1.9.0 in /usr/local/lib/python3.8/dist-packages (from sagemaker) (1.22.4)
+Requirement already satisfied: packaging&gt;=20.0 in /usr/local/lib/python3.8/dist-packages (from sagemaker) (21.3)
+Requirement already satisfied: pandas in /usr/local/lib/python3.8/dist-packages (from sagemaker) (1.3.5)
+Collecting pathos
+  Downloading pathos-0.3.0-py3-none-any.whl (79 kB)
+     |████████████████████████████████| 79 kB 10.5 MB/s eta 0:00:01
+?25hCollecting protobuf3-to-dict&lt;1.0,&gt;=0.1.5
+  Downloading protobuf3-to-dict-0.1.5.tar.gz (3.5 kB)
+Requirement already satisfied: protobuf&lt;4.0,&gt;=3.1 in /usr/local/lib/python3.8/dist-packages (from sagemaker) (3.19.6)
+Collecting schema
+  Downloading schema-0.7.5-py2.py3-none-any.whl (17 kB)
+Collecting smdebug_rulesconfig==1.0.1
+  Downloading smdebug_rulesconfig-1.0.1-py2.py3-none-any.whl (20 kB)
+Requirement already satisfied: s3transfer&lt;0.7.0,&gt;=0.6.0 in /usr/local/lib/python3.8/dist-packages (from boto3&lt;2.0,&gt;=1.20.21-&gt;sagemaker) (0.6.0)
+Requirement already satisfied: botocore&lt;1.29.0,&gt;=1.28.2 in /usr/local/lib/python3.8/dist-packages (from boto3&lt;2.0,&gt;=1.20.21-&gt;sagemaker) (1.28.2)
+Requirement already satisfied: jmespath&lt;2.0.0,&gt;=0.7.1 in /usr/local/lib/python3.8/dist-packages (from boto3&lt;2.0,&gt;=1.20.21-&gt;sagemaker) (1.0.1)
+Requirement already satisfied: six in /usr/lib/python3/dist-packages (from google-pasta-&gt;sagemaker) (1.14.0)
+Requirement already satisfied: zipp&gt;=0.5 in /usr/local/lib/python3.8/dist-packages (from importlib-metadata&lt;5.0,&gt;=1.4.0-&gt;sagemaker) (3.10.0)
+Requirement already satisfied: pyparsing!=3.0.5,&gt;=2.0.2 in /usr/local/lib/python3.8/dist-packages (from packaging&gt;=20.0-&gt;sagemaker) (3.0.9)
+Requirement already satisfied: pytz&gt;=2017.3 in /usr/local/lib/python3.8/dist-packages (from pandas-&gt;sagemaker) (2022.5)
+Requirement already satisfied: python-dateutil&gt;=2.7.3 in /usr/local/lib/python3.8/dist-packages (from pandas-&gt;sagemaker) (2.8.2)
+Collecting pox&gt;=0.3.2
+  Downloading pox-0.3.2-py3-none-any.whl (29 kB)
+Collecting dill&gt;=0.3.6
+  Downloading dill-0.3.6-py3-none-any.whl (110 kB)
+     |████████████████████████████████| 110 kB 17.3 MB/s eta 0:00:01
+?25hCollecting multiprocess&gt;=0.70.14
+  Downloading multiprocess-0.70.14-py38-none-any.whl (132 kB)
+     |████████████████████████████████| 132 kB 17.8 MB/s eta 0:00:01
+?25hCollecting ppft&gt;=1.7.6.6
+  Downloading ppft-1.7.6.6-py3-none-any.whl (52 kB)
+     |████████████████████████████████| 52 kB 2.9 MB/s  eta 0:00:01
+?25hCollecting contextlib2&gt;=0.5.5
+  Downloading contextlib2-21.6.0-py2.py3-none-any.whl (13 kB)
+Requirement already satisfied: urllib3&lt;1.27,&gt;=1.25.4 in /usr/local/lib/python3.8/dist-packages (from botocore&lt;1.29.0,&gt;=1.28.2-&gt;boto3&lt;2.0,&gt;=1.20.21-&gt;sagemaker) (1.26.12)
+Building wheels for collected packages: sagemaker, protobuf3-to-dict
+  Building wheel for sagemaker (setup.py) ... ?25ldone
+?25h  Created wheel for sagemaker: filename=sagemaker-2.116.0-py2.py3-none-any.whl size=809052 sha256=f446dd6eed6d268b7f3f2709f8f11c1ba153e382fbea9b2caedd517c1fb71215
+  Stored in directory: /root/.cache/pip/wheels/3e/cb/b1/5b13ff7b150aa151e4a11030a6c41b1e457c31a52ea1ef11b0
+  Building wheel for protobuf3-to-dict (setup.py) ... ?25ldone
+?25h  Created wheel for protobuf3-to-dict: filename=protobuf3_to_dict-0.1.5-py3-none-any.whl size=4029 sha256=8f99baaa875ba544d54f624f95dfbf4fd52ca96d52ce8af6d05c1ff2bb8435b2
+  Stored in directory: /root/.cache/pip/wheels/fc/10/27/2d1e23d8b9a9013a83fbb418a0b17b1e6f81c8db8f53b53934
+Successfully built sagemaker protobuf3-to-dict
+Installing collected packages: importlib-metadata, pox, dill, multiprocess, ppft, pathos, protobuf3-to-dict, contextlib2, schema, smdebug-rulesconfig, sagemaker
+  Attempting uninstall: importlib-metadata
+    Found existing installation: importlib-metadata 5.0.0
+    Uninstalling importlib-metadata-5.0.0:
+      Successfully uninstalled importlib-metadata-5.0.0
+Successfully installed contextlib2-21.6.0 dill-0.3.6 importlib-metadata-4.13.0 multiprocess-0.70.14 pathos-0.3.0 pox-0.3.2 ppft-1.7.6.6 protobuf3-to-dict-0.1.5 sagemaker-2.116.0 schema-0.7.5 smdebug-rulesconfig-1.0.1
+</pre></div>
+</div>
+</div>
+</div>
+<section id="part-1-generating-dataset-and-docker-image">
+<h2>Part 1: Generating Dataset and Docker image<a class="headerlink" href="#part-1-generating-dataset-and-docker-image" title="Permalink to this heading">#</a></h2>
+<section id="generating-dataset">
+<h3>Generating Dataset<a class="headerlink" href="#generating-dataset" title="Permalink to this heading">#</a></h3>
+<p>In this notebook, we use the synthetic train and test datasets generated by mimicking the real <a class="reference external" href="https://tianchi.aliyun.com/dataset/dataDetail?dataId=408#1">Ali-CCP</a>: Alibaba Click and Conversion Prediction dataset to build our recommender system ranking models. The Ali-CCP is a dataset gathered from real-world traffic logs of the recommender system in Taobao, the largest online retail platform in the world.</p>
+<p>If you would like to use real Ali-CCP dataset instead, you can download the training and test datasets on <a class="reference external" href="https://tianchi.aliyun.com/dataset/dataDetail?dataId=408#1">tianchi.aliyun.com</a>. You can then use <a class="reference external" href="https://github.com/NVIDIA-Merlin/models/blob/stable/merlin/datasets/ecommerce/aliccp/dataset.py#L43">get_aliccp()</a> function to curate the raw csv files and save them as parquet files.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+
+<span class="kn">from</span> <span class="nn">merlin.datasets.synthetic</span> <span class="kn">import</span> <span class="n">generate_data</span>
+
+<span class="n">DATA_FOLDER</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;DATA_FOLDER&quot;</span><span class="p">,</span> <span class="s2">&quot;/workspace/data/&quot;</span><span class="p">)</span>
+<span class="n">NUM_ROWS</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;NUM_ROWS&quot;</span><span class="p">,</span> <span class="mi">1_000_000</span><span class="p">)</span>
+<span class="n">SYNTHETIC_DATA</span> <span class="o">=</span> <span class="nb">eval</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;SYNTHETIC_DATA&quot;</span><span class="p">,</span> <span class="s2">&quot;True&quot;</span><span class="p">))</span>
+<span class="n">BATCH_SIZE</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;BATCH_SIZE&quot;</span><span class="p">,</span> <span class="mi">512</span><span class="p">))</span>
+
+<span class="k">if</span> <span class="n">SYNTHETIC_DATA</span><span class="p">:</span>
+    <span class="n">train</span><span class="p">,</span> <span class="n">valid</span> <span class="o">=</span> <span class="n">generate_data</span><span class="p">(</span><span class="s2">&quot;aliccp-raw&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">NUM_ROWS</span><span class="p">),</span> <span class="n">set_sizes</span><span class="o">=</span><span class="p">(</span><span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">))</span>
+    <span class="c1"># save the datasets as parquet files</span>
+    <span class="n">train</span><span class="o">.</span><span class="n">to_ddf</span><span class="p">()</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">DATA_FOLDER</span><span class="p">,</span> <span class="s2">&quot;train&quot;</span><span class="p">))</span>
+    <span class="n">valid</span><span class="o">.</span><span class="n">to_ddf</span><span class="p">()</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">DATA_FOLDER</span><span class="p">,</span> <span class="s2">&quot;valid&quot;</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/usr/local/lib/python3.8/dist-packages/merlin/schema/tags.py:148: UserWarning: Compound tags like Tags.USER_ID have been deprecated and will be removed in a future version. Please use the atomic versions of these tags, like [&lt;Tags.USER: &#39;user&#39;&gt;, &lt;Tags.ID: &#39;id&#39;&gt;].
+  warnings.warn(
+/usr/local/lib/python3.8/dist-packages/merlin/schema/tags.py:148: UserWarning: Compound tags like Tags.ITEM_ID have been deprecated and will be removed in a future version. Please use the atomic versions of these tags, like [&lt;Tags.ITEM: &#39;item&#39;&gt;, &lt;Tags.ID: &#39;id&#39;&gt;].
+  warnings.warn(
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="training-script">
+<h3>Training Script<a class="headerlink" href="#training-script" title="Permalink to this heading">#</a></h3>
+<p>The training script <a class="reference download internal" download="" href="../../_downloads/08d85fba77615657906f6b1c7d98e7fd/train.py"><span class="xref download myst">train.py</span></a> in this example starts with the synthetic dataset we have created in the previous cell and produces a ranking model by performing the following tasks:</p>
+<ul class="simple">
+<li><p>Perform feature engineering and preprocessing with <a class="reference external" href="https://github.com/NVIDIA-Merlin/NVTabular">NVTabular</a>. NVTabular implements common feature engineering and preprocessing operators in easy-to-use, high-level APIs.</p></li>
+<li><p>Use <a class="reference external" href="https://github.com/NVIDIA-Merlin/models/">Merlin Models</a> to train <a class="reference external" href="https://arxiv.org/pdf/1906.00091.pdf">Facebook’s DLRM model</a> in Tensorflow.</p></li>
+<li><p>Prepares <a class="reference external" href="https://github.com/triton-inference-server/server/blob/main/docs/user_guide/architecture.md#ensemble-models">ensemble models</a> for serving on <a class="reference external" href="https://github.com/triton-inference-server/server">Triton Inference Server</a>.
+The training script outputs to <code class="docutils literal notranslate"><span class="pre">model_dir</span></code> the final NVTabular workflow and the trained DLRM model as an ensemble model. You want to make sure that your script generates any artifacts within <code class="docutils literal notranslate"><span class="pre">model_dir</span></code>, since SageMaker packages any files in this directory into a compressed tar archive and made available at the S3 location. The ensemble model that is uploaded to S3 will be used later to handle predictions in Triton inference server later in this notebook.</p></li>
+</ul>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%writefile</span> train.py
+<span class="c1">#</span>
+<span class="c1"># Copyright (c) 2022, NVIDIA CORPORATION.</span>
+<span class="c1">#</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># you may not use this file except in compliance with the License.</span>
+<span class="c1"># You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
+<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
+<span class="c1"># See the License for the specific language governing permissions and</span>
+<span class="c1"># limitations under the License.</span>
+<span class="c1">#</span>
+<span class="kn">import</span> <span class="nn">argparse</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">tempfile</span>
+
+<span class="c1"># We can control how much memory to give tensorflow with this environment variable</span>
+<span class="c1"># IMPORTANT: make sure you do this before you initialize TF&#39;s runtime, otherwise</span>
+<span class="c1"># TF will have claimed all free GPU memory</span>
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;TF_MEMORY_ALLOCATION&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;0.7&quot;</span>  <span class="c1"># fraction of free memory</span>
+
+<span class="kn">import</span> <span class="nn">merlin.io</span>
+<span class="kn">import</span> <span class="nn">merlin.models.tf</span> <span class="k">as</span> <span class="nn">mm</span>
+<span class="kn">import</span> <span class="nn">nvtabular</span> <span class="k">as</span> <span class="nn">nvt</span>
+<span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
+<span class="kn">from</span> <span class="nn">merlin.schema.tags</span> <span class="kn">import</span> <span class="n">Tags</span>
+<span class="kn">from</span> <span class="nn">merlin.systems.dag.ops.workflow</span> <span class="kn">import</span> <span class="n">TransformWorkflow</span>
+<span class="kn">from</span> <span class="nn">merlin.systems.dag.ops.tensorflow</span> <span class="kn">import</span> <span class="n">PredictTensorflow</span>
+<span class="kn">from</span> <span class="nn">merlin.systems.dag.ensemble</span> <span class="kn">import</span> <span class="n">Ensemble</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">nvtabular.ops</span> <span class="kn">import</span> <span class="o">*</span>
+
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">StreamHandler</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">))</span>
+
+
+<span class="k">def</span> <span class="nf">parse_args</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Parse arguments passed from the SageMaker API to the container.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">()</span>
+
+    <span class="c1"># Hyperparameters sent by the client are passed as command-line arguments to the script</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;--epochs&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;--batch_size&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">1024</span><span class="p">)</span>
+
+    <span class="c1"># Data directories</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--train_dir&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;SM_CHANNEL_TRAIN&quot;</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--valid_dir&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;SM_CHANNEL_VALID&quot;</span><span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Model directory: we will use the default set by SageMaker, /opt/ml/model</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;--model_dir&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;SM_MODEL_DIR&quot;</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_known_args</span><span class="p">()</span>
+
+
+<span class="k">def</span> <span class="nf">create_nvtabular_workflow</span><span class="p">(</span><span class="n">train_path</span><span class="p">,</span> <span class="n">valid_path</span><span class="p">):</span>
+    <span class="n">user_id</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;user_id&quot;</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">Categorify</span><span class="p">()</span> <span class="o">&gt;&gt;</span> <span class="n">TagAsUserID</span><span class="p">()</span>
+    <span class="n">item_id</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;item_id&quot;</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">Categorify</span><span class="p">()</span> <span class="o">&gt;&gt;</span> <span class="n">TagAsItemID</span><span class="p">()</span>
+    <span class="n">targets</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;click&quot;</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">AddMetadata</span><span class="p">(</span><span class="n">tags</span><span class="o">=</span><span class="p">[</span><span class="n">Tags</span><span class="o">.</span><span class="n">BINARY_CLASSIFICATION</span><span class="p">,</span> <span class="s2">&quot;target&quot;</span><span class="p">])</span>
+
+    <span class="n">item_features</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="p">[</span><span class="s2">&quot;item_category&quot;</span><span class="p">,</span> <span class="s2">&quot;item_shop&quot;</span><span class="p">,</span> <span class="s2">&quot;item_brand&quot;</span><span class="p">]</span>
+        <span class="o">&gt;&gt;</span> <span class="n">Categorify</span><span class="p">()</span>
+        <span class="o">&gt;&gt;</span> <span class="n">TagAsItemFeatures</span><span class="p">()</span>
+    <span class="p">)</span>
+
+    <span class="n">user_features</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="p">[</span>
+            <span class="s2">&quot;user_shops&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;user_profile&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;user_group&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;user_gender&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;user_age&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;user_consumption_2&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;user_is_occupied&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;user_geography&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;user_intentions&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;user_brands&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;user_categories&quot;</span><span class="p">,</span>
+        <span class="p">]</span>
+        <span class="o">&gt;&gt;</span> <span class="n">Categorify</span><span class="p">()</span>
+        <span class="o">&gt;&gt;</span> <span class="n">TagAsUserFeatures</span><span class="p">()</span>
+    <span class="p">)</span>
+
+    <span class="n">outputs</span> <span class="o">=</span> <span class="n">user_id</span> <span class="o">+</span> <span class="n">item_id</span> <span class="o">+</span> <span class="n">item_features</span> <span class="o">+</span> <span class="n">user_features</span> <span class="o">+</span> <span class="n">targets</span>
+
+    <span class="n">workflow</span> <span class="o">=</span> <span class="n">nvt</span><span class="o">.</span><span class="n">Workflow</span><span class="p">(</span><span class="n">outputs</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">workflow</span>
+
+
+<span class="k">def</span> <span class="nf">create_ensemble</span><span class="p">(</span><span class="n">workflow</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
+    <span class="n">serving_operators</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">workflow</span><span class="o">.</span><span class="n">input_schema</span><span class="o">.</span><span class="n">column_names</span>
+        <span class="o">&gt;&gt;</span> <span class="n">TransformWorkflow</span><span class="p">(</span><span class="n">workflow</span><span class="p">)</span>
+        <span class="o">&gt;&gt;</span> <span class="n">PredictTensorflow</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="n">ensemble</span> <span class="o">=</span> <span class="n">Ensemble</span><span class="p">(</span><span class="n">serving_operators</span><span class="p">,</span> <span class="n">workflow</span><span class="o">.</span><span class="n">input_schema</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">ensemble</span>
+
+
+<span class="k">def</span> <span class="nf">train</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Train the Merlin model.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">train_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">train_dir</span><span class="p">,</span> <span class="s2">&quot;*.parquet&quot;</span><span class="p">)</span>
+    <span class="n">valid_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">valid_dir</span><span class="p">,</span> <span class="s2">&quot;*.parquet&quot;</span><span class="p">)</span>
+
+    <span class="n">workflow</span> <span class="o">=</span> <span class="n">create_nvtabular_workflow</span><span class="p">(</span>
+        <span class="n">train_path</span><span class="o">=</span><span class="n">train_path</span><span class="p">,</span>
+        <span class="n">valid_path</span><span class="o">=</span><span class="n">valid_path</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">train_dataset</span> <span class="o">=</span> <span class="n">nvt</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">train_path</span><span class="p">)</span>
+    <span class="n">valid_dataset</span> <span class="o">=</span> <span class="n">nvt</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">valid_path</span><span class="p">)</span>
+
+    <span class="n">output_path</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">()</span>
+    <span class="n">workflow_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="s2">&quot;workflow&quot;</span><span class="p">)</span>
+
+    <span class="n">workflow</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train_dataset</span><span class="p">)</span>
+    <span class="n">workflow</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">train_dataset</span><span class="p">)</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span>
+        <span class="n">output_path</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="s2">&quot;train&quot;</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="n">workflow</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">valid_dataset</span><span class="p">)</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span>
+        <span class="n">output_path</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="s2">&quot;valid&quot;</span><span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="n">workflow</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">workflow_path</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Workflow saved to </span><span class="si">{</span><span class="n">workflow_path</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+
+    <span class="n">train_data</span> <span class="o">=</span> <span class="n">merlin</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="s2">&quot;train&quot;</span><span class="p">,</span> <span class="s2">&quot;*.parquet&quot;</span><span class="p">))</span>
+    <span class="n">valid_data</span> <span class="o">=</span> <span class="n">merlin</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="s2">&quot;valid&quot;</span><span class="p">,</span> <span class="s2">&quot;*.parquet&quot;</span><span class="p">))</span>
+
+    <span class="n">schema</span> <span class="o">=</span> <span class="n">train_data</span><span class="o">.</span><span class="n">schema</span>
+    <span class="n">target_column</span> <span class="o">=</span> <span class="n">schema</span><span class="o">.</span><span class="n">select_by_tag</span><span class="p">(</span><span class="n">Tags</span><span class="o">.</span><span class="n">TARGET</span><span class="p">)</span><span class="o">.</span><span class="n">column_names</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="n">model</span> <span class="o">=</span> <span class="n">mm</span><span class="o">.</span><span class="n">DLRMModel</span><span class="p">(</span>
+        <span class="n">schema</span><span class="p">,</span>
+        <span class="n">embedding_dim</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span>
+        <span class="n">bottom_block</span><span class="o">=</span><span class="n">mm</span><span class="o">.</span><span class="n">MLPBlock</span><span class="p">([</span><span class="mi">128</span><span class="p">,</span> <span class="mi">64</span><span class="p">]),</span>
+        <span class="n">top_block</span><span class="o">=</span><span class="n">mm</span><span class="o">.</span><span class="n">MLPBlock</span><span class="p">([</span><span class="mi">128</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">32</span><span class="p">]),</span>
+        <span class="n">prediction_tasks</span><span class="o">=</span><span class="n">mm</span><span class="o">.</span><span class="n">BinaryClassificationTask</span><span class="p">(</span><span class="n">target_column</span><span class="p">),</span>
+    <span class="p">)</span>
+
+    <span class="n">model</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s2">&quot;adam&quot;</span><span class="p">,</span> <span class="n">run_eagerly</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">metrics</span><span class="o">=</span><span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">AUC</span><span class="p">()])</span>
+
+    <span class="n">batch_size</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">batch_size</span>
+    <span class="n">epochs</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">epochs</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;batch_size = </span><span class="si">{</span><span class="n">batch_size</span><span class="si">}</span><span class="s2">, epochs = </span><span class="si">{</span><span class="n">epochs</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span>
+        <span class="n">train_data</span><span class="p">,</span>
+        <span class="n">validation_data</span><span class="o">=</span><span class="n">valid_data</span><span class="p">,</span>
+        <span class="n">batch_size</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">batch_size</span><span class="p">,</span>
+        <span class="n">epochs</span><span class="o">=</span><span class="n">epochs</span><span class="p">,</span>
+        <span class="n">verbose</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">model_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="s2">&quot;dlrm&quot;</span><span class="p">)</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">model_path</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Model saved to </span><span class="si">{</span><span class="n">model_path</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+
+    <span class="c1"># We remove the label columns from its inputs.</span>
+    <span class="c1"># This removes all columns with the TARGET tag from the workflow.</span>
+    <span class="c1"># We do this because we need to set the workflow to only require the</span>
+    <span class="c1"># features needed to predict, not train, when creating an inference</span>
+    <span class="c1"># pipeline.</span>
+    <span class="n">label_columns</span> <span class="o">=</span> <span class="n">workflow</span><span class="o">.</span><span class="n">output_schema</span><span class="o">.</span><span class="n">select_by_tag</span><span class="p">(</span><span class="n">Tags</span><span class="o">.</span><span class="n">TARGET</span><span class="p">)</span><span class="o">.</span><span class="n">column_names</span>
+    <span class="n">workflow</span><span class="o">.</span><span class="n">remove_inputs</span><span class="p">(</span><span class="n">label_columns</span><span class="p">)</span>
+
+    <span class="n">ensemble</span> <span class="o">=</span> <span class="n">create_ensemble</span><span class="p">(</span><span class="n">workflow</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span>
+    <span class="n">ensemble_path</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">model_dir</span>
+    <span class="n">ensemble</span><span class="o">.</span><span class="n">export</span><span class="p">(</span><span class="n">ensemble_path</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Ensemble graph saved to </span><span class="si">{</span><span class="n">ensemble_path</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">args</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">parse_args</span><span class="p">()</span>
+    <span class="n">train</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Overwriting train.py
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="create-the-dockerfile">
+<h3>Create the Dockerfile<a class="headerlink" href="#create-the-dockerfile" title="Permalink to this heading">#</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">Dockerfile</span></code> describes the image that will be used on SageMaker for training and inference.
+We start from the latest stable <a class="reference external" href="https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-tensorflow/tags">merlin-tensorflow</a> docker image and install the <a class="reference external" href="https://github.com/aws/sagemaker-training-toolkit">sagemaker-training-toolkit</a> library, which makes the image compatible with Sagemaker for training models.</p>
+<div class="cell tag_flake8-noqa-cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%writefile</span> container/Dockerfile
+
+<span class="n">FROM</span> <span class="n">nvcr</span><span class="o">.</span><span class="n">io</span><span class="o">/</span><span class="n">nvidia</span><span class="o">/</span><span class="n">merlin</span><span class="o">/</span><span class="n">merlin</span><span class="o">-</span><span class="n">tensorflow</span><span class="p">:</span><span class="mf">22.10</span>
+
+<span class="n">RUN</span> <span class="n">pip3</span> <span class="n">install</span> <span class="n">sagemaker</span><span class="o">-</span><span class="n">training</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Overwriting container/Dockerfile
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="building-and-registering-the-container">
+<h3>Building and registering the container<a class="headerlink" href="#building-and-registering-the-container" title="Permalink to this heading">#</a></h3>
+<p>The following shell code shows how to build the container image using <code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">build</span></code> and push the container image to ECR using <code class="docutils literal notranslate"><span class="pre">docker</span> <span class="pre">push</span></code>. This code is available as the shell script <code class="docutils literal notranslate"><span class="pre">build_and_push_image.sh</span></code>. If you are running this notebook inside the <a class="reference external" href="https://catalog.ngc.nvidia.com/orgs/nvidia/teams/merlin/containers/merlin-tensorflow/tags">merlin-tensorflow</a> docker container, you probably need to execute the script outside the container (e.g., in your terminal where you can run the <code class="docutils literal notranslate"><span class="pre">docker</span></code> command).</p>
+<p>You need to have the AWS CLI installed to run this code. To install the AWS CLI, see <a class="reference external" href="https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html#getting-started-install-instructions">Installing or updating the latest version of the AWS CLI</a>.</p>
+<p>This code looks for an ECR repository in the account you’re using and the current default region (if you’re using a SageMaker notebook instance, this is the region where the notebook instance was created). If the repository doesn’t exist, the script will create it.</p>
+<p>Note that running the following script requires permissions to create new repositories on Amazon ECR.</p>
+<div class="cell tag_flake8-noqa-cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>%%writefile ./build_and_push_image.sh
+
+#!/bin/bash
+
+set -euo pipefail
+
+# The name of our algorithm
+ALGORITHM_NAME=sagemaker-merlin-tensorflow
+REGION=us-east-1
+
+cd container
+
+ACCOUNT=$(aws sts get-caller-identity --query Account --output text --region ${REGION})
+
+# Get the region defined in the current configuration (default to us-west-2 if none defined)
+
+REPOSITORY=&quot;${ACCOUNT}.dkr.ecr.${REGION}.amazonaws.com&quot;
+IMAGE_URI=&quot;${REPOSITORY}/${ALGORITHM_NAME}:latest&quot;
+
+# Get the login command from ECR and execute it directly
+aws ecr get-login-password --region ${REGION} | docker login --username AWS --password-stdin ${REPOSITORY}
+
+# If the repository doesn&#39;t exist in ECR, create it.
+
+aws ecr describe-repositories --repository-names &quot;${ALGORITHM_NAME}&quot; --region ${REGION} &gt; /dev/null 2&gt;&amp;1
+
+if [ $? -ne 0 ]
+then
+    aws ecr create-repository --repository-name &quot;${ALGORITHM_NAME}&quot; --region ${REGION} &gt; /dev/null
+fi
+
+# Build the docker image locally with the image name and then push it to ECR
+# with the full name.
+
+docker build  -t ${ALGORITHM_NAME} .
+docker tag ${ALGORITHM_NAME} ${IMAGE_URI}
+
+docker push ${IMAGE_URI}
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Overwriting ./build_and_push_image.sh
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># If you are able to run `docker` from the notebook environment, you can uncomment and run the below script.</span>
+<span class="c1"># ! ./build_and_push_image.sh</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="part-2-training-your-merlin-model-on-sagemaker">
+<h2>Part 2: Training your Merlin model on Sagemaker<a class="headerlink" href="#part-2-training-your-merlin-model-on-sagemaker" title="Permalink to this heading">#</a></h2>
+<p>To deploy the training script onto Sagemaker, we use the Sagemaker Python SDK.
+Here, we create a Sagemaker session that we will use to perform our Sagemaker operations, specify the bucket to use, and the role for working with Sagemaker.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sagemaker</span>
+
+<span class="n">sess</span> <span class="o">=</span> <span class="n">sagemaker</span><span class="o">.</span><span class="n">Session</span><span class="p">()</span>
+
+<span class="c1"># S3 prefix</span>
+<span class="n">prefix</span> <span class="o">=</span> <span class="s2">&quot;DEMO-merlin-tensorflow-aliccp&quot;</span>
+
+<span class="n">role</span> <span class="o">=</span> <span class="n">sagemaker</span><span class="o">.</span><span class="n">get_execution_role</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">role</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Couldn&#39;t call &#39;get_role&#39; to get Role ARN from role name AWSOS-AD-Engineer to get Role path.
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>arn:aws:iam::843263297212:role/AWSOS-AD-Engineer
+</pre></div>
+</div>
+</div>
+</div>
+<p>We can use the Sagemaker Python SDK to upload the Ali-CCP synthetic data to our S3 bucket.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">data_location</span> <span class="o">=</span> <span class="n">sess</span><span class="o">.</span><span class="n">upload_data</span><span class="p">(</span><span class="n">DATA_FOLDER</span><span class="p">,</span> <span class="n">key_prefix</span><span class="o">=</span><span class="n">prefix</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">data_location</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>s3://sagemaker-us-east-1-843263297212/DEMO-merlin-tensorflow-aliccp
+</pre></div>
+</div>
+</div>
+</div>
+<section id="training-on-sagemaker-using-the-python-sdk">
+<h3>Training on Sagemaker using the Python SDK<a class="headerlink" href="#training-on-sagemaker-using-the-python-sdk" title="Permalink to this heading">#</a></h3>
+<p>Sagemaker provides the Python SDK for training a model on Sagemaker.</p>
+<p>Here, we start by using the ECR image URL of the image we pushed in the previous section.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">boto3</span>
+
+<span class="n">sts_client</span> <span class="o">=</span> <span class="n">boto3</span><span class="o">.</span><span class="n">client</span><span class="p">(</span><span class="s2">&quot;sts&quot;</span><span class="p">)</span>
+<span class="n">account</span> <span class="o">=</span> <span class="n">sts_client</span><span class="o">.</span><span class="n">get_caller_identity</span><span class="p">()[</span><span class="s2">&quot;Account&quot;</span><span class="p">]</span>
+
+<span class="n">my_session</span> <span class="o">=</span> <span class="n">boto3</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">Session</span><span class="p">()</span>
+<span class="n">region</span> <span class="o">=</span> <span class="n">my_session</span><span class="o">.</span><span class="n">region_name</span>
+
+<span class="n">algorithm_name</span> <span class="o">=</span> <span class="s2">&quot;sagemaker-merlin-tensorflow&quot;</span>
+
+<span class="n">ecr_image</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">.dkr.ecr.</span><span class="si">{}</span><span class="s2">.amazonaws.com/</span><span class="si">{}</span><span class="s2">:latest&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+    <span class="n">account</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">algorithm_name</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">ecr_image</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>843263297212.dkr.ecr.us-east-1.amazonaws.com/sagemaker-merlin-tensorflow:latest
+</pre></div>
+</div>
+</div>
+</div>
+<p>We can call <code class="docutils literal notranslate"><span class="pre">Estimator.fit()</span></code> to start training on Sagemaker. Here, we use a <code class="docutils literal notranslate"><span class="pre">g4dn</span></code> GPU instance that are equipped with NVIDIA T4 GPUs.
+Our training script <code class="docutils literal notranslate"><span class="pre">train.py</span></code> is passed to the Estimator through the <code class="docutils literal notranslate"><span class="pre">entry_point</span></code> parameter.
+Behind the scenes, the Sagemaker Python SDK will upload the training script specified in the<code class="docutils literal notranslate"><span class="pre">entry_point</span></code> field (<code class="docutils literal notranslate"><span class="pre">train.py</span></code> in our case)
+to the S3 bucket and set the <code class="docutils literal notranslate"><span class="pre">SAGEMAKER_PROGRAM</span></code> environment variable in the training instance to the S3 location so that the training instance
+can download the training script on S3 to the training instance.
+We also adjust our hyperparameters in the <code class="docutils literal notranslate"><span class="pre">hyperparameters</span></code> field.
+We have uploaded our training dataset to our S3 bucket in the previous code cell, and the S3 URLs to our training and validation sets are passed into the <code class="docutils literal notranslate"><span class="pre">fit()</span></code> method.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">sagemaker.estimator</span> <span class="kn">import</span> <span class="n">Estimator</span>
+
+
+<span class="n">training_instance_type</span> <span class="o">=</span> <span class="s2">&quot;ml.g4dn.xlarge&quot;</span>  <span class="c1"># GPU instance, T4</span>
+
+<span class="n">estimator</span> <span class="o">=</span> <span class="n">Estimator</span><span class="p">(</span>
+    <span class="n">role</span><span class="o">=</span><span class="n">role</span><span class="p">,</span>
+    <span class="n">instance_count</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">instance_type</span><span class="o">=</span><span class="n">training_instance_type</span><span class="p">,</span>
+    <span class="n">image_uri</span><span class="o">=</span><span class="n">ecr_image</span><span class="p">,</span>
+    <span class="n">entry_point</span><span class="o">=</span><span class="s2">&quot;train.py&quot;</span><span class="p">,</span>
+    <span class="n">hyperparameters</span><span class="o">=</span><span class="p">{</span>
+        <span class="s2">&quot;batch_size&quot;</span><span class="p">:</span> <span class="mi">1_024</span><span class="p">,</span>
+        <span class="s2">&quot;epoch&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+    <span class="p">},</span>
+<span class="p">)</span>
+
+<span class="n">estimator</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span>
+    <span class="p">{</span>
+        <span class="s2">&quot;train&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">data_location</span><span class="si">}</span><span class="s2">/train/&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;valid&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">data_location</span><span class="si">}</span><span class="s2">/valid/&quot;</span><span class="p">,</span>
+    <span class="p">}</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2022-11-09 10:18:31 Starting - Starting the training job...
+2022-11-09 10:18:54 Starting - Preparing the instances for trainingProfilerReport-1667989110: InProgress
+......
+2022-11-09 10:19:54 Downloading - Downloading input data...
+2022-11-09 10:20:34 Training - Downloading the training image..................................<span class=" -Color -Color-Blue">==================================</span>
+<span class=" -Color -Color-Blue">== Triton Inference Server Base ==</span>
+<span class=" -Color -Color-Blue">==================================</span>
+<span class=" -Color -Color-Blue">NVIDIA Release 22.08 (build 42766143)</span>
+<span class=" -Color -Color-Blue">Copyright (c) 2018-2022, NVIDIA CORPORATION &amp; AFFILIATES.  All rights reserved.</span>
+<span class=" -Color -Color-Blue">Various files include modifications (c) NVIDIA CORPORATION &amp; AFFILIATES.  All rights reserved.</span>
+<span class=" -Color -Color-Blue">This container image and its contents are governed by the NVIDIA Deep Learning Container License.</span>
+<span class=" -Color -Color-Blue">By pulling and using the container, you accept the terms and conditions of this license:</span>
+<span class=" -Color -Color-Blue">https://developer.nvidia.com/ngc/nvidia-deep-learning-container-license</span>
+<span class=" -Color -Color-Blue">NOTE: CUDA Forward Compatibility mode ENABLED.</span>
+<span class=" -Color -Color-Blue">  Using CUDA 11.7 driver version 515.65.01 with kernel driver version 510.47.03.</span>
+<span class=" -Color -Color-Blue">  See https://docs.nvidia.com/deploy/cuda-compatibility/ for details.</span>
+<span class=" -Color -Color-Blue">2022-11-09 10:27:03,405 sagemaker-training-toolkit INFO     No Neurons detected (normal if no neurons installed)</span>
+<span class=" -Color -Color-Blue">2022-11-09 10:27:03,438 sagemaker-training-toolkit INFO     No Neurons detected (normal if no neurons installed)</span>
+<span class=" -Color -Color-Blue">2022-11-09 10:27:03,473 sagemaker-training-toolkit INFO     No Neurons detected (normal if no neurons installed)</span>
+<span class=" -Color -Color-Blue">2022-11-09 10:27:03,485 sagemaker-training-toolkit INFO     Invoking user script</span>
+<span class=" -Color -Color-Blue">Training Env:</span>
+<span class=" -Color -Color-Blue">{</span>
+<span class=" -Color -Color-Blue">    &quot;additional_framework_parameters&quot;: {},</span>
+<span class=" -Color -Color-Blue">    &quot;channel_input_dirs&quot;: {</span>
+<span class=" -Color -Color-Blue">        &quot;train&quot;: &quot;/opt/ml/input/data/train&quot;,</span>
+<span class=" -Color -Color-Blue">        &quot;valid&quot;: &quot;/opt/ml/input/data/valid&quot;</span>
+<span class=" -Color -Color-Blue">    },</span>
+<span class=" -Color -Color-Blue">    &quot;current_host&quot;: &quot;algo-1&quot;,</span>
+<span class=" -Color -Color-Blue">    &quot;current_instance_group&quot;: &quot;homogeneousCluster&quot;,</span>
+<span class=" -Color -Color-Blue">    &quot;current_instance_group_hosts&quot;: [</span>
+<span class=" -Color -Color-Blue">        &quot;algo-1&quot;</span>
+<span class=" -Color -Color-Blue">    ],</span>
+<span class=" -Color -Color-Blue">    &quot;current_instance_type&quot;: &quot;ml.g4dn.xlarge&quot;,</span>
+<span class=" -Color -Color-Blue">    &quot;distribution_hosts&quot;: [],</span>
+<span class=" -Color -Color-Blue">    &quot;distribution_instance_groups&quot;: [],</span>
+<span class=" -Color -Color-Blue">    &quot;framework_module&quot;: null,</span>
+<span class=" -Color -Color-Blue">    &quot;hosts&quot;: [</span>
+<span class=" -Color -Color-Blue">        &quot;algo-1&quot;</span>
+<span class=" -Color -Color-Blue">    ],</span>
+<span class=" -Color -Color-Blue">    &quot;hyperparameters&quot;: {</span>
+<span class=" -Color -Color-Blue">        &quot;batch_size&quot;: 1024,</span>
+<span class=" -Color -Color-Blue">        &quot;epoch&quot;: 10</span>
+<span class=" -Color -Color-Blue">    },</span>
+<span class=" -Color -Color-Blue">    &quot;input_config_dir&quot;: &quot;/opt/ml/input/config&quot;,</span>
+<span class=" -Color -Color-Blue">    &quot;input_data_config&quot;: {</span>
+<span class=" -Color -Color-Blue">        &quot;train&quot;: {</span>
+<span class=" -Color -Color-Blue">            &quot;TrainingInputMode&quot;: &quot;File&quot;,</span>
+<span class=" -Color -Color-Blue">            &quot;S3DistributionType&quot;: &quot;FullyReplicated&quot;,</span>
+<span class=" -Color -Color-Blue">            &quot;RecordWrapperType&quot;: &quot;None&quot;</span>
+<span class=" -Color -Color-Blue">        },</span>
+<span class=" -Color -Color-Blue">        &quot;valid&quot;: {</span>
+<span class=" -Color -Color-Blue">            &quot;TrainingInputMode&quot;: &quot;File&quot;,</span>
+<span class=" -Color -Color-Blue">            &quot;S3DistributionType&quot;: &quot;FullyReplicated&quot;,</span>
+<span class=" -Color -Color-Blue">            &quot;RecordWrapperType&quot;: &quot;None&quot;</span>
+<span class=" -Color -Color-Blue">        }</span>
+<span class=" -Color -Color-Blue">    },</span>
+<span class=" -Color -Color-Blue">    &quot;input_dir&quot;: &quot;/opt/ml/input&quot;,</span>
+<span class=" -Color -Color-Blue">    &quot;instance_groups&quot;: [</span>
+<span class=" -Color -Color-Blue">        &quot;homogeneousCluster&quot;</span>
+<span class=" -Color -Color-Blue">    ],</span>
+<span class=" -Color -Color-Blue">    &quot;instance_groups_dict&quot;: {</span>
+<span class=" -Color -Color-Blue">        &quot;homogeneousCluster&quot;: {</span>
+<span class=" -Color -Color-Blue">            &quot;instance_group_name&quot;: &quot;homogeneousCluster&quot;,</span>
+<span class=" -Color -Color-Blue">            &quot;instance_type&quot;: &quot;ml.g4dn.xlarge&quot;,</span>
+<span class=" -Color -Color-Blue">            &quot;hosts&quot;: [</span>
+<span class=" -Color -Color-Blue">                &quot;algo-1&quot;</span>
+<span class=" -Color -Color-Blue">            ]</span>
+<span class=" -Color -Color-Blue">        }</span>
+<span class=" -Color -Color-Blue">    },</span>
+<span class=" -Color -Color-Blue">    &quot;is_hetero&quot;: false,</span>
+<span class=" -Color -Color-Blue">    &quot;is_master&quot;: true,</span>
+<span class=" -Color -Color-Blue">    &quot;is_modelparallel_enabled&quot;: null,</span>
+<span class=" -Color -Color-Blue">    &quot;is_smddpmprun_installed&quot;: false,</span>
+<span class=" -Color -Color-Blue">    &quot;job_name&quot;: &quot;sagemaker-merlin-tensorflow-2022-11-09-10-18-29-376&quot;,</span>
+<span class=" -Color -Color-Blue">    &quot;log_level&quot;: 20,</span>
+<span class=" -Color -Color-Blue">    &quot;master_hostname&quot;: &quot;algo-1&quot;,</span>
+<span class=" -Color -Color-Blue">    &quot;model_dir&quot;: &quot;/opt/ml/model&quot;,</span>
+<span class=" -Color -Color-Blue">    &quot;module_dir&quot;: &quot;s3://sagemaker-us-east-1-843263297212/sagemaker-merlin-tensorflow-2022-11-09-10-18-29-376/source/sourcedir.tar.gz&quot;,</span>
+<span class=" -Color -Color-Blue">    &quot;module_name&quot;: &quot;train&quot;,</span>
+<span class=" -Color -Color-Blue">    &quot;network_interface_name&quot;: &quot;eth0&quot;,</span>
+<span class=" -Color -Color-Blue">    &quot;num_cpus&quot;: 4,</span>
+<span class=" -Color -Color-Blue">    &quot;num_gpus&quot;: 1,</span>
+<span class=" -Color -Color-Blue">    &quot;num_neurons&quot;: 0,</span>
+<span class=" -Color -Color-Blue">    &quot;output_data_dir&quot;: &quot;/opt/ml/output/data&quot;,</span>
+<span class=" -Color -Color-Blue">    &quot;output_dir&quot;: &quot;/opt/ml/output&quot;,</span>
+<span class=" -Color -Color-Blue">    &quot;output_intermediate_dir&quot;: &quot;/opt/ml/output/intermediate&quot;,</span>
+<span class=" -Color -Color-Blue">    &quot;resource_config&quot;: {</span>
+<span class=" -Color -Color-Blue">        &quot;current_host&quot;: &quot;algo-1&quot;,</span>
+<span class=" -Color -Color-Blue">        &quot;current_instance_type&quot;: &quot;ml.g4dn.xlarge&quot;,</span>
+<span class=" -Color -Color-Blue">        &quot;current_group_name&quot;: &quot;homogeneousCluster&quot;,</span>
+<span class=" -Color -Color-Blue">        &quot;hosts&quot;: [</span>
+<span class=" -Color -Color-Blue">            &quot;algo-1&quot;</span>
+<span class=" -Color -Color-Blue">        ],</span>
+<span class=" -Color -Color-Blue">        &quot;instance_groups&quot;: [</span>
+<span class=" -Color -Color-Blue">            {</span>
+<span class=" -Color -Color-Blue">                &quot;instance_group_name&quot;: &quot;homogeneousCluster&quot;,</span>
+<span class=" -Color -Color-Blue">                &quot;instance_type&quot;: &quot;ml.g4dn.xlarge&quot;,</span>
+<span class=" -Color -Color-Blue">                &quot;hosts&quot;: [</span>
+<span class=" -Color -Color-Blue">                    &quot;algo-1&quot;</span>
+<span class=" -Color -Color-Blue">                ]</span>
+<span class=" -Color -Color-Blue">            }</span>
+<span class=" -Color -Color-Blue">        ],</span>
+<span class=" -Color -Color-Blue">        &quot;network_interface_name&quot;: &quot;eth0&quot;</span>
+<span class=" -Color -Color-Blue">    },</span>
+<span class=" -Color -Color-Blue">    &quot;user_entry_point&quot;: &quot;train.py&quot;</span>
+<span class=" -Color -Color-Blue">}</span>
+<span class=" -Color -Color-Blue">Environment variables:</span>
+<span class=" -Color -Color-Blue">SM_HOSTS=[&quot;algo-1&quot;]</span>
+<span class=" -Color -Color-Blue">SM_NETWORK_INTERFACE_NAME=eth0</span>
+<span class=" -Color -Color-Blue">SM_HPS={&quot;batch_size&quot;:1024,&quot;epoch&quot;:10}</span>
+<span class=" -Color -Color-Blue">SM_USER_ENTRY_POINT=train.py</span>
+<span class=" -Color -Color-Blue">SM_FRAMEWORK_PARAMS={}</span>
+<span class=" -Color -Color-Blue">SM_RESOURCE_CONFIG={&quot;current_group_name&quot;:&quot;homogeneousCluster&quot;,&quot;current_host&quot;:&quot;algo-1&quot;,&quot;current_instance_type&quot;:&quot;ml.g4dn.xlarge&quot;,&quot;hosts&quot;:[&quot;algo-1&quot;],&quot;instance_groups&quot;:[{&quot;hosts&quot;:[&quot;algo-1&quot;],&quot;instance_group_name&quot;:&quot;homogeneousCluster&quot;,&quot;instance_type&quot;:&quot;ml.g4dn.xlarge&quot;}],&quot;network_interface_name&quot;:&quot;eth0&quot;}</span>
+<span class=" -Color -Color-Blue">SM_INPUT_DATA_CONFIG={&quot;train&quot;:{&quot;RecordWrapperType&quot;:&quot;None&quot;,&quot;S3DistributionType&quot;:&quot;FullyReplicated&quot;,&quot;TrainingInputMode&quot;:&quot;File&quot;},&quot;valid&quot;:{&quot;RecordWrapperType&quot;:&quot;None&quot;,&quot;S3DistributionType&quot;:&quot;FullyReplicated&quot;,&quot;TrainingInputMode&quot;:&quot;File&quot;}}</span>
+<span class=" -Color -Color-Blue">SM_OUTPUT_DATA_DIR=/opt/ml/output/data</span>
+<span class=" -Color -Color-Blue">SM_CHANNELS=[&quot;train&quot;,&quot;valid&quot;]</span>
+<span class=" -Color -Color-Blue">SM_CURRENT_HOST=algo-1</span>
+<span class=" -Color -Color-Blue">SM_CURRENT_INSTANCE_TYPE=ml.g4dn.xlarge</span>
+<span class=" -Color -Color-Blue">SM_CURRENT_INSTANCE_GROUP=homogeneousCluster</span>
+<span class=" -Color -Color-Blue">SM_CURRENT_INSTANCE_GROUP_HOSTS=[&quot;algo-1&quot;]</span>
+<span class=" -Color -Color-Blue">SM_INSTANCE_GROUPS=[&quot;homogeneousCluster&quot;]</span>
+<span class=" -Color -Color-Blue">SM_INSTANCE_GROUPS_DICT={&quot;homogeneousCluster&quot;:{&quot;hosts&quot;:[&quot;algo-1&quot;],&quot;instance_group_name&quot;:&quot;homogeneousCluster&quot;,&quot;instance_type&quot;:&quot;ml.g4dn.xlarge&quot;}}</span>
+<span class=" -Color -Color-Blue">SM_DISTRIBUTION_INSTANCE_GROUPS=[]</span>
+<span class=" -Color -Color-Blue">SM_IS_HETERO=false</span>
+<span class=" -Color -Color-Blue">SM_MODULE_NAME=train</span>
+<span class=" -Color -Color-Blue">SM_LOG_LEVEL=20</span>
+<span class=" -Color -Color-Blue">SM_FRAMEWORK_MODULE=</span>
+<span class=" -Color -Color-Blue">SM_INPUT_DIR=/opt/ml/input</span>
+<span class=" -Color -Color-Blue">SM_INPUT_CONFIG_DIR=/opt/ml/input/config</span>
+<span class=" -Color -Color-Blue">SM_OUTPUT_DIR=/opt/ml/output</span>
+<span class=" -Color -Color-Blue">SM_NUM_CPUS=4</span>
+<span class=" -Color -Color-Blue">SM_NUM_GPUS=1</span>
+<span class=" -Color -Color-Blue">SM_NUM_NEURONS=0</span>
+<span class=" -Color -Color-Blue">SM_MODEL_DIR=/opt/ml/model</span>
+<span class=" -Color -Color-Blue">SM_MODULE_DIR=s3://sagemaker-us-east-1-843263297212/sagemaker-merlin-tensorflow-2022-11-09-10-18-29-376/source/sourcedir.tar.gz</span>
+<span class=" -Color -Color-Blue">SM_TRAINING_ENV={&quot;additional_framework_parameters&quot;:{},&quot;channel_input_dirs&quot;:{&quot;train&quot;:&quot;/opt/ml/input/data/train&quot;,&quot;valid&quot;:&quot;/opt/ml/input/data/valid&quot;},&quot;current_host&quot;:&quot;algo-1&quot;,&quot;current_instance_group&quot;:&quot;homogeneousCluster&quot;,&quot;current_instance_group_hosts&quot;:[&quot;algo-1&quot;],&quot;current_instance_type&quot;:&quot;ml.g4dn.xlarge&quot;,&quot;distribution_hosts&quot;:[],&quot;distribution_instance_groups&quot;:[],&quot;framework_module&quot;:null,&quot;hosts&quot;:[&quot;algo-1&quot;],&quot;hyperparameters&quot;:{&quot;batch_size&quot;:1024,&quot;epoch&quot;:10},&quot;input_config_dir&quot;:&quot;/opt/ml/input/config&quot;,&quot;input_data_config&quot;:{&quot;train&quot;:{&quot;RecordWrapperType&quot;:&quot;None&quot;,&quot;S3DistributionType&quot;:&quot;FullyReplicated&quot;,&quot;TrainingInputMode&quot;:&quot;File&quot;},&quot;valid&quot;:{&quot;RecordWrapperType&quot;:&quot;None&quot;,&quot;S3DistributionType&quot;:&quot;FullyReplicated&quot;,&quot;TrainingInputMode&quot;:&quot;File&quot;}},&quot;input_dir&quot;:&quot;/opt/ml/input&quot;,&quot;instance_groups&quot;:[&quot;homogeneousCluster&quot;],&quot;instance_groups_dict&quot;:{&quot;homogeneousCluster&quot;:{&quot;hosts&quot;:[&quot;algo-1&quot;],&quot;instance_group_name&quot;:&quot;homogeneousCluster&quot;,&quot;instance_type&quot;:&quot;ml.g4dn.xlarge&quot;}},&quot;is_hetero&quot;:false,&quot;is_master&quot;:true,&quot;is_modelparallel_enabled&quot;:null,&quot;is_smddpmprun_installed&quot;:false,&quot;job_name&quot;:&quot;sagemaker-merlin-tensorflow-2022-11-09-10-18-29-376&quot;,&quot;log_level&quot;:20,&quot;master_hostname&quot;:&quot;algo-1&quot;,&quot;model_dir&quot;:&quot;/opt/ml/model&quot;,&quot;module_dir&quot;:&quot;s3://sagemaker-us-east-1-843263297212/sagemaker-merlin-tensorflow-2022-11-09-10-18-29-376/source/sourcedir.tar.gz&quot;,&quot;module_name&quot;:&quot;train&quot;,&quot;network_interface_name&quot;:&quot;eth0&quot;,&quot;num_cpus&quot;:4,&quot;num_gpus&quot;:1,&quot;num_neurons&quot;:0,&quot;output_data_dir&quot;:&quot;/opt/ml/output/data&quot;,&quot;output_dir&quot;:&quot;/opt/ml/output&quot;,&quot;output_intermediate_dir&quot;:&quot;/opt/ml/output/intermediate&quot;,&quot;resource_config&quot;:{&quot;current_group_name&quot;:&quot;homogeneousCluster&quot;,&quot;current_host&quot;:&quot;algo-1&quot;,&quot;current_instance_type&quot;:&quot;ml.g4dn.xlarge&quot;,&quot;hosts&quot;:[&quot;algo-1&quot;],&quot;instance_groups&quot;:[{&quot;hosts&quot;:[&quot;algo-1&quot;],&quot;instance_group_name&quot;:&quot;homogeneousCluster&quot;,&quot;instance_type&quot;:&quot;ml.g4dn.xlarge&quot;}],&quot;network_interface_name&quot;:&quot;eth0&quot;},&quot;user_entry_point&quot;:&quot;train.py&quot;}</span>
+<span class=" -Color -Color-Blue">SM_USER_ARGS=[&quot;--batch_size&quot;,&quot;1024&quot;,&quot;--epoch&quot;,&quot;10&quot;]</span>
+<span class=" -Color -Color-Blue">SM_OUTPUT_INTERMEDIATE_DIR=/opt/ml/output/intermediate</span>
+<span class=" -Color -Color-Blue">SM_CHANNEL_TRAIN=/opt/ml/input/data/train</span>
+<span class=" -Color -Color-Blue">SM_CHANNEL_VALID=/opt/ml/input/data/valid</span>
+<span class=" -Color -Color-Blue">SM_HP_BATCH_SIZE=1024</span>
+<span class=" -Color -Color-Blue">SM_HP_EPOCH=10</span>
+<span class=" -Color -Color-Blue">PYTHONPATH=/opt/ml/code:/usr/local/bin:/opt/tritonserver:/usr/local/lib/python3.8/dist-packages:/usr/lib/python38.zip:/usr/lib/python3.8:/usr/lib/python3.8/lib-dynload:/usr/local/lib/python3.8/dist-packages/faiss-1.7.2-py3.8.egg:/usr/local/lib/python3.8/dist-packages/merlin_sok-1.1.4-py3.8-linux-x86_64.egg:/usr/local/lib/python3.8/dist-packages/merlin_hps-1.0.0-py3.8-linux-x86_64.egg:/usr/lib/python3/dist-packages</span>
+<span class=" -Color -Color-Blue">Invoking script with the following command:</span>
+<span class=" -Color -Color-Blue">/usr/bin/python3 train.py --batch_size 1024 --epoch 10</span>
+<span class=" -Color -Color-Blue">2022-11-09 10:27:03,486 sagemaker-training-toolkit INFO     Exceptions not imported for SageMaker Debugger as it is not installed.</span>
+
+2022-11-09 10:27:16 Training - Training image download completed. Training in progress.<span class=" -Color -Color-Blue">2022-11-09 10:27:08.761711: I tensorflow/core/util/util.cc:169] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.</span>
+<span class=" -Color -Color-Blue">2022-11-09 10:27:12.818302: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:991] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero</span>
+<span class=" -Color -Color-Blue">2022-11-09 10:27:12.819693: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:991] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero</span>
+<span class=" -Color -Color-Blue">2022-11-09 10:27:12.819906: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:991] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero</span>
+<span class=" -Color -Color-Blue">2022-11-09 10:27:12.894084: I tensorflow/core/platform/cpu_feature_guard.cc:194] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  SSE3 SSE4.1 SSE4.2 AVX</span>
+<span class=" -Color -Color-Blue">To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.</span>
+<span class=" -Color -Color-Blue">2022-11-09 10:27:12.895367: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:991] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero</span>
+<span class=" -Color -Color-Blue">2022-11-09 10:27:12.895631: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:991] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero</span>
+<span class=" -Color -Color-Blue">2022-11-09 10:27:12.895807: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:991] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero</span>
+<span class=" -Color -Color-Blue">2022-11-09 10:27:16.651703: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:991] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero</span>
+<span class=" -Color -Color-Blue">2022-11-09 10:27:16.651981: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:991] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero</span>
+<span class=" -Color -Color-Blue">2022-11-09 10:27:16.652183: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:991] successful NUMA node read from SysFS had negative value (-1), but there must be at least one NUMA node, so returning NUMA node zero</span>
+<span class=" -Color -Color-Blue">2022-11-09 10:27:16.653025: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1532] Created device /job:localhost/replica:0/task:0/device:GPU:0 with 10752 MB memory:  -&gt; device: 0, name: Tesla T4, pci bus id: 0000:00:1e.0, compute capability: 7.5</span>
+<span class=" -Color -Color-Blue">Workflow saved to /tmp/tmp5fpdavsc/workflow.</span>
+<span class=" -Color -Color-Blue">batch_size = 1024, epochs = 10</span>
+<span class=" -Color -Color-Blue">Epoch 1/10</span>
+<span class=" -Color -Color-Blue">684/684 - 14s - loss: 0.6932 - auc: 0.4998 - regularization_loss: 0.0000e+00 - val_loss: 0.6931 - val_auc: 0.5000 - val_regularization_loss: 0.0000e+00 - 14s/epoch - 20ms/step</span>
+<span class=" -Color -Color-Blue">Epoch 2/10</span>
+<span class=" -Color -Color-Blue">684/684 - 8s - loss: 0.6931 - auc: 0.5026 - regularization_loss: 0.0000e+00 - val_loss: 0.6932 - val_auc: 0.4990 - val_regularization_loss: 0.0000e+00 - 8s/epoch - 11ms/step</span>
+<span class=" -Color -Color-Blue">Epoch 3/10</span>
+<span class=" -Color -Color-Blue">684/684 - 7s - loss: 0.6922 - auc: 0.5222 - regularization_loss: 0.0000e+00 - val_loss: 0.6941 - val_auc: 0.4989 - val_regularization_loss: 0.0000e+00 - 7s/epoch - 11ms/step</span>
+<span class=" -Color -Color-Blue">Epoch 4/10</span>
+<span class=" -Color -Color-Blue">684/684 - 7s - loss: 0.6858 - auc: 0.5509 - regularization_loss: 0.0000e+00 - val_loss: 0.6991 - val_auc: 0.4994 - val_regularization_loss: 0.0000e+00 - 7s/epoch - 11ms/step</span>
+<span class=" -Color -Color-Blue">Epoch 5/10</span>
+<span class=" -Color -Color-Blue">684/684 - 7s - loss: 0.6790 - auc: 0.5660 - regularization_loss: 0.0000e+00 - val_loss: 0.7052 - val_auc: 0.4993 - val_regularization_loss: 0.0000e+00 - 7s/epoch - 11ms/step</span>
+<span class=" -Color -Color-Blue">Epoch 6/10</span>
+<span class=" -Color -Color-Blue">684/684 - 8s - loss: 0.6751 - auc: 0.5722 - regularization_loss: 0.0000e+00 - val_loss: 0.7096 - val_auc: 0.4994 - val_regularization_loss: 0.0000e+00 - 8s/epoch - 11ms/step</span>
+<span class=" -Color -Color-Blue">Epoch 7/10</span>
+<span class=" -Color -Color-Blue">684/684 - 7s - loss: 0.6722 - auc: 0.5755 - regularization_loss: 0.0000e+00 - val_loss: 0.7184 - val_auc: 0.4991 - val_regularization_loss: 0.0000e+00 - 7s/epoch - 11ms/step</span>
+<span class=" -Color -Color-Blue">Epoch 8/10</span>
+<span class=" -Color -Color-Blue">684/684 - 7s - loss: 0.6700 - auc: 0.5777 - regularization_loss: 0.0000e+00 - val_loss: 0.7289 - val_auc: 0.4990 - val_regularization_loss: 0.0000e+00 - 7s/epoch - 11ms/step</span>
+<span class=" -Color -Color-Blue">Epoch 9/10</span>
+<span class=" -Color -Color-Blue">684/684 - 8s - loss: 0.6687 - auc: 0.5792 - regularization_loss: 0.0000e+00 - val_loss: 0.7404 - val_auc: 0.4994 - val_regularization_loss: 0.0000e+00 - 8s/epoch - 11ms/step</span>
+<span class=" -Color -Color-Blue">Epoch 10/10</span>
+<span class=" -Color -Color-Blue">684/684 - 8s - loss: 0.6678 - auc: 0.5801 - regularization_loss: 0.0000e+00 - val_loss: 0.7393 - val_auc: 0.4988 - val_regularization_loss: 0.0000e+00 - 8s/epoch - 11ms/step</span>
+<span class=" -Color -Color-Blue">/usr/lib/python3/dist-packages/requests/__init__.py:89: RequestsDependencyWarning: urllib3 (1.26.12) or chardet (3.0.4) doesn&#39;t match a supported version!</span>
+<span class=" -Color -Color-Blue">  warnings.warn(&quot;urllib3 ({}) or chardet ({}) doesn&#39;t match a supported &quot;</span>
+<span class=" -Color -Color-Blue">/usr/local/lib/python3.8/dist-packages/merlin/schema/tags.py:148: UserWarning: Compound tags like Tags.USER_ID have been deprecated and will be removed in a future version. Please use the atomic versions of these tags, like [&lt;Tags.USER: &#39;user&#39;&gt;, &lt;Tags.ID: &#39;id&#39;&gt;].</span>
+<span class=" -Color -Color-Blue">  warnings.warn(</span>
+<span class=" -Color -Color-Blue">/usr/local/lib/python3.8/dist-packages/merlin/schema/tags.py:148: UserWarning: Compound tags like Tags.ITEM_ID have been deprecated and will be removed in a future version. Please use the atomic versions of these tags, like [&lt;Tags.ITEM: &#39;item&#39;&gt;, &lt;Tags.ID: &#39;id&#39;&gt;].</span>
+<span class=" -Color -Color-Blue">  warnings.warn(</span>
+<span class=" -Color -Color-Blue">WARNING:absl:Found untraced functions such as train_compute_metrics, model_context_layer_call_fn, model_context_layer_call_and_return_conditional_losses, output_layer_layer_call_fn, output_layer_layer_call_and_return_conditional_losses while saving (showing 5 of 97). These functions will not be directly callable after loading.</span>
+<span class=" -Color -Color-Blue">INFO:__main__:Model saved to /tmp/tmp5fpdavsc/dlrm.</span>
+<span class=" -Color -Color-Blue">Model saved to /tmp/tmp5fpdavsc/dlrm.</span>
+<span class=" -Color -Color-Blue">WARNING:absl:Found untraced functions such as train_compute_metrics, model_context_layer_call_fn, model_context_layer_call_and_return_conditional_losses, output_layer_layer_call_fn, output_layer_layer_call_and_return_conditional_losses while saving (showing 5 of 97). These functions will not be directly callable after loading.</span>
+<span class=" -Color -Color-Blue">/usr/local/lib/python3.8/dist-packages/merlin/schema/tags.py:148: UserWarning: Compound tags like Tags.USER_ID have been deprecated and will be removed in a future version. Please use the atomic versions of these tags, like [&lt;Tags.USER: &#39;user&#39;&gt;, &lt;Tags.ID: &#39;id&#39;&gt;].</span>
+<span class=" -Color -Color-Blue">  warnings.warn(</span>
+<span class=" -Color -Color-Blue">/usr/local/lib/python3.8/dist-packages/merlin/schema/tags.py:148: UserWarning: Compound tags like Tags.ITEM_ID have been deprecated and will be removed in a future version. Please use the atomic versions of these tags, like [&lt;Tags.ITEM: &#39;item&#39;&gt;, &lt;Tags.ID: &#39;id&#39;&gt;].</span>
+<span class=" -Color -Color-Blue">  warnings.warn(</span>
+<span class=" -Color -Color-Blue">WARNING:tensorflow:No training configuration found in save file, so the model was *not* compiled. Compile it manually.</span>
+<span class=" -Color -Color-Blue">WARNING:tensorflow:No training configuration found in save file, so the model was *not* compiled. Compile it manually.</span>
+<span class=" -Color -Color-Blue">WARNING:absl:Found untraced functions such as train_compute_metrics, model_context_layer_call_fn, model_context_layer_call_and_return_conditional_losses, output_layer_layer_call_fn, output_layer_layer_call_and_return_conditional_losses while saving (showing 5 of 97). These functions will not be directly callable after loading.</span>
+<span class=" -Color -Color-Blue">Ensemble graph saved to /opt/ml/model.</span>
+<span class=" -Color -Color-Blue">INFO:__main__:Ensemble graph saved to /opt/ml/model.</span>
+<span class=" -Color -Color-Blue">2022-11-09 10:29:21,498 sagemaker-training-toolkit INFO     Reporting training SUCCESS</span>
+
+2022-11-09 10:29:41 Uploading - Uploading generated training model
+2022-11-09 10:29:41 Completed - Training job completed
+Training seconds: 589
+Billable seconds: 589
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">estimator</span><span class="o">.</span><span class="n">model_data</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>s3://sagemaker-us-east-1-843263297212/sagemaker-merlin-tensorflow-2022-11-09-10-18-29-376/output/model.tar.gz
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sagemaker.s3</span> <span class="kn">import</span> <span class="n">S3Downloader</span> <span class="k">as</span> <span class="n">s3down</span>
+
+<span class="n">s3down</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="n">estimator</span><span class="o">.</span><span class="n">model_data</span><span class="p">,</span> <span class="s2">&quot;/tmp/ensemble/&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span><span class="w"> </span><span class="nb">cd</span><span class="w"> </span>/tmp/ensemble<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>tar<span class="w"> </span>xvzf<span class="w"> </span>model.tar.gz
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>1_predicttensorflow/
+1_predicttensorflow/config.pbtxt
+1_predicttensorflow/1/
+1_predicttensorflow/1/model.savedmodel/
+1_predicttensorflow/1/model.savedmodel/assets/
+1_predicttensorflow/1/model.savedmodel/variables/
+1_predicttensorflow/1/model.savedmodel/variables/variables.index
+1_predicttensorflow/1/model.savedmodel/variables/variables.data-00000-of-00001
+1_predicttensorflow/1/model.savedmodel/saved_model.pb
+1_predicttensorflow/1/model.savedmodel/keras_metadata.pb
+executor_model/
+executor_model/config.pbtxt
+executor_model/1/
+0_transformworkflow/
+0_transformworkflow/config.pbtxt
+0_transformworkflow/1/
+0_transformworkflow/1/model.py
+0_transformworkflow/1/workflow/
+0_transformworkflow/1/workflow/categories/
+0_transformworkflow/1/workflow/categories/unique.user_profile.parquet
+0_transformworkflow/1/workflow/categories/unique.user_age.parquet
+0_transformworkflow/1/workflow/categories/unique.user_group.parquet
+0_transformworkflow/1/workflow/categories/unique.user_intentions.parquet
+0_transformworkflow/1/workflow/categories/unique.item_brand.parquet
+0_transformworkflow/1/workflow/categories/unique.user_geography.parquet
+0_transformworkflow/1/workflow/categories/unique.user_is_occupied.parquet
+0_transformworkflow/1/workflow/categories/unique.user_id.parquet
+0_transformworkflow/1/workflow/categories/unique.user_gender.parquet
+0_transformworkflow/1/workflow/categories/unique.user_shops.parquet
+0_transformworkflow/1/workflow/categories/unique.item_category.parquet
+0_transformworkflow/1/workflow/categories/unique.user_brands.parquet
+0_transformworkflow/1/workflow/categories/unique.user_consumption_2.parquet
+0_transformworkflow/1/workflow/categories/unique.item_id.parquet
+0_transformworkflow/1/workflow/categories/unique.item_shop.parquet
+0_transformworkflow/1/workflow/categories/unique.user_categories.parquet
+0_transformworkflow/1/workflow/workflow.pkl
+0_transformworkflow/1/workflow/metadata.json
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="part-3-retrieving-recommendations-from-triton-inference-server">
+<h2>Part 3: Retrieving Recommendations from Triton Inference Server<a class="headerlink" href="#part-3-retrieving-recommendations-from-triton-inference-server" title="Permalink to this heading">#</a></h2>
+<p>Although we use the Sagemaker Python SDK to train our model, here we will use <code class="docutils literal notranslate"><span class="pre">boto3</span></code> to launch our inference endpoint as it offers more low-level control than the Python SDK.</p>
+<p>The model artificat <code class="docutils literal notranslate"><span class="pre">model.tar.gz</span></code> uploaded to S3 from the Sagemaker training job contained three directories: <code class="docutils literal notranslate"><span class="pre">0_transformworkflow</span></code> for the NVTabular workflow, <code class="docutils literal notranslate"><span class="pre">1_predicttensorflow</span></code> for the Tensorflow model, and <code class="docutils literal notranslate"><span class="pre">executor_model</span></code> for the ensemble graph that we can use in Triton.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>/tmp/ensemble/
+├──<span class="w"> </span>0_transformworkflow
+│<span class="w">   </span>├──<span class="w"> </span><span class="m">1</span>
+│<span class="w">   </span>│<span class="w">   </span>├──<span class="w"> </span>model.py
+│<span class="w">   </span>│<span class="w">   </span>└──<span class="w"> </span>workflow
+│<span class="w">   </span>│<span class="w">       </span>├──<span class="w"> </span>categories
+│<span class="w">   </span>│<span class="w">       </span>│<span class="w">   </span>├──<span class="w"> </span>unique.item_brand.parquet
+│<span class="w">   </span>│<span class="w">       </span>│<span class="w">   </span>├──<span class="w"> </span>unique.item_category.parquet
+│<span class="w">   </span>│<span class="w">       </span>│<span class="w">   </span>├──<span class="w"> </span>unique.item_id.parquet
+│<span class="w">   </span>│<span class="w">       </span>│<span class="w">   </span>├──<span class="w"> </span>unique.item_shop.parquet
+│<span class="w">   </span>│<span class="w">       </span>│<span class="w">   </span>├──<span class="w"> </span>unique.user_age.parquet
+│<span class="w">   </span>│<span class="w">       </span>│<span class="w">   </span>├──<span class="w"> </span>unique.user_brands.parquet
+│<span class="w">   </span>│<span class="w">       </span>│<span class="w">   </span>├──<span class="w"> </span>unique.user_categories.parquet
+│<span class="w">   </span>│<span class="w">       </span>│<span class="w">   </span>├──<span class="w"> </span>unique.user_consumption_2.parquet
+│<span class="w">   </span>│<span class="w">       </span>│<span class="w">   </span>├──<span class="w"> </span>unique.user_gender.parquet
+│<span class="w">   </span>│<span class="w">       </span>│<span class="w">   </span>├──<span class="w"> </span>unique.user_geography.parquet
+│<span class="w">   </span>│<span class="w">       </span>│<span class="w">   </span>├──<span class="w"> </span>unique.user_group.parquet
+│<span class="w">   </span>│<span class="w">       </span>│<span class="w">   </span>├──<span class="w"> </span>unique.user_id.parquet
+│<span class="w">   </span>│<span class="w">       </span>│<span class="w">   </span>├──<span class="w"> </span>unique.user_intentions.parquet
+│<span class="w">   </span>│<span class="w">       </span>│<span class="w">   </span>├──<span class="w"> </span>unique.user_is_occupied.parquet
+│<span class="w">   </span>│<span class="w">       </span>│<span class="w">   </span>├──<span class="w"> </span>unique.user_profile.parquet
+│<span class="w">   </span>│<span class="w">       </span>│<span class="w">   </span>└──<span class="w"> </span>unique.user_shops.parquet
+│<span class="w">   </span>│<span class="w">       </span>├──<span class="w"> </span>metadata.json
+│<span class="w">   </span>│<span class="w">       </span>└──<span class="w"> </span>workflow.pkl
+│<span class="w">   </span>└──<span class="w"> </span>config.pbtxt
+├──<span class="w"> </span>1_predicttensorflow
+│<span class="w">   </span>├──<span class="w"> </span><span class="m">1</span>
+│<span class="w">   </span>│<span class="w">   </span>└──<span class="w"> </span>model.savedmodel
+│<span class="w">   </span>│<span class="w">       </span>├──<span class="w"> </span>assets
+│<span class="w">   </span>│<span class="w">       </span>├──<span class="w"> </span>keras_metadata.pb
+│<span class="w">   </span>│<span class="w">       </span>├──<span class="w"> </span>saved_model.pb
+│<span class="w">   </span>│<span class="w">       </span>└──<span class="w"> </span>variables
+│<span class="w">   </span>│<span class="w">           </span>├──<span class="w"> </span>variables.data-00000-of-00001
+│<span class="w">   </span>│<span class="w">           </span>└──<span class="w"> </span>variables.index
+│<span class="w">   </span>└──<span class="w"> </span>config.pbtxt
+├──<span class="w"> </span>executor_model
+│<span class="w">   </span>├──<span class="w"> </span><span class="m">1</span>
+│<span class="w">   </span>└──<span class="w"> </span>config.pbtxt
+└──<span class="w"> </span>model.tar.gz
+</pre></div>
+</div>
+<p>We specify that we only want to use <code class="docutils literal notranslate"><span class="pre">executor_model</span></code> in Triton by passing the environment variable <code class="docutils literal notranslate"><span class="pre">SAGEMAKER_TRITON_DEFAULT_MODEL_NAME</span></code>.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">time</span>
+
+<span class="kn">import</span> <span class="nn">boto3</span>
+
+<span class="n">sm_client</span> <span class="o">=</span> <span class="n">boto3</span><span class="o">.</span><span class="n">client</span><span class="p">(</span><span class="n">service_name</span><span class="o">=</span><span class="s2">&quot;sagemaker&quot;</span><span class="p">)</span>
+
+<span class="n">container</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;Image&quot;</span><span class="p">:</span> <span class="n">ecr_image</span><span class="p">,</span>
+    <span class="s2">&quot;ModelDataUrl&quot;</span><span class="p">:</span> <span class="n">estimator</span><span class="o">.</span><span class="n">model_data</span><span class="p">,</span>
+    <span class="s2">&quot;Environment&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;SAGEMAKER_TRITON_TENSORFLOW_VERSION&quot;</span><span class="p">:</span> <span class="s2">&quot;2&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;SAGEMAKER_TRITON_DEFAULT_MODEL_NAME&quot;</span><span class="p">:</span> <span class="s2">&quot;executor_model&quot;</span><span class="p">,</span>
+    <span class="p">},</span>
+<span class="p">}</span>
+
+<span class="n">model_name</span> <span class="o">=</span> <span class="s2">&quot;model-triton-merlin-ensemble-&quot;</span> <span class="o">+</span> <span class="n">time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span>
+    <span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">-%H-%M-%S&quot;</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">gmtime</span><span class="p">()</span>
+<span class="p">)</span>
+
+<span class="n">create_model_response</span> <span class="o">=</span> <span class="n">sm_client</span><span class="o">.</span><span class="n">create_model</span><span class="p">(</span>
+    <span class="n">ModelName</span><span class="o">=</span><span class="n">model_name</span><span class="p">,</span> <span class="n">ExecutionRoleArn</span><span class="o">=</span><span class="n">role</span><span class="p">,</span> <span class="n">PrimaryContainer</span><span class="o">=</span><span class="n">container</span>
+<span class="p">)</span>
+
+<span class="n">model_arn</span> <span class="o">=</span> <span class="n">create_model_response</span><span class="p">[</span><span class="s2">&quot;ModelArn&quot;</span><span class="p">]</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Model Arn: </span><span class="si">{</span><span class="n">model_arn</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Model Arn: arn:aws:sagemaker:us-east-1:843263297212:model/model-triton-merlin-ensemble-2022-11-09-10-29-57
+</pre></div>
+</div>
+</div>
+</div>
+<p>We again use the <code class="docutils literal notranslate"><span class="pre">g4dn</span></code> GPU instance that are equipped with NVIDIA T4 GPUs for launching the Triton inference server.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">endpoint_instance_type</span> <span class="o">=</span> <span class="s2">&quot;ml.g4dn.xlarge&quot;</span>
+
+<span class="n">endpoint_config_name</span> <span class="o">=</span> <span class="s2">&quot;endpoint-config-triton-merlin-ensemble-&quot;</span> <span class="o">+</span> <span class="n">time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span>
+    <span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">-%H-%M-%S&quot;</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">gmtime</span><span class="p">()</span>
+<span class="p">)</span>
+
+<span class="n">create_endpoint_config_response</span> <span class="o">=</span> <span class="n">sm_client</span><span class="o">.</span><span class="n">create_endpoint_config</span><span class="p">(</span>
+    <span class="n">EndpointConfigName</span><span class="o">=</span><span class="n">endpoint_config_name</span><span class="p">,</span>
+    <span class="n">ProductionVariants</span><span class="o">=</span><span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;InstanceType&quot;</span><span class="p">:</span> <span class="n">endpoint_instance_type</span><span class="p">,</span>
+            <span class="s2">&quot;InitialVariantWeight&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="s2">&quot;InitialInstanceCount&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="s2">&quot;ModelName&quot;</span><span class="p">:</span> <span class="n">model_name</span><span class="p">,</span>
+            <span class="s2">&quot;VariantName&quot;</span><span class="p">:</span> <span class="s2">&quot;AllTraffic&quot;</span><span class="p">,</span>
+        <span class="p">}</span>
+    <span class="p">],</span>
+<span class="p">)</span>
+
+<span class="n">endpoint_config_arn</span> <span class="o">=</span> <span class="n">create_endpoint_config_response</span><span class="p">[</span><span class="s2">&quot;EndpointConfigArn&quot;</span><span class="p">]</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Endpoint Config Arn: </span><span class="si">{</span><span class="n">endpoint_config_arn</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Endpoint Config Arn: arn:aws:sagemaker:us-east-1:843263297212:endpoint-config/endpoint-config-triton-merlin-ensemble-2022-11-09-10-29-58
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">endpoint_name</span> <span class="o">=</span> <span class="s2">&quot;endpoint-triton-merlin-ensemble-&quot;</span> <span class="o">+</span> <span class="n">time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span>
+    <span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">-%H-%M-%S&quot;</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">gmtime</span><span class="p">()</span>
+<span class="p">)</span>
+
+<span class="n">create_endpoint_response</span> <span class="o">=</span> <span class="n">sm_client</span><span class="o">.</span><span class="n">create_endpoint</span><span class="p">(</span>
+    <span class="n">EndpointName</span><span class="o">=</span><span class="n">endpoint_name</span><span class="p">,</span> <span class="n">EndpointConfigName</span><span class="o">=</span><span class="n">endpoint_config_name</span>
+<span class="p">)</span>
+
+<span class="n">endpoint_arn</span> <span class="o">=</span> <span class="n">create_endpoint_response</span><span class="p">[</span><span class="s2">&quot;EndpointArn&quot;</span><span class="p">]</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Endpoint Arn: </span><span class="si">{</span><span class="n">endpoint_arn</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Endpoint Arn: arn:aws:sagemaker:us-east-1:843263297212:endpoint/endpoint-triton-merlin-ensemble-2022-11-09-10-29-58
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">status</span> <span class="o">=</span> <span class="n">sm_client</span><span class="o">.</span><span class="n">describe_endpoint</span><span class="p">(</span><span class="n">EndpointName</span><span class="o">=</span><span class="n">endpoint_name</span><span class="p">)[</span><span class="s2">&quot;EndpointStatus&quot;</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Endpoint Creation Status: </span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="k">while</span> <span class="n">status</span> <span class="o">==</span> <span class="s2">&quot;Creating&quot;</span><span class="p">:</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">60</span><span class="p">)</span>
+    <span class="n">rv</span> <span class="o">=</span> <span class="n">sm_client</span><span class="o">.</span><span class="n">describe_endpoint</span><span class="p">(</span><span class="n">EndpointName</span><span class="o">=</span><span class="n">endpoint_name</span><span class="p">)</span>
+    <span class="n">status</span> <span class="o">=</span> <span class="n">rv</span><span class="p">[</span><span class="s2">&quot;EndpointStatus&quot;</span><span class="p">]</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Endpoint Creation Status: </span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="n">endpoint_arn</span> <span class="o">=</span> <span class="n">rv</span><span class="p">[</span><span class="s2">&quot;EndpointArn&quot;</span><span class="p">]</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Endpoint Arn: </span><span class="si">{</span><span class="n">endpoint_arn</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Endpoint Status: </span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Endpoint Creation Status: Creating
+Endpoint Creation Status: Creating
+Endpoint Creation Status: Creating
+Endpoint Creation Status: Creating
+Endpoint Creation Status: Creating
+Endpoint Creation Status: Creating
+Endpoint Creation Status: Creating
+Endpoint Creation Status: Creating
+Endpoint Creation Status: InService
+Endpoint Arn: arn:aws:sagemaker:us-east-1:843263297212:endpoint/endpoint-triton-merlin-ensemble-2022-11-09-10-29-58
+Endpoint Status: InService
+</pre></div>
+</div>
+</div>
+</div>
+<section id="send-a-request-to-triton-inference-server-to-transform-a-raw-dataset">
+<h3>Send a Request to Triton Inference Server to Transform a Raw Dataset<a class="headerlink" href="#send-a-request-to-triton-inference-server-to-transform-a-raw-dataset" title="Permalink to this heading">#</a></h3>
+<p>Once we have an endpoint running, we can test it by sending requests.
+Here, we use the raw validation set and transform it using the saved NVTabular workflow we have downloaded from S3 in the previous section.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">merlin.schema.tags</span> <span class="kn">import</span> <span class="n">Tags</span>
+<span class="kn">from</span> <span class="nn">merlin.core.dispatch</span> <span class="kn">import</span> <span class="n">get_lib</span>
+<span class="kn">from</span> <span class="nn">nvtabular.workflow</span> <span class="kn">import</span> <span class="n">Workflow</span>
+
+<span class="n">df_lib</span> <span class="o">=</span> <span class="n">get_lib</span><span class="p">()</span>
+
+<span class="n">workflow</span> <span class="o">=</span> <span class="n">Workflow</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">&quot;/tmp/ensemble/0_transformworkflow/1/workflow/&quot;</span><span class="p">)</span>
+
+<span class="n">label_columns</span> <span class="o">=</span> <span class="n">workflow</span><span class="o">.</span><span class="n">output_schema</span><span class="o">.</span><span class="n">select_by_tag</span><span class="p">(</span><span class="n">Tags</span><span class="o">.</span><span class="n">TARGET</span><span class="p">)</span><span class="o">.</span><span class="n">column_names</span>
+<span class="n">workflow</span><span class="o">.</span><span class="n">remove_inputs</span><span class="p">(</span><span class="n">label_columns</span><span class="p">)</span>
+
+<span class="c1"># read in data for request</span>
+<span class="n">batch</span> <span class="o">=</span> <span class="n">df_lib</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">DATA_FOLDER</span><span class="p">,</span> <span class="s2">&quot;valid&quot;</span><span class="p">,</span> <span class="s2">&quot;part.0.parquet&quot;</span><span class="p">),</span>
+    <span class="n">columns</span><span class="o">=</span><span class="n">workflow</span><span class="o">.</span><span class="n">input_schema</span><span class="o">.</span><span class="n">column_names</span><span class="p">,</span>
+<span class="p">)[:</span><span class="mi">10</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>                     user_id  item_id  item_category  item_shop  item_brand  \
+__null_dask_index__                                                           
+700000                    12        2              3        194          67   
+700001                    12       30             80       5621        1936   
+700002                    18        5             12        776         267   
+700003                    35        6             14        970         334   
+700004                    51       11             28       1939         668   
+700005                    22       83            226      15893        5474   
+700006                    13       38            102       7172        2470   
+700007                    10        7             17       1163         401   
+700008                     4        4              9        582         201   
+700009                     4       24             64       4458        1536   
+
+                     user_shops  user_profile  user_group  user_gender  \
+__null_dask_index__                                                      
+700000                      636             1           1            1   
+700001                      636             1           1            1   
+700002                      983             1           1            1   
+700003                     1965             2           1            1   
+700004                     2890             3           1            1   
+700005                     1214             2           1            1   
+700006                      694             1           1            1   
+700007                      521             1           1            1   
+700008                      174             1           1            1   
+700009                      174             1           1            1   
+
+                     user_age  user_consumption_2  user_is_occupied  \
+__null_dask_index__                                                   
+700000                      1                   1                 1   
+700001                      1                   1                 1   
+700002                      1                   1                 1   
+700003                      1                   1                 1   
+700004                      1                   1                 1   
+700005                      1                   1                 1   
+700006                      1                   1                 1   
+700007                      1                   1                 1   
+700008                      1                   1                 1   
+700009                      1                   1                 1   
+
+                     user_geography  user_intentions  user_brands  \
+__null_dask_index__                                                 
+700000                            1              184          316   
+700001                            1              184          316   
+700002                            1              285          489   
+700003                            1              569          977   
+700004                            1              837         1436   
+700005                            1              352          604   
+700006                            1              201          345   
+700007                            1              151          259   
+700008                            1               51           87   
+700009                            1               51           87   
+
+                     user_categories  
+__null_dask_index__                   
+700000                            34  
+700001                            34  
+700002                            52  
+700003                           103  
+700004                           151  
+700005                            64  
+700006                            37  
+700007                            28  
+700008                            10  
+700009                            10  
+</pre></div>
+</div>
+</div>
+</div>
+<p>In the following code cell, we use a utility function provided in <a class="reference external" href="https://github.com/NVIDIA-Merlin/systems">Merlin Systems</a> to convert our dataframe to the payload format that can be used as inference request format for Triton.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">merlin.systems.triton</span> <span class="kn">import</span> <span class="n">convert_df_to_triton_input</span>
+<span class="kn">import</span> <span class="nn">tritonclient.http</span> <span class="k">as</span> <span class="nn">httpclient</span>
+
+<span class="n">inputs</span> <span class="o">=</span> <span class="n">convert_df_to_triton_input</span><span class="p">(</span><span class="n">workflow</span><span class="o">.</span><span class="n">input_schema</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">httpclient</span><span class="o">.</span><span class="n">InferInput</span><span class="p">)</span>
+
+<span class="n">request_body</span><span class="p">,</span> <span class="n">header_length</span> <span class="o">=</span> <span class="n">httpclient</span><span class="o">.</span><span class="n">InferenceServerClient</span><span class="o">.</span><span class="n">generate_request_body</span><span class="p">(</span>
+    <span class="n">inputs</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">request_body</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>b&#39;{&quot;inputs&quot;:[{&quot;name&quot;:&quot;user_id&quot;,&quot;shape&quot;:[10,1],&quot;datatype&quot;:&quot;INT32&quot;,&quot;parameters&quot;:{&quot;binary_data_size&quot;:40}},{&quot;name&quot;:&quot;item_id&quot;,&quot;shape&quot;:[10,1],&quot;datatype&quot;:&quot;INT32&quot;,&quot;parameters&quot;:{&quot;binary_data_size&quot;:40}},{&quot;name&quot;:&quot;item_category&quot;,&quot;shape&quot;:[10,1],&quot;datatype&quot;:&quot;INT32&quot;,&quot;parameters&quot;:{&quot;binary_data_size&quot;:40}},{&quot;name&quot;:&quot;item_shop&quot;,&quot;shape&quot;:[10,1],&quot;datatype&quot;:&quot;INT32&quot;,&quot;parameters&quot;:{&quot;binary_data_size&quot;:40}},{&quot;name&quot;:&quot;item_brand&quot;,&quot;shape&quot;:[10,1],&quot;datatype&quot;:&quot;INT32&quot;,&quot;parameters&quot;:{&quot;binary_data_size&quot;:40}},{&quot;name&quot;:&quot;user_shops&quot;,&quot;shape&quot;:[10,1],&quot;datatype&quot;:&quot;INT32&quot;,&quot;parameters&quot;:{&quot;binary_data_size&quot;:40}},{&quot;name&quot;:&quot;user_profile&quot;,&quot;shape&quot;:[10,1],&quot;datatype&quot;:&quot;INT32&quot;,&quot;parameters&quot;:{&quot;binary_data_size&quot;:40}},{&quot;name&quot;:&quot;user_group&quot;,&quot;shape&quot;:[10,1],&quot;datatype&quot;:&quot;INT32&quot;,&quot;parameters&quot;:{&quot;binary_data_size&quot;:40}},{&quot;name&quot;:&quot;user_gender&quot;,&quot;shape&quot;:[10,1],&quot;datatype&quot;:&quot;INT32&quot;,&quot;parameters&quot;:{&quot;binary_data_size&quot;:40}},{&quot;name&quot;:&quot;user_age&quot;,&quot;shape&quot;:[10,1],&quot;datatype&quot;:&quot;INT32&quot;,&quot;parameters&quot;:{&quot;binary_data_size&quot;:40}},{&quot;name&quot;:&quot;user_consumption_2&quot;,&quot;shape&quot;:[10,1],&quot;datatype&quot;:&quot;INT32&quot;,&quot;parameters&quot;:{&quot;binary_data_size&quot;:40}},{&quot;name&quot;:&quot;user_is_occupied&quot;,&quot;shape&quot;:[10,1],&quot;datatype&quot;:&quot;INT32&quot;,&quot;parameters&quot;:{&quot;binary_data_size&quot;:40}},{&quot;name&quot;:&quot;user_geography&quot;,&quot;shape&quot;:[10,1],&quot;datatype&quot;:&quot;INT32&quot;,&quot;parameters&quot;:{&quot;binary_data_size&quot;:40}},{&quot;name&quot;:&quot;user_intentions&quot;,&quot;shape&quot;:[10,1],&quot;datatype&quot;:&quot;INT32&quot;,&quot;parameters&quot;:{&quot;binary_data_size&quot;:40}},{&quot;name&quot;:&quot;user_brands&quot;,&quot;shape&quot;:[10,1],&quot;datatype&quot;:&quot;INT32&quot;,&quot;parameters&quot;:{&quot;binary_data_size&quot;:40}},{&quot;name&quot;:&quot;user_categories&quot;,&quot;shape&quot;:[10,1],&quot;datatype&quot;:&quot;INT32&quot;,&quot;parameters&quot;:{&quot;binary_data_size&quot;:40}}],&quot;parameters&quot;:{&quot;binary_data_output&quot;:true}}\x0c\x00\x00\x00\x0c\x00\x00\x00\x12\x00\x00\x00#\x00\x00\x003\x00\x00\x00\x16\x00\x00\x00\r\x00\x00\x00\n\x00\x00\x00\x04\x00\x00\x00\x04\x00\x00\x00\x02\x00\x00\x00\x1e\x00\x00\x00\x05\x00\x00\x00\x06\x00\x00\x00\x0b\x00\x00\x00S\x00\x00\x00&amp;\x00\x00\x00\x07\x00\x00\x00\x04\x00\x00\x00\x18\x00\x00\x00\x03\x00\x00\x00P\x00\x00\x00\x0c\x00\x00\x00\x0e\x00\x00\x00\x1c\x00\x00\x00\xe2\x00\x00\x00f\x00\x00\x00\x11\x00\x00\x00\t\x00\x00\x00@\x00\x00\x00\xc2\x00\x00\x00\xf5\x15\x00\x00\x08\x03\x00\x00\xca\x03\x00\x00\x93\x07\x00\x00\x15&gt;\x00\x00\x04\x1c\x00\x00\x8b\x04\x00\x00F\x02\x00\x00j\x11\x00\x00C\x00\x00\x00\x90\x07\x00\x00\x0b\x01\x00\x00N\x01\x00\x00\x9c\x02\x00\x00b\x15\x00\x00\xa6\t\x00\x00\x91\x01\x00\x00\xc9\x00\x00\x00\x00\x06\x00\x00|\x02\x00\x00|\x02\x00\x00\xd7\x03\x00\x00\xad\x07\x00\x00J\x0b\x00\x00\xbe\x04\x00\x00\xb6\x02\x00\x00\t\x02\x00\x00\xae\x00\x00\x00\xae\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x02\x00\x00\x00\x03\x00\x00\x00\x02\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\xb8\x00\x00\x00\xb8\x00\x00\x00\x1d\x01\x00\x009\x02\x00\x00E\x03\x00\x00`\x01\x00\x00\xc9\x00\x00\x00\x97\x00\x00\x003\x00\x00\x003\x00\x00\x00&lt;\x01\x00\x00&lt;\x01\x00\x00\xe9\x01\x00\x00\xd1\x03\x00\x00\x9c\x05\x00\x00\\\x02\x00\x00Y\x01\x00\x00\x03\x01\x00\x00W\x00\x00\x00W\x00\x00\x00&quot;\x00\x00\x00&quot;\x00\x00\x004\x00\x00\x00g\x00\x00\x00\x97\x00\x00\x00@\x00\x00\x00%\x00\x00\x00\x1c\x00\x00\x00\n\x00\x00\x00\n\x00\x00\x00&#39;
+</pre></div>
+</div>
+</div>
+</div>
+<p>Triton uses the <a class="reference external" href="https://github.com/triton-inference-server/server/blob/main/docs/protocol/README.md">KServe community standard inference protocols</a>.
+Here, we use the <a class="reference external" href="https://github.com/triton-inference-server/server/blob/main/docs/protocol/extension_binary_data.md">binary+json format</a> for optimal performance in the inference request.</p>
+<p>In order for Triton to correctly parse the binary payload, we have to specify the length of the request metadata in the header <code class="docutils literal notranslate"><span class="pre">json-header-size</span></code>.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">runtime_sm_client</span> <span class="o">=</span> <span class="n">boto3</span><span class="o">.</span><span class="n">client</span><span class="p">(</span><span class="s2">&quot;sagemaker-runtime&quot;</span><span class="p">)</span>
+
+<span class="n">response</span> <span class="o">=</span> <span class="n">runtime_sm_client</span><span class="o">.</span><span class="n">invoke_endpoint</span><span class="p">(</span>
+    <span class="n">EndpointName</span><span class="o">=</span><span class="n">endpoint_name</span><span class="p">,</span>
+    <span class="n">ContentType</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;application/vnd.sagemaker-triton.binary+json;json-header-size=</span><span class="si">{</span><span class="n">header_length</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+    <span class="n">Body</span><span class="o">=</span><span class="n">request_body</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># Parse json header size length from the response</span>
+<span class="n">header_length_prefix</span> <span class="o">=</span> <span class="s2">&quot;application/vnd.sagemaker-triton.binary+json;json-header-size=&quot;</span>
+<span class="n">header_length_str</span> <span class="o">=</span> <span class="n">response</span><span class="p">[</span><span class="s2">&quot;ContentType&quot;</span><span class="p">][</span><span class="nb">len</span><span class="p">(</span><span class="n">header_length_prefix</span><span class="p">):]</span>
+
+<span class="c1"># Read response body</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">httpclient</span><span class="o">.</span><span class="n">InferenceServerClient</span><span class="o">.</span><span class="n">parse_response_body</span><span class="p">(</span>
+    <span class="n">response</span><span class="p">[</span><span class="s2">&quot;Body&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">read</span><span class="p">(),</span> <span class="n">header_length</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">header_length_str</span><span class="p">)</span>
+<span class="p">)</span>
+<span class="n">output_data</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">as_numpy</span><span class="p">(</span><span class="s2">&quot;click/binary_classification_task&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;predicted sigmoid result:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">output_data</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>predicted sigmoid result:
+ [[0.48595208]
+ [0.4647554 ]
+ [0.50048226]
+ [0.53553176]
+ [0.5209902 ]
+ [0.54944164]
+ [0.5032344 ]
+ [0.475241  ]
+ [0.5077254 ]
+ [0.5009623 ]]
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="terminate-endpoint-and-clean-up-artifacts">
+<h2>Terminate endpoint and clean up artifacts<a class="headerlink" href="#terminate-endpoint-and-clean-up-artifacts" title="Permalink to this heading">#</a></h2>
+<p>Don’t forget to clean up artifacts and terminate the endpoint, or the endpoint will continue to incur costs.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sm_client</span><span class="o">.</span><span class="n">delete_model</span><span class="p">(</span><span class="n">ModelName</span><span class="o">=</span><span class="n">model_name</span><span class="p">)</span>
+<span class="n">sm_client</span><span class="o">.</span><span class="n">delete_endpoint_config</span><span class="p">(</span><span class="n">EndpointConfigName</span><span class="o">=</span><span class="n">endpoint_config_name</span><span class="p">)</span>
+<span class="n">sm_client</span><span class="o">.</span><span class="n">delete_endpoint</span><span class="p">(</span><span class="n">EndpointName</span><span class="o">=</span><span class="n">endpoint_name</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>{&#39;ResponseMetadata&#39;: {&#39;RequestId&#39;: &#39;6ad24616-5c7c-4525-a63c-62d1b06ee8ad&#39;,
+  &#39;HTTPStatusCode&#39;: 200,
+  &#39;HTTPHeaders&#39;: {&#39;x-amzn-requestid&#39;: &#39;6ad24616-5c7c-4525-a63c-62d1b06ee8ad&#39;,
+   &#39;content-type&#39;: &#39;application/x-amz-json-1.1&#39;,
+   &#39;content-length&#39;: &#39;0&#39;,
+   &#39;date&#39;: &#39;Wed, 09 Nov 2022 10:38:12 GMT&#39;},
+  &#39;RetryAttempts&#39;: 0}}
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer">
+                  <!-- Previous / next buttons -->
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="index.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Training and Serving Merlin on AWS SageMaker</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="../scaling-criteo/index.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Scaling Large Datasets with Criteo</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#part-1-generating-dataset-and-docker-image">Part 1: Generating Dataset and Docker image</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#generating-dataset">Generating Dataset</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#training-script">Training Script</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#create-the-dockerfile">Create the Dockerfile</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#building-and-registering-the-container">Building and registering the container</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#part-2-training-your-merlin-model-on-sagemaker">Part 2: Training your Merlin model on Sagemaker</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#training-on-sagemaker-using-the-python-sdk">Training on Sagemaker using the Python SDK</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#part-3-retrieving-recommendations-from-triton-inference-server">Part 3: Retrieving Recommendations from Triton Inference Server</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#send-a-request-to-triton-inference-server-to-transform-a-raw-dataset">Send a Request to Triton Inference Server to Transform a Raw Dataset</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#terminate-endpoint-and-clean-up-artifacts">Terminate endpoint and clean up artifacts</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+  <p class="copyright">
+    
+      © Copyright 2023, NVIDIA.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../_static/scripts/bootstrap.js?digest=927b94d3fcb96560df09"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=927b94d3fcb96560df09"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
