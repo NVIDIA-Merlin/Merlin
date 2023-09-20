@@ -14,6 +14,8 @@ jobs:
     runs-on: linux-amd64-gpu-p100-latest-1
     container:
           image: nvcr.io/nvidia/merlin/merlin-tensorflow:nightly
+          env:
+            NVIDIA_VISIBLE_DEVICES: ${{ env.NVIDIA_VISIBLE_DEVICES }}
     steps:
     - uses: actions/checkout@v3
       with:
