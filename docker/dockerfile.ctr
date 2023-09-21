@@ -78,26 +78,6 @@ RUN if [[ "${HUGECTR_DEV_MODE}" == "false" ]]; then \
     ; fi
 
 ENV PYTHONPATH=${PYTHONPATH}:${HUGECTR_HOME}/lib
-ARG _HUGECTR_BACKEND_REPO="github.com/triton-inference-server/hugectr_backend.git"
-ARG TRITON_VERSION
-# Install Triton inference backend.
-RUN if [ "${HUGECTR_DEV_MODE}" == "false" ]; then \
-        git clone --branch ${HUGECTR_BACKEND_VER} --depth 1 https://${_CI_JOB_TOKEN}${_HUGECTR_BACKEND_REPO} /repos/hugectr_triton_backend && \
-        mkdir /repos/hugectr_triton_backend/build && \
-        cd /repos/hugectr_triton_backend/build && \
-        cmake \
-            -DCMAKE_INSTALL_PREFIX:PATH=${HUGECTR_HOME} \
-            -DTRITON_COMMON_REPO_TAG="r${TRITON_VERSION}" \
-            -DTRITON_CORE_REPO_TAG="r${TRITON_VERSION}" \
-            -DTRITON_BACKEND_REPO_TAG="r${TRITON_VERSION}" .. && \
-        make -j$(nproc) && \
-        make install && \
-        cd ../.. && \
-        rm -rf hugectr_triton_backend && \
-        chmod +x ${HUGECTR_HOME}/lib/*.so ${HUGECTR_HOME}/backends/hugectr/*.so && \
-        rm -rf /repos \
-    ; fi
-RUN ln -s ${HUGECTR_HOME}/backends/hugectr /opt/tritonserver/backends/hugectr
 
 # Clean up
 RUN rm -rf /usr/local/share/jupyter/lab/staging/node_modules/marked
