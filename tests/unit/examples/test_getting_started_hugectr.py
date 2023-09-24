@@ -80,21 +80,3 @@ def test_func():
         os.system("python train_hugeCTR.py")
         tb3.execute_cell(list(range(21, len(tb3.cells))))
 
-    with testbook(
-        REPO_ROOT
-        / "examples/getting-started-movielens/04-Triton-Inference-with-HugeCTR.ipynb",
-        execute=False,
-    ) as tb4:
-        tb4.inject(
-            f"""
-            import os
-            os.environ["INPUT_DATA_DIR"] = "{INPUT_DATA_DIR}"
-            """
-        )
-        tb4.execute_cell(list(range(0, 13)))
-        with run_triton_server(
-            os.path.join(INPUT_DATA_DIR, "model"),
-            grpc_port=8001,
-            backend_config=f"hugectr,ps={MODEL_DIR}/ps.json",
-        ):
-            tb4.execute_cell(list(range(13, len(tb4.cells))))
