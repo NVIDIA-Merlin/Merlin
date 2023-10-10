@@ -438,7 +438,7 @@ document.write(`
                   
   <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Copyright 2021 NVIDIA Corporation. All Rights Reserved.</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Copyright 2023 NVIDIA Corporation. All Rights Reserved.</span>
 <span class="c1">#</span>
 <span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
 <span class="c1"># you may not use this file except in compliance with the License.</span>
@@ -471,11 +471,11 @@ document.write(`
 <h2>Import required libraries and functions<a class="headerlink" href="#import-required-libraries-and-functions" title="Permalink to this heading">#</a></h2>
 <p>At this step, we assume you already installed feast and faiss-gpu (or -cpu) libraries when running the first notebook <code class="docutils literal notranslate"><span class="pre">01-Building-Recommender-Systems-with-Merlin.ipynb</span></code>.</p>
 <p>In case you need to install them for running this example on GPU, execute the following script in a cell.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="n">pip</span> <span class="n">install</span> <span class="s2">&quot;feast&lt;0.20&quot;</span> <span class="n">faiss</span><span class="o">-</span><span class="n">gpu</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="n">pip</span> <span class="n">install</span> <span class="s2">&quot;feast&lt;0.31&quot;</span> <span class="n">faiss</span><span class="o">-</span><span class="n">gpu</span>
 </pre></div>
 </div>
 <p>or the following script in a cell for CPU.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="n">pip</span> <span class="n">install</span> <span class="n">tensorflow</span><span class="o">-</span><span class="n">cpu</span> <span class="s2">&quot;feast&lt;0.20&quot;</span> <span class="n">faiss</span><span class="o">-</span><span class="n">cpu</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="n">pip</span> <span class="n">install</span> <span class="n">tensorflow</span><span class="o">-</span><span class="n">cpu</span> <span class="s2">&quot;feast&lt;0.31&quot;</span> <span class="n">faiss</span><span class="o">-</span><span class="n">cpu</span>
 </pre></div>
 </div>
 <div class="cell docutils container">
@@ -492,6 +492,43 @@ document.write(`
 <span class="kn">from</span> <span class="nn">merlin.systems.dag.ops.tensorflow</span> <span class="kn">import</span> <span class="n">PredictTensorflow</span>
 <span class="kn">from</span> <span class="nn">merlin.systems.dag.ops.unroll_features</span> <span class="kn">import</span> <span class="n">UnrollFeatures</span>
 <span class="kn">from</span> <span class="nn">merlin.systems.triton.utils</span> <span class="kn">import</span> <span class="n">send_triton_request</span>
+<span class="kn">from</span> <span class="nn">merlin.systems.dag.ops.workflow</span> <span class="kn">import</span> <span class="n">TransformWorkflow</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/usr/local/lib/python3.8/dist-packages/cudf/utils/metadata/orc_column_statistics_pb2.py:19: DeprecationWarning: Call to deprecated create function FileDescriptor(). Note: Create unlinked descriptors is going to go away. Please use get/find descriptors from generated code or query the descriptor_pool.
+  DESCRIPTOR = _descriptor.FileDescriptor(
+/usr/local/lib/python3.8/dist-packages/cudf/utils/metadata/orc_column_statistics_pb2.py:37: DeprecationWarning: Call to deprecated create function FieldDescriptor(). Note: Create unlinked descriptors is going to go away. Please use get/find descriptors from generated code or query the descriptor_pool.
+  _descriptor.FieldDescriptor(
+/usr/local/lib/python3.8/dist-packages/cudf/utils/metadata/orc_column_statistics_pb2.py:30: DeprecationWarning: Call to deprecated create function Descriptor(). Note: Create unlinked descriptors is going to go away. Please use get/find descriptors from generated code or query the descriptor_pool.
+  _INTEGERSTATISTICS = _descriptor.Descriptor(
+2023-06-29 19:50:56.885234: I tensorflow/core/platform/cpu_feature_guard.cc:194] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  SSE3 SSE4.1 SSE4.2 AVX
+To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
+/usr/local/lib/python3.8/dist-packages/tensorflow/core/framework/tensor_shape_pb2.py:18: DeprecationWarning: Call to deprecated create function FileDescriptor(). Note: Create unlinked descriptors is going to go away. Please use get/find descriptors from generated code or query the descriptor_pool.
+  DESCRIPTOR = _descriptor.FileDescriptor(
+/usr/local/lib/python3.8/dist-packages/tensorflow/core/framework/tensor_shape_pb2.py:36: DeprecationWarning: Call to deprecated create function FieldDescriptor(). Note: Create unlinked descriptors is going to go away. Please use get/find descriptors from generated code or query the descriptor_pool.
+  _descriptor.FieldDescriptor(
+/usr/local/lib/python3.8/dist-packages/tensorflow/core/framework/tensor_shape_pb2.py:29: DeprecationWarning: Call to deprecated create function Descriptor(). Note: Create unlinked descriptors is going to go away. Please use get/find descriptors from generated code or query the descriptor_pool.
+  _TENSORSHAPEPROTO_DIM = _descriptor.Descriptor(
+/usr/local/lib/python3.8/dist-packages/tensorflow/core/framework/types_pb2.py:19: DeprecationWarning: Call to deprecated create function FileDescriptor(). Note: Create unlinked descriptors is going to go away. Please use get/find descriptors from generated code or query the descriptor_pool.
+  DESCRIPTOR = _descriptor.FileDescriptor(
+/usr/local/lib/python3.8/dist-packages/tensorflow/core/framework/types_pb2.py:33: DeprecationWarning: Call to deprecated create function EnumValueDescriptor(). Note: Create unlinked descriptors is going to go away. Please use get/find descriptors from generated code or query the descriptor_pool.
+  _descriptor.EnumValueDescriptor(
+/usr/local/lib/python3.8/dist-packages/tensorflow/core/framework/types_pb2.py:27: DeprecationWarning: Call to deprecated create function EnumDescriptor(). Note: Create unlinked descriptors is going to go away. Please use get/find descriptors from generated code or query the descriptor_pool.
+  _DATATYPE = _descriptor.EnumDescriptor(
+/usr/local/lib/python3.8/dist-packages/tensorflow/core/framework/types_pb2.py:287: DeprecationWarning: Call to deprecated create function FieldDescriptor(). Note: Create unlinked descriptors is going to go away. Please use get/find descriptors from generated code or query the descriptor_pool.
+  _descriptor.FieldDescriptor(
+/usr/local/lib/python3.8/dist-packages/tensorflow/core/framework/types_pb2.py:280: DeprecationWarning: Call to deprecated create function Descriptor(). Note: Create unlinked descriptors is going to go away. Please use get/find descriptors from generated code or query the descriptor_pool.
+  _SERIALIZEDDTYPE = _descriptor.Descriptor(
+/usr/local/lib/python3.8/dist-packages/tensorflow/core/framework/resource_handle_pb2.py:20: DeprecationWarning: Call to deprecated create function FileDescriptor(). Note: Create unlinked descriptors is going to go away. Please use get/find descriptors from generated code or query the descriptor_pool.
+  DESCRIPTOR = _descriptor.FileDescriptor(
+/usr/local/lib/python3.8/dist-packages/tensorflow/core/framework/resource_handle_pb2.py:39: DeprecationWarning: Call to deprecated create function FieldDescriptor(). Note: Create unlinked descriptors is going to go away. Please use get/find descriptors from generated code or query the descriptor_pool.
+  _descriptor.FieldDescriptor(
+/usr/local/lib/python3.8/dist-packages/merlin/dtypes/mappings/torch.py:43: UserWarning: PyTorch dtype mappings did not load successfully due to an error: No module named &#39;torch&#39;
+  warn(f&quot;PyTorch dtype mappings did not load successfully due to an error: {exc.msg}&quot;)
+/usr/local/lib/python3.8/dist-packages/nvtabular/loader/__init__.py:19: DeprecationWarning: The `nvtabular.loader` module has moved to a new repository, at https://github.com/NVIDIA-Merlin/dataloader .  Support for importing from `nvtabular.loader` is deprecated, and will be removed in a future version. Please update your imports to refer to `merlinloader`.
+  warnings.warn(
 </pre></div>
 </div>
 </div>
@@ -504,9 +541,11 @@ document.write(`
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">BASE_DIR</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;BASE_DIR&quot;</span><span class="p">,</span> <span class="s2">&quot;/Merlin/examples/Building-and-deploying-multi-stage-RecSys/&quot;</span><span class="p">)</span>
+<span class="n">DATA_FOLDER</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;DATA_FOLDER&quot;</span><span class="p">,</span> <span class="s2">&quot;/workspace/data/&quot;</span><span class="p">)</span>
+
 
 <span class="c1"># define feature repo path</span>
-<span class="n">feast_repo_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s2">&quot;feast/feature_repo/&quot;</span><span class="p">)</span>
+<span class="n">feast_repo_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s2">&quot;feast_repo/feature_repo/&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -519,16 +558,14 @@ document.write(`
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/Merlin/examples/Building-and-deploying-multi-stage-RecSys/feature_repo
-/usr/local/lib/python3.8/dist-packages/feast/feature_view.py:100: DeprecationWarning: The argument &#39;input&#39; is being deprecated. Please use &#39;batch_source&#39; instead. Feast 0.13 and onwards will not support the argument &#39;input&#39;.
-  warnings.warn(
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>/raid/workshared/merlin/examples/Building-and-deploying-multi-stage-RecSys/feast_repo/feature_repo
+Created entity <span class=" -Color -Color-Bold -Color-Bold-Green">user_id</span>
 Created entity <span class=" -Color -Color-Bold -Color-Bold-Green">item_id</span>
-Created entity <span class=" -Color -Color-Bold -Color-Bold-Green">user_id_raw</span>
-Created feature view <span class=" -Color -Color-Bold -Color-Bold-Green">item_features</span>
 Created feature view <span class=" -Color -Color-Bold -Color-Bold-Green">user_features</span>
+Created feature view <span class=" -Color -Color-Bold -Color-Bold-Green">item_features</span>
 
-Created sqlite table <span class=" -Color -Color-Bold -Color-Bold-Green">feature_repo_item_features</span>
-Created sqlite table <span class=" -Color -Color-Bold -Color-Bold-Green">feature_repo_user_features</span>
+Created sqlite table <span class=" -Color -Color-Bold -Color-Bold-Green">feast_repo_item_features</span>
+Created sqlite table <span class=" -Color -Color-Bold -Color-Bold-Green">feast_repo_user_features</span>
 </pre></div>
 </div>
 </div>
@@ -548,10 +585,10 @@ Created sqlite table <span class=" -Color -Color-Bold -Color-Bold-Green">feature
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Materializing <span class=" -Color -Color-Bold -Color-Bold-Green">2</span> feature views from <span class=" -Color -Color-Bold -Color-Bold-Green">1995-01-01 01:01:01+00:00</span> to <span class=" -Color -Color-Bold -Color-Bold-Green">2025-01-01 01:01:01+00:00</span> into the <span class=" -Color -Color-Bold -Color-Bold-Green">sqlite</span> online store.
 
-<span class=" -Color -Color-Bold -Color-Bold-Green">item_features</span>:
-100%|███████████████████████████████████████████████████████████| 437/437 [00:00&lt;00:00, 3870.31it/s]
 <span class=" -Color -Color-Bold -Color-Bold-Green">user_features</span>:
-100%|███████████████████████████████████████████████████████████| 442/442 [00:00&lt;00:00, 1423.30it/s]
+100%|███████████████████████████████████████████████████████████| 460/460 [00:00&lt;00:00, 2521.27it/s]
+<span class=" -Color -Color-Bold -Color-Bold-Green">item_features</span>:
+100%|███████████████████████████████████████████████████████████| 458/458 [00:00&lt;00:00, 3335.12it/s]
 </pre></div>
 </div>
 </div>
@@ -560,21 +597,25 @@ Created sqlite table <span class=" -Color -Color-Bold -Color-Bold-Green">feature
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># set up the base dir to for feature store</span>
-<span class="n">sd</span><span class="o">.</span><span class="n">seedir</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s1">&#39;feast&#39;</span><span class="p">),</span> <span class="n">style</span><span class="o">=</span><span class="s1">&#39;lines&#39;</span><span class="p">,</span> <span class="n">itemlimit</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">depthlimit</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">exclude_folders</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;.ipynb_checkpoints&#39;</span><span class="p">,</span> <span class="s1">&#39;__pycache__&#39;</span><span class="p">],</span> <span class="n">sort</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">sd</span><span class="o">.</span><span class="n">seedir</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s1">&#39;feast_repo&#39;</span><span class="p">),</span> <span class="n">style</span><span class="o">=</span><span class="s1">&#39;lines&#39;</span><span class="p">,</span> <span class="n">itemlimit</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">depthlimit</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">exclude_folders</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;.ipynb_checkpoints&#39;</span><span class="p">,</span> <span class="s1">&#39;__pycache__&#39;</span><span class="p">],</span> <span class="n">sort</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>feature_repo/
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>feast_repo/
+├─README.md
 ├─__init__.py
-├─data/
-│ ├─item_features.parquet
-│ ├─online_store.db
-│ ├─registry.db
-│ └─user_features.parquet
-├─feature_store.yaml
-├─item_features.py
-└─user_features.py
+└─feature_repo/
+  ├─__init__.py
+  ├─data/
+  │ ├─item_features.parquet
+  │ ├─online_store.db
+  │ ├─registry.db
+  │ └─user_features.parquet
+  ├─feature_store.yaml
+  ├─item_features.py
+  ├─test_workflow.py
+  └─user_features.py
 </pre></div>
 </div>
 </div>
@@ -607,15 +648,13 @@ Created sqlite table <span class=" -Color -Color-Bold -Color-Bold-Green">feature
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">merlin.systems.dag.ops.faiss</span> <span class="kn">import</span> <span class="n">QueryFaiss</span><span class="p">,</span> <span class="n">setup_faiss</span> 
 
-<span class="n">item_embeddings</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span>
-    <span class="n">pd</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s2">&quot;item_embeddings.parquet&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
-<span class="p">)</span>
-<span class="n">setup_faiss</span><span class="p">(</span><span class="n">item_embeddings</span><span class="p">,</span> <span class="n">faiss_index_path</span><span class="p">)</span>
+<span class="n">item_embeddings</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">BASE_DIR</span><span class="p">,</span> <span class="s2">&quot;item_embeddings.parquet&quot;</span><span class="p">))</span>
+<span class="n">setup_faiss</span><span class="p">(</span><span class="n">item_embeddings</span><span class="p">,</span> <span class="n">faiss_index_path</span><span class="p">,</span> <span class="n">embedding_column</span><span class="o">=</span><span class="s2">&quot;output_1&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>WARNING clustering 437 points to 32 centroids: please provide at least 1248 training points
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>WARNING clustering 458 points to 32 centroids: please provide at least 1248 training points
 </pre></div>
 </div>
 </div>
@@ -633,12 +672,33 @@ Created sqlite table <span class=" -Color -Color-Bold -Color-Bold-Green">feature
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">merlin.systems.dag.ops.feast</span> <span class="kn">import</span> <span class="n">QueryFeast</span> 
 
-<span class="n">user_features</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;user_id_raw&quot;</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">QueryFeast</span><span class="o">.</span><span class="n">from_feature_view</span><span class="p">(</span>
+<span class="n">user_attributes</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;user_id&quot;</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">QueryFeast</span><span class="o">.</span><span class="n">from_feature_view</span><span class="p">(</span>
     <span class="n">store</span><span class="o">=</span><span class="n">feature_store</span><span class="p">,</span>
     <span class="n">view</span><span class="o">=</span><span class="s2">&quot;user_features&quot;</span><span class="p">,</span>
-    <span class="n">column</span><span class="o">=</span><span class="s2">&quot;user_id_raw&quot;</span><span class="p">,</span>
-    <span class="n">include_id</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">column</span><span class="o">=</span><span class="s2">&quot;user_id&quot;</span><span class="p">,</span>
+    <span class="n">include_id</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Materializing <span class=" -Color -Color-Bold -Color-Bold-Green">1</span> feature views to <span class=" -Color -Color-Bold -Color-Bold-Green">2023-06-29 19:51:06+00:00</span> into the <span class=" -Color -Color-Bold -Color-Bold-Green">sqlite</span> online store.
+
+<span class=" -Color -Color-Bold -Color-Bold-Green">user_features</span> from <span class=" -Color -Color-Bold -Color-Bold-Green">2025-01-01 01:01:01+00:00</span> to <span class=" -Color -Color-Bold -Color-Bold-Green">2023-06-29 19:51:06+00:00</span>:
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0it [00:00, ?it/s]
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">nvtabular</span> <span class="kn">import</span> <span class="n">Workflow</span>
+
+<span class="n">nvt_workflow</span> <span class="o">=</span> <span class="n">Workflow</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">DATA_FOLDER</span><span class="p">,</span> <span class="s1">&#39;processed_nvt/workflow&#39;</span><span class="p">))</span>
+<span class="n">user_subgraph</span> <span class="o">=</span> <span class="n">nvt_workflow</span><span class="o">.</span><span class="n">get_subworkflow</span><span class="p">(</span><span class="s2">&quot;user&quot;</span><span class="p">)</span>
+<span class="n">user_features</span> <span class="o">=</span> <span class="n">user_attributes</span> <span class="o">&gt;&gt;</span> <span class="n">TransformWorkflow</span><span class="p">(</span><span class="n">user_subgraph</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -648,6 +708,7 @@ Created sqlite table <span class=" -Color -Color-Bold -Color-Bold-Green">feature
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># prevent TF to claim all GPU memory</span>
 <span class="kn">from</span> <span class="nn">merlin.dataloader.tf_utils</span> <span class="kn">import</span> <span class="n">configure_tensorflow</span>
+
 
 <span class="n">configure_tensorflow</span><span class="p">()</span>
 </pre></div>
@@ -673,10 +734,17 @@ Created sqlite table <span class=" -Color -Color-Bold -Color-Bold-Green">feature
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2022-09-14 15:28:46.303447: I tensorflow/core/platform/cpu_feature_guard.cc:194] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  SSE3 SSE4.1 SSE4.2 AVX
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>2023-06-29 19:51:07.269579: I tensorflow/core/platform/cpu_feature_guard.cc:194] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  SSE3 SSE4.1 SSE4.2 AVX
 To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
-2022-09-14 15:28:47.443330: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1532] Created device /job:localhost/replica:0/task:0/device:GPU:0 with 16249 MB memory:  -&gt; device: 0, name: Quadro GV100, pci bus id: 0000:2d:00.0, compute capability: 7.0
-09/14/2022 03:28:49 PM WARNING:No training configuration found in save file, so the model was *not* compiled. Compile it manually.
+2023-06-29 19:51:10.430459: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1621] Created device /job:localhost/replica:0/task:0/device:GPU:0 with 24576 MB memory:  -&gt; device: 0, name: Quadro RTX 8000, pci bus id: 0000:15:00.0, compute capability: 7.5
+2023-06-29 19:51:10.431356: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1621] Created device /job:localhost/replica:0/task:0/device:GPU:1 with 24576 MB memory:  -&gt; device: 1, name: Quadro RTX 8000, pci bus id: 0000:2d:00.0, compute capability: 7.5
+WARNING:absl:Found untraced functions such as restored_function_body, restored_function_body, restored_function_body, restored_function_body, restored_function_body while saving (showing 5 of 52). These functions will not be directly callable after loading.
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Assets written to: /tmp/tmpdalflmaz/assets
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Assets written to: /tmp/tmpdalflmaz/assets
 </pre></div>
 </div>
 </div>
@@ -684,13 +752,31 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 <p>Fetch item features for the candidate items that are retrieved from the retrieval step above from the feature store.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">item_features</span> <span class="o">=</span> <span class="n">retrieval</span><span class="p">[</span><span class="s2">&quot;candidate_ids&quot;</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">QueryFeast</span><span class="o">.</span><span class="n">from_feature_view</span><span class="p">(</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">item_attributes</span> <span class="o">=</span> <span class="n">retrieval</span><span class="p">[</span><span class="s2">&quot;candidate_ids&quot;</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">QueryFeast</span><span class="o">.</span><span class="n">from_feature_view</span><span class="p">(</span>
     <span class="n">store</span><span class="o">=</span><span class="n">feature_store</span><span class="p">,</span>
     <span class="n">view</span><span class="o">=</span><span class="s2">&quot;item_features&quot;</span><span class="p">,</span>
     <span class="n">column</span><span class="o">=</span><span class="s2">&quot;candidate_ids&quot;</span><span class="p">,</span>
     <span class="n">output_prefix</span><span class="o">=</span><span class="s2">&quot;item&quot;</span><span class="p">,</span>
     <span class="n">include_id</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
 <span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Materializing <span class=" -Color -Color-Bold -Color-Bold-Green">1</span> feature views to <span class=" -Color -Color-Bold -Color-Bold-Green">2023-06-29 19:51:14+00:00</span> into the <span class=" -Color -Color-Bold -Color-Bold-Green">sqlite</span> online store.
+
+<span class=" -Color -Color-Bold -Color-Bold-Green">item_features</span> from <span class=" -Color -Color-Bold -Color-Bold-Green">2025-01-01 01:01:01+00:00</span> to <span class=" -Color -Color-Bold -Color-Bold-Green">2023-06-29 19:51:14+00:00</span>:
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>0it [00:00, ?it/s]
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">item_subgraph</span> <span class="o">=</span> <span class="n">nvt_workflow</span><span class="o">.</span><span class="n">get_subworkflow</span><span class="p">(</span><span class="s2">&quot;item&quot;</span><span class="p">)</span>
+<span class="n">item_features</span> <span class="o">=</span> <span class="n">item_attributes</span> <span class="o">&gt;&gt;</span> <span class="n">TransformWorkflow</span><span class="p">(</span><span class="n">item_subgraph</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -727,13 +813,24 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 </pre></div>
 </div>
 </div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>WARNING:absl:Found untraced functions such as restored_function_body, restored_function_body, restored_function_body, restored_function_body, restored_function_body while saving (showing 5 of 98). These functions will not be directly callable after loading.
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Assets written to: /tmp/tmpqdd_jn5e/assets
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>INFO:tensorflow:Assets written to: /tmp/tmpqdd_jn5e/assets
+</pre></div>
+</div>
+</div>
 </div>
 <p>For the ordering we use <code class="docutils literal notranslate"><span class="pre">SoftmaxSampling()</span></code> operator. This operator sorts all inputs in descending order given the input ids and prediction introducing some randomization into the ordering by sampling items from the softmax of the predicted relevance scores, and finally returns top-k ordered items.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">top_k</span><span class="o">=</span><span class="mi">10</span>
-<span class="n">ordering</span> <span class="o">=</span> <span class="n">combined_features</span><span class="p">[</span><span class="s2">&quot;item_id_raw&quot;</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">SoftmaxSampling</span><span class="p">(</span>
-    <span class="n">relevance_col</span><span class="o">=</span><span class="n">ranking</span><span class="p">[</span><span class="s2">&quot;click/binary_classification_task&quot;</span><span class="p">],</span> <span class="n">topk</span><span class="o">=</span><span class="n">top_k</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="mf">20.0</span>
+<span class="n">ordering</span> <span class="o">=</span> <span class="n">combined_features</span><span class="p">[</span><span class="s2">&quot;item_id&quot;</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="n">SoftmaxSampling</span><span class="p">(</span>
+    <span class="n">relevance_col</span><span class="o">=</span><span class="n">ranking</span><span class="p">[</span><span class="s2">&quot;click/binary_classification_task&quot;</span><span class="p">],</span> <span class="n">topk</span><span class="o">=</span><span class="n">top_k</span><span class="p">,</span> <span class="n">temperature</span><span class="o">=</span><span class="mf">0.00000001</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -758,7 +855,7 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">request_schema</span> <span class="o">=</span> <span class="n">Schema</span><span class="p">(</span>
     <span class="p">[</span>
-        <span class="n">ColumnSchema</span><span class="p">(</span><span class="s2">&quot;user_id_raw&quot;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">),</span>
+        <span class="n">ColumnSchema</span><span class="p">(</span><span class="s2">&quot;user_id&quot;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">),</span>
     <span class="p">]</span>
 <span class="p">)</span>
 </pre></div>
@@ -780,7 +877,7 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[&#39;ordered_ids&#39;]
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[&#39;ordered_ids&#39;, &#39;ordered_scores&#39;]
 </pre></div>
 </div>
 </div>
@@ -794,50 +891,68 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>poc_ensemble/
-├─0_queryfeast/
+├─0_transformworkflowtriton/
 │ ├─1/
-│ │ └─model.py
+│ │ ├─model.py
+│ │ └─workflow/
+│ │   ├─categories/
+│ │   │ ├─unique.user_age.parquet
+│ │   │ ├─unique.user_brands.parquet
+│ │   │ ├─unique.user_categories.parquet
+│ │   │ ├─unique.user_consumption_2.parquet
+│ │   │ ├─unique.user_gender.parquet
+│ │   │ ├─unique.user_geography.parquet
+│ │   │ ├─unique.user_group.parquet
+│ │   │ ├─unique.user_id.parquet
+│ │   │ ├─unique.user_intentions.parquet
+│ │   │ └─unique.user_is_occupied.parquet
+│ │   ├─metadata.json
+│ │   └─workflow.pkl
 │ └─config.pbtxt
-├─1_predicttensorflow/
+├─1_predicttensorflowtriton/
 │ ├─1/
 │ │ └─model.savedmodel/
 │ │   ├─assets/
+│ │   ├─fingerprint.pb
 │ │   ├─keras_metadata.pb
 │ │   ├─saved_model.pb
 │ │   └─variables/
 │ │     ├─variables.data-00000-of-00001
 │ │     └─variables.index
 │ └─config.pbtxt
-├─2_queryfaiss/
+├─2_transformworkflowtriton/
 │ ├─1/
-│ │ ├─index.faiss/
-│ │ │ └─index.faiss
-│ │ └─model.py
+│ │ ├─model.py
+│ │ └─workflow/
+│ │   ├─categories/
+│ │   │ ├─unique.item_brand.parquet
+│ │   │ ├─unique.item_category.parquet
+│ │   │ ├─unique.item_id.parquet
+│ │   │ └─unique.item_shop.parquet
+│ │   ├─metadata.json
+│ │   └─workflow.pkl
 │ └─config.pbtxt
-├─3_queryfeast/
-│ ├─1/
-│ │ └─model.py
-│ └─config.pbtxt
-├─4_unrollfeatures/
-│ ├─1/
-│ │ └─model.py
-│ └─config.pbtxt
-├─5_predicttensorflow/
+├─3_predicttensorflowtriton/
 │ ├─1/
 │ │ └─model.savedmodel/
+│ │   ├─.merlin/
+│ │   │ ├─input_schema.json
+│ │   │ └─output_schema.json
 │ │   ├─assets/
+│ │   ├─fingerprint.pb
 │ │   ├─keras_metadata.pb
 │ │   ├─saved_model.pb
 │ │   └─variables/
 │ │     ├─variables.data-00000-of-00001
 │ │     └─variables.index
-│ └─config.pbtxt
-├─6_softmaxsampling/
-│ ├─1/
-│ │ └─model.py
 │ └─config.pbtxt
 └─executor_model/
   ├─1/
+  │ ├─ensemble/
+  │ │ ├─ensemble.pkl
+  │ │ ├─index.faiss
+  │ │ └─metadata.json
+  │ └─model.py
   └─config.pbtxt
 </pre></div>
 </div>
@@ -862,15 +977,15 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 <span class="kn">from</span> <span class="nn">merlin.core.dispatch</span> <span class="kn">import</span> <span class="n">make_df</span>
 
 <span class="c1"># create a request to be sent to TIS</span>
-<span class="n">request</span> <span class="o">=</span> <span class="n">make_df</span><span class="p">({</span><span class="s2">&quot;user_id_raw&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">7</span><span class="p">]})</span>
-<span class="n">request</span><span class="p">[</span><span class="s2">&quot;user_id_raw&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">request</span><span class="p">[</span><span class="s2">&quot;user_id_raw&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+<span class="n">request</span> <span class="o">=</span> <span class="n">make_df</span><span class="p">({</span><span class="s2">&quot;user_id&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">7</span><span class="p">]})</span>
+<span class="n">request</span><span class="p">[</span><span class="s2">&quot;user_id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">request</span><span class="p">[</span><span class="s2">&quot;user_id&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">request</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>   user_id_raw
-0            7
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>   user_id
+0        7
 </pre></div>
 </div>
 </div>
@@ -884,16 +999,10 @@ To enable them in other operations, rebuild TensorFlow with the appropriate comp
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>{&#39;ordered_ids&#39;: array([[117],
-        [415],
-        [228],
-        [985],
-        [ 76],
-        [410],
-        [193],
-        [120],
-        [ 87],
-        [139]], dtype=int32)}
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>{&#39;ordered_ids&#39;: array([[100, 168, 324,  79, 361, 294, 267, 289, 397, 189]], dtype=int32),
+ &#39;ordered_scores&#39;: array([[0.5016385 , 0.50176895, 0.5017176 , 0.5024097 , 0.5018236 ,
+         0.5018286 , 0.50162375, 0.5015677 , 0.50175667, 0.5014358 ]],
+       dtype=float32)}
 </pre></div>
 </div>
 </div>

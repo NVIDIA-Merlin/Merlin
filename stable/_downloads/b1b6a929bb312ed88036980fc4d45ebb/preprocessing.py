@@ -1,6 +1,7 @@
 import gc
 import logging
 import os
+import shutil
 from functools import reduce
 from typing import Optional
 
@@ -9,18 +10,23 @@ from merlin.core.dispatch import HAS_GPU
 from merlin.schema import Tags
 from nvtabular import ops as nvt_ops
 
-from args_parsing import parse_arguments
+from .args_parsing import parse_arguments
+
+INDEX_TMP_COL = "__index"
+NVT_OUTPUT_FOLDER = "nvt_outputs"
 
 
-def filter_by_freq(df_to_filter, df_for_stats, column, min_freq, max_freq=None):
+def filter_by_freq(df_to_filter, df_for_stats, column, min_freq=None, max_freq=None):
     # Frequencies of each value in the column.
     freq = df_for_stats[column].value_counts()
 
-    cond = freq == freq  # placeholder condition
     if min_freq is not None:
-        cond = cond & (freq >= min_freq)
-    if max_freq is not None:
-        cond = cond & (freq <= max_freq)
+        cond = freq >= min_freq
+    elif max_freq is not None:
+        cond = freq <= max_freq
+    elif min_freq is not None and max_freq is not None:
+        cond = min_freq >= freq <= max_freq
+
     # Select frequent values. Value is in the index.
     frequent_values = freq[cond].reset_index()["index"].to_frame(column)
     # Return only rows with value frequency above threshold.
@@ -43,6 +49,10 @@ class PreprocessingRunner:
 
         self.dask_cluster_client = None
 
+    @staticmethod
+    def parse_cli_args(args=None):
+        return parse_arguments(args)
+
     def read_data(self, path):
         args = self.args
         logging.info(f"Reading data: {args.data_path}")
@@ -64,6 +74,8 @@ class PreprocessingRunner:
             ddf = ddf.query(args.filter_query)
             logging.info(f"Number of rows after filtering: {len(ddf)}")
 
+        ddf = self.adding_temp_index(ddf)
+
         return ddf
 
     def cast_dtypes(self, ddf):
@@ -71,21 +83,17 @@ class PreprocessingRunner:
         args = self.args
         columns = set(ddf.columns)
         if args.to_int32:
-            ddf[args.to_int32] = ddf[
-                list(set(args.to_int32).intersection(columns))
-            ].astype("int32")
+            to_int32_cols = list(set(args.to_int32).intersection(columns))
+            ddf[to_int32_cols] = ddf[to_int32_cols].astype("int32")
         if args.to_int16:
-            ddf[args.to_int16] = ddf[
-                list(set(args.to_int16).intersection(columns))
-            ].astype("int16")
+            to_int16_cols = list(set(args.to_int16).intersection(columns))
+            ddf[to_int16_cols] = ddf[to_int16_cols].astype("int16")
         if args.to_int8:
-            ddf[args.to_int8] = ddf[
-                list(set(args.to_int8).intersection(columns))
-            ].astype("int8")
+            to_int8_cols = list(set(args.to_int8).intersection(columns))
+            ddf[to_int8_cols] = ddf[to_int8_cols].astype("int8")
         if args.to_float32:
-            ddf[args.to_float32] = ddf[
-                list(set(args.to_float32).intersection(columns))
-            ].astype("float32")
+            to_float32_cols = list(set(args.to_float32).intersection(columns))
+            ddf[to_float32_cols] = ddf[to_float32_cols].astype("float32")
         return ddf
 
     def filter_by_user_item_freq(self, ddf):
@@ -124,6 +132,13 @@ class PreprocessingRunner:
                     print("After filtering items: ", items_count)
 
         return filtered_ddf
+
+    def adding_temp_index(self, ddf):
+        # Adds a temporary index to allow for merging features and targets later
+        ddf["dummy"] = 1
+        ddf[INDEX_TMP_COL] = ddf["dummy"].cumsum()
+        del ddf["dummy"]
+        return ddf
 
     def split_datasets(self, df):
         args = self.args
@@ -196,16 +211,20 @@ class PreprocessingRunner:
                 f"Invalid sampling strategy: {args.dataset_split_strategy}"
             )
 
-    def generate_nvt_workflow_features(self):
-        logging.info("Generating NVTabular workflow  for preprocessing features")
+    def generate_nvt_features(self):
+        logging.info("Generating NVTabular workflow for preprocessing features")
         args = self.args
         feats = dict()
 
+        feats[INDEX_TMP_COL] = [INDEX_TMP_COL]
+
         for col in args.control_features:
             feats[col] = [col]
+
         for col in args.categorical_features:
             feats[col] = [col] >> nvt_ops.Categorify(
-                freq_threshold=args.categ_min_freq_capping
+                freq_threshold=args.categ_min_freq_capping,
+                out_path=NVT_OUTPUT_FOLDER,
             )
         for col in args.continuous_features:
             feats[col] = [col]
@@ -216,7 +235,26 @@ class PreprocessingRunner:
                     feats[col] = feats[col] >> nvt_ops.FillMissing(
                         args.continuous_features_fillna
                     )
-                feats[col] = feats[col] >> nvt_ops.Normalize()
+            feats[col] = feats[col] >> nvt_ops.Normalize()
+
+        if args.target_encoding_features or args.target_encoding_targets:
+            if not args.target_encoding_features:
+                args.target_encoding_features = args.categorical_features
+            if not args.target_encoding_targets:
+                args.target_encoding_targets = (
+                    args.binary_classif_targets + args.regression_targets
+                )
+
+            if args.target_encoding_targets and args.target_encoding_features:
+                for target_col in args.target_encoding_targets:
+                    feats[
+                        f"{target_col}_te_features"
+                    ] = args.target_encoding_features >> nvt.ops.TargetEncoding(
+                        [target_col],
+                        kfold=args.target_encoding_kfold,
+                        p_smooth=args.target_encoding_smoothing,
+                        out_dtype="float32",
+                    )
 
         for col in args.user_features:
             feats[col] = feats[col] >> nvt_ops.TagAsUserFeatures()
@@ -246,28 +284,52 @@ class PreprocessingRunner:
         # Combining all features
         outputs = reduce(lambda x, y: x + y, list(feats.values()))
 
-        workflow = nvt.Workflow(outputs, client=self.dask_cluster_client)
-        return workflow
+        return outputs
 
-    def generate_nvt_workflow_targets(self, client=None):
+    def generate_nvt_targets(self, client=None):
         logging.info("Generating NVTabular workflow for preprocessing targets")
         args = self.args
         feats = dict()
+
+        feats[INDEX_TMP_COL] = [INDEX_TMP_COL]
 
         for col in args.binary_classif_targets:
             feats[col] = [col] >> nvt_ops.AddTags(
                 [Tags.BINARY_CLASSIFICATION, Tags.TARGET]
             )
         for col in args.regression_targets:
-            feats[col] = [col] >> nvt_ops.AddTags(
-                [Tags.REGRESSION, Tags.TARGET, Tags.BINARY]
-            )
+            feats[col] = [col] >> nvt_ops.AddTags([Tags.REGRESSION, Tags.TARGET])
 
-        # Combining all features
+        # Combining all targets
         outputs = reduce(lambda x, y: x + y, list(feats.values()))
 
-        workflow = nvt.Workflow(outputs, client=self.dask_cluster_client)
-        return workflow
+        return outputs
+
+    def merge_dataset_features_values(
+        self, features_dataset, targets_dataset, dataset_type, args
+    ):
+        dataset_joint = (
+            features_dataset.to_ddf()
+            .merge(targets_dataset.to_ddf(), on=INDEX_TMP_COL)
+            .drop(INDEX_TMP_COL, axis=1)
+        )
+
+        if args.persist_intermediate_files:
+            dataset_joint = self.persist_intermediate(
+                dataset_joint, f"_cache/03/{dataset_type}/"
+            )
+
+        schema_joint = (
+            features_dataset.schema + targets_dataset.schema
+        ).excluding_by_name([INDEX_TMP_COL])
+
+        dataset_joint = nvt.Dataset(
+            dataset_joint,
+            schema=schema_joint,
+            cpu=not self.gpu,
+        )
+
+        return dataset_joint
 
     def persist_intermediate(self, ddf, folder):
         path = os.path.join(self.args.output_path, folder)
@@ -358,69 +420,90 @@ class PreprocessingRunner:
                 ddf = self.persist_intermediate(ddf, "_cache/02/train/")
                 eval_ddf = self.persist_intermediate(eval_ddf, "_cache/02/eval/")
 
-        nvt_workflow_features = self.generate_nvt_workflow_features()
-        nvt_workflow_targets = self.generate_nvt_workflow_targets()
+        nvt_features = self.generate_nvt_features()
+        nvt_workflow_features = nvt.Workflow(
+            nvt_features, client=self.dask_cluster_client
+        )
+
+        nvt_targets = self.generate_nvt_targets()
+        nvt_workflow_targets = nvt.Workflow(
+            nvt_targets, client=self.dask_cluster_client
+        )
 
         logging.info("Fitting/transforming the preprocessing on train set")
 
         output_dataset_path = args.output_path
+
+        nvt_outputs_folder = os.path.join(output_dataset_path, NVT_OUTPUT_FOLDER)
+
+        if os.path.exists(nvt_outputs_folder):
+            logging.info(
+                "The NVTabular output folder already exists and is "
+                "being deleted: {nvt_outputs_folder}"
+            )
+            # Delete Folder code
+            shutil.rmtree(nvt_outputs_folder)
 
         train_dataset = nvt.Dataset(ddf, cpu=not self.gpu)
         # Processing features and targets in separate workflows, because
         # targets might not be available for test/predict_dataset
         train_dataset_features = nvt_workflow_features.fit_transform(train_dataset)
         train_dataset_targets = nvt_workflow_targets.fit_transform(train_dataset)
-        train_dataset_preproc = nvt.Dataset(
-            self.df_lib.concat(
-                [train_dataset_features.to_ddf(), train_dataset_targets.to_ddf()],
-                axis=1,
-            ),
-            schema=train_dataset_features.schema + train_dataset_targets.schema,
-            cpu=not self.gpu,
-        )
 
         output_train_dataset_path = os.path.join(output_dataset_path, "train")
-        logging.info(f"Fitting and transforming train set: {output_train_dataset_path}")
+        logging.info(f"Saving transformed train set: {output_train_dataset_path}")
+        train_dataset_preproc = self.merge_dataset_features_values(
+            train_dataset_features, train_dataset_targets, "train", args
+        )
         train_dataset_preproc.to_parquet(
             output_train_dataset_path,
             output_files=args.output_num_partitions,
         )
 
         if args.eval_data_path or args.dataset_split_strategy:
+            logging.info("Transforming the eval set")
             eval_dataset = nvt.Dataset(eval_ddf, cpu=not self.gpu)
             # Processing features and targets in separate workflows, because
             # targets might not be available for test/predict_dataset
             eval_dataset_features = nvt_workflow_features.transform(eval_dataset)
             eval_dataset_targets = nvt_workflow_targets.transform(eval_dataset)
-            eval_dataset_preproc = nvt.Dataset(
-                self.df_lib.concat(
-                    [eval_dataset_features.to_ddf(), eval_dataset_targets.to_ddf()],
-                    axis=1,
-                ),
-                schema=eval_dataset_features.schema + eval_dataset_targets.schema,
-                cpu=not self.gpu,
-            )
 
             output_eval_dataset_path = os.path.join(output_dataset_path, "eval")
-            logging.info(f"Transforming eval set: {output_eval_dataset_path}")
-
+            logging.info(f"Saving transformed eval set: {output_eval_dataset_path}")
+            eval_dataset_preproc = self.merge_dataset_features_values(
+                eval_dataset_features, eval_dataset_targets, "eval", args
+            )
             eval_dataset_preproc.to_parquet(
                 output_eval_dataset_path,
                 output_files=args.output_num_partitions,
             )
 
         if args.predict_data_path:
+            # Adding a dummy target column(s) to the test set to perform
+            # target encoding op while this issue is not fixed
+            # https://github.com/NVIDIA-Merlin/NVTabular/issues/1840
+            for col in args.target_encoding_targets:
+                if col not in test_ddf.columns:
+                    test_ddf[col] = 0
+
+            logging.info("Transforming the predict/test set")
+
             predict_dataset = nvt.Dataset(test_ddf, cpu=not self.gpu)
             new_predict_dataset = nvt_workflow_features.transform(predict_dataset)
+            new_predict_dataset = nvt.Dataset(
+                new_predict_dataset.to_ddf().drop(INDEX_TMP_COL, axis=1),
+                schema=new_predict_dataset.schema.excluding_by_name([INDEX_TMP_COL]),
+                cpu=not self.gpu,
+            )
 
             output_predict_dataset_path = os.path.join(output_dataset_path, "predict")
-            logging.info(f"Transforming predict set: {output_predict_dataset_path}")
+            logging.info(f"Saving predict/test set: {output_predict_dataset_path}")
 
             new_predict_dataset.to_parquet(
                 output_predict_dataset_path,
                 output_files=args.output_num_partitions,
             )
-        nvt_save_path = os.path.join(output_dataset_path, "workflow")
+        nvt_save_path = os.path.join(nvt_outputs_folder, "workflow")
         logging.info(f"Saving nvtabular workflow to: {nvt_save_path}")
         nvt_workflow_features.save(nvt_save_path)
 
@@ -428,8 +511,7 @@ class PreprocessingRunner:
 def main():
     logging.basicConfig(level=logging.INFO)
 
-    args = parse_arguments()
-
+    args = PreprocessingRunner.parse_cli_args()
     runner = PreprocessingRunner(args)
     runner.run()
 
