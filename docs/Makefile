@@ -13,7 +13,7 @@ help:
 	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
 clean:
-	rm -rf build source/examples
+	rm -rf build source/examples NVTabular core dataloader models systems Transformers4Rec source/api_core/ source/api_dataloader.rst source/api_models.rst source/api_nvtabular.rst source/api_systems.rst source/api_transformers4rec/
 
 .PHONY: help clean Makefile
 

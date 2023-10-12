@@ -6,6 +6,7 @@ import sys
 
 from natsort import natsorted
 
+sys.path.insert(0, os.path.abspath("/models/"))
 docs_dir = os.path.dirname(__file__)
 repodir = os.path.abspath(os.path.join(__file__, r"../../.."))
 gitdir = os.path.join(repodir, r".git")
@@ -25,6 +26,7 @@ extensions = [
     "myst_nb",
     "sphinx_multiversion",
     "sphinx.ext.autodoc",
+    "sphinx.ext.autosummary",
     "sphinx.ext.coverage",
     "sphinx.ext.githubpages",
     "sphinx.ext.napoleon",
