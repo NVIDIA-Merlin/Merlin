@@ -39,7 +39,7 @@ These notebooks demonstrate how to scale NVTabular as well as the following:
 - Use multiple GPUs and nodes with NVTabular for feature engineering.
 - Train recommender system models with the Merlin Models for TensorFlow.
 - Train recommender system models with HugeCTR using multiple GPUs.
-- Inference with the Triton Inference Server and Merlin Models for TensorFlow or HugeCTR.
+- Inference with the Triton Inference Server and Merlin Models for TensorFlow.
 
 ### [Training and Serving with Merlin on AWS SageMaker](./sagemaker-tensorflow/)
 
