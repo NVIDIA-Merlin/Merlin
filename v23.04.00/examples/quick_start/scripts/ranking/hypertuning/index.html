@@ -19,12 +19,12 @@
   </script>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../../../../_static/styles/theme.css?digest=ac02cc09edc035673794" rel="stylesheet" />
-<link href="../../../../../_static/styles/bootstrap.css?digest=ac02cc09edc035673794" rel="stylesheet" />
-<link href="../../../../../_static/styles/pydata-sphinx-theme.css?digest=ac02cc09edc035673794" rel="stylesheet" />
+  <link href="../../../../../_static/styles/theme.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
+<link href="../../../../../_static/styles/bootstrap.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
+<link href="../../../../../_static/styles/pydata-sphinx-theme.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
 
   
-  <link href="../../../../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=ac02cc09edc035673794" rel="stylesheet" />
+  <link href="../../../../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
   <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
@@ -36,9 +36,9 @@
     <link rel="stylesheet" type="text/css" href="../../../../../_static/css/versions.css" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../../../../_static/scripts/bootstrap.js?digest=ac02cc09edc035673794" />
-<link rel="preload" as="script" href="../../../../../_static/scripts/pydata-sphinx-theme.js?digest=ac02cc09edc035673794" />
-  <script src="../../../../../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=ac02cc09edc035673794"></script>
+  <link rel="preload" as="script" href="../../../../../_static/scripts/bootstrap.js?digest=365ca57ee442770a23c6" />
+<link rel="preload" as="script" href="../../../../../_static/scripts/pydata-sphinx-theme.js?digest=365ca57ee442770a23c6" />
+  <script src="../../../../../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=365ca57ee442770a23c6"></script>
 
     <script data-url_root="../../../../../" id="documentation_options" src="../../../../../_static/documentation_options.js"></script>
     <script src="../../../../../_static/jquery.js"></script>
@@ -142,6 +142,7 @@
   
 
 <a class="navbar-brand logo" href="../../../../../index.html">
+  
   
   
   
@@ -443,10 +444,10 @@ document.write(`
   <section id="benchmark-of-ranking-models">
 <h1>Benchmark of ranking models<a class="headerlink" href="#benchmark-of-ranking-models" title="Permalink to this heading">#</a></h1>
 <p>In this document, we describe a hyperparameter tuning benchmark of the ranking models available in in <a class="reference external" href="https://github.com/NVIDIA-Merlin/models/">Merlin Models</a> library. You can use this benchmark as a reference when deciding the models and hyperparameters you want to explore with your own dataset.</p>
-<p>The experiments used the <span class="xref myst">Quick-Start for ranking script</span> on the TenRec dataset (described <span class="xref myst">here</span>). <a class="reference external" href="https://docs.wandb.ai/guides/sweeps">Weights&amp;Biases Sweeps</a> was used for hyperparameter tuning.</p>
+<p>The experiments used the <a class="reference internal" href="#../README.md"><span class="xref myst">Quick-Start for ranking script</span></a> on the TenRec dataset (described <a class="reference internal" href="#./README.md"><span class="xref myst">here</span></a>). <a class="reference external" href="https://docs.wandb.ai/guides/sweeps">Weights&amp;Biases Sweeps</a> was used for hyperparameter tuning.</p>
 <section id="neural-ranking-models">
 <h2>Neural ranking models.<a class="headerlink" href="#neural-ranking-models" title="Permalink to this heading">#</a></h2>
-<p>This benchmark includes the following neural architectures for ranking, which are described in more detail <span class="xref myst">here</span>. They are divided in two groups of models, which are trained with Single-Task or Multi-Task Learning (MTL).</p>
+<p>This benchmark includes the following neural architectures for ranking, which are described in more detail <a class="reference internal" href="#../README.md"><span class="xref myst">here</span></a>. They are divided in two groups of models, which are trained with Single-Task or Multi-Task Learning (MTL).</p>
 <ul class="simple">
 <li><p><strong>Single-Task Learning (STL)</strong>: MLP, Wide&amp;Deep, DeepFM, DLRM, DCN-v2, training with a single prediction head.</p></li>
 <li><p><strong>Multi-Task Learning (MTL)</strong>: MLP, MMOE, PLE. All these models were built with a separate tower (MLP layers) and a head for each task. While MLP model shares bottom layers, MMOE and PLE are specialized MTL models that uses experts and gates designed to control the weight sharing between tasks.</p></li>
@@ -456,15 +457,15 @@ document.write(`
 <h2>Hyperparameter tuning setup<a class="headerlink" href="#hyperparameter-tuning-setup" title="Permalink to this heading">#</a></h2>
 <p>For a fair comparison of the models, we ran a separate hyperparameter tuning process for each model architecture using TenRec dataset, which we call experiment group.</p>
 <p>We use the <a class="reference external" href="https://docs.wandb.ai/guides/sweeps">Weights&amp;Biases Sweeps</a> feature for managing the hypertuning process for each experiment group. The hypertuning uses bayesian optimization (<code class="docutils literal notranslate"><span class="pre">method=bayes</span></code>) to improve the <code class="docutils literal notranslate"><span class="pre">AUC</span></code> metric, which is different for STL and MTL, as explained below.</p>
-<p>You can check our <a class="reference internal" href="tutorial_with_wb_sweeps.html"><span class="doc std std-doc">tutorial</span></a> for more details on how to setup the hypertuning of Quick-start for ranking using W&amp;B Sweeps.
-We share the <span class="xref myst">hyperparameter space configurations</span> we used for this benchmark, so that you can reuse for your own hyperparameter tuning.</p>
+<p>You can check our <a class="reference internal" href="tutorial_with_wb_sweeps.html"><span class="std std-doc">tutorial</span></a> for more details on how to setup the hypertuning of Quick-start for ranking using W&amp;B Sweeps.
+We share the <a class="reference internal" href="#../scripts/ranking/hypertuning/"><span class="xref myst">hyperparameter space configurations</span></a> we used for this benchmark, so that you can reuse for your own hyperparameter tuning.</p>
 </section>
 <section id="single-task-learning">
 <h2>Single-task learning<a class="headerlink" href="#single-task-learning" title="Permalink to this heading">#</a></h2>
 <p>For benchmarking the ranking models with single-task learning we used the <code class="docutils literal notranslate"><span class="pre">click</span></code> binary target, as it is the most frequent event in the dataset. It was performed 200 trials for each experiment group.</p>
 <section id="stl-benchmark-results">
 <h3>STL Benchmark results<a class="headerlink" href="#stl-benchmark-results" title="Permalink to this heading">#</a></h3>
-<p>In Table 1, you can see the models with the best accuracy (AUC) for predicting the <code class="docutils literal notranslate"><span class="pre">click</span></code> target. You can see the models have a similar level of accuracy, maybe because the dataset contains only 5 basic features (which are presented <span class="xref myst">here</span>). But you can notice that models more advanced than MLP can provide better accuracy.</p>
+<p>In Table 1, you can see the models with the best accuracy (AUC) for predicting the <code class="docutils literal notranslate"><span class="pre">click</span></code> target. You can see the models have a similar level of accuracy, maybe because the dataset contains only 5 basic features (which are presented <a class="reference internal" href="#../ranking.md"><span class="xref myst">here</span></a>). But you can notice that models more advanced than MLP can provide better accuracy.</p>
 <center>
 <img src="../../../images/stl_benchmark.png" alt="Multi-task learning architectures" ><br>Table 1. Single-task learning ranking models benchmark
 </center>
@@ -647,8 +648,8 @@ We share the <span class="xref myst">hyperparameter space configurations</span> 
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="../../../../../_static/scripts/bootstrap.js?digest=ac02cc09edc035673794"></script>
-<script src="../../../../../_static/scripts/pydata-sphinx-theme.js?digest=ac02cc09edc035673794"></script>
+  <script src="../../../../../_static/scripts/bootstrap.js?digest=365ca57ee442770a23c6"></script>
+<script src="../../../../../_static/scripts/pydata-sphinx-theme.js?digest=365ca57ee442770a23c6"></script>
 
   <footer class="bd-footer">
   </footer>

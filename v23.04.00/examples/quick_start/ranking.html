@@ -19,12 +19,12 @@
   </script>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../_static/styles/theme.css?digest=ac02cc09edc035673794" rel="stylesheet" />
-<link href="../../_static/styles/bootstrap.css?digest=ac02cc09edc035673794" rel="stylesheet" />
-<link href="../../_static/styles/pydata-sphinx-theme.css?digest=ac02cc09edc035673794" rel="stylesheet" />
+  <link href="../../_static/styles/theme.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
 
   
-  <link href="../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=ac02cc09edc035673794" rel="stylesheet" />
+  <link href="../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
   <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
@@ -36,9 +36,9 @@
     <link rel="stylesheet" type="text/css" href="../../_static/css/versions.css" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=ac02cc09edc035673794" />
-<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=ac02cc09edc035673794" />
-  <script src="../../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=ac02cc09edc035673794"></script>
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=365ca57ee442770a23c6" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=365ca57ee442770a23c6" />
+  <script src="../../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=365ca57ee442770a23c6"></script>
 
     <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
@@ -142,6 +142,7 @@
   
 
 <a class="navbar-brand logo" href="../../index.html">
+  
   
   
   
@@ -503,7 +504,7 @@ pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </s
 <p>In order to make it easy getting the data ready for model training, we provide a generic script: <a class="reference download internal" download="" href="../../_downloads/b1b6a929bb312ed88036980fc4d45ebb/preprocessing.py"><span class="xref download myst">preprocessing.py</span></a>. That script is based on <strong>dask_cudf</strong> and <strong>NVTabular</strong> libraries that leverage GPUs for accelerated and distributed preprocessing.<br />
 P.s. <strong>NVTabular</strong> also supports CPU which is suitable for prototyping in dev environments.</p>
 <p>The preprocessing script outputs preprocessed data as a number of parquet files, as well as a <em>schema</em> that stores output features metadata like statistics and tags.</p>
-<p>In this example, we set some options for preprocessing. Here is the explanation of the main arguments; you can check the <span class="xref myst">full documentation and best practices for preprocessing</span>.</p>
+<p>In this example, we set some options for preprocessing. Here is the explanation of the main arguments; you can check the <a class="reference internal" href="#scripts/preproc/README.md"><span class="xref myst">full documentation and best practices for preprocessing</span></a>.</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">--categorical_features</span></code> - Names of the categorical/discrete features (concatenated with “,” without space).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--binary_classif_targets</span></code> - Names of the available target columns for binary classification task</p></li>
@@ -539,7 +540,7 @@ There are many target columns available in the dataset, and you can select one o
 <span class="nv">CUDA_VISIBLE_DEVICES</span><span class="o">=</span><span class="m">0</span><span class="w"> </span><span class="nv">TF_GPU_ALLOCATOR</span><span class="o">=</span>cuda_malloc_async<span class="w"> </span>python<span class="w">  </span>ranking.py<span class="w"> </span>--train_data_path<span class="w"> </span><span class="nv">$OUT_DATASET_PATH</span>/train<span class="w"> </span>--eval_data_path<span class="w"> </span><span class="nv">$OUT_DATASET_PATH</span>/eval<span class="w"> </span>--output_path<span class="w"> </span>./outputs/<span class="w"> </span>--tasks<span class="o">=</span>click<span class="w"> </span>--stl_positive_class_weight<span class="w"> </span><span class="m">3</span><span class="w"> </span>--model<span class="w"> </span>dlrm<span class="w"> </span>--embeddings_dim<span class="w"> </span><span class="m">64</span><span class="w"> </span>--l2_reg<span class="w"> </span>1e-4<span class="w"> </span>--embeddings_l2_reg<span class="w"> </span>1e-6<span class="w"> </span>--dropout<span class="w"> </span><span class="m">0</span>.05<span class="w"> </span>--mlp_layers<span class="w"> </span><span class="m">64</span>,32<span class="w">  </span>--lr<span class="w"> </span>1e-4<span class="w"> </span>--lr_decay_rate<span class="w"> </span><span class="m">0</span>.99<span class="w"> </span>--lr_decay_steps<span class="w"> </span><span class="m">100</span><span class="w"> </span>--train_batch_size<span class="w"> </span><span class="m">65536</span><span class="w"> </span>--eval_batch_size<span class="w"> </span><span class="m">65536</span><span class="w"> </span>--epochs<span class="w"> </span><span class="m">1</span><span class="w"> </span>--train_steps_per_epoch<span class="w"> </span><span class="m">10</span><span class="w"> </span>
 </pre></div>
 </div>
-<p>You can explore the <span class="xref myst">full documentation and best practices for ranking models</span>, which contains details about the command line arguments.</p>
+<p>You can explore the <a class="reference internal" href="#scripts/ranking/README.md"><span class="xref myst">full documentation and best practices for ranking models</span></a>, which contains details about the command line arguments.</p>
 </section>
 <section id="training-a-ranking-model-with-multi-task-learning">
 <h2>Training a ranking model with multi-task learning<a class="headerlink" href="#training-a-ranking-model-with-multi-task-learning" title="Permalink to this heading">#</a></h2>
@@ -554,13 +555,13 @@ You can also balance the loss weights by setting <code class="docutils literal n
 <span class="nv">CUDA_VISIBLE_DEVICES</span><span class="o">=</span><span class="m">0</span><span class="w"> </span><span class="nv">TF_GPU_ALLOCATOR</span><span class="o">=</span>cuda_malloc_async<span class="w"> </span>python<span class="w"> </span>ranking.py<span class="w"> </span>--train_data_path<span class="w"> </span><span class="nv">$OUT_DATASET_PATH</span>/train<span class="w"> </span>--eval_data_path<span class="w"> </span><span class="nv">$OUT_DATASET_PATH</span>/eval<span class="w"> </span>--output_path<span class="w"> </span>./outputs/<span class="w"> </span>--tasks<span class="o">=</span>click,like,follow,share<span class="w"> </span>--model<span class="w"> </span>mmoe<span class="w"> </span>--mmoe_num_mlp_experts<span class="w"> </span><span class="m">3</span><span class="w"> </span>--expert_mlp_layers<span class="w"> </span><span class="m">128</span><span class="w"> </span>--gate_dim<span class="w"> </span><span class="m">32</span><span class="w"> </span>--use_task_towers<span class="o">=</span>True<span class="w"> </span>--tower_layers<span class="w"> </span><span class="m">64</span><span class="w"> </span>--embedding_sizes_multiplier<span class="w"> </span><span class="m">4</span><span class="w"> </span>--l2_reg<span class="w"> </span>1e-5<span class="w"> </span>--embeddings_l2_reg<span class="w"> </span>1e-6<span class="w"> </span>--dropout<span class="w"> </span><span class="m">0</span>.05<span class="w">  </span>--lr<span class="w"> </span>1e-4<span class="w"> </span>--lr_decay_rate<span class="w"> </span><span class="m">0</span>.99<span class="w"> </span>--lr_decay_steps<span class="w"> </span><span class="m">100</span><span class="w"> </span>--train_batch_size<span class="w"> </span><span class="m">65536</span><span class="w"> </span>--eval_batch_size<span class="w"> </span><span class="m">65536</span><span class="w"> </span>--epochs<span class="w"> </span><span class="m">1</span><span class="w"> </span>--mtl_pos_class_weight_click<span class="o">=</span><span class="m">1</span><span class="w"> </span>--mtl_pos_class_weight_like<span class="o">=</span><span class="m">2</span><span class="w"> </span>--mtl_pos_class_weight_share<span class="o">=</span><span class="m">3</span><span class="w"> </span>--mtl_pos_class_weight_follow<span class="o">=</span><span class="m">4</span><span class="w">  </span>--mtl_loss_weight_click<span class="o">=</span><span class="m">3</span><span class="w"> </span>--mtl_loss_weight_like<span class="o">=</span><span class="m">3</span><span class="w"> </span>--mtl_loss_weight_follow<span class="o">=</span><span class="m">1</span><span class="w"> </span>--mtl_loss_weight_share<span class="o">=</span><span class="m">1</span><span class="w"> </span>--train_steps_per_epoch<span class="w"> </span><span class="m">10</span><span class="w"> </span>
 </pre></div>
 </div>
-<p>You can find more quick-start information on multi-task learning and MMOE architecture <span class="xref myst">here</span>.</p>
+<p>You can find more quick-start information on multi-task learning and MMOE architecture <a class="reference internal" href="#scripts/ranking/README.md"><span class="xref myst">here</span></a>.</p>
 </section>
 </section>
 <section id="hyperparameter-tuning">
 <h2>Hyperparameter tuning<a class="headerlink" href="#hyperparameter-tuning" title="Permalink to this heading">#</a></h2>
-<p>We provide a <a class="reference internal" href="scripts/ranking/hypertuning/tutorial_with_wb_sweeps.html"><span class="doc std std-doc">tutorial</span></a> on how to do <strong>hyperparameter tuning with Merlin models and Weights&amp;Biases Sweeps</strong>.</p>
-<p>We also make it available a <span class="xref myst">benchmark</span> resulted from our own hyperparameter tuning of TenRec dataset. It compares the different single-task and multi-task learning models. It provides also empirical information on what were the improvements obtained with hyperparameter tuning, the curated hypertuning search space for modeling hyperparameters of <code class="docutils literal notranslate"><span class="pre">ranking.py</span></code> and the most important hyperparameters.</p>
+<p>We provide a <a class="reference internal" href="scripts/ranking/hypertuning/tutorial_with_wb_sweeps.html"><span class="std std-doc">tutorial</span></a> on how to do <strong>hyperparameter tuning with Merlin models and Weights&amp;Biases Sweeps</strong>.</p>
+<p>We also make it available a <a class="reference internal" href="#scripts/ranking/hypertuning/README.md"><span class="xref myst">benchmark</span></a> resulted from our own hyperparameter tuning of TenRec dataset. It compares the different single-task and multi-task learning models. It provides also empirical information on what were the improvements obtained with hyperparameter tuning, the curated hypertuning search space for modeling hyperparameters of <code class="docutils literal notranslate"><span class="pre">ranking.py</span></code> and the most important hyperparameters.</p>
 </section>
 </section>
 
@@ -640,8 +641,8 @@ You can also balance the loss weights by setting <code class="docutils literal n
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="../../_static/scripts/bootstrap.js?digest=ac02cc09edc035673794"></script>
-<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=ac02cc09edc035673794"></script>
+  <script src="../../_static/scripts/bootstrap.js?digest=365ca57ee442770a23c6"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=365ca57ee442770a23c6"></script>
 
   <footer class="bd-footer">
   </footer>

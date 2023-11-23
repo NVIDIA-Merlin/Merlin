@@ -19,12 +19,12 @@
   </script>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../../../_static/styles/theme.css?digest=ac02cc09edc035673794" rel="stylesheet" />
-<link href="../../../../_static/styles/bootstrap.css?digest=ac02cc09edc035673794" rel="stylesheet" />
-<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=ac02cc09edc035673794" rel="stylesheet" />
+  <link href="../../../../_static/styles/theme.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
+<link href="../../../../_static/styles/bootstrap.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
+<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
 
   
-  <link href="../../../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=ac02cc09edc035673794" rel="stylesheet" />
+  <link href="../../../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=365ca57ee442770a23c6" rel="stylesheet" />
   <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
@@ -36,9 +36,9 @@
     <link rel="stylesheet" type="text/css" href="../../../../_static/css/versions.css" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=ac02cc09edc035673794" />
-<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=ac02cc09edc035673794" />
-  <script src="../../../../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=ac02cc09edc035673794"></script>
+  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=365ca57ee442770a23c6" />
+<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=365ca57ee442770a23c6" />
+  <script src="../../../../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=365ca57ee442770a23c6"></script>
 
     <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
     <script src="../../../../_static/jquery.js"></script>
@@ -147,6 +147,7 @@
   
   
   
+  
     <p class="title logo__title">NVIDIA Merlin</p>
   
 </a></div>
@@ -185,7 +186,6 @@
 
 
 <li class="toctree-l3"><a class="reference internal" href="../../../getting-started-movielens/03-Training-with-PyTorch.html">Training with PyTorch</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../getting-started-movielens/04-Triton-Inference-with-HugeCTR.html">Serving the HugeCTR Model with Triton</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../getting-started-movielens/04-Triton-Inference-with-TF.html">Serve Recommendations from the TensorFlow Model</a></li>
 
 </ul>
@@ -204,7 +204,6 @@
 <li class="toctree-l3"><a class="reference internal" href="../../../scaling-criteo/02-ETL-with-NVTabular.html">Feature Engineering with NVTabular</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../scaling-criteo/03-Training-with-HugeCTR.html">Training with HugeCTR</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../scaling-criteo/03-Training-with-Merlin-Models-TensorFlow.html">Training with Merlin Models and TensorFlow</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../../scaling-criteo/04-Triton-Inference-with-HugeCTR.html">Deploy the HugeCTR Model with Triton</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../scaling-criteo/04-Triton-Inference-with-Merlin-Models-TensorFlow.html">Deploy the TensorFlow Model with Triton</a></li>
 </ul>
 </li>
@@ -446,7 +445,7 @@ document.write(`
 </ol>
 <section id="creating-the-ensemble-graph">
 <h2>Creating the Ensemble Graph<a class="headerlink" href="#creating-the-ensemble-graph" title="Permalink to this heading">#</a></h2>
-<p>In order to do model deployment stage, you are required to complete <code class="docutils literal notranslate"><span class="pre">preprocessing</span></code> and <code class="docutils literal notranslate"><span class="pre">ranking</span></code> steps already from the <span class="xref myst">Quick-start for Ranking</span>.  At the inference step, we might have a collection of multiple (individual) models to be deployed on Triton. In this example, we deploy our NVTabular workflow model to be able to transform raw data the same way as in the dataset preprocessing phase, in order to avoid the training-serving skew.</p>
+<p>In order to do model deployment stage, you are required to complete <code class="docutils literal notranslate"><span class="pre">preprocessing</span></code> and <code class="docutils literal notranslate"><span class="pre">ranking</span></code> steps already from the <a class="reference internal" href="#../ranking.md"><span class="xref myst">Quick-start for Ranking</span></a>.  At the inference step, we might have a collection of multiple (individual) models to be deployed on Triton. In this example, we deploy our NVTabular workflow model to be able to transform raw data the same way as in the dataset preprocessing phase, in order to avoid the training-serving skew.</p>
 <p>In this context, deploying multiple models is called an ensemble model since it represents a pipeline of one or more models that are sequentially connected, i.e., output of a model is the input of next model. Ensemble models are intended to be used to encapsulate a procedure that involves multiple models, such as “data preprocessing -&gt; inference -&gt; data postprocessing”.</p>
 <p>The Triton Inference Server serves models from one or more model repositories that are specified when the server is started. Each model must include a configuration that provides required and optional information about the model. Merlin Systems simplified that step, so that we can easily export ensemble graph config files and artifacts. We use <a class="reference external" href="https://github.com/NVIDIA-Merlin/systems/blob/stable/merlin/systems/dag/ensemble.py#L29">Ensemble</a> class for that, which is responsible for interpreting the graph and exporting the correct files for the Triton server.</p>
 <p>Exporting an ensemble graph consists of the following steps:</p>
@@ -570,8 +569,8 @@ I0414 18:29:50.783470 4067 http_server.cc:178] Started Metrics Service at 0.0.0.
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="../../../../_static/scripts/bootstrap.js?digest=ac02cc09edc035673794"></script>
-<script src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=ac02cc09edc035673794"></script>
+  <script src="../../../../_static/scripts/bootstrap.js?digest=365ca57ee442770a23c6"></script>
+<script src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=365ca57ee442770a23c6"></script>
 
   <footer class="bd-footer">
   </footer>
