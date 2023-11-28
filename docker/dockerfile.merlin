@@ -299,7 +299,9 @@ COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-p
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/numba-*.dist-info /usr/local/lib/python${PYTHON_VERSION}/dist-packages/numba.dist-info/
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cubinlinker-*.dist-info /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cubinlinker.dist-info/
 
-RUN pip install --no-cache-dir jupyterlab notebook pydot testbook numpy==1.22.4 lightfm
+RUN pip install --no-cache-dir jupyterlab notebook pydot testbook numpy==1.22.4
+ENV LIGHTFM_NO_CFLAGS=1
+RUN pip install --no-cache-dir -v --debug lightfm
 
 ENV JUPYTER_CONFIG_DIR=/tmp/.jupyter
 ENV JUPYTER_DATA_DIR=/tmp/.jupyter
