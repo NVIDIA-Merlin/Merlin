@@ -241,11 +241,11 @@ COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/python backends/
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/LICENSE /opt/tritonserver/backends/fil/* backends/fil/
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/tensorrt backends/tensorrt/
 COPY --chown=1000:1000 --from=triton /usr/bin/serve /usr/bin/.
-COPY --chown=1000:1000 --from=triton /usr/lib/*-linux-gnu/libdcgm.so.2 /tmp
+COPY --chown=1000:1000 --from=triton /usr/lib/*-linux-gnu/libdcgm.so.3 /tmp
 RUN ARCH=$([ "${TARGETARCH}" = "arm64" ] && echo "aarch64" || echo "x86_64") && \
-    mv /tmp/libdcgm.so.2 /usr/lib/${ARCH}-linux-gnu/libdcgm.so.2 && \
-    chmod 644 /usr/lib/${ARCH}-linux-gnu/libdcgm.so.2 && \
-    ln -s libdcgm.so.2 /usr/lib/${ARCH}-linux-gnu/libdcgm.so
+    mv /tmp/libdcgm.so.3 /usr/lib/${ARCH}-linux-gnu/libdcgm.so.3 && \
+    chmod 644 /usr/lib/${ARCH}-linux-gnu/libdcgm.so.3 && \
+    ln -s libdcgm.so.3 /usr/lib/${ARCH}-linux-gnu/libdcgm.so
 
 
 ENV PATH=/opt/tritonserver/bin:${PATH}:
