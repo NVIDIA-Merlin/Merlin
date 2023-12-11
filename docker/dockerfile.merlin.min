@@ -292,6 +292,13 @@ ENV JUPYTER_DATA_DIR=/tmp/.jupyter
 ENV JUPYTER_RUNTIME_DIR=/tmp/.jupyter
 ENV MERLIN_BASE_MIN=true
 
+ARG MERLIN_VER=main
+ENV MERLIN_VER=${MERLIN_VER}
+
+# Add Merlin Repo
+RUN git clone --branch ${MERLIN_VER} --depth 1 https://github.com/NVIDIA-Merlin/Merlin/ /Merlin && \
+    cd /Merlin/ && pip install . --no-deps
+
 # Optional dependency: Build and install protocol buffers and Hadoop/HDFS.
 ARG INSTALL_HDFS=false
 # Env for HDFS
