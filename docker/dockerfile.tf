@@ -59,6 +59,7 @@ RUN if [ "$HUGECTR_DEV_MODE" == "false" ]; then \
         rm -rf ${HUGECTR_HOME}/lib/libgtest* ${HUGECTR_HOME}/lib/pkgconfig/gtest* ${HUGECTR_HOME}/include/gtest && \
         git clone --branch ${HUGECTR_VER} --depth 1 --recurse-submodules --shallow-submodules https://${_CI_JOB_TOKEN}${_HUGECTR_REPO} /hugectr && \
         pushd /hugectr && \
+        git log -n 3 && \
         rm -rf .git/modules && \
         pip --no-cache-dir install ninja tf2onnx && \
         # Install SOK
