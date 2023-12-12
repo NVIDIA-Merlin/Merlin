@@ -225,6 +225,9 @@ COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/python backends/
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/LICENSE /opt/tritonserver/backends/fil/* backends/fil/
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/tensorrt backends/tensorrt/
 COPY --chown=1000:1000 --from=triton /usr/bin/serve /usr/bin/.
+COPY --chown=1000:1000 --from=triton /usr/lib/libboost_* /usr/lib/
+COPY --chown=1000:1000 --from=triton /usr/include/boost /usr/include/boost/
+COPY --chown=1000:1000 --from=triton /usr/lib/cmake/boost_* /usr/lib/cmake/
 COPY --chown=1000:1000 --from=triton /usr/lib/*-linux-gnu/libdcgm.so.3 /tmp
 RUN ARCH=$([ "${TARGETARCH}" = "arm64" ] && echo "aarch64" || echo "x86_64") && \
     mv /tmp/libdcgm.so.3 /usr/lib/${ARCH}-linux-gnu/libdcgm.so.3 && \
