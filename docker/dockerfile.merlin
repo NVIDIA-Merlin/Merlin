@@ -102,11 +102,11 @@ RUN pip install --no-cache-dir --upgrade pip; pip install --no-cache-dir "cmake<
                 tritonclient[all] grpcio-channelz fiddle wandb npy-append-array \
                 git+https://github.com/rapidsai/asvdb.git@main \
                 xgboost==1.6.2 lightgbm \
-                implicit \
+                lightfm implicit \
                 numba "cuda-python>=11.5,<12.0" fsspec==2022.5.0 llvmlite \
                 pynvml==11.4.1
 RUN pip install --no-cache-dir treelite==2.4.0 treelite_runtime==2.4.0
-RUN pip install --no-cache-dir numpy==1.24.0 protobuf==3.20.3 onnx onnxruntime==1.15.1 pycuda
+RUN pip install --no-cache-dir numpy==1.22.0 protobuf==3.20.3 onnx onnxruntime==1.15.1 pycuda
 RUN pip install --no-cache-dir dask==${DASK_VER} distributed==${DASK_VER} dask[dataframe]==${DASK_VER} 
 RUN pip install --no-cache-dir onnx_graphsurgeon --index-url https://pypi.ngc.nvidia.com
 
@@ -241,11 +241,11 @@ COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/python backends/
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/LICENSE /opt/tritonserver/backends/fil/* backends/fil/
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/tensorrt backends/tensorrt/
 COPY --chown=1000:1000 --from=triton /usr/bin/serve /usr/bin/.
-COPY --chown=1000:1000 --from=triton /usr/lib/*-linux-gnu/libdcgm.so.3 /tmp
+COPY --chown=1000:1000 --from=triton /usr/lib/*-linux-gnu/libdcgm.so.2 /tmp
 RUN ARCH=$([ "${TARGETARCH}" = "arm64" ] && echo "aarch64" || echo "x86_64") && \
-    mv /tmp/libdcgm.so.3 /usr/lib/${ARCH}-linux-gnu/libdcgm.so.3 && \
-    chmod 644 /usr/lib/${ARCH}-linux-gnu/libdcgm.so.3 && \
-    ln -s libdcgm.so.3 /usr/lib/${ARCH}-linux-gnu/libdcgm.so
+    mv /tmp/libdcgm.so.2 /usr/lib/${ARCH}-linux-gnu/libdcgm.so.2 && \
+    chmod 644 /usr/lib/${ARCH}-linux-gnu/libdcgm.so.2 && \
+    ln -s libdcgm.so.2 /usr/lib/${ARCH}-linux-gnu/libdcgm.so
 
 
 ENV PATH=/opt/tritonserver/bin:${PATH}:
@@ -299,9 +299,7 @@ COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-p
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/numba-*.dist-info /usr/local/lib/python${PYTHON_VERSION}/dist-packages/numba.dist-info/
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cubinlinker-*.dist-info /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cubinlinker.dist-info/
 
-RUN pip install --no-cache-dir jupyterlab notebook pydot testbook numpy==1.24.0
-ENV LIGHTFM_NO_CFLAGS=1
-RUN pip install --no-cache-dir -v --debug lightfm
+RUN pip install --no-cache-dir jupyterlab notebook pydot testbook numpy==1.22.0
 
 ENV JUPYTER_CONFIG_DIR=/tmp/.jupyter
 ENV JUPYTER_DATA_DIR=/tmp/.jupyter

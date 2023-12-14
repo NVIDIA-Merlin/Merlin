@@ -269,7 +269,7 @@ COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-p
 
 RUN pip install --no-cache-dir jupyterlab notebook pydot testbook numpy==1.24.0
 ENV LIGHTFM_NO_CFLAGS=1
-RUN pip install --no-cache-dir -v --debug lightfm
+RUN pip install --no-cache-dir lightfm
 
 ENV JUPYTER_CONFIG_DIR=/tmp/.jupyter
 ENV JUPYTER_DATA_DIR=/tmp/.jupyter
@@ -280,7 +280,7 @@ ARG MERLIN_VER=main
 ENV MERLIN_VER=${MERLIN_VER}
 
 # Add Merlin Repo
-RUN git clone --branch emma/pin_pip_version --depth 1 https://github.com/EmmaQiaoCh/Merlin.git /Merlin && \
+RUN git clone --branch ${MERLIN_VER} --depth 1 https://github.com/NVIDIA-Merlin/Merlin/ /Merlin && \
     cd /Merlin/ && pip install . --no-deps
 
 # Optional dependency: Build and install protocol buffers and Hadoop/HDFS.
