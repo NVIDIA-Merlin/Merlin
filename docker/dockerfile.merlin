@@ -102,7 +102,7 @@ RUN pip install --no-cache-dir --upgrade pip; pip install --no-cache-dir "cmake<
                 tritonclient[all] grpcio-channelz fiddle wandb npy-append-array \
                 git+https://github.com/rapidsai/asvdb.git@main \
                 xgboost==1.6.2 lightgbm \
-                lightfm implicit \
+                implicit \
                 numba "cuda-python>=11.5,<12.0" fsspec==2022.5.0 llvmlite \
                 pynvml==11.4.1
 RUN pip install --no-cache-dir treelite==2.4.0 treelite_runtime==2.4.0
@@ -300,6 +300,8 @@ COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-p
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cubinlinker-*.dist-info /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cubinlinker.dist-info/
 
 RUN pip install --no-cache-dir jupyterlab notebook pydot testbook numpy==1.22.4
+ENV LIGHTFM_NO_CFLAGS=1
+RUN pip install --no-cache-dir -v --debug lightfm
 
 ENV JUPYTER_CONFIG_DIR=/tmp/.jupyter
 ENV JUPYTER_DATA_DIR=/tmp/.jupyter
