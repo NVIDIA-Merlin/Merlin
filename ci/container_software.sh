@@ -42,7 +42,7 @@ if [ "$container" == "merlin-tensorflow" ]; then
     # TODO: remove this block once
     # https://github.com/NVIDIA-Merlin/HugeCTR/pull/328
     # is in the hugectr release
-    pushd /hugectr/sparse_operation_kit/sparse_operation_kit/experiment/test/function_test && \
+    pushd /hugectr/sparse_operation_kit/sparse_operation_kit/test/function_test && \
     bash run_function_test.sh && \
     popd || exit_code=1
 fi
