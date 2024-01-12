@@ -97,7 +97,7 @@ RUN ln -s /usr/bin/python3 /usr/bin/python
 # 2023-10-06: onnxruntime==1.15.1 the latest version changed api which is not compatible with hugectr
 RUN pip install --no-cache-dir --upgrade pip; pip install --no-cache-dir "cmake<3.25.0" ninja scikit-build pandas==1.5.2 \
                 fastrlock nvidia-pyindex pybind11 pytest \ 
-                transformers==4.27.1 tensorflow-metadata betterproto \
+                transformers==4.36.2 tensorflow-metadata betterproto \
                 cachetools graphviz nvtx scipy "scikit-learn<1.2" \
                 tritonclient[all] grpcio-channelz fiddle wandb npy-append-array \
                 git+https://github.com/rapidsai/asvdb.git@main \
@@ -169,6 +169,8 @@ RUN ARCH=$([ "${TARGETARCH}" = "arm64" ] && echo "sbsa" || echo "x86_64") && \
     apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/${ARCH}/3bf863cc.pub && \
     add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/${ARCH}/ /" && \
     apt install -y --no-install-recommends \
+        libc6 \
+        libc-bin \
         ca-certificates \
         clang-format \
         curl \
@@ -301,7 +303,7 @@ COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-p
 
 # There 'Illegal instruction' error, add env 'LIGHTFM_NO_CFLAGS' to workaround
 ENV LIGHTFM_NO_CFLAGS=1
-RUN pip install --no-cache-dir jupyterlab notebook pydot testbook numpy==1.22.4 lightfm
+RUN pip install --no-cache-dir jupyterlab notebook pydot testbook numpy==1.22.4 lightfm pyarrow-hotfix
 
 ENV JUPYTER_CONFIG_DIR=/tmp/.jupyter
 ENV JUPYTER_DATA_DIR=/tmp/.jupyter
