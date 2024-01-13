@@ -169,6 +169,7 @@ RUN ARCH=$([ "${TARGETARCH}" = "arm64" ] && echo "sbsa" || echo "x86_64") && \
     apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/${ARCH}/3bf863cc.pub && \
     add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/${ARCH}/ /" && \
     apt install -y --no-install-recommends \
+        # Add libc and libc-bin for security issue VE-2023-4911
         libc6 \
         libc-bin \
         ca-certificates \
@@ -302,6 +303,7 @@ COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-p
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cubinlinker-*.dist-info /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cubinlinker.dist-info/
 
 # There 'Illegal instruction' error, add env 'LIGHTFM_NO_CFLAGS' to workaround
+# Add pyarrow-hotfix for https://github.com/advisories/GHSA-5wvp-7f3h-6wmm
 ENV LIGHTFM_NO_CFLAGS=1
 RUN pip install --no-cache-dir jupyterlab notebook pydot testbook numpy==1.22.4 lightfm pyarrow-hotfix
 
