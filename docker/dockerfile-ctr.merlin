@@ -293,7 +293,7 @@ COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/pytorch backends
 # DLFW Python packages
 COPY --chown=1000:1000 --from=torch /usr/local/lib/python${PYTHON_VERSION}/dist-packages/torch /usr/local/lib/python${PYTHON_VERSION}/dist-packages/torch
 
-COPY --chown=1000:1000 --from=torch /usr/local/lib/python${PYTHON_VERSION}/dist-packages/torch-*.egg-info /usr/local/lib/python${PYTHON_VERSION}/dist-packages/torch.egg-info/
+COPY --chown=1000:1000 --from=torch /usr/local/lib/python${PYTHON_VERSION}/dist-packages/torch-*.dist-info /usr/local/lib/python${PYTHON_VERSION}/dist-packages/torch.dist-info/
 
 ENV LIGHTFM_NO_CFLAGS=1
 RUN pip install --no-cache-dir jupyterlab notebook pydot testbook lightfm
