@@ -1,0 +1,384 @@
+# syntax=docker/dockerfile:1.2
+ARG TRITON_VERSION=23.11
+ARG DLFW_VERSION=23.11
+ARG TORCH_VERSION=23.11
+
+ARG FULL_IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-py3
+ARG SDK_IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-py3-sdk
+ARG BASE_IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-py3-min
+ARG DLFW_IMAGE=nvcr.io/nvidia/tensorflow:${TRITON_VERSION}-tf2-py3
+ARG TORCH_IMAGE=nvcr.io/nvidia/pytorch:${TORCH_VERSION}-py3
+
+FROM ${FULL_IMAGE} as triton
+FROM ${SDK_IMAGE} as sdk
+FROM ${DLFW_IMAGE} as dlfw
+FROM ${TORCH_IMAGE} as torch
+FROM ${BASE_IMAGE} as build
+
+# Args
+ARG TARGETOS
+ARG TARGETARCH
+
+# Envs
+ENV CUDA_HOME=/usr/local/cuda
+ENV CUDA_PATH=$CUDA_HOME
+ENV CUDA_CUDA_LIBRARY=${CUDA_HOME}/lib64/stubs
+ENV DEBIAN_FRONTEND=noninteractive
+ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64:/usr/local/lib:/repos/dist/lib
+ENV PATH=${CUDA_HOME}/lib64/:${PATH}:${CUDA_HOME}/bin
+
+# Set up NVIDIA package repository
+RUN ARCH=$([ "${TARGETARCH}" = "arm64" ] && echo "sbsa" || echo "x86_64") && \
+    apt clean && apt update -y --fix-missing && \
+    apt install -y --no-install-recommends software-properties-common && \
+    wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/${ARCH}/cuda-ubuntu2204.pin && \
+    mv cuda-ubuntu2204.pin /etc/apt/preferences.d/cuda-repository-pin-600 && \
+    apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/${ARCH}/3bf863cc.pub && \
+    add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/${ARCH}/ /" && \
+    apt install -y --no-install-recommends \
+        autoconf \
+        automake \
+        build-essential \
+        ca-certificates \
+        clang-format \
+        curl \
+        datacenter-gpu-manager \
+        git \
+        libarchive-dev \
+        libb64-dev \
+        libboost-serialization-dev \
+        libcurl4-openssl-dev \
+        libexpat1-dev \
+        libopenblas-dev \
+        libre2-dev \
+        libsasl2-2 \
+        libssl-dev \
+        libtbb-dev \
+        openssl \
+        pkg-config \
+        policykit-1 \
+        protobuf-compiler \
+        python3 \
+        python3-pip \
+        python3-dev \
+        swig \
+        rapidjson-dev \
+        nlohmann-json3-dev \
+        wget \
+        zlib1g-dev && \
+    apt autoremove -y && \
+    apt clean && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN ln -s /usr/bin/python3 /usr/bin/python
+
+# Install multiple packages
+
+# cmake 3.25.0 broke find_package(CUDAToolkit), which breaks the FAISS build:
+# https://gitlab.kitware.com/cmake/cmake/-/issues/24119
+# A fix has already been merged but not yet released:
+# https://gitlab.kitware.com/cmake/cmake/-/merge_requests/7859
+# 2023-10-06: onnxruntime==1.15.1 the latest version changed api which is not compatible with hugectr
+RUN pip install --no-cache-dir --upgrade pip; pip install --no-cache-dir "cmake<3.25.0" ninja scikit-build pandas==1.5.2 \
+                fastrlock nvidia-pyindex pybind11 pytest \ 
+                transformers==4.27.1 tensorflow-metadata betterproto \
+                cachetools graphviz nvtx scipy "scikit-learn<1.2" \
+                tritonclient[all] grpcio-channelz fiddle wandb npy-append-array \
+                git+https://github.com/rapidsai/asvdb.git@main \
+                xgboost==1.6.2 lightgbm \
+                implicit \
+                llvmlite
+RUN pip install --no-cache-dir protobuf==3.20.3 onnx onnxruntime==1.15.1 pycuda
+RUN pip install --no-cache-dir onnx_graphsurgeon --index-url https://pypi.ngc.nvidia.com
+
+# Triton Server
+WORKDIR /opt/tritonserver
+COPY --chown=1000:1000 --from=triton /opt/tritonserver/LICENSE .
+COPY --chown=1000:1000 --from=triton /opt/tritonserver/TRITON_VERSION .
+COPY --chown=1000:1000 --from=triton /opt/tritonserver/NVIDIA_Deep_Learning_Container_License.pdf .
+COPY --chown=1000:1000 --from=triton /opt/tritonserver/bin bin/
+COPY --chown=1000:1000 --from=triton /opt/tritonserver/lib lib/
+COPY --chown=1000:1000 --from=triton /opt/tritonserver/include include/
+COPY --chown=1000:1000 --from=triton /opt/tritonserver/repoagents/ repoagents/
+COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/python backends/
+# NOTE 2023-09: fil-backend is not available on ARM. Some docker versions flag an error if there is
+#               not a single source file to copy. To avoid this, we als specify a small dummy file.
+COPY --chown=1000:1000 --from=triton /opt/tritonserver/LICENSE /opt/tritonserver/backends/fil/* backends/fil/
+COPY --chown=1000:1000 --from=triton /usr/bin/serve /usr/bin/.
+
+ENV PATH=/opt/tritonserver/bin:${PATH}:
+ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/tritonserver/lib
+
+# Clean up
+RUN rm -rf /repos
+
+HEALTHCHECK NONE
+CMD ["/bin/bash"]
+
+FROM ${BASE_IMAGE} as base
+
+# Args
+ARG TARGETOS
+ARG TARGETARCH
+
+# Envs
+ENV CUDA_HOME=/usr/local/cuda
+ENV CUDA_PATH=$CUDA_HOME
+ENV CUDA_CUDA_LIBRARY=${CUDA_HOME}/lib64/stubs
+ENV DEBIAN_FRONTEND=noninteractive
+ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64:/usr/local/lib:/repos/dist/lib
+ENV PATH=${CUDA_HOME}/lib64/:${PATH}:${CUDA_HOME}/bin
+
+# Set up NVIDIA package repository
+RUN ARCH=$([ "${TARGETARCH}" = "arm64" ] && echo "sbsa" || echo "x86_64") && \
+    apt update -y --fix-missing && \
+    apt install -y --no-install-recommends software-properties-common && \
+    wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/${ARCH}/cuda-ubuntu2204.pin && \
+    mv cuda-ubuntu2204.pin /etc/apt/preferences.d/cuda-repository-pin-600 && \
+    apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/${ARCH}/3bf863cc.pub && \
+    add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/${ARCH}/ /" && \
+    apt install -y --no-install-recommends \
+        ca-certificates \
+        clang-format \
+        curl \
+        libcurl4-openssl-dev \
+        git \
+        graphviz \
+        libarchive-dev \
+        libb64-dev \
+        libboost-serialization-dev \
+        libexpat1-dev \
+        libopenblas-dev \
+        libre2-dev \
+        libsasl2-2 \
+        libssl-dev \
+        libtbb-dev \
+        openssl \
+        policykit-1 \
+        protobuf-compiler \
+        python3 \
+        python3-pip \
+        python3-dev \
+        python3-libnvinfer \
+        rapidjson-dev \
+        tree \
+        wget \
+        zlib1g-dev \
+        # Required to build RocksDB and RdKafka.
+        libgflags-dev \
+        libbz2-dev \
+        libsnappy-dev \
+        liblz4-dev \
+        libzstd-dev \
+        libsasl2-dev \
+        #   Required to build Protocol Buffers.
+        autoconf automake libtool \
+        #   Required to build Hadoop.
+        pkg-config \
+        libpmem-dev \
+        libsnappy-dev \
+        #   Required to run Hadoop.
+        openssh-server \
+        # [ HugeCTR ]
+        libaio-dev && \
+    apt autoremove -y && \
+    apt clean && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN ln -s /usr/bin/python3 /usr/bin/python
+
+ENV JAVA_HOME=/usr/lib/jvm/default-java
+ENV LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${JAVA_HOME}/lib:${JAVA_HOME}/lib/server
+
+# Binaries
+COPY --chown=1000:1000 --from=build /usr/local/bin/cmake /usr/local/bin/
+COPY --chown=1000:1000 --from=build /usr/local/bin/pytest /usr/local/bin/
+COPY --chown=1000:1000 --from=sdk /usr/local/bin/perf_* /usr/local/bin/
+
+# Triton Server
+WORKDIR /opt/tritonserver
+COPY --chown=1000:1000 --from=triton /opt/tritonserver/LICENSE .
+COPY --chown=1000:1000 --from=triton /opt/tritonserver/TRITON_VERSION .
+COPY --chown=1000:1000 --from=triton /opt/tritonserver/NVIDIA_Deep_Learning_Container_License.pdf .
+COPY --chown=1000:1000 --from=triton /opt/tritonserver/bin bin/
+COPY --chown=1000:1000 --from=triton /opt/tritonserver/lib lib/
+COPY --chown=1000:1000 --from=triton /opt/tritonserver/include include/
+COPY --chown=1000:1000 --from=triton /opt/tritonserver/repoagents/ repoagents/
+COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/python backends/python/
+# NOTE 2023-09: fil-backend is not available on ARM. Some docker versions flag an error if there is
+#               not a single source file to copy. To avoid this, we als specify a small dummy file.
+COPY --chown=1000:1000 --from=triton /opt/tritonserver/LICENSE /opt/tritonserver/backends/fil/* backends/fil/
+COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/tensorrt backends/tensorrt/
+COPY --chown=1000:1000 --from=triton /usr/bin/serve /usr/bin/.
+COPY --chown=1000:1000 --from=triton /usr/lib/*-linux-gnu/libdcgm.so.3 /tmp
+RUN ARCH=$([ "${TARGETARCH}" = "arm64" ] && echo "aarch64" || echo "x86_64") && \
+    mv /tmp/libdcgm.so.3 /usr/lib/${ARCH}-linux-gnu/libdcgm.so.3 && \
+    chmod 644 /usr/lib/${ARCH}-linux-gnu/libdcgm.so.3 && \
+    ln -s libdcgm.so.3 /usr/lib/${ARCH}-linux-gnu/libdcgm.so
+
+
+ENV PATH=/opt/tritonserver/bin:${PATH}:
+ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/tritonserver/lib
+
+# python --version | sed -e 's/[A-Za-z ]*//g' | awk -F'.' '{print $1"."$2}'
+ENV PYTHON_VERSION=3.10
+
+# Python Packages
+COPY --chown=1000:1000 --from=build /usr/local/lib/python${PYTHON_VERSION}/dist-packages /usr/local/lib/python${PYTHON_VERSION}/dist-packages/
+ENV PYTHONPATH=$PYTHONPATH:/usr/local/lib/python${PYTHON_VERSION}/dist-packages/
+
+
+# rapids components from the DLFW image
+COPY --chown=1000:1000 --from=dlfw /usr/lib/libcudf* /usr/lib/
+COPY --chown=1000:1000 --from=dlfw /usr/lib/libarrow* /usr/lib/
+COPY --chown=1000:1000 --from=dlfw /usr/lib/libparquet* /usr/lib/
+COPY --chown=1000:1000 --from=dlfw /usr/lib/cmake/Arrow /usr/lib/cmake/Arrow/
+COPY --chown=1000:1000 --from=dlfw /usr/lib/cmake/Parquet /usr/lib/cmake/Parquet/
+COPY --chown=1000:1000 --from=dlfw /usr/lib/libnvcomp* /usr/lib/
+
+COPY --chown=1000:1000 --from=dlfw /usr/include/fmt /usr/include/fmt/
+COPY --chown=1000:1000 --from=dlfw /usr/include/spdlog /usr/include/spdlog/
+COPY --chown=1000:1000 --from=dlfw /usr/include/rmm /usr/include/rmm/
+COPY --chown=1000:1000 --from=dlfw /usr/include/parquet /usr/include/parquet/
+COPY --chown=1000:1000 --from=dlfw /usr/include/arrow /usr/include/arrow/
+COPY --chown=1000:1000 --from=dlfw /usr/include/cudf /usr/include/cudf/
+
+# ptx compiler required by cubinlinker
+RUN git clone https://github.com/rapidsai/ptxcompiler.git /ptx && pushd /ptx/ && python setup.py develop && popd && rm -rf /ptx;
+
+COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/rmm /usr/local/lib/python${PYTHON_VERSION}/dist-packages/rmm
+COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cuda /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cuda
+COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/pyarrow /usr/local/lib/python${PYTHON_VERSION}/dist-packages/pyarrow
+COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cudf /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cudf
+COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cupy /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cupy
+COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cupyx /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cupyx
+COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cupy_backends /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cupy_backends
+COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cubinlinker /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cubinlinker
+
+
+COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cudf-*.dist-info /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cudf.dist-info/
+COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/pyarrow-*.dist-info /usr/local/lib/python${PYTHON_VERSION}/dist-packages/pyarrow.dist-info/
+COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/rmm-*.dist-info /usr/local/lib/python${PYTHON_VERSION}/dist-packages/rmm.dist-info/
+COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cupy_*.dist-info /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cupy.dist-info/
+COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cubinlinker-*.dist-info /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cubinlinker.dist-info/
+
+# Triton TF backends
+COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/tensorflow backends/tensorflow/
+
+# Tensorflow dependencies (only)
+# Pinning to pass hugectr sok tests
+# Need to install transformers after tensorflow has been pulled in, so it builds artifacts correctly.
+# upgrade to 4.36.0 due to GHSA-3863-2447-669p
+# Torch Metrics and Lightning (without torch)
+RUN pip install --no-cache-dir tensorflow==2.14.0 protobuf==3.20.3 wrapt==1.14.0 transformers==4.36.0 \
+        && pip uninstall tensorflow keras -y \
+        && pip install --no-cache-dir --no-deps torch torchmetrics pytorch-lightning lightning-utilities sympy \
+        && rm -rf /usr/local/lib/python${PYTHON_VERSION}/dist-packages/torch \
+        && rm -rf /usr/local/lib/python${PYTHON_VERSION}/dist-packages/caffe2
+
+# DLFW Tensorflow packages
+COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/tensorflow /usr/local/lib/python${PYTHON_VERSION}/dist-packages/tensorflow/
+COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/tensorflow-*.dist-info /usr/local/lib/python${PYTHON_VERSION}/dist-packages/tensorflow.dist-info/
+COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/keras /usr/local/lib/python${PYTHON_VERSION}/dist-packages/keras/
+COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/keras-*.dist-info /usr/local/lib/python${PYTHON_VERSION}/dist-packages/keras.dist-info/
+COPY --chown=1000:1000 --from=dlfw /usr/local/bin/saved_model_cli /usr/local/bin/saved_model_cli
+COPY --chown=1000:1000 --from=dlfw /usr/local/lib/tensorflow/ /usr/local/lib/tensorflow/
+COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/horovod /usr/local/lib/python${PYTHON_VERSION}/dist-packages/horovod/
+COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/horovod-*.dist-info /usr/local/lib/python${PYTHON_VERSION}/dist-packages/horovod.dist-info/
+COPY --chown=1000:1000 --from=dlfw /usr/local/bin/horovodrun /usr/local/bin/horovodrun
+
+# Triton Torch backend
+COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/pytorch backends/pytorch
+
+# DLFW Python packages
+COPY --chown=1000:1000 --from=torch /usr/local/lib/python${PYTHON_VERSION}/dist-packages/torch /usr/local/lib/python${PYTHON_VERSION}/dist-packages/torch
+
+COPY --chown=1000:1000 --from=torch /usr/local/lib/python${PYTHON_VERSION}/dist-packages/torch-*.egg-info /usr/local/lib/python${PYTHON_VERSION}/dist-packages/torch.egg-info/
+
+ENV LIGHTFM_NO_CFLAGS=1
+RUN pip install --no-cache-dir jupyterlab notebook pydot testbook lightfm
+
+ENV JUPYTER_CONFIG_DIR=/tmp/.jupyter
+ENV JUPYTER_DATA_DIR=/tmp/.jupyter
+ENV JUPYTER_RUNTIME_DIR=/tmp/.jupyter
+
+# Optional dependency: Build and install protocol buffers and Hadoop/HDFS.
+ARG INSTALL_HDFS=false
+# Env for HDFS
+ENV HADOOP_HOME=/opt/hadoop
+ENV PATH=${PATH}:${HADOOP_HOME}/bin:${HADOOP_HOME}/sbin \
+    HDFS_NAMENODE_USER=root \
+    HDFS_SECONDARYNAMENODE_USER=root \
+    HDFS_DATANODE_USER=root \
+    YARN_RESOURCEMANAGER_USER=root \
+    YARN_NODEMANAGER_USER=root \
+    # Tackles with ThreadReaper stack overflow issues: https://bugs.openjdk.java.net/browse/JDK-8153057
+    LIBHDFS_OPTS='-Djdk.lang.processReaperUseDefaultStackSize=true' \
+    # Tackles with JVM setting error signals that the UCX library checks (GitLab issue #425).
+    UCX_ERROR_SIGNALS='' \
+    CLASSPATH=${CLASSPATH}:\
+${HADOOP_HOME}/etc/hadoop/*:\
+${HADOOP_HOME}/share/hadoop/common/*:\
+${HADOOP_HOME}/share/hadoop/common/lib/*:\
+${HADOOP_HOME}/share/hadoop/hdfs/*:\
+${HADOOP_HOME}/share/hadoop/hdfs/lib/*:\
+${HADOOP_HOME}/share/hadoop/mapreduce/*:\
+${HADOOP_HOME}/share/hadoop/yarn/*:\
+${HADOOP_HOME}/share/hadoop/yarn/lib/*
+
+# Install Inference and HPS Backend
+ARG HUGECTR_DEV_MODE=false
+ARG HUGECTR_VER=main
+ARG _HUGECTR_REPO="github.com/NVIDIA-Merlin/HugeCTR.git"
+ARG HUGECTR_BACKEND_VER=main
+ARG _CI_JOB_TOKEN=""
+ARG _HUGECTR_BACKEND_REPO="github.com/triton-inference-server/hugectr_backend.git"
+ARG HUGECTR_HOME=/usr/local/hugectr
+ARG TRITON_VERSION
+
+ENV PATH=$PATH:${HUGECTR_HOME}/bin \
+    CPATH=$CPATH:${HUGECTR_HOME}/include \
+    LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${HUGECTR_HOME}/lib
+
+RUN if [ "${HUGECTR_DEV_MODE}" == "false" ]; then \
+        # Install HugeCTR inference which is dependency for hps_backend
+        git clone --branch ${HUGECTR_VER} --depth 1 https://${_CI_JOB_TOKEN}${_HUGECTR_REPO} /hugectr && \
+        cd /hugectr && \
+        git submodule update --init --recursive && \
+        mkdir build && \
+        cd build && \
+        if [[ "${INSTALL_HDFS}" == "false" ]]; then \
+            cmake -DCMAKE_BUILD_TYPE=Release -DSM="70;75;80;90" -DENABLE_INFERENCE=ON .. \
+        ; else \
+            cmake -DCMAKE_BUILD_TYPE=Release -DSM="70;75;80;90" -DENABLE_INFERENCE=ON -DENABLE_HDFS=ON .. \
+        ; fi && \
+        make -j$(nproc) && \
+        make install && \
+        # Install HPS trt pugin
+        cd ../hps_trt && \
+        mkdir build && \
+        cd build && \
+        cmake -DSM="70;75;80;90" .. && \
+        make -j$(nproc) && \
+        make install && \
+        cd / && rm -rf /hugectr && \
+        # Install hps_backend
+        git clone --branch ${HUGECTR_BACKEND_VER} --depth 1 https://${_CI_JOB_TOKEN}${_HUGECTR_BACKEND_REPO} /repos/hugectr_triton_backend && \
+        mkdir /repos/hugectr_triton_backend/hps_backend/build && \
+        cd /repos/hugectr_triton_backend/hps_backend/build && \
+        cmake \
+            -DCMAKE_INSTALL_PREFIX:PATH=${HUGECTR_HOME} \
+            -DTRITON_COMMON_REPO_TAG="r${TRITON_VERSION}" \
+            -DTRITON_CORE_REPO_TAG="r${TRITON_VERSION}" \
+            -DTRITON_BACKEND_REPO_TAG="r${TRITON_VERSION}" .. && \
+        make -j$(nproc) && \
+        make install && \
+        cd ../../.. && \
+        rm -rf hugectr_triton_backend && \
+        chmod +x ${HUGECTR_HOME}/lib/*.so ${HUGECTR_HOME}/backends/hps/*.so \
+    ; fi
+RUN ln -s ${HUGECTR_HOME}/backends/hps /opt/tritonserver/backends/hps
+
+HEALTHCHECK NONE
+CMD ["/bin/bash"]
+ENTRYPOINT ["/opt/nvidia/nvidia_entrypoint.sh"]
