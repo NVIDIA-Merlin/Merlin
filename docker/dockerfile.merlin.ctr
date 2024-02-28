@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.2
-ARG TRITON_VERSION=23.11
-ARG DLFW_VERSION=23.11
-ARG TORCH_VERSION=23.11
+ARG TRITON_VERSION=23.12
+ARG DLFW_VERSION=23.12
+ARG TORCH_VERSION=23.12
 
 ARG FULL_IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-py3
 ARG SDK_IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-py3-sdk
@@ -301,6 +301,13 @@ RUN pip install --no-cache-dir jupyterlab notebook pydot testbook lightfm
 ENV JUPYTER_CONFIG_DIR=/tmp/.jupyter
 ENV JUPYTER_DATA_DIR=/tmp/.jupyter
 ENV JUPYTER_RUNTIME_DIR=/tmp/.jupyter
+
+ARG MERLIN_VER=main
+ENV MERLIN_VER=${MERLIN_VER}
+
+# Add Merlin Repo
+RUN git clone --branch ${MERLIN_VER} --depth 1 https://github.com/NVIDIA-Merlin/Merlin/ /Merlin && \
+    cd /Merlin/ && pip install . --no-deps
 
 # Optional dependency: Build and install protocol buffers and Hadoop/HDFS.
 ARG INSTALL_HDFS=false
