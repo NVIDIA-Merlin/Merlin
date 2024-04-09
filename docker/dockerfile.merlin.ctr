@@ -202,8 +202,6 @@ RUN ARCH=$([ "${TARGETARCH}" = "arm64" ] && echo "aarch64" || echo "x86_64") && 
     mv /tmp/libdcgm.so.3 /usr/lib/${ARCH}-linux-gnu/libdcgm.so.3 && \
     chmod 644 /usr/lib/${ARCH}-linux-gnu/libdcgm.so.3 && \
     ln -s libdcgm.so.3 /usr/lib/${ARCH}-linux-gnu/libdcgm.so
-# Copy libboost_filesystem libs from triton
-COPY --chown=1000:1000 --from=triton /usr/lib/libboost_filesystem.so* /usr/lib/
 
 ENV PATH=/opt/tritonserver/bin:${PATH}:
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/tritonserver/lib
