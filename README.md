@@ -2,7 +2,7 @@
 
 ![GitHub tag (latest SemVer)](https://img.shields.io/github/v/tag/NVIDIA-Merlin/Merlin?sort=semver)
 ![GitHub License](https://img.shields.io/github/license/NVIDIA-Merlin/Merlin)
-[![Documentation](https://img.shields.io/badge/documentation-blue.svg)](https://nvidia-merlin.github.io/Merlin/stable/README.html)
+[![Documentation](https://img.shields.io/badge/documentation-blue.svg)](https://nvidia-merlin.github.io/Merlin/stable/intro.html)
 
 NVIDIA Merlin is an open source library that accelerates recommender systems on
 NVIDIA GPUs. The library enables data scientists, machine learning engineers,
