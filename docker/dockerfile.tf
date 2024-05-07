@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.2
-ARG MERLIN_VERSION=23.06
-ARG TRITON_VERSION=23.06
-ARG TENSORFLOW_VERSION=23.06
+ARG MERLIN_VERSION=23.11
+ARG TRITON_VERSION=23.11
+ARG TENSORFLOW_VERSION=23.11
 
 ARG DLFW_IMAGE=nvcr.io/nvidia/tensorflow:${TENSORFLOW_VERSION}-tf2-py3
 ARG FULL_IMAGE=nvcr.io/nvidia/tritonserver:${TRITON_VERSION}-py3
@@ -17,7 +17,7 @@ COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/tensorflow backe
 # Tensorflow dependencies (only)
 # Pinning to pass hugectr sok tests
 # wrapt 1.5.0 introduce hugectr test failures, so downgrade to 1.14.0
-RUN pip install --no-cache-dir tensorflow==2.12.0 protobuf==3.20.3 wrapt==1.14.0 \
+RUN pip install --no-cache-dir tensorflow==2.14.0 protobuf==3.20.3 wrapt==1.14.0 \
      && pip uninstall tensorflow keras -y
 
 # DLFW Tensorflow packages
