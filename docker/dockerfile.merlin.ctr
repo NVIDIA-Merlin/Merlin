@@ -63,7 +63,8 @@ RUN ARCH=$([ "${TARGETARCH}" = "arm64" ] && echo "sbsa" || echo "x86_64") && \
         rapidjson-dev \
         nlohmann-json3-dev \
         wget \
-        zlib1g-dev && \
+        zlib1g-dev \
+        libhdf5-dev && \
     apt autoremove -y && \
     apt clean && \
     rm -rf /var/lib/apt/lists/*
@@ -154,6 +155,7 @@ RUN ARCH=$([ "${TARGETARCH}" = "arm64" ] && echo "sbsa" || echo "x86_64") && \
         tree \
         wget \
         zlib1g-dev \
+        libhdf5-dev \
         # Required to build RocksDB and RdKafka.
         libgflags-dev \
         libbz2-dev \
