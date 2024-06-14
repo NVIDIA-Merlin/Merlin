@@ -17,6 +17,11 @@ if [ $container != 'merlin-ci-runner' ]; then
 fi
 
 ${ci_script_dir}container_software.sh $container $devices
-${ci_script_dir}container_integration.sh $container $devices $suppress_failures
-${ci_script_dir}container_unit.sh $container $devices
+
+if [ $container == 'merlin-hugectr' ]; then
+    ${ci_script_dir}container_hugectr.sh $container $devices
+elif [ $container != 'ctr-base' ]; then
+    ${ci_script_dir}container_integration.sh $container $devices $suppress_failures
+    ${ci_script_dir}container_unit.sh $container $devices
+fi
 
