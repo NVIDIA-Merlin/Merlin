@@ -80,10 +80,9 @@ RUN ln -s /usr/bin/python3 /usr/bin/python
 # 2023-10-06: onnxruntime==1.15.1 the latest version changed api which is not compatible with hugectr
 RUN pip install --no-cache-dir --upgrade pip; pip install --no-cache-dir "cmake<3.25.0" ninja scikit-build pandas==1.5.2 \
                 nvidia-pyindex pybind11 pytest \
-                tensorflow-metadata \
                 "scikit-learn<1.2" \
                 tritonclient[all]
-RUN pip install --no-cache-dir protobuf==3.20.3 onnx onnxruntime==1.15.1 pycuda
+RUN pip install --no-cache-dir onnx onnxruntime pycuda
 RUN pip install --no-cache-dir onnx_graphsurgeon --index-url https://pypi.ngc.nvidia.com
 
 # Triton Server
@@ -220,8 +219,10 @@ ENV PYTHONPATH=$PYTHONPATH:/usr/local/lib/python${PYTHON_VERSION}/dist-packages/
 COPY --chown=1000:1000 --from=dlfw /usr/lib/libcudf* /usr/lib/
 COPY --chown=1000:1000 --from=dlfw /usr/lib/libarrow* /usr/lib/
 COPY --chown=1000:1000 --from=dlfw /usr/lib/libparquet* /usr/lib/
+COPY --chown=1000:1000 --from=dlfw /usr/lib/libprotobuf* /usr/lib/
 COPY --chown=1000:1000 --from=dlfw /usr/lib/cmake/Arrow /usr/lib/cmake/Arrow/
 COPY --chown=1000:1000 --from=dlfw /usr/lib/cmake/Parquet /usr/lib/cmake/Parquet/
+COPY --chown=1000:1000 --from=dlfw /usr/lib/cmake/protobuf /usr/lib/cmake/protobuf/
 COPY --chown=1000:1000 --from=dlfw /usr/lib/libnvcomp* /usr/lib/
 
 COPY --chown=1000:1000 --from=dlfw /usr/include/fmt /usr/include/fmt/
@@ -244,6 +245,7 @@ COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-p
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/pyarrow-*.dist-info /usr/local/lib/python${PYTHON_VERSION}/dist-packages/pyarrow.dist-info/
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/rmm-*.dist-info /usr/local/lib/python${PYTHON_VERSION}/dist-packages/rmm.dist-info/
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cupy_*.dist-info /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cupy.dist-info/
+COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/protobuf_*.dist-info /usr/local/lib/python${PYTHON_VERSION}/dist-packages/protobuf.dist-info/
 
 # Triton TF backends
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/tensorflow backends/tensorflow/
@@ -253,7 +255,7 @@ COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/tensorflow backe
 # Need to install transformers after tensorflow has been pulled in, so it builds artifacts correctly.
 # upgrade to 4.36.0 due to GHSA-3863-2447-669p
 # Torch Metrics and Lightning (without torch)
-RUN pip install --no-cache-dir tensorflow==2.14.0 protobuf==3.20.3 wrapt==1.14.0 transformers==4.36.0 \
+RUN pip install --no-cache-dir tensorflow==2.15.0 wrapt==1.14.0 transformers==4.36.0 \
         && pip uninstall tensorflow keras -y \
         && pip install --no-cache-dir --no-deps torch torchmetrics \
         && rm -rf /usr/local/lib/python${PYTHON_VERSION}/dist-packages/torch \
