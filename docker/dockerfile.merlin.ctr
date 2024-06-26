@@ -255,8 +255,7 @@ COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/tensorflow backe
 # Torch Metrics and Lightning (without torch)
 RUN pip install --no-cache-dir tensorflow==2.14.0 protobuf==3.20.3 wrapt==1.14.0 transformers==4.36.0 \
         && pip uninstall tensorflow keras -y \
-        && pip install --no-cache-dir --no-deps torch torchmetrics \
-        && rm -rf /usr/local/lib/python${PYTHON_VERSION}/dist-packages/torch \
+        && pip install --no-cache-dir --no-deps torchmetrics \
         && rm -rf /usr/local/lib/python${PYTHON_VERSION}/dist-packages/caffe2
 
 # DLFW Tensorflow packages
@@ -279,6 +278,7 @@ RUN ln -s /opt/tritonserver/backends/pytorch/* /usr/local/lib/
 # DLFW Python packages
 COPY --chown=1000:1000 --from=torch /usr/local/lib/python${PYTHON_VERSION}/dist-packages/torch /usr/local/lib/python${PYTHON_VERSION}/dist-packages/torch
 COPY --chown=1000:1000 --from=torch /usr/local/lib/python${PYTHON_VERSION}/dist-packages/torch-*.dist-info /usr/local/lib/python${PYTHON_VERSION}/dist-packages/torch.dist-info/
+COPY --chown=1000:1000 --from=torch /usr/local/lib/python${PYTHON_VERSION}/dist-packages/torchgen /usr/local/lib/python${PYTHON_VERSION}/dist-packages/torchgen
 COPY --chown=1000:1000 --from=torch /usr/local/lib/python${PYTHON_VERSION}/dist-packages/tensorrt /usr/local/lib/python${PYTHON_VERSION}/dist-packages/tensorrt
 COPY --chown=1000:1000 --from=torch /usr/local/lib/python${PYTHON_VERSION}/dist-packages/tensorrt-*.dist-info /usr/local/lib/python${PYTHON_VERSION}/dist-packages/tensorrt.dist-info/
 
