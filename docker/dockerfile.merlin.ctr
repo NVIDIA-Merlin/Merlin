@@ -80,10 +80,9 @@ RUN ln -s /usr/bin/python3 /usr/bin/python
 # 2023-10-06: onnxruntime==1.15.1 the latest version changed api which is not compatible with hugectr
 RUN pip install --no-cache-dir --upgrade pip; pip install --no-cache-dir "cmake<3.25.0" ninja scikit-build pandas==1.5.2 \
                 nvidia-pyindex pybind11 pytest \
-                tensorflow-metadata \
                 "scikit-learn<1.2" \
                 tritonclient[all]
-RUN pip install --no-cache-dir protobuf==3.20.3 onnx onnxruntime==1.15.1 pycuda
+RUN pip install --no-cache-dir numpy==1.22.4 onnx onnxruntime pycuda
 RUN pip install --no-cache-dir onnx_graphsurgeon --index-url https://pypi.ngc.nvidia.com
 
 # Triton Server
@@ -220,8 +219,12 @@ ENV PYTHONPATH=$PYTHONPATH:/usr/local/lib/python${PYTHON_VERSION}/dist-packages/
 COPY --chown=1000:1000 --from=dlfw /usr/lib/libcudf* /usr/lib/
 COPY --chown=1000:1000 --from=dlfw /usr/lib/libarrow* /usr/lib/
 COPY --chown=1000:1000 --from=dlfw /usr/lib/libparquet* /usr/lib/
+COPY --chown=1000:1000 --from=dlfw /usr/lib/libprotobuf* /usr/lib/
+COPY --chown=1000:1000 --from=dlfw /usr/lib/libabsl* /usr/lib/
 COPY --chown=1000:1000 --from=dlfw /usr/lib/cmake/Arrow /usr/lib/cmake/Arrow/
 COPY --chown=1000:1000 --from=dlfw /usr/lib/cmake/Parquet /usr/lib/cmake/Parquet/
+COPY --chown=1000:1000 --from=dlfw /usr/lib/cmake/protobuf /usr/lib/cmake/protobuf/
+COPY --chown=1000:1000 --from=dlfw /usr/lib/cmake/absl /usr/lib/cmake/absl/
 COPY --chown=1000:1000 --from=dlfw /usr/lib/libnvcomp* /usr/lib/
 
 COPY --chown=1000:1000 --from=dlfw /usr/include/fmt /usr/include/fmt/
@@ -230,6 +233,7 @@ COPY --chown=1000:1000 --from=dlfw /usr/include/rmm /usr/include/rmm/
 COPY --chown=1000:1000 --from=dlfw /usr/include/parquet /usr/include/parquet/
 COPY --chown=1000:1000 --from=dlfw /usr/include/arrow /usr/include/arrow/
 COPY --chown=1000:1000 --from=dlfw /usr/include/cudf /usr/include/cudf/
+COPY --chown=1000:1000 --from=dlfw /usr/include/absl /usr/include/absl/
 
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/rmm /usr/local/lib/python${PYTHON_VERSION}/dist-packages/rmm
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cuda /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cuda
@@ -238,12 +242,14 @@ COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-p
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cupy /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cupy
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cupyx /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cupyx
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cupy_backends /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cupy_backends
-
+COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/absl /usr/local/lib/python${PYTHON_VERSION}/dist-packages/absl
 
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cudf-*.dist-info /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cudf.dist-info/
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/pyarrow-*.dist-info /usr/local/lib/python${PYTHON_VERSION}/dist-packages/pyarrow.dist-info/
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/rmm-*.dist-info /usr/local/lib/python${PYTHON_VERSION}/dist-packages/rmm.dist-info/
 COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cupy_*.dist-info /usr/local/lib/python${PYTHON_VERSION}/dist-packages/cupy.dist-info/
+COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/protobuf-*.dist-info /usr/local/lib/python${PYTHON_VERSION}/dist-packages/protobuf.dist-info/
+COPY --chown=1000:1000 --from=dlfw /usr/local/lib/python${PYTHON_VERSION}/dist-packages/absl_py*.dist-info /usr/local/lib/python${PYTHON_VERSION}/dist-packages/absl_py.dist-info/
 
 # Triton TF backends
 COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/tensorflow backends/tensorflow/
@@ -253,10 +259,9 @@ COPY --chown=1000:1000 --from=triton /opt/tritonserver/backends/tensorflow backe
 # Need to install transformers after tensorflow has been pulled in, so it builds artifacts correctly.
 # upgrade to 4.36.0 due to GHSA-3863-2447-669p
 # Torch Metrics and Lightning (without torch)
-RUN pip install --no-cache-dir tensorflow==2.14.0 protobuf==3.20.3 wrapt==1.14.0 transformers==4.36.0 \
+RUN pip install --no-cache-dir tensorflow==2.15.0 wrapt==1.14.0 transformers==4.36.0 \
         && pip uninstall tensorflow keras -y \
-        && pip install --no-cache-dir --no-deps torch torchmetrics \
-        && rm -rf /usr/local/lib/python${PYTHON_VERSION}/dist-packages/torch \
+        && pip install --no-cache-dir --no-deps torchmetrics \
         && rm -rf /usr/local/lib/python${PYTHON_VERSION}/dist-packages/caffe2
 
 # DLFW Tensorflow packages
@@ -279,6 +284,7 @@ RUN ln -s /opt/tritonserver/backends/pytorch/* /usr/local/lib/
 # DLFW Python packages
 COPY --chown=1000:1000 --from=torch /usr/local/lib/python${PYTHON_VERSION}/dist-packages/torch /usr/local/lib/python${PYTHON_VERSION}/dist-packages/torch
 COPY --chown=1000:1000 --from=torch /usr/local/lib/python${PYTHON_VERSION}/dist-packages/torch-*.dist-info /usr/local/lib/python${PYTHON_VERSION}/dist-packages/torch.dist-info/
+COPY --chown=1000:1000 --from=torch /usr/local/lib/python${PYTHON_VERSION}/dist-packages/torchgen /usr/local/lib/python${PYTHON_VERSION}/dist-packages/torchgen
 COPY --chown=1000:1000 --from=torch /usr/local/lib/python${PYTHON_VERSION}/dist-packages/tensorrt /usr/local/lib/python${PYTHON_VERSION}/dist-packages/tensorrt
 COPY --chown=1000:1000 --from=torch /usr/local/lib/python${PYTHON_VERSION}/dist-packages/tensorrt-*.dist-info /usr/local/lib/python${PYTHON_VERSION}/dist-packages/tensorrt.dist-info/
 
