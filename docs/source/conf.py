@@ -75,27 +75,12 @@ exclude_patterns = ["examples/legacy"]
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = "sphinx_book_theme"
+html_theme = "nvidia_sphinx_theme"
 html_title = "NVIDIA Merlin"
 html_favicon = "_static/favicon.png"
 html_theme_options = {
-    "repository_url": "https://github.com/NVIDIA-Merlin/Merlin",
-    "use_repository_button": True,
-    "footer_content_items": ["copyright.html", "footer.html"],
-    "logo": {"text": "NVIDIA Merlin", "alt_text": "NVIDIA Merlin"},
+    "public_docs_features": True,
 }
-html_sidebars = {
-    "**": [
-        "navbar-logo.html",
-        "search-field.html",
-        "icon-links.html",
-        "sbt-sidebar-nav.html",
-        "merlin-ecosystem.html",
-        "versions.html",
-    ]
-}
-html_css_files = ["css/custom.css", "css/versions.css"]
-html_js_files = ["js/rtd-version-switcher.js"]
 html_context = {"analytics_id": "G-NVJ1Y1YJHK"}
 html_copy_source = False
 html_show_sourcelink = False
