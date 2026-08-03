@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022, NVIDIA CORPORATION.
+# Copyright (c) 2023 NVIDIA CORPORATION.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -68,14 +68,15 @@ def parse_args():
 
 
 def create_nvtabular_workflow(train_path, valid_path):
-    user_id = ["user_id"] >> Categorify() >> TagAsUserID()
-    item_id = ["item_id"] >> Categorify() >> TagAsItemID()
-    targets = ["click"] >> AddMetadata(tags=[Tags.BINARY_CLASSIFICATION, "target"])
+
+    user_id_raw = ["user_id"] >> Rename(postfix='_raw') >> LambdaOp(lambda col: col.astype("int32")) >> TagAsUserFeatures()
+    item_id_raw = ["item_id"] >> Rename(postfix='_raw') >> LambdaOp(lambda col: col.astype("int32")) >> TagAsItemFeatures()
+
+    user_id = ["user_id"] >> Categorify(dtype="int32") >> TagAsUserID()
+    item_id = ["item_id"] >> Categorify(dtype="int32") >> TagAsItemID()
 
     item_features = (
-        ["item_category", "item_shop", "item_brand"]
-        >> Categorify()
-        >> TagAsItemFeatures()
+        ["item_category", "item_shop", "item_brand"] >> Categorify(dtype="int32") >> TagAsItemFeatures()
     )
 
     user_features = (
@@ -91,12 +92,15 @@ def create_nvtabular_workflow(train_path, valid_path):
             "user_intentions",
             "user_brands",
             "user_categories",
-        ]
-        >> Categorify()
-        >> TagAsUserFeatures()
+        ] >> Categorify(dtype="int32") >> TagAsUserFeatures()
     )
 
-    outputs = user_id + item_id + item_features + user_features + targets
+    targets = ["click"] >> AddMetadata(tags=[Tags.BINARY_CLASSIFICATION, "target"])
+
+    outputs = user_id + item_id + item_features + user_features + user_id_raw + item_id_raw + targets
+
+    # add dropna op to filter rows with nulls
+    outputs = outputs >> Dropna()
 
     workflow = nvt.Workflow(outputs)
 
