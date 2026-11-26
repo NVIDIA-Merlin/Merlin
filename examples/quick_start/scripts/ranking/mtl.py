@@ -25,6 +25,8 @@ def get_task_sample_weights(
                 sample_weight_block,
                 sample_space_block,
             )
+        else:
+            sample_weight_block = sample_space_block
 
     return sample_weight_block
 
